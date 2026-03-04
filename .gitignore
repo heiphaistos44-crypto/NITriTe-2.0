@@ -2,32 +2,32 @@
 # NiTriTe 1.0 - .gitignore
 # ===========================
 
-# --- Logiciels portables volumineux (>50MB) ---
+# --- Dossier logiciel : applications portables (trop volumineuses pour git) ---
+logiciel/AdwCleaner/
+logiciel/Autoruns/
+logiciel/BCUninstaller_5.9.0_net6.0-windows10.0.18362.0/
+logiciel/CPU-ZPortable/
+logiciel/CrystalDisk/
+logiciel/CrystalDiskMarkPortable/
+logiciel/Custom/
+logiciel/Executable/
+logiciel/GetDataBack Pro 5.55.Portable/
 logiciel/GoogleChromePortable/
-logiciel/UserDiag/UserDiag.exe
+logiciel/HWMonitor/
+logiciel/HWMonitorPortable/
+logiciel/HWiNFOPortable/
+logiciel/Hard Disk Sentinel Pro Portable Version 4.60 Build 7377 FR/
 logiciel/Installateurs version portable/
-logiciel/Executable/spybotsd-2.9.85.5.exe
-
-# --- Drivers volumineux ---
-Drivers/Realtek*/
-Drivers/Windows desktop runtime/
-
-# --- Scripts Windows volumineux ---
-Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/Win11_Tweaker_v2.0.1.Protable.win-x64.zip
-Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/KillerPerformanceSuite_*.exe
-
-# --- Fichiers binaires .exe et .dll lourds (>50MB générique) ---
-*.dll
-*.exe
-*.zip
-*.paf.exe
-*.msi
-*.iso
-*.img
-*.cab
-
-# --- Fichiers système Windows ---
-*.lnk
+logiciel/Malwarebytes/
+logiciel/PortableApps/
+logiciel/ProcessExplorerPortable/
+logiciel/SpybotPortable/
+logiciel/Standalone Tools/
+logiciel/UserDiag/
+logiciel/WiseCare365/
+logiciel/WiseDiskCleanerPortable/
+logiciel/testdisk-7.0/
+logiciel/desktop.ini
 
 # --- Node / Rust build artifacts ---
 node_modules/
