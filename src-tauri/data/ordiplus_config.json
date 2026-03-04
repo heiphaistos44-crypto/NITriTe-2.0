@@ -1,0 +1,25 @@
+{
+  "ordiplus_apps": [
+    "Office 2007",
+    "Adobe Acrobat Reader DC",
+    "Mozilla Firefox",
+    "VLC Media Player",
+    "Malwarebytes",
+    "Spybot Search & Destroy",
+    "Wise Disk Cleaner",
+    "Google Chrome",
+    "AdwCleaner Portable",
+    "RustDesk Portable",
+    "AnyDesk Portable"
+  ],
+  "cleaning_tools": [
+    "Malwarebytes",
+    "Spybot Search & Destroy",
+    "Wise Disk Cleaner",
+    "AdwCleaner Portable",
+    "RustDesk Portable"
+  ],
+  "last_modified": "2025-12-29",
+  "version": "1.2",
+  "note": "Ajout AdwCleaner Portable, RustDesk Portable, AnyDesk Portable"
+}

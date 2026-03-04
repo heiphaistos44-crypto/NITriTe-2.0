@@ -1,0 +1,775 @@
+Hard Disk Sentinel Zaten Çalýþýyor mu. 
+Hata 
+Sabit Disk Sýcaklýk 
+Tahmin Arýza 
+Tamam 
+Desteklenen 
+Desteklenmiyor 
+Evet 
+Sabit disk sürücüleri 
+Eðer durum penceresinde görüntülemek istediðiniz sabit disk (ler) i seçin. Çift sistem tepsisi simgeleri seçmek için týklayýn. Sað yerel menüsünü görüntülemek için týklayýn. 
+No 
+Ad (Size) 
+Sýcaklýk 
+Tray Icon 
+&Tercihler 
+baþýnda Ekran durum penceresi 
+Windows ile Yük 
+Þeffaflýk: 
+Dil: 
+&Kapat 
+Hard Disk Sentinel 
+sistem tepsisi sýcaklýðý göstermek için bu sürücüyü seçin 
+&Test Durumunu Masaüstünde Göster
+&Test Durumunu Gizle 
+Yapýlandýrma
+Çý&kýþ 
+En az bir sabit disk seçilmelidir. 
+&Durum Penceresi 
+Arka Plan Rengi 
+Arka plan Görüntü 
+Seçin 
+görüntü dosyasý açýlýrken hata. 
+Desteklenen Resim Dosyalarý | *. jpg, *. bmp | Tüm Dosyalar | *.* 
+Bilgi 
+S.M.A.R.T. 
+Disk Performansý 
+Bölümleri 
+Disk Bilgi 
+Transfer Hýzý Bilgi 
+Toplam Veri Oku 
+Toplam Veri Yaz 
+Geçerli Aktarým Hýzý 
+ KB / s 
+Geçerli Oraný Oku 
+Oraný yaz Mevcut 
+Geçerli Disk Faaliyet 
+Disk Etkinlik% 
+Transfer Hýzý (MB / s) 
+Sabit Disk Özeti 
+Sabit Disk Sayýsý 
+Hard Disk Model numarasý 
+Firmware Revizyon 
+Sabit Disk Seri Numarasý 
+Toplam boyutu 
+ATA Bilgi 
+Sabit Disk Silindirler 
+Sabit Disk Kafalarý 
+Sabit Disk Sektörler 
+Toplam Sektörler 
+ATA Revizyon 
+Sektör Baþýna Bytes 
+Mantýksal Track Baþýna Bytes 
+Tampon boyutu 
+Birden Sektörler 
+Hata Düzeltme Bytes 
+Biçimlendirilmemiþ Kapasite 
+Maksimum PIO Modu 
+Aktif PIO Modu 
+Maksimum UDMA Mode 
+Etkin UDMA Mode 
+ATA Özellikler 
+Desteklenen 
+Desteklenmiyor 
+Nitelik 
+Eþik 
+Deðer 
+En kötü 
+Veri 
+Durumu 
+Bölüm Bilgiler 
+Mantýksal Sürücü 
+Toplam Uzay 
+Boþ Alan 
+Bölüm Tip 
+bayt 
+Kullanýlan Uzay 
+Disk: 
+Maksimum Aktarým Hýzý 
+Tahmini Max. Transfer Hýzý 
+DVD Yazma Hýzý 
+Büyük disk kullanýmý ölçüm için gerekli. 
+(Her zaman geçer) Tamam 
+Baþarýsýz (Her zaman baþarýsýz) 
+Danýþma: Kullaným sýnýrý aþýldý 
+Ön Hata: Veri kaybý tahmin 
+panoya kopyalama sayfanýn tamamýný 
+Sabit Disk ve Sýcaklýk Tarihi 
+kurulum tarihinden 
+Hakkýnda 
+Kayýt 
+Kayýt Adý: 
+Registration Key: 
+kayýt tuþu Geçersiz kayýt baþarýsýz oldu. 
+Kayýt baþarýlý. Desteðiniz için teþekkür ederiz. 
+Konularý Göster ana penceresi 
+Kayýt ve etkinleþtirme sonra kullanýlabilir. 
+Kayýtsýz versiyon, lütfen kayýt olun. 
+Kayýtlý: 
+Genel bakýþ 
+Güncel Sýcaklýk: 
+Maksimum Sýcaklýk (bugün): 
+Sýcaklýk durumu iyidir. 
+Mevcut sýcaklýðý çok yüksek. Bir sabit disk soðutma cihazý (örneðin bir fan veya pasif soðutucu) mümkünse kullanýlmasý tavsiye edilir. 
+Geçerli sýcaklýk iyi ama daha önce çok yüksek oldu. Bir sabit disk soðutma cihazý (örneðin bir fan veya pasif soðutucu) mümkünse kullanýlmasý tavsiye edilir. 
+Performans: 
+Saðlýk: 
+Mükemmel 
+Iyi 
+Adil 
+Kabul edilebilir 
+Kötü 
+Herhangi bir iþlem yapmak gerekmiyor. 
+Genellikle veri kaybýný önlemek için yedek önerilir. 
+Özellikleri 
+Sabit Disk ve Genel 
+&Önceki Sabit Disk 
+&Sonraki Sabit Disk 
+Uyarýlar 
+sabit disk hatasý tahmin eðer e-posta uyarýsý gönder 
+sabit disk sýcaklýðý üzerinde ise e-posta uyarýsý gönder 
+&E-posta Yapýlandýrma 
+Posta hesabý: 
+Gönderici adý: 
+Gönderenin e-mail: 
+Alýcýnýn e-mail: 
+SMTP sunucusu: 
+Kimlik doðrulama seçenekleri (gerekli deðilse bu alanlarý boþ býrakýn) 
+Kullanýcý adý: 
+Þifre: 
+Varsayýlan 
+Aþaðýdaki alan sýrada e-posta göndermek için belirtilmelidir: 
+Þimdi bu bilgileri girmek istiyor musunuz? 
+Hata uyarý e-posta gönderirken. 
+Uyarý e-mail gönderdi. 
+Isýnmasýna 
+Sýcaklýk eþik ayarý: 
+Sýcaklýk Birimi: 
+Gönderme Raporu 
+Font: 
+Kaydet
+tepsiye Ekran sadece en yüksek sýcaklýk 
+Aktarýlan veri birimi: 
+Akustik Yönetimi Yapýlandýrma 
+Özürlü 
+Etkin 
+Geçerli Akustik Seviyesi 
+Tavsiye Akustik Seviyesi 
+Bilinmeyen 
+Maksimum performans ve hacim 
+Min performans ve hacim 
+Dengeli bir performans ve hacim 
+Akustik Yönetimi 
+Varsayýlan 
+Ortalama Günlük okur 
+Ortalama Günlük yazar 
+Snap kenarlarý ekrana 
+Uyarý 
+Gönderme / Mesaj görüntüleme 
+Kapat 
+baþarýsýzlýk beklenen zaman 
+Zaman sýcaklýðý çok yüksek 
+Ne zaman yeni bir günlük giriþi eklenir 
+günlük durum gönder E-posta 
+De 
+Kritik deðer bozulma 
+Mevcut durumu 
+Durumu e-posta gönderme hatasý. 
+Durumu e-mail baþarýyla gönderildi. 
+&Güncelleme 
+Yeni sürüm bulun ve haftalýk güncelleme 
+Yeni sürüm varmý kontrol et
+Son kontrol tarihi: 
+yapýlan kontroller yok 
+Iptal 
+Yüklü sürüm: 
+En son sürüm: 
+Güncelleme dosyalarý 
+Geçerli dosya: 
+Tüm süreç: 
+Þu anda güncellenmiþ sürümü mevcut deðil. 
+Hata indirirken. að doðrulayýn ve yeniden deneyin. 
+Güncelleþtirme baþarýyla tamamlandý. 
+Durum: mevcut sürümü kontrol etme 
+Durum: indiriliyor 
+Yakýn 
+Sabit disk bulunamadý. 
+S.M.A.R.T. iþlevselliði kayboluyor. Windows \ System Windows \ System klasöründen Smartvsd.vxd dosyayý kopyalamak \ IOSUBSYS klasör ve bilgisayarýnýzý yeniden baþlatmanýz gerekiyor. Ayrýntýlar için> Kurulum - Yardým kontrol edin. 
+Sistem yönetici haklarýna sabit disk bilgilere eriþmek için gereklidir. 
+Log 
+Giriþ problemleri sayýsý: 
+Not: kayýtlý sürüm uyarý e-posta gönderebilir ve yeni bir sabit disk sorunu tespit edilir ve kaydedilir, bilgisayarý kapatýn. 
+Hiçbir sorun kaydedilir. 
+Sabit diskin durumu stabildir. 
+Uyarý: hard disk durumu geçtiðimiz günlerde düþer. 
+Tarih 
+Önceki deðer 
+Yeni Deðer 
+Uyarý: Geçtiðimiz günlerde bulunan birçok sorun. 
+Önceden çalýþan sabit disk yanýt vermiyor. Bu iþletim sistemi (daha fazla) sorunlarý önlemek için aygýtý durdurdu mümkündür. 
+Program durum: 
+etkinleþtirme bilgi okuma hatasý. 
+Baþarýyla Kayitli. 
+Kayýtlý deðil aktif. 
+Deðildir ve kayýtlý aktif deðil. 
+Kayýt ve Etkinleþtirme On-Line 
+Kayýt Ve E-Mail ile Etkinleþtirme 
+Aktivasyon dosyasý olarak kaydedilir 
+Lütfen kayýt adý ve kayýt (veya el ile bu yazýlýmýn klasörüne kopyalamanýz mümkündür) Yük Aktif KeyFile düðmesine tarafýndan yüklenmiþ olmasý gerekir kayýt dosyasýný geri göndereceðiz geliþtirici info@hdsentinel.com anahtarý ile bu dosyayý gönderin . 
+Onu daha hýzlý ve daha rahat olduðu için on-line aktivasyon yöntemi kullanýlmasý tavsiye edilir. 
+aktivasyonlar azami sayýsý bu kayýt tuþu uzandý. 
+Etkinleþtirme Hata 
+Hata etkinleþtirme sunucuyla iletiþim sýrasýnda. 
+Lisans hakkýnda geliþtirici irtibata geçiniz. 
+Uygulama zaten 5 farklý konfigürasyonlarda bu kayýt tuþu ile aktif. 
+Hata sunucudan veri okurken. 
+Aktivasyon mümkün deðildir. 
+Aktivasyonu, yapýlan destek için teþekkür ederiz. 
+Aktivasyon Baþarýlý 
+Aktivasyon E By-posta 
+USB cihaz SMART sorunlara neden olabilir, çünkü Windows 98 altýnda, bir USB aygýtý bu soruna neden olmasý mümkündür Ýkincil IDE kanalýndaki. 
+Disk yanýt vermiyor. 
+Disk uzun süre cevap vermiyor. O kesilebilir. 
+Her iki Görev Çubuðu ve System Tray göster uygulama 
+sistem analizi. Lütfen bekleyin. 
+Yardým 
+Aldýðýnýz kayýt adý (adýnýz veya nickname) ve kayýt anahtarýný girin. bilgisayarýnýzda aktif bir internet baðlantýsý varsa, seçmek on-line aktivasyon lütfen: Bu durumda kayýt ve aktivasyonu otomatik, baþka eylemler gereklidir. Aksi takdirde, e-posta etkinleþtirme yöntemi seçin lütfen ve yazara gösterilen dosya göndermek. Eðer yeni bir uygulama klasörü içine koyun lütfen aktive keyfile alýrsýnýz. 
+Olay 
+Türkçe dil desteði oFLee ekibinden : 
+Sadri Sadi Berber ve Behçet Berber 
+sadrisadi@gmail.com
+E-posta 
+TXT dosyalarý 
+Tüm dosyalar 
+aþýrý sýcaklýk ise Simge kýrmýzý olmalý 
+A&dvanced Seçenekleri 
+Algýlama frekansý: 
+1 saniye 
+5 saniye 
+10 saniye 
+30 saniye 
+1 dakika 
+2 dakika 
+5 dakika (varsayýlan) 
+10 dakika 
+30 dakika 
+1 saat 
+Sabit disk tepki vermiyorsa uyarýyý etkinleþtirin 
+Ortalama Sýcaklýk (bugün): 
+Mevcut 
+Günlük Ortalama 
+Günlük maksimum 
+Ses uyarý 
+Seçmek Ses Dosyasý 
+Ses dosyalarý 
+Çift týklayarak veya sað týklayýp daha fazla bilgi görüntülemek için. 
+Ayarlamak 
+Tamam 
+Iptal 
+Bu komutu yaparken hata oluþtu. 
+Bu özellik Windows 2000, XP veya daha yeni iþletim sistemleri gerektirir. 
+Zaman boþ disk alaný düþük 
+Set Free Disk Alaný Eþik 
+Tüm yüklü sabit diskler için ayný ayarý kullanýn 
+Ayardýr 
+Uyarý boþ alan az ise 
+Düþük disk alaný 
+Düþük 
+Windows'un baþlangýç üzerine sakatlar otomatik scandisk 
+Yeni ayarlarý uygulamak için bilgisayarýnýzý yeniden baþlatmanýz gerekmektedir. 
+bir atom saati ile senkronize bilgisayar saatini 
+Zaman uygulamasý baþlatýldýðýnda 
+Küçük bir durum penceresinde sabit disk (ler) in durumunu görmek için? \ n istiyor musunuz (Daha sonra, sað klik \ olmayan sistem tepsisi simgesi ve menüden "Configuration" seçeneðini seçerek bu ayarý deðiþtirmek mümkündür.) 
+Sýcaklýk bu sabit disk üzerinde desteklenmez. 
+Bu sabit disk üzerinde tespit edilemez. 
+&Yardým 
+Yardým kullanýlamaz. Uygulamanýn web sitesinden tam kurulum paketini indirin. 
+Bu fonksiyon seçilen sabit disk üzerinde mevcut deðildir. 
+Windows Explorer'da deðiþtirme varsayýlan sabit disk simgeleri 
+SCSI Bilgi 
+Satýcý Bilgisi 
+Versiyon 
+Cihaz Türü 
+Disk 
+Kaldýrýlabilir 
+Baþarýsýzlýk Tahmin 
+Sabit Disk 
+Uzaktan Sürücü 
+Optik depolama 
+Iþaretli mantýksal sürücüler mevcut fiziksel sabit disk aittir. 
+Deðiþtirmek ekran modu 
+Birim etiketi 
+Seri numarasý 
+að diskleri Monitör alan 
+Yapýþkan Tuþlar 
+Komut 
+Izin sistemi kýsayol tuþlarý (herhangi bir uygulama tarafýndan kullanýlýyor olabilir) 
+Disk ve Kontrol 
+að diskleri deðiþtirme varsayýlan sistem simgesini 
+çýkarýlabilir diskler Monitör alan 
+çýkarýlabilir diskler için deðiþtirme varsayýlan sistem simgesini 
+(Örn: CDE) aþaðýdaki disklerin alan bilgiler incelemek etmeyin 
+(Örn: KL) aþaðýdaki disklerin varsayýlan sistem simgesini deðiþtirmeyin 
+Çift bir sürücüyü açmak için týklayýn. F5 Yenile. 
+sürücü yok disk 
+Posta Test 
+Bu mesajý teslim edilirse, e-posta yapýlandýrma doðrudur. 
+Test mail baþarýyla gönderildi. 
+Hata test posta gönderirken. E-posta yapýlandýrma kontrol edin. 
+Çalýþtýðý Zaman: 
+gün 
+saat 
+dakika 
+Diskin tahmini kalan ömrü : 
+Gün sayýsý 
+saniye 
+Port: 
+Gecikme scandisk (saniye) baþlamadan önce: 
+Saðlýk deðeri: 
+Zaman disk saðlýk düþüktür 
+Panik yedekleme 
+Saðlýk eþik: 
+Ekranda Ekran mesaj 
+Uzak bilgisayar (NET SEND) ile mesaj gönder: 
+Bu fonksiyonu PROFESYONEL sürümünün yüklü olmasý durumunda. \ NBy bu iþlevi kullanarak mevcut ise, önceden yapýlandýrýlmýþ yedekleme iþlemi (lar) bir sorun bulunduðunda. \ N \ nLütfen ziyaret homepage (www.hdsentinel.com) baþlatmak mümkündür Bu özellik hakkýnda daha fazla bilgi için. 
+Düþük saðlýk 
+Test Raporu Oluþtur 
+Hata raporu gönderme. \ NLütfen açýk Yapýlandýrma penceresinde, test raporu gönder seçeneðini raporu kaydetmek ve reports@hdsentinel.hu gönderin 
+Mesaj Ayarlarý 
+E-posta Gönder 
+göndermeden önce varsayýlan internet baðlantýsý Çevirmeli 
+gönderdikten sonra kapatýn baðlantý 
+Ayrýca metin dosyasý görüntüle Özel mesaj 
+ölçme, Lütfen bekleyin ... 
+Geçersiz kayýt ayrýntýlarý - bu iþlevi devre dýþý býrakýlmýþtýr. 
+Saðlýk Bilgileri 
+Hata kaydederken. Disk veya salt okunur olabilir. 
+Eþikleri / Kaset & Simge 
+tepsi simgesini Ekran sabit disk sýcaklýðý 
+Aþaðýda 
+\1 ve \2 arasýnda 
+Sýcaklýk: 
+Yukarýda 
+klasik (dijital) tepsisi simgesi sayýlarý kullanýn 
+Arka plan 
+Ön plan 
+Örneðin 
+tepsi simgesini Ekran sabit disk saðlýk iþareti 
+Baþvuru Bilgileri 
+Geçerli tarih ve saati 
+Sistem Bilgisi 
+Windows Sürümü 
+Ýþlemci Tipi ve Hýzý 
+BIOS üreticisi 
+Fiziksel Bellek Boyutu 
+Ekran Kartý 
+Ekran Çözünürlüðü 
+Yazýcý 
+Að Denetleyicisi 
+PCI Aygýt Bilgileri 
+Bilgisayar Bilgisi 
+Bilgisayar Adý 
+Kullanýcý Adý 
+IP Adresi 
+MAC Adresi 
+Fiziksel Disk Bilgi 
+Bayraklar 
+Kritik 
+Istatistiksel 
+Performans 
+Error-Rate 
+Etkinlik Sayýsý 
+Kendini koruma 
+Masaüstü 
+Sunucu 
+Mobil 
+Bilgisayar Türü 
+Genel Bilgi 
+HTML dosyalarý | *. html | Tüm dosyalar | *.* 
+Raporu Kaydet
+E-posta Raporu Gönder 
+Rapor türü: 
+Detaylý HTML raporu 
+Kýsa metin rapor 
+Test Raporu Gönder
+Sabit disk bilgilerini görüntülemek için 
+Hard Disk Model 
+Mantýksal Sürücü (ler) 
+Saðlýk 
+Durum / Sorun 
+Fiziksel Disk (ler) 
+Sabit diskin durumu bilinmiyor. 
+Sabit diskin durumu mükemmel. 
+Sabit diskin durumu mükemmel deðildir. 
+Baþarýsýzlýk bu sabit diskte bekleniyor. 
+Var \ disk yüzeyinde 1 kötü sektörler. Bu sektörlerin içeriði boþ alana taþýndý. 
+remapping ameliyat sayýsý dayanarak, disk saðlýk farklý adýmlar azaldý. 
+remapping ameliyat sayýsý dayanarak, kötü sektörleri sürekli alanlar oluþabilir. 
+Sürücü bulundu \ kendi kendini test 1 bozuk kesimleri sýrasýnda. 
+Sorunlar diskin dönüþ sýrasýnda meydana \1 kez. Bu diskin kendisi ya da büyük bir yük oluþturan elektrik (zayýf güç kaynaðý) neden olabilir. 
+Var \ disk yüzeyinde bulunan 1 zayýf sektörler. Onlar disk daha sonra kullanmak her zaman remapped olabilir. 
+Sorunlar disk iletiþim ve host \1 kez arasýnda meydana geldi. ani bir kaza durumunda veya In (yuvarlak kablolar önlemek yerine 80 telli standart kablolar kullanmak) farklý bir kýsa veri kablosu denemek için önerilir yeniden baþlatýn. 
+Düzenli olarak disk günlüðünü incelemek üzere tavsiye edilir. Tüm yeni sorunlar kaydedilir bulundu. 
+Sabit disk durumu PERFECT olduðunu. Sorunlu ya da zayýf sektörler bulunamadý ve hiç veya veri transfer hatalarý orada spin vardýr. 
+Uygulamak 
+Ofset 
+Offset: 
+Bu sýcaklýk kalibre etmek ve ayarlamak SMART üzerine ofset sýcaklýk önerilir sayfa. Bu þekilde daha doðru sýcaklýk deðeri gösterilir. 
+Saðlýk hesaplama yöntemi: 
+Analiz veri alaný (varsayýlan) 
+Analyse satýcýya özgü deðerleri (TAVSÝYE) 
+Eþiðine aþmak: 
+Öznitelik grafik 
+Ekran veri alaný 
+Ekran satýcý belirli deðerler 
+Deðil bekleniyor 
+Oldu 
+Detaylý metin rapor 
+Dosya 
+Görünüm 
+Rapor 
+Raporu TXT olarak kaydet
+Raporu HTML olarak kaydet
+Email ile TXT raporu gönder 
+Email ile HTML raporu gönder 
+Sürekli sabit disk durumunu izlemek için tavsiye edilir. 
+Analiz veri alaný (daha fazla, sunucular için önerilen katý) 
+Deðiþtirmek Ofset Öznitelik 
+Bu seçeneðin kullanýlmasý geliþmiþ kullanýcýlar için önerilir. Bu seçeneði kullanarak, görüntülenen durum gerçek durumu yansýtmayabilir. Eðer bu seçeneði deðiþtirmek istediðinizden emin misiniz? 
+gösterme bu tekrar 
+Bu seçeneðin kullanýlmasý geliþmiþ kullanýcýlar için önerilir. Bu seçeneði kullanarak daha da durum deðiþiklikleri ile ilgili bazý uyarýlar kaçýrmak yanlýþ bir durum görüntülemek mümkün ve de mümkündür. Eðer bu seçeneði deðiþtirmek istediðinizden emin misiniz? 
+Sesi iptal et
+Sesi aç 
+akustik seviye ayarý bir hata oluþtu. \ nArka sabit disk denetleyicisi veya sürücü bu iþlevi desteklemez. 
+Gerçek zamanlý performans izleme bu disk üzerinde desteklenmez. 
+Not: kayýtsýz versiyonu bu seçeneklerden saklanmaz deðiþiklik yok. uygulama yeniden baþlatýldýðýnda ayarlarý deðerleri varsayýlan sýfýrlanýr. 
+Öznitelik etkinleþtirin 
+Tekrar ses uyarý 
+PC hoparlör kullanýn 
+Test gönder 
+Mesajýnýz baþarýyla hedef bilgisayara gönderilir. 
+Hata çalýþma sýrasýnda oluþtu. að baðlantýsý ve her iki bilgisayarda Messenger hizmetinin çalýþma durumunu kontrol edin. 
+Sorunlarý Ses Uyarý Neden 
+Yeniden uyarýlarýný etkinleþtirmek 
+ATA Kontrol Byte 
+Geçerli 
+Geçersiz 
+ATA Checksum Deðer 
+Görüntülenen bilgiler doðru olmayabilir. 
+Test Ses Uyarýsý 
+masaüstüne bu proje için bir kýsayol olun 
+Kýsayol Oluþturma 
+Bu proje için bir kýsayol baþarýyla masaüstünde yaratýldý. 
+Hata bu proje için kýsayol oluþtururken. 
+Kayýt bilgileri süresi dolmuþ. lisans uzatmak için yazar irtibata geçiniz. 
+durum pencere altýnda pencerede fare týklamasý gönder 
+Masaüstünüzde Ekran bilgileri 
+Lisans geçerli: 
+Sonsuza dek 
+Süresi doldu 
+Hiçbiri 
+Tamamen þeffaf arka plan 
+U&zak aðlarla baðlantý kur 
+Hizmet 
+Ana bilgi penceresini açmak için parola gerekli 
+Yapýlandýrma penceresini açmak veya programý kapatmak için parola gerekli 
+Çýkýþ yap sonra 
+dakika 
+Þifre: 
+Günlük & Out Now 
+Servis Olarak Kullanýn
+Uygulama Olarak Kullanýn
+Uzaktan Kumanda 
+Hard Disk Sentinel sunucuya uzaktan baðlantý etkinleþtirme 
+Sunucu adý veya IP adresi: 
+TCP port (default = 61.210): 
+Koruma 
+Hata Hard Disk Sentinel servis kurarken. 
+Hata Hard Disk Sentinel hizmet baþlarken. 
+Hata Hard Disk Sentinel hizmet durup. 
+Hard Disk Sentinel artýk geçerli yapýlandýrma kaydeder kapalý olacaktýr. Yeniden bir hizmet olarak baþlanacaktýr. 
+Hard Disk Sentinel hizmeti artýk geçerli yapýlandýrma kaydeder durdurulur. Yeniden bir uygulama olarak baþlanacaktýr. 
+Gerekli Yetkili Eriþim 
+Geçersiz þifre girdiniz. Bu iþlevi kullanmak mümkün deðildir. 
+Hard Disk Sentinel servisi kapatmak için, "Dur hizmet" kýsayolunu kullanýn veya Yapýlandýrma penceresinden Entegrasyon panelde Uygulama moda geri dönün ve uygulamayý kapatýn lütfen. 
+Yok 
+Yüksek 
+Maksimum 
+Güncelleme servisi olarak Hard Disk Sentinel çalýþtýrýrken kullanýlamaz. yeni bir sürüm için baþvuru güncellemeden önce Entegrasyon panelde Uygulama moda geri dönün lütfen. 
+Servis modu 
+Güvenli mod (devre dýþý donaným tanýma) 
+Hard Disk Sentinel hizmet yüklenmez. Seçeneðini Entegrasyon panel Yapýlandýrma penceresini açýn ve kurun Hard Disk Sentinel servis edin. 
+Hard Disk Sentinel hizmet zaten çalýþýyor. 
+Hard Disk Sentinel hizmeti çalýþmýyor. 
+Ortalama Transfer Hýzý 
+Ortalama Disk Faaliyet 
+Testi Tekrarla
+Bilgi henüz mevcut deðil 
+Hard Disk Sentinel hizmetini durdurdu. \ NDevam hizmetini devre dýþý býrakma ve Uygulama modunda yazýlým kullanmak ister misiniz? 
+Microsoft Vista ve daha yeni iþletim sistemleri hizmetleri masaüstü ile etkileþimine izin vermez \ n \ nHard Disk Sentinel görünmeden çalýþýr. Pencereleri ve simgeleri olmayacak \ ndisplayed ve konfigürasyon eriþimi mümkün olmayacak \ n \ nBir dur. hizmet ve Uygulama modunda yazýlýmý kullanmak \ nLütfen Hard Disk Sentinel grubundan "Dur hizmet" kýsayol seçin. \ n \ Eðer devam etmek istiyor emin misin? 
+Bu deðeri nasýl hesaplandýðýný öðrenin 
+Uygun haklarý ile çalýþtýrmak için bu uygulamayý etkinleþtirin. 
+Disk simge seti: 
+XP 
+Manzara 
+Baþlatmak için týklayýn 
+Sabit Disk Testi 
+Test çalýþmasý: 
+Durum: 
+Tahmini kalan süre: 
+Hata test baþlangýç. Hata kodu: 
+Çalýþan, No Sorunlarý Bulundu 
+Cevap: 
+Geçen süre: 
+Bu kayýt tuþu STANDART sürümünü kaydettirmek için sadece kullanýlabilir. \ NLütfen indirin ve kurun www.hdsentinel.com gelen STANDART sürüm \ bu kayýt tuþu kullanmayýn. 
+Bu kayýt tuþu PROFESYONEL sürümünü kaydettirmek için sadece kullanýlabilir. \ NLütfen indirin ve kurun www.hdsentinel.com gelen PROFESYONEL sürüm \ bu kayýt tuþu kullanmayýn. 
+eþik için kullanýn megabayt birim 
+Onaylayýn: 
+Iki þifre ayný deðil. \ NLütfen onaylamak için iki kez ayný þifreyi girin. 
+Etkinleþtirmek WebStatus 
+Baðlantý kurmak için parola sor
+HTTP baðlantý portu 
+Port Adres (> 1023) 
+Nitelik yorum 
+Ondalýk veri alanlarý 
+Sürücü incelemek ve reallocate veri sektör (ler) \1 kez denedim. Ýncelenen veri alaný mükemmel. 
+hemen deðiþtirin sabit disk. 
+Ayrýntýlý bir rapor bileþenleri: 
+Yedekleme / Geri Yükleme Þu Yapýlandýrma 
+Yedekleme Yapýlandýrma 
+Yapýlandýrmasýný geri 
+Optik Sürücü 
+Oluþturmak ve XML dosya güncelleme 
+Sabit disk sýcaklýk sensörü yanlýþtýr. Ölçülen deðer: 
+sunucudan uzak baðlantýlarý kabul et 
+Uzaktan baðlantý portu 
+Devre dýþý tepsisi simgesi kabarcýk uyarýlar 
+USB ve SCSI sürücüler sakatlar algýlama 
+Göndermek 
+Yorum: 
+Yazýlým Firmasýna Gönder 
+Sunucuya baðlanýlýyor - www.hdsentinel.com 
+raporu gönderme 
+Raporu baþarýyla gönderildi. \ Desteðiniz için teþekkür nThank. 
+Yazýlým firmasý için Test Raporu Gönder
+Rapor Oluþturma 
+Ben raporu deðerlendirdikten sonra yanýt almak istiyorum 
+Bu bir hata raporu 
+Açýk Sentinel & Ana Pencere HD 
+Görünür 
+Sabit Disk Boyutu Birimi: 
+Bölüm boyutu Birimi: 
+CC (karbon kopya): 
+BCC (kör karbon kopyasý): 
+Güncelleme Test Raporu 
+(Tahmini) 
+zaman hesaplama, lütfen bekleyin ... Geçerli tahmin edilen deðeri doðru olmayabilir. 
+Uzak yol 
+Sarý sýcaklýk seviyesine ulaþtý. 
+Kýrmýzý sýcaklýk seviyesine ulaþtý. 
+Sarý saðlýk seviyesine ulaþtý. 
+Kýrmýzý saðlýk seviyesine ulaþtý. 
+Sýnýrý: 
+Sýcaklýðý: 
+Nitelik deðiþtirdi 
+Açýk oturum 
+Arka plan 
+Etkinleþtirmek DynDNS Servisi 
+No-IP Hizmeti etkinleþtirin 
+Özel Dynamic DNS Service etkinleþtirin 
+Yapýlandýrmak 
+Kullanýcý adý 
+Þifre 
+Hostname (tam) 
+Tam URL (þimdiki IP deðiþmiþ% ip%) güncellemek için 
+Son Sunucu Yanýtý: 
+Gadget 
+Aygýtý etkinleþtir 
+Ekran Baþlýk 
+Ekran Disk Faaliyet 
+Eðer IP adresi güncelleyerek þimdi yapýlandýrmasýný test etmek ister misiniz? 
+Bulunan sorunlarýn sayýsý aþaðýdaki niteliði de yüksektir: 
+Okuyun: 
+Yazýn: 
+Tüm Diskleri 
+Faaliyet Simge 
+Tek bir tepsi simgesini Ekran toplam disk etkinliði 
+(YÜKSEK kelime) 
+(MID kelime) 
+(DÜÞÜK kelime) 
+Güç Eyalet: 
+Aktif 
+Uyku 
+(Bugüne \1) 
+Sistem Uptime 
+Facebook'a Sistemi yana 
+Disk Controller 
+Disk yeri 
+Bizim & web sitesini ziyaret ediniz 
+Ýletiþim 
+Þimdi Satýn Al 
+Kayýt Anahtarý girin 
+Listesini içeren \1 öðe. tüm öðeleri görüntülemek için yazýlým kayýt olun. 
+CPU Kullanýmý 
+CPU 
+Sanal Bellek 
+Kullanýlýr: 
+Sabit disk performansý azaltýr PIO modunda çalýþýyor. Onu kontrol etmek ve veri kablosu deðiþtirin veya yapýlandýrmasýný deðiþtirmek tavsiye edilir. 
+Sabit disk performansý azaltýr UDMA mod 2 (33 MB / sn) faaliyet göstermektedir. Bu kontrolör daha yüksek veri transfer hýzý (ler) destekliyorsa, bir 80 iletkenli IDE kablosu kullanýlmasý tavsiye edilir. 
+Silicon Image (SII) kontrolörleri baðlý tüm diskler hakkýnda tam bilgi vermeyebilir. 
+Geçerli disk denetleyicisi sürücüsü tüm ayrýntýlarý okumak için diskin kendisi tam eriþim saðlamaz. güncelleþtirilmiþ bir sürücü olup olmadýðýný kontrol edin. 
+Bu USB depolama aygýtý kendisi hakkýnda daha fazla bilgi vermez. > Yüzey test fonksiyonu - Her neyse, Disk ile sorunlar için test edilebilir. 
+Bu RAID array disk detaylarýna eriþim saðlamaz. > Yüzey test fonksiyonu - Her neyse, Disk ile sorunlar için test edilebilir. 
+bunu tespit etmek ve daha fazla bilgi görüntülemek mümkün olup olmadýðýný bize belirlemek için "geliþtirici gönderin test raporu" seçeneði "Rapor" menüsünü kullanýn. 
+Ayrýntýlar için www.hdsentinel.com bölümleri - "Donaným" ve "> SSS Destek" ziyaret edin. 
+Etkinleþtirmek 
+Maksimum Sýcaklýk (bugüne kadar ölçülen): 
+Minimum sýcaklýk (bugüne kadar ölçülen): 
+2 saat 
+4 saat 
+6 saat 
+8 saat 
+12 saat 
+Ayrýlmýþ 1 
+Ayrýlmýþ 2 
+Sarý sýcaklýk sýnýrýna ulaþýldý. sürücü sýcaklýðý hala artarsa, o zaman bir sabit disk soðutma cihazý (örneðin bir fan veya pasif soðutucu) mümkünse kullanýlmasý tavsiye edilir. 
+Select "Eþik / Tray Icon" sayfa sarý ve kýrmýzý düzeyleri için saðlýk ve sýcaklýk eþikleri yapýlandýrmak için. 
+Kritik 
+Hemen veri kaybýný önlemek için yedek önerilir. 
+Kompakt düðmeleri 
+Normal düðmeler 
+Büyük düðmeler 
+Perf.: 
+Arabirimi: 
+Mesajý 
+Rasgele Test
+Test sürüþü performans, gürültü ve sýcaklýk aramak 
+Zaman
+En az 
+Maksimum 
+Ortalama 
+Test 
+Geçen 
+Kalan 
+Ýþlemler
+Hatalarý 
+Testi  Baþlat 
+Testi  Durdur 
+Hýzlý test 
+Normal test 
+Derin test 
+Uzun süre yoðun test 
+Özel süresi 
+Zaman (: MM: SS HH) testi tamamlamak için: 
+Test OKUYUN 
+YAZIN Test 
+Bu iþlev kayýtsýz sürümünde sadece bir kez kullanýlabilir. 
+Eðer kayýt bilgilerini þimdi yazýlým web sitesi açmak istiyor musunuz? 
+Bu iþlemi durdurmak istediðinizden emin misiniz? 
+Bu iþlev, bu kontrolör ve sürücü yapýlandýrmasý nedeniyle seçilen sürücüde mevcut deðildir. 
+Hard Disk Sentinel Serbest Sürüm 
+Hard Disk Sentinel yüklemek için teþekkür ederiz. Bu deneme süresinin gün \1'dir. \ N \ nEðer, kýsýtlamalar ve uyarýlar olmadan yazýlýmý kullanmaya devam etmek istiyorum \ nLütfen bir lisans satýn alarak kayýtlý bir sürüme geçiþ düþünün. \ Kayýt n \ nBenefits: \ n \ n-hýzlý, güvenli ve esnek ödeme seçenekleri \ tüm iþlevlerine n-anýnda eriþim ve tüm özellikleri \ n-ücretsiz teknik destek kilidini ve yardým \ n-ömür boyu lisans, herhangi bir abonelik ya da yenileme maliyetleri \ içeriðini kayýtlý kullanýcýlar \ n mevcut n eriþim \ nArka satýn alma gerekli deðildir ancak yazýlýmýn geliþtirilmesi yardýmcý olur. \ n \ n Eðer þu an bir lisans satýn alabilirsiniz kayýt sayfasý açmak istiyorum? 
+S.M.A.R.T. ofset this deðerini hesaplamak için kullanýlan bir özellik için yapýlandýrýlmýþ 
+&Kaset Simge Yazý 
+(Tüm Örneðin 1,2 ya da * için, virgül ile sayýlar) diskleri aþaðý spin izin vermeyin 
+Doðrulamak Online 
+S.M.A.R.T. karþýlaþtýr nitelikleri iyi ya da kötü ortalamanýn ise diðerleri (ayný model) ile bu cihazýn deðerleri görmek için 
+Yüzey Testi 
+farklý yöntem ve testlerle analiz disk yüzeyine 
+Disk yüzeyine haritasý 
+Sýcaklýk ve transfer hýzý 
+Blok 
+Hasarlý 
+Ilerleme 
+Geçiþ 
+Zaman 
+Est. 
+sektörler 
+Test durdu 
+Yapamaz özel kullanýmý için disk kilidi için. \ Eðer (NOT önerilir) yine de test etmek istiyorum emin misin? 
+Testi tamamlandý 
+Pozisyon 
+Ardýþýk test 
+sonuna kadar baþýndan Test bloklarý 
+Rastgele test 
+rasgele sýrayla test bloklarý 
+Kelebek test 
+Alternatif: test baþýndan itibaren bir blok ve bir uçtan 
+Ardýþýk geriye test 
+baþýna sonuna kadar test bloklarý 
+Sektör 
+Doðrulamak hata 
+Ve disk bilgilerini kaydedin 
+Ve Yük disk bilgiler 
+Baþlatýlýyor ... 
+Disk Ýçeriði Müfettiþ 
+&Önceki 
+&Sonraki 
+Ve git ... 
+dikkatle test baþlamadan önce test edilecek sürücü (iþletim sistemi için eriþilebilir) ve test yöntemi. \ ayrýntýlý bilgi nRead seçiniz. \ nDaha Profili yüzey ayrýntýlar için, \1 kullanýmý veya önceki test sonuçlarýný gözden geçirin. 
+Okumak test 
+tüm sektörlerde eriþilebilir ve okunabilir doðrulamak için disk yüzeyine okur. \ n \ nArka testi, saklandýðý veri etkilemez güvenlidir. \ n \ nDisk sorunlarý gizli kalabilir ve disk sorunlarý NOT (ScanDisk olduðu gibi) sabit görüldü. 
+YAZIN test 
+yapýlandýrýlabilir deseni ile disk yüzeyi üzerine yazar. herhangi bir zayýf sektörlerin Kuvvetleri analiz ve herhangi bir gizli sorunlarý doðrular ve kötü sektörlerin yeniden belirlenmesi onlarý düzeltir (bu sürücü yenilenme olduðunu). \ n \ yedek alan herhangi bir sorunlu yerine kullanýlacak test sonrasýnda olarak disk daha iyi kullanmak nEnables sektörler. 
+YAZIN + test okumak 
+ve yapýlandýrýlabilir deseni ile disk yüzeyine üzerine yazar o zaman eriþilebilir ve tutarlý olup olmadýðýný doðrulamak için, sektörün içindekiler geri okur. herhangi bir zayýf sektörlerin Kuvvetleri analiz ve herhangi bir gizli sorunlarý doðrular ve kötü sektörlerin yeniden belirlenmesi onlarý düzeltir (bu sürücü yenilenme olduðunu). \ n \ yedek alan herhangi bir sorunlu yerine kullanýlacak test sonrasýnda olarak disk daha iyi kullanmak nEnables sektörler. 
+Okuma + YAZIN + okuma testi (yenileme veri alaný) 
+Okur ve içeriðini geri yazýyor, her blok veri depolanan nihayet bilgi okur ve özgün içeriði ile karþýlaþtýrýn. Kapsamlý test olarak, ek bir yazma döngüsü hata düzeltme (sürücü rejenerasyon) ve verimliliði artýrmak için içeriðini geri yazmadan önce kullanýlýr. \ n \ nArka operasyon genellikle depolanan bilginin ancak veri kaybý oluþabilir güvenli sistem ise ve / veya silmek tamamlamak gerek kalmadan / kablo problemleri ve diðer faktörler. \ n \ nArka test depolama aygýtý veri alanlarýný yenilemek için kullanýlabilir, elektrik kesintisi, overclock, bellek üzerine / güç kaynaðý saðlam deðil ama hala Bu testi önce yedekleme önemli veri önerilir. 
+Yeniden baþlatmak disk yüzeyine 
+sektörler (boþ) durumunu varsayýlan ve eriþilebilir ve tutarlý olup olmadýðýný doðrulamak için, geri sektör içeriðini okur geri özel baþlatma deseni ile disk yüzeyi üzerine yazar. herhangi bir zayýf sektörlerin Kuvvetleri analiz ve herhangi bir gizli sorunlarý doðrular ve kötü sektörlerin yeniden belirlenmesi onlarý düzeltir (bu sürücü yenilenme olduðunu). \ n \ yedek alan herhangi bir sorunlu yerine kullanýlacak test sonrasýnda olarak disk daha iyi kullanmak nEnables sektörler. \ nVery ve zaman alan yoðun testi, düzeyi (döngüleri üzerine sayýsý) daha yüksek deðere ayarlanýr özellikle. \ Bu testin n \ nArka basit sürüm genellikle (yanlýþ) diðer araçlar tarafýndan düþük seviyeli format olarak adlandýrýlýr . 
+Sektör Sipariþ 
+Tahribatsýz - verileri güvenli 
+Test sýrasýnda Lock sürücü (unmount cilt) 
+Tekrar test 
+kez 
+belirli veri bloklarý için Limit test 
+Ilk bloðu: 
+Son bloðu: 
+YIKICI - tüm veriler silinecektir 
+Boþ veri (sýfýr) 
+Rastgele veri 
+Sektör numarasý 
+Kapsamlý okuma-yazma-yazma ek çalýþma ile test okumak 
+Yüzey reinitialization seviyesi 
+Çoðu durumda tahribatsýz (notlara bakýnýz ve Yardým) 
+Bu test kalýcý olarak seçilen sürücüdeki TÜM BÝLGÝLER yok edecektir. \ NArka fonksiyonu geri alýnamaz. \ N \ Eðer bu testi yapmak ve TÜM BÝLGÝLER sürücüsünde depolanan kaybetmek istiyorum emin misin? 
+Bu test seçilen sürücüdeki WRITE iþlemi gerçekleþtirir. \ NArka test kendini yýkýcý ama veri kaybý oluþabilir deðildir. \ N \ Eðer bu testi gerçekleþtirmek istediðiniz emin misin? 
+Test Onay 
+sektör içeriðini incelemek için yüzey harita üzerine týklatýn. \ baðlam menüsünü açmak için n \ nRight týklatýn. 
+tüm bloklarý için test ölçüleri transfer süresi yüzey alanlarý yavaþ hangi açýklamaya. blok daha yavaþ olduðu için, iliþkili renk koyu. 
+Geliþtirici herhangi bir disk üzerinde depolanan veriler üzerinde herhangi bir garanti sunuyor. 
+pass Mevcut 
+Tüm geçer 
+sistem sürücüsü aþaðýdaki klasör (ler) herhangi birini içeren üzerinde test yazmak yerine Can't 
+Yüklenen bilgiler farklý bir sürücü. \ NHowever yüzey harita üzerinde fare týklamasý üzerine aittir, geçerli sürücü sektörlerinde görüntülenir. 
+Bu noktada, disk garanti deðiþtirme saðlýk daha damla yalnýzca, henüz mümkün deðildir. 
+aktif disklerin nOtherwise sadece bilgi güncelleme olacak tüm uyku sabit diskler de? \ kadar seni uyandýrmak istiyor musunuz. 
+Disk Bilgisini Güncelle
+Test türü: 
+Veri etkisi: 
+Desen yaz 
+Reset maksimum ve minimum sýcaklýk deðerleri 
+Maksimum Sýcaklýk (tüm ömrü boyunca): 
+Deðerleri 
+SSL 
+SSD Kontrolörü 
+solid state disk durumu PERFECT olduðunu. Sorunlu ya da zayýf sektörler bulunmamýþtýr. 
+Saðlýk (ler) SSD belirli niteliðiyle belirlenir: 
+Disk Özellikler Yönet 
+diske komut gönderirken bir hata oluþtu. \ nArka disk denetleyicisi veya sürücü bu iþlevi desteklemez. \ n \ nArka komut ya da bir sürücü güncellemeden sonra tamamlanabilir \ bir iþletim sistemi, farklý disk denetleyicisi kullanarak nwhen \ ne de desteklenen bir USB kasa / yerleþtirme istasyonu. 
+Etkinleþtirmek ve ayarlayýn 
+Devre dýþý 
+Ön start gecikme (saniye): 
+Özel Sýcaklýk Eþikleri 
+Sarý sýcaklýk limiti: 
+Kýrmýzý sýcaklýk limiti: 
+Seçilen disk için devre dýþý özel eþikleri 
+Set özel sýcaklýk eþikleri 
+Deðiþtirmek özel sýcaklýk eþikleri 
+Özel 
+Küresel 
+Tek disk Hard Disk Sentinel bu ücretsiz sürümü yapýlandýrýlan özel sýcaklýk eþik olabilir. 
+S.M.A.R.T. sürücü mevcut Win9x/ME sistem eksik. \ nDevam otomatik konfigürasyon güncellemek ve þimdi bilgisayarýnýzý yeniden baþlatýn istiyorsun? 
+Yük Aktif KeyFile 
+NTFS Point (ler) Daðý 
+Mount Noktasý

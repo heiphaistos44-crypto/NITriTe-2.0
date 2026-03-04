@@ -1,0 +1,346 @@
+Hard Disk Sentinel Ya Está Corriendo.
+Error
+Temperatura del Disco Duro
+Falla Predicha
+OK
+Respaldado
+No respaldado
+Si
+Discos Duros
+Selecciona el(los) Disco(s) Duro(s) que quieres ver en la ventana de estatus. Doble clic para seleccionar los iconos de la bandeja del sistema. Clic derecho para mostrar menú local.
+No.
+Nombre (Tamaño)
+Temperatura
+Icono de Bandeja
+Preferencias
+Mostrar ventana al inicio
+Cargar con Windows
+Transparencia:
+Lenguaje:
+&Cerrar
+Hard Disk Sentinel
+Seleccionar éste disco para mostrar su temperatura en la bandeja del sistema
+&Mostrar Ventana de Estatus
+&Esconder Ventana de Estatus
+&Configuración
+S&alir
+Por lo menos un disco duro debe ser seleccionado.
+Ventana de Estatus
+Opción de Color:
+Fondo
+Seleccionar
+Error al abrir archivo de imagen.
+Archivos de Imagen Respaldados|*.jpg;*.bmp|Todos los archivos|*.*
+Información
+S.M.A.R.T.
+Rendimiento del Disco
+Particiones
+Información del Disco
+Información de tasa de Transferencia
+Lectura de Datos Totales
+Escritura de Datos Totales
+Tasa de Transferencia Actual
+KB/s
+Tasa de Lectura Actual
+Tasa de Escritura Actual
+Uso del Disco Actual
+Uso del Disco %
+Tasa de Transferencia (MB/s)
+Sumario del Disco Duro
+Número del Disco Duro
+Modelo de Identificación del Disco Duro
+Revisión del Disco Duro
+Número de Serie del Disco Duro
+Medida Total del Disco Duro
+Información ATA
+Cilindros del Disco Duro
+Cabezas del Disco Duro
+Sectores del Disco Duro
+Sectores Totales
+Revisión ATA
+Bytes Por Sector
+Bytes Por Vía Lógica
+Medida del Buffer
+Sectores Múltiples
+Bytes de Corrección de Errores
+Capacidad Sin Formatear
+Modo PIO Máximo
+Modo PIO Activo
+Modo UDMA Máximo
+Modo UDMA Activo
+Propiedades EIDE
+Respaldado
+No Respaldado
+Atributo
+Límite
+Valor
+Peor
+Datos
+Estatus
+Información de Partición
+Disco Lógico
+Espacio Total
+Espacio Libre
+Tipo de Partición
+bytes
+Espacio Usado
+Disco:
+Tasa de Transferencia Máxima
+Tasa de Transferencia Máxima Estimada
+Velocidad de Escritura de DVD
+Necesaria mayor utilización del disco para la medición.
+OK (Siempre pasando)
+Falla (Siempre fallando)
+Aviso: Uso límite excedido
+Pre-Falla: Pérdida de datos predicha
+Copiar página entera al guarda papeles
+&Historia de Temperatura
+Desde la instalación
+Acerca
+Registrar
+Nombre de Registro:
+Clave de Registro:
+Clave de registro inválida, el registro falló.
+Registro exitoso. Gracias por tu apoyo.
+Mostrar ventana de inicio
+Disponible solamente después de registrar.
+Versión sin registrar
+Registrado:
+Datos Generales
+Temperatura actual:
+Temperatura máxima:
+Estatus de temperatura bueno.
+La temperatura actual es muy alta. Es recomendable usar un dispositivo de enfriamiento para Disco Duro (por ejemplo un abanico o un disipador de calor pasivo) si es posible.
+La temperatura actual es buena pero previamente estaba muy alta. Es recomendable usar un dispositivo de enfriamiento para Disco Duro (por ejemplo un abanico o un disipador de calor pasivo) si es posible. 
+Funcionamiento:
+Estado:
+Excelente
+Bueno
+Justo
+Aceptable
+Pobre
+Ninguna acción necesaria.
+Es recomendable respaldar seguido para prevenir la pérdida de datos.
+&Propiedades
+Disco Duro &Datos Generales
+&Disco Duro Anterior
+&Disco Duro Siguiente
+Alertas
+Mandar email de alerta si es predicha una falla del disco duro
+Mandar email de alerta si la temperatura del disco duro es sobrepasada
+Configuración de email
+Cuenta de email:
+Nombre del Remitente:
+Email del Remitente:
+Recipiente de email:
+Servidor SMTP:
+Opciones de Autentificación (Deje esos espacios en blanco si la autentificación no es requerida)
+Nombre de Usuario:
+Contraseña:
+Predeterminado
+El siguiente espacio debe ser especificado en orden para mandar el email. 
+¿Desea agregar esta información ahora?
+Error al mandar email de alerta.
+Email de alerta enviado.
+Sobrecalentamiento
+Ajuste del límite de Temperatura:
+Unidad de Temperatura:
+Mandar Reporte
+Fuente:
+Guardar
+Mostrar solamente la más alta temperatura en la bandeja
+Unidad de datos transferida:
+Configuración de Manejo de Acústica
+Deshabilitado
+Habilitado
+Nivel acústico actual
+Nivel acústico recomendado
+Desconocido
+Funcionamiento Máximo y volumen
+Funcionamiento Mínimo y volumen
+Funcionamiento Balanceado y volumen
+Manejo Acústico
+Predeterminado
+Lecturas promedio por día
+Escrituras promedio por día
+Juntarla a los bordes de la pantalla
+Advertencia
+Mandar email
+Apagar
+Cuando se espere una falla
+Cuando la temperatura sea muy alta
+Cuando una nueva entrada de registro sea añadida
+Mandar diariamente emails de estatus
+A la(s):
+Degradación de valor crítica
+Estatus actual
+Email de estatus mandando error.
+Email de estatus mandado exitosamente.
+Actualizar
+Buscar nueva versión y actualizar semanalmente
+Buscar nueva versión y actualizar ahora
+Fecha del último chequeo:
+Ningún chequeo hecho
+Cancelar
+Versión instalada:
+La más reciente versión:
+Actualizando archivos
+Archivo actual:
+Proceso total:
+Actualmente no hay ninguna versión actualizada disponible.
+Error mientras se descargaba. Por favor verifique su red local y trate de nuevo.
+Actualización exitosamente completada.
+Estatus: Revisando versión disponible
+Estatus: Descargando
+Cerrar
+Disco Duro no encontrado.
+Es requerido instalar el paquete SMART. Por favor revise la Página Web de la aplicación para detalles.
+Necesarios derechos del Administrador del Sistema para controlar los discos duros.
+Registro
+Numero de problemas registrados:
+Nota: La versión registrada puede mandar emails de alerta y apagar la computadora cuando un nuevo problema del disco duro se haya encontrado y registrado.
+Ningún problema registrado.
+El estatus del disco duro es estable.
+Advertencia: el estatus del disco duro se ha degradado en los días anteriores.
+Fecha
+Valor Anterior
+Nuevo Valor
+Advertencia: múltiples problemas se encontraron en los días pasados.
+Un disco duro previamente trabajando no está respondiendo. Es posible que el sistema operativo haya detenido el dispositivo para prevenir (futuros) problemas.
+Estatus del programa:
+Error al leer la información de la activación.
+Exitosamente registrado y activado
+Registrado pero no activado.
+No Registrado ni Activado.
+Registro y Activación en Línea
+Registro y Activación por Email
+Archivo de activación ha sido guardado como
+Por favor mande este archivo con su nombre y clave de registro a info@hdsentinel.hu  El auto le enviará su archivo de registro el cual deberá ser copiado a la carpeta de ésta aplicación.
+Es recomendable usar el método de activación en línea porque es más rápido y confortable.
+Número máximo de activaciones alcanzadas para esta clave de registro.
+Error de Activación
+Error mientras se comunicaba con el servidor de activación.
+Por favor contacte al autor para su licencia.
+La aplicación ya ha sido activada con ésta clave de registro en 5 diferentes configuraciones.
+Error mientras se leían datos del servidor.
+La Activación no es posible.
+Activación hecha, gracias por su apoyo.
+Activación Exitosa
+Activación por Email
+Bajo Windows 98, es posible que un dispositivo de USB esté causando este problema porque el dispositivo de USB puede causar problemas con S.M.A.R.T. en el canal secundario de IDE.
+El disco no está respondiendo.
+El disco no está respondiendo por un largo tiempo. Puede estar desconectado.
+Mostrar aplicación en la barra de tareas también
+Analizando Sistema. Por favor espere.
+Ayuda
+Por favor introduzca su nombre (puede ser cualquier cosa) y clave de registro que recibió del autor. Si su computadora tiene una conexión de Internet activa, por favor seleccione activación en línea: de ésta manera el registro y activación es automático, usted no necesitará hacer nada. De otra manera, por favor seleccione el método de activación por email y mande el archivo mostrado al autor. Usted recibirá su archivo de clave activada, por favor póngalo dentro de la carpeta de la aplicación.
+Evento
+Interfase traducida por:
+William Wiegand
+william_wiegand@hotmail.com
+Email
+Archivos TXT
+Todos los Archivos
+El ícono deberá ser rojo si la temperatura se excede
+Opciones Avanzadas
+Detección de frecuencia:
+1 segundo
+5 segundos
+10 segundos
+30 segundos
+1 minuto
+2 minutos
+5 minutos (predeterminado)
+10 minutos
+30 minutos
+1 hora
+Habilitar advertencia si el disco duro no está respondiendo
+Temperatura promedio:
+Actual
+Promedio Diario
+Promedio Máximo
+Sonido alerta
+Seleccione archivo de sonido
+Archivos de sonido
+Doble clic o clic derecho para mostrar más información.
+Ajustar
+OK
+Cancelar
+Error ocurrido mientras se realizaba este comando.
+Esta función requiere Windows 2000, XP o los sistemas operativos más nuevos.
+Cuando el espacio libre del disco esté bajo
+Ajustar límite del espacio libre del disco
+Usar el mismo ajuste para todos los discos duros instalados
+Ajuste Global
+Advertencia si el espacio libre es menor que
+Espacio del Disco Bajo
+Bajo
+Deshabilitar escaneo automático del disco hasta el inicio de Windows
+Es requerido reiniciar la computadora para aplicar los nuevos ajustes.
+Sincronizar el reloj de la computadora con un reloj atómico 
+Cuando la aplicación es iniciada
+Quiere ver el estatus del(los) disco duro(s) en una pequeña ventana de estatus?\n(Después es posible cambiar éste ajuste con un clic derecho\nen el ícono de la bandeja del sistema y seleccionando "Configuración" desde el menú.)
+La temperatura no es respaldada en este disco duro.
+No puede ser determinada en este disco duro.
+Ayuda
+Ayuda no disponible. Por favor descargue el paquete de instalación completo de la Página Web de la aplicación.
+Esta función no está disponible en el disco duro seleccionado.
+Modificar iconos de disco duro predeterminados
+Información SCSI
+Información del vendedor
+Versión
+Tipo de Dispositivo
+Disco
+Removible
+Predicción de Falla
+Disco Arreglado
+Disco Remoto
+Almacén Óptico
+Los discos lógicos marcados pertenecen al actual disco duro físico.
+Cambiar modo de visualización
+Etiqueta de Volumen
+Número de Serie
+Espacio del monitor en los discos de la red local
+Teclas de Atajo
+Comando
+Habilitar teclas de atajo del sistema (puede ser usada por cualquier aplicación)
+Control del Disco
+Cambiar ícono predeterminado del sistema para discos de la red local
+Espacio de monitor en discos removibles
+Cambiar ícono predeterminado del sistema para discos removibles
+No examine la información del espacio de los siguientes discos: (Ej. CDE)
+No cambie el ícono predeterminado del sistema de los siguientes discos: (Ej. KL)
+Doble clic para abrir un disco. F5 para Refrescar.
+No disco en el disco duro
+Prueba de Correo
+Si el mensaje es entregado, la configuración del email es correcta.
+Prueba de correo exitosamente enviada.
+Error mientras se mandaba prueba de correo. Por favor verifique la configuración del email.
+Tiempo de encendido:
+días
+horas
+minutos
+Tiempo de vida restante estimado:
+más de
+segundos
+Puerto:
+Retraso antes de iniciar el escaneo del disco (segundos):
+Valor de Condición:
+Cuando la condición del disco es baja
+Respaldo de pánico
+Límite de condición:
+Mostrar mensaje en la pantalla
+Mandar mensaje a computadora remota (ENVIO POR NET):
+Esta función esta disponible solo si la versión PROFESSIONAL version está instalada.\nUsando esta función, es posible empezar operación(es) pre-configurada(s) de respaldo cuando un problema es encontrado.\n\nPor favor visite la página (www.hdsentinel.com) para leer más acerca de ésta función.
+Baja condición
+Crear Reporte
+Error al mandar el reporte. No es posible entregar el reporte\nusando cliente de email MAPI o al usar las configuraciones de email.\nPor favor guarde el reporte y mándelo a reports@hdsentinel.hu
+Configuraciones de Mensajes
+Mandar Email
+Marcar la conexión de internet predeterminada antes de mandar
+Cerrar conexión antes de mandar
+Mostrar mensaje creado de archivo de texto también
+Por favor espere, midiendo ...
+Detalles de registro inválidos - ésta función está deshabilitada.
+Información de condición
+Error al guardar. El disco puede estar lleno o en solamente-leer.

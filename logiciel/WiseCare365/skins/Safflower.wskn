@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<title>404 Pages</title>
+<style>
+*{list-style-type:none;font-family:Tahoma;margin:0;padding:0;}
+img{ border:0}
+.ccc{ width:475px; height:235px; margin:0 auto; padding-top:30px; }
+.ccc .ccc_left{ width:295px; float:left;height:235px; font-size:16px}
+.ccc .ccc_left p{font-size:16px}
+.ccc .ccc_right{ width:177px; float:right;height:235px;}
+.lianjie{ width:475px; height:30px; line-height:30px; text-align:center; display:block; margin:0 auto}
+.lianjie a{ color:#3f6184;text-decoration:underline;}
+.sisi a{ color:#2a517a; font-weight:bold}
+.tuchu{ color:#900;font-weight:bold}
+.sss{{background-image:url(../images/buypagepce.png);background-repeat:no-repeat; background:#000;width:145px; height:100px}
+
+</style>
+</head>
+<body>
+
+</body>
+</html>
+<script type="text/javascript">
+  
+  window.location = "http://www.wisecleaner.com/404.html";
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17835040-1']);
+  _gaq.push(['_trackPageview']);
+  
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>

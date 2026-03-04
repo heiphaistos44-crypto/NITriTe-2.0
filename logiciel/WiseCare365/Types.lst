@@ -1,0 +1,301 @@
+[*.diz]
+Summary=Temporary files
+LSummary=Files created by a download process
+ShortTranName=TempFile
+LongTranName=fcwdir
+Level=1
+Checked=0
+[*.tmp]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.temp]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.chk]
+Summary=Recovered file
+LSummary=Restore files created during disk scanning
+ShortTranName=chkfile
+LongTranName=sdrf
+Level=0
+Checked=1
+[*.old]
+Summary=Old Files
+LSummary=Outdated files
+ShortTranName=OldFile
+LongTranName=outdatedfile
+Level=1
+Checked=0
+[*.gid]
+Summary=Temporary files
+LSummary=Files created when a help file is running
+ShortTranName=TempFile
+LongTranName=fcwhfir
+Level=0
+Checked=1
+[*.nch]
+Summary=Temporary files
+LSummary=Newsgroup cache files
+ShortTranName=TempFile
+LongTranName=Ncfile
+Level=1
+Checked=0
+[*.wbk]
+Summary=Backup files
+LSummary=MS Word Backup files
+ShortTranName=Backupfile
+LongTranName=WBfile
+Level=1
+Checked=0
+[*.fts]
+Summary=Temporary files
+LSummary=Files created while searching a help file
+ShortTranName=TempFile
+LongTranName=Cbswahf
+Level=0
+Checked=1
+[*.ftg]
+Summary=Temporary files
+LSummary=Temp files of Windows help system
+ShortTranName=TempFile
+LongTranName=whtf
+Level=0
+Checked=1
+[*.$$$]
+Summary=Old Files
+LSummary=Outdated files
+ShortTranName=OldFile
+LongTranName=outdatedfile
+Level=0
+Checked=1
+[*log.txt]
+Summary=Log files
+LSummary=Log file created by applications or system services.
+ShortTranName=Logfile
+LongTranName=LLogfile
+Level=1
+Checked=0
+[*.err]
+Summary=Error files
+LSummary=Error files
+ShortTranName=Errorfile
+LongTranName=Errorfile
+Level=0
+Checked=1
+[*.---]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.~*]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[~*.*]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[*.??$]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.___]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.log]
+Summary=Log files
+LSummary=Log file created by applications or system services.
+ShortTranName=Logfile
+LongTranName=LLogfile
+Level=1
+Checked=0
+[*.~mp]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*._mp]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.dmp]
+Summary=Temporary files
+LSummary=
+ShortTranName=TempFile
+LongTranName=Windows memory dump file.
+Level=0
+Checked=1
+[*.prv]
+Summary=Old Files
+LSummary=Outdated files
+ShortTranName=OldFile
+LongTranName=outdatedfile
+Level=1
+Checked=0
+[*.sik]
+Summary=Backup files
+LSummary=Backup files
+ShortTranName=Backupfile
+LongTranName=Backupfile
+Level=1
+Checked=0
+[*.bak]
+Summary=Backup files
+LSummary=Backup copies of modified files
+ShortTranName=Backupfile
+LongTranName=bcomf
+Level=1
+Checked=0
+[thumbs.db]
+Summary=Index files
+LSummary=index files created by system in order to improve the picture browsing speed
+ShortTranName=Indexfile
+LongTranName=ifcbsiotitpbs
+Level=1
+Checked=0
+[CHKLIST.MS]
+Summary=Temporary files
+LSummary=Temporary files created during setup
+ShortTranName=TempFile
+LongTranName=Tfcds
+Level=0
+Checked=1
+[*.ilk]
+Summary=Intermediate files
+LSummary=Intermediate files
+ShortTranName=Intermediatefile
+LongTranName=Intermediatefile
+Level=1
+Checked=0
+[*.aps]
+Summary=Intermediate files
+LSummary=Intermediate files
+ShortTranName=Intermediatefile
+LongTranName=Intermediatefile
+Level=1
+Checked=0
+[*.ncb]
+Summary=Intermediate files
+LSummary=Intermediate files
+ShortTranName=Intermediatefile
+LongTranName=Intermediatefile
+Level=1
+Checked=0
+[*.pch]
+Summary=Intermediate files
+LSummary=Intermediate files
+ShortTranName=Intermediatefile
+LongTranName=Intermediatefile
+Level=1
+Checked=0
+[*.$db]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[*.?$?]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.??~]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.?~?]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=0
+Checked=1
+[*.db$]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[*.^]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[*._dd]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[*._detmp]
+Summary=Temporary files
+LSummary=Temporary files Created by programs
+ShortTranName=TempFile
+LongTranName=tfcbp
+Level=1
+Checked=0
+[chklist.*]
+Summary=Temporary files
+LSummary=Temporary files created during setup
+ShortTranName=TempFile
+LongTranName=Tfcds
+Level=0
+Checked=1
+[mscreate.dir]
+Summary=Temporary files
+LSummary=Temporary files created during setup
+ShortTranName=TempFile
+LongTranName=Tfcds
+Level=0
+Checked=1
+[log*.txt]
+Summary=Log files
+LSummary=Log file created by applications or system services.
+ShortTranName=Logfile
+LongTranName=LLogfile
+Level=1
+Checked=0
+[*.log?]
+Summary=Log files
+LSummary=Log file created by applications or system services.
+ShortTranName=Logfile
+LongTranName=LLogfile
+Level=1
+Checked=0

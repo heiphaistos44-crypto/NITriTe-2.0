@@ -1,0 +1,254 @@
+Operazioni
+Progetti
+Pianifica
+Nome progetto:
+Nuovo
+Rimuovi
+Tipo di azione:
+Esegui programma o file batch
+Linea di comando:
+In modo invisibile, senza visualizzare finestre
+Esegui il:
+Crea nuovo progetto
+Progetto
+Nome progetto non valido. Si prega di specificare un nome di un file esistente e valido.
+Salva
+Ripristina l'ultimo salvataggio
+Avvia
+Ora
+Anche più tardi
+Chiedi prima di avviare
+Ora precisa
+Dopo l'avvio
+Cancella
+Aggiungi un nuovo progetto alla lista
+Errore nel salvataggio del progetto.
+Voi avviare questo progetto?
+Avvio progetto
+Errore durante l'avvio del progetto.
+Commento:
+Sfoglia
+Eseguibili|*.exe;*.bat;*.com|Tutti files|*.*
+Abilita
+Desideri salvare queste modifiche?
+Sei sicuro di voler cancellare il progetto?\nIl progetto verrà rimosso dalla pianifcazione.\nNumero di pianificazioni per questo progetto: 
+Sei sicuro di voler cancellare il progetto?
+Copia files e cartelle
+Sorgente
+Destinazione
+Configura
+Aggiungi
+Esclusioni
+Specificare il files da escludere dall'applicazione:
+Questi tipi di files saranno ignorati da Hard Disk Sentinel. Essi non verrano copiati e non saranno interessati da qualsiasi opzione.
+Generali:
+Operazioni:
+Opzioni:
+Il contenuto di queste cartelle verranno salvate nelle cartelle di destinazione.
+Cartella da salvare
+Cartella destinazione
+File mask
+Impostazioni cartelle
+La cartella di destinazione verrà creata automaticamente (se necessario). E' possibile usare le seguenti variabili per definire una cartella:\n\n%USER% - nome utente\n\n%COMPUTER% - nome computer\n\n%IP% - IP address del computer\n\n%LAST=folder% - nome dell'ultima cartella creata o modificata nella cartella specificata\n\nE' possibile specificare una o più cartelle destinazione separandole da un ; (punto e virgola).
+Si prega di specificare la cartella da salvare.
+Si prega di specificare la cartella in cui salvare.
+Modifica
+Calcola l'ammontare dei dati da copiare
+Verifica i dati copiati
+Copia solo i nuovi files e quelli modificati
+Togli il bit archive sui files copiati
+Cancella i files di partenza dopo averli copiati con successo
+Usa la data come nome della cartella e conserva gli ultimi
+salvataggi completi 
+(I salvataggi precedenti sono cancellati automaticamente prima dell'avvio dell'operazione attuale)
+Operazione:
+File:
+Dati copiati:
+Salvataggio dati
+Calcolo della quantità di dati
+Copia files
+Aggiornamento files
+Cancellazione salvataggi precedenti
+Verifica salvataggio
+ MB/sec
+minuti restanti
+secondi restanti
+Cartella:
+Destinazione:
+Salva le sotto cartelle
+Dopo il completamento
+Invia/visualizza il report solo se ci sono stati problemi
+Invia/visualizza il report sempre
+Non inviare o non visualizzare  il report
+Sei sicuro di voler cancellare i file di partenza dopo i salvataggio?\n(Per sicurezza si raccomanda di usare questa opzione se si salva i files in più copie o se e' stata attivata l'opzione "verifica i dati copiati".)
+Cancellazione file di partenza
+Completato
+Progetto completato con successo
+Stato del progetto
+Durante l'esecuzione del progetto si sono verificati errori !!!
+Numero di files salvati:
+Tempo totale usato:
+Lista degl'errori
+Ammontare totale dei dati salvati:
+Non visualizzare la finestra avanzamento backup 
+Funzioni eseguite con successo
+Interrotto dall'utente
+Non ci sono dati da salvare
+Impossibile aprire la lista dei files da verificare da questa cartella: 
+Non e' stato possibile cancellare: 
+E-mail configurazione incompleta
+E-mail non inviata a causa errori
+Impossibile aprire il file: 
+Impossibile creare il file: 
+Impossibile leggere il file: 
+Impossibile scrivere il file: 
+Impossibile verificare il file: 
+Carattere di controllo CRC assente: 
+Carattere di controllo CRC non corretto: 
+Avvia ora
+Priorità 
+Idle
+Normale
+Massima
+Errore nell'apertura della cartella di destinazione
+Dopo l'avvio 1/giorno
+Ripetitivo
+Dopo il: 
+Automatico
+Sospendi il prossimo giorno trovato
+Ogni disco
+Il seguente progetto non sarà eseguito poiche' un altro progetto pendente e' disabilitato.
+Desideri modificare le opzioni?
+Report finale
+Operazione di salvataggio iniziata. Se e' presente questo files significa che l'operazione e' stata interrotta.
+Questa versione di Hard Disk Sentinel PRO non e' registrata.\nNella versione registrata viene rimossa la domanda per eseguire i progetti di salvataggio e eseguirli automaticamente.\n\nSi prega di visitare il nostro sito \n\nhttp://www.hdsentinel.com\n\nper conoscere le istruzioni inerenti la registrazione dell'applicazione.\n\nVuoi aprire il nostro sto ora?
+Avviso acustico in caso di problemi
+Non avviare se la mole dei dati e' inferiore a
+kbytes
+Avviso acustico se la mole e' inferiore al suddetto limite
+Salva il nome della cartella (da salvare) e il suo contenuto
+Masterizza CD/DVD usando NERO
+Comprimi files usando RAR
+Comprimi files usando 7-Zip
+Seleziona l'applicazione
+Visualizza riga di comando
+Unità di uscita:
+Tipo di supporto:
+Velocità:
+Burn-proof
+Parametri:
+File di uscita:
+Multivolume, dimensione singolo volume: 
+Il percorso di Nerocmd.exe non e' specificato.
+Il percorso di RAR.exe non e' specificato.
+Il percorso di 7Z.exe non e' specificato.
+Vuoi configurarlo ora?
+Configurazione parziale
+(Usa CTRL+C per copiare il contenuto della finestra negl'appunti).
+Avviso in caso di errore
+Verrà generato un avviso (come specificato nelle opzioni 'messaggi') se l'applicazione esterna si e' completata con un codice di errore diverso da 0.
+Verifica scrittura
+Errore nell'applicazione esterna
+La seguente riga di comando si completata con un errore: 
+Codice di errore dell'applicazione
+Avvio della funzione Wake-on-LAN sul computer remoto.
+Attendi fino a quando il computer e' stato acceso (risposta al PING)
+Non tentare più se non risponde entro 
+computer remoto:
+Azione:
+Riavvia
+Sospendi
+Iberna
+Files da trasferire:
+Cartelle da trasf.:
+Email multiple ovvero un file per email
+FTP server:
+Modo passivo
+Esporta sezioni del registro
+Accendi Computer
+Chiudi computer
+Trasferisci files via email
+Trasferisci files via FTP
+Trasferisci via Peer-to-peer
+Nodo base:
+Chiave:
+Specifica la chiave del registro da esportare.
+Non e' stata specificata la chiave
+Cartella remota:
+Seleziona il computer o digitalo come \\Nomecomputer
+Esportazione delle chiavi del registro ...
+Avvio computer(s)
+Secondi rimasti prima della cancellazione:
+Cancella ora
+Attendi
+Risposta
+Shutdown in corso...
+Shutdown richiesto da
+Specifica il/i computer remoto separato da una ,\nSpecifica . per il computer locale\nNota: sospendi e iberna non sono disponibile su computers remoti
+Tentativi di trasferimento:
+Ritardo tra i tentativi (sec):
+Errore durante il trasferimento.
+Aggiungi files fino a raggiungere questa dimensione dell'email 
+Test hard disk(s)
+Esegui il test su tutti i dischi disponibili
+Disco da testare:
+Non e' possibile testare il disco
+Test disco interrotto
+Risultato test disco:
+Tipi di tests supportati:
+Dettagli test
+nuovi settori riallocati
+nuovi errori di spin-retry
+nuovi eventi di riallocazione
+nuovi settori pendenti
+sistemati settori pendenti 
+nuovi settori incorreggibili off-line
+Copia files dalla sorgente verso la destinazione
+Copia i files nella destinazione e mantieni i files che sono stati cancellati nella sorgente
+Sincronizzazione a una via
+Copia i files verso la destinazione e rimuovi i files cancellati nella sorgente
+Sincronizzazione completa
+Sincronizza la sorgente e la destinazione mantenendo i files più recenti
+Tipo di backup
+Tipo di sincronizzazione
+Numero totale dei files rimossi dalla destinazione:
+Numero totale dei files aggiornati nella destinazione:
+Numero totale dei dati nella sorgente:
+Selezione dei files:
+Specifica filtro files
+Configura il filtro files
+Dal...al...
+e
+Non più vecchi di 
+Con la dimensione
+Con gli attributi
+Archive
+Solo lettura
+Nascosti
+Sistema
+Crea e usa files CRC per salvare i valori CRC dei files
+Includi: maschere files
+Esclusione. maschere files
+Maschera files:
+settimane
+mesi
+anni
+\1  contiene la completa lista degli errori.
+Numero totale di errori:
+Configura cartelle da salvare
+Seleziona le cartelle sorgente nella lista seguente
+Seleziona la cartella di destinazione nella lista
+Tutti i files della sorgente saranno salvati nella stessa cartella di destinazione se questa opzione e' disabilitata.\nQuesta modalità puo causare problemi di perdiata di informazioni del tragitto.
+Usando la sincronizzazione a una via o completa, con questa opzione si possono creare salvataggi incompleti.
+Sei sicuro di voler continuare?
+Pausa
+Continua
+Pausa - Pigia Continua per proseguire
+Ignora files in uso (non shareable)
+Disabilità countdown in fase di spegnimento
+________________________
+Luciano
+cestino50@tiscali.it?subject=Traduzione italiana ver. 1 del programma Hard Disk Sentinel Enterprise versione 4.40
+
+E-mail
+_________________________ 

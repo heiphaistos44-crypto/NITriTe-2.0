@@ -1,0 +1,248 @@
+Operati&oner
+Projekter
+Planlægning
+Projektnavn:
+Ny
+Fjern
+Projekt type:
+Kør ekstern program / batch fil
+Kommandolinje:
+Start usynligt. (Kører i baggrunden)
+Dag:
+Nyt projekt
+Projekt
+Ugyldigt projektnavn.\n-Angiv venligst et projektnavn.\n-Du kan ikke bruge samme projektnavn i flere projekter.
+Gem
+Gendan standard projekter
+Start
+Tid
+Kan køres senere
+Spørg før kørsel
+Tid
+Efter start
+Slet
+Tilføj nyt projekt til listen
+Der opstod en fejl under gemning af projektet.
+Vil du starte dette projekt?
+Start projekt
+Projekt start fejl.
+Kommentar:
+Gennemse
+eksekverbare|*.exe;*.bat;*.com|Alle filer|*.*
+Aktiveret
+Vil du gemme den nye konfiguration?
+Er du sikker på at du vil slette dette projekt?\nProjektet vil os blive fjernet fra: Planlægning.\nAntallet af planlagte opgaver for dette projekt: 
+Er du sikker på at du vil slette projektet?
+Overfør filer og mapper
+Kilde
+Destination
+Konfigurer
+Tilføj
+Undtagelser
+Vælg venligst de filer der skal undlades:
+Filerne her vil blive ignoreret af Hard Disk Sentinel. De vil ikke blive kopieret og de vil ikke blive ændret.
+Globale indstillinger
+Projekt operationer
+Projekt muligheder
+Indholdet af disse mapper vil blive gemt i den valgte destination.
+Kilde mappe
+Destination mappe
+Fil maske
+Mappe indstillinger
+Destinations mapperne vil automatisk blive skabt (hvis nødvendigt). Det er muligt at bruge den følgende variabler for at specificere en mappe:\n\n%USER% - navnet på brugeren\n\n%COMPUTER% - Computernavn\n\n%% - Computerens IP\n\n%LAST=folder% - Navn på sidst anvendte mappe\n\nDet er muligt at vælge flere destinationer, separer dem med ; (semicolon).
+Vælg eller opret en destinationsmappe.
+Vælg venligst en gyldig destinationsmappe.
+Ændre
+Beregn mængden af data der skal kopieres
+Verificer kopieret data
+Kopier kun nye og opdaterede filer
+Rens arkiv bit, når filer er kopieret
+Slet kilde filer efter successfuld kopiering
+Brug den aktuelle dato som mappe navn og behold det sidste
+Komplette arkiver
+(De tidligere arkiver vil blive slettet automatisk før den aktuelle operation bliver gemt)
+Status:
+Filer:
+Mængde af data:
+Gemmer data
+Beregner mængden af data
+Kopierer filer
+Opdaterer filer
+Sletter tidligere arkiv
+Verificerer data
+ MB/s
+minutter tilbage
+sekunder tilbage
+Mapper:
+Destination:
+Gem undermapper
+Efter færdiggørelse
+Send og vis rapport hvis der opstår problemer
+Send og vis rapport uanset hændelser
+Send, men vis ikke rapport
+Er du sikker på at du vil slette kilde filerne efter arkivering?\n(For at maksimere data sikkerheden anbefales det at bruge denne mulighed hvis du arkiverer filerne i flere kopier af det "Verificer kopiret data" mulighed er aktiveret.)
+Sletter kilde filer
+Gennemført
+Projekt successfuldt gennemført
+Projekt status
+Der opstod en fejl under udførelsen af projektet
+Antal gemte filer:
+Total tid Forløb:
+Liste med fejl
+Total mængde af data gemt:
+Vis ikke gemme process vinduet
+Opgaverne er successfuldt gennemført
+Afbrudt
+Ingen data at gemme
+Ude af stand til at åbne fil liste til at verificere fra denne mappe:
+Ude af stand til at slette:
+E-mail konfiguration er ufuldstændig
+Afsendelsen af e-mailen fejlede
+Ude af stand til at åbne fil:
+Ude af stand til at skabe fil:
+Ude af stand til at læse fil:
+Ude af stand til at skrive fil (Drevet er fuldt eller skrivebeskyttet):
+Ude af stand til at verificere fil:
+Mangler CRC kontrolsum værdi:
+Forkert CRC kontrolsum værdi:
+Start nu
+Operation prioritet
+Lav
+Normal
+Høj
+Fejl under åbning af destinations mappe(rne)
+Efter start 1/dag
+Gentagne
+Efter start: 
+Automatisk
+Suspender dagen efter
+Alle harddiske
+Det følgende projekt vil ikke blive udført fordi et andet verserende projekt er deaktiveret.
+Vil du ændre indstillingerne?
+Behandler rapport
+Fil gemning operation er startet. Hvis du ser denne besked, blev fil gemnings operationen afbrudt.
+Denne version af Hard Disk Sentinel PRO er uregisreret.\nI den registrerede version er det muligt at fjerne spørgsmålsdialogen for at tillade backup projekter at starte automatisk.\n\nBesøg venligst vores hjemmeside\n\nhttp://www.hdsentinel.com\n\nfor at få instruktioner om registrering af programmet.\n\nVil du åbne hjemmesiden nu?
+Aktiver lyd alarm hvis der opstår problemer
+Start ikke hvis mængden af data er mindre end
+KByte
+Advarsel, hvis for få data
+Gem kilde mappenavn inklusiv indhold
+Brænd CD/DVD med NERO
+Komprimer filer med WinRAR
+Komprimer filer med 7-Zip
+Vælg program
+Vis kommando linje
+Brænd med:
+Medie:
+Hastighed:
+Brænde-bevis
+Parametere:
+Gem som:
+Opdel i bind, Størrelse: 
+Stien til Nerocmd.exe is er ikke valgt/korrekt.
+Stien til RAR.exe er ikke valgt/korrekt.
+Stien til 7Z.exe er ikke valgt/korrekt.
+Vil du konfigurere det nu?
+Delvis Konfiguration
+(Tryk CTRL+C For at kopiere indholdet af dette vindue til udklipsholderen).
+Aktiver alarm ved fejl
+Alarm vil blive genereret (baseret på konfigurationen af "Besked Indstillinger") Hvis det eksterne program gennemføres med anden slut kode end 0.
+Verfificer skrivning
+Ekstern program fejl
+Den følgende kommandolinje blev gennemført med en fejl: 
+Fejl koden af programmet:
+Wake-on-LAN mulighed skal være aktiveret på den valgte computer.
+Vent indtil computeren er klar (Svarer via PING)
+Stop med at forsøge hvis intet svar modtages fra:
+valgte computer:
+Aktion:
+Genstart
+Standby
+Dvale
+Kilde filer:
+Kilde mapper:
+Flere mails, en fil per mail
+FTP server:
+Passiv tilstand
+Eksporter registrerings poster
+Tænd computer
+Sluk computer
+Send filer i e-mail
+FTP overførsel
+Send filer til HDS Server
+Rod node:
+Nøgle:
+Vælg venligste en registreringsnøgle at eksportere.
+Ingen nøgle valgt
+Fjernstyret mapper:
+Vælg computer eller indtast som \\computernavn
+Eksporterer registrerings poster ...
+Starter computere
+Resterende sekunder før annullering:
+&Afbryd nu
+Venter
+Svar
+Lukker ned ...
+Nedlukning iværksat fra
+Vælg computerne adskil med ,\nBrug . for lokal computer\nBemærk: Standby og dvale er ikke tilgængelig på fjernbetjente computere.
+Overførelsesforsøg:
+Forsinkelse mellem forsøg (sek):
+Overførelsesfejl.
+Saml filer indtil den totale størrelse opnår
+Test harddiske
+Kør test på tilgængelige harddiske
+Harddiske der kan testes:
+Ude af stand til at teste harddisk
+Harddisk test fejlede
+Harddisk test resultater:
+Understøttede selvtest:
+Harddisk test detaljer
+nye omfordelte sektorer er fundet
+nye opstarts fejl er fundet
+ny omfordeling er fundet
+ny verserende sektorer er fundet
+verserende sektorer er repareret
+nye ukorrigerbar sektorer er fundet
+Kopier filer fra kilde til destination
+Opdaterer data på destination og behold filer på destination som er blevet fjernet fra oprindelig kilde
+en vejs synkronisering
+Opdater data på destination og fjerner filer fra destination som er fjernet fra kilden
+to vejs synkronisering
+Opdater data på både kilde og destination ved at beholde de nyeste filer på begge sider
+Backup kontrol
+Synkroniseringsmuligheder
+Total filer fjernet fra destination:
+Total data opdateret på destination:
+Total data kopieret til kilde:
+Kun behandel filer
+Sammenlign angivne filtre
+Konfigurer fil filter
+Mellem datoer
+og
+Ikke ældre end
+Med størrelse
+Med attribut
+Arkiv
+Læs kun
+Skjult
+System
+Skab og brug CRC filer til at opbevare filernes CRC værdier
+Medtag filer matchende
+Undlad filer matchende
+Fil maske:
+uger
+måneder
+år
+\1  en komplet liste over fejl.
+Total number of errors found:
+Konfigurer mapper til backup
+Brug afkrydsning boksene til at vælge KILDE mappe(r) eller skriv mappe navnene spareret med ; nedenunder listen af mapperne
+Vælg DESTINATIONS mappe(rne) eller skriv stien til dem nedenunder listen
+Alle kilde filer fra alle kilde mapper vil blive arkiveret til den samme destination hvis denne mulighed er DEAKTIVERET.\nDette kan skabe problemer pga tab af sti information.
+Brugen af et vejs eller to vejs synkronisering med denne mulighed kan resultere i beskadiget arkivering.
+Er du sikker på at du vil fortsætte?
+Pause
+Fortsæt
+Pause - tryk på fortsæt knappen
+Ignorer filer i brug (Kan ikke deles)
+Deaktiver advarselsnotifikation besked

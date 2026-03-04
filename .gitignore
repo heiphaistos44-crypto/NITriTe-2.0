@@ -1,0 +1,53 @@
+# ===========================
+# NiTriTe 1.0 - .gitignore
+# ===========================
+
+# --- Logiciels portables volumineux (>50MB) ---
+logiciel/GoogleChromePortable/
+logiciel/UserDiag/UserDiag.exe
+logiciel/Installateurs version portable/
+logiciel/Executable/spybotsd-2.9.85.5.exe
+
+# --- Drivers volumineux ---
+Drivers/Realtek*/
+Drivers/Windows desktop runtime/
+
+# --- Scripts Windows volumineux ---
+Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/Win11_Tweaker_v2.0.1.Protable.win-x64.zip
+Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/KillerPerformanceSuite_*.exe
+
+# --- Fichiers binaires .exe et .dll lourds (>50MB générique) ---
+*.dll
+*.exe
+*.zip
+*.paf.exe
+*.msi
+*.iso
+*.img
+*.cab
+
+# --- Fichiers système Windows ---
+*.lnk
+
+# --- Node / Rust build artifacts ---
+node_modules/
+target/
+dist/
+.next/
+
+# --- OS ---
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# --- IDE ---
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

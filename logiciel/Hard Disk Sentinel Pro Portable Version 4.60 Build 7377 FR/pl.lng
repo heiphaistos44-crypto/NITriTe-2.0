@@ -1,0 +1,1142 @@
+Hard Disk Sentinel jest ju¿ uruchomiony.
+B³¹d
+Temperatura dysku twardego
+Przewidywany b³¹d
+OK
+Obs³ugiwana(y)
+Nieobs³ugiwany
+Tak
+ &Napêdy dysku twardego 
+Wybierz dysk z okna stanu. Kliknij dwukrotnie, aby wyœwietliæ ikonê w zasobniku. Kiknij prawym przyciskiem myszki, aby wyœwietliæ menu kontekstowe.
+Nr.
+Nazwa (Rozmiar)
+Temperatura
+Ikona zasobnika
+ &Preferencje 
+Wyœwietl okno stanu po uruchomieniu
+Uruchamiaj razem z Windows
+Przezroczystoœæ:
+Jêzyk:
+Za&mknij
+Hard Disk Sentinel
+Zaznacz ten dysk, aby wyœwietliæ jego temperaturê w zasobniku systemowym
+Poka¿ okno &stanu
+Ukryj &ono stanu
+&Konfiguracja
+&Zakoñcz
+Nale¿y wybraæ co najmniej jeden dysk twardy.
+ &Okno stanu  
+Kolor t³a
+T³o obrazu
+Wybierz
+B³¹d otwarcia pliku obrazu.
+Obs³ugiwane pliki obrazów|*.jpg;*.bmp|Wszystkie pliki|*.*
+Informacje
+S.M.A.R.T.
+Wydajnoœæ dysku
+Partycje
+Informacje o dysku
+informacje o szybkoœci przesy³ania
+Wszystkie odczytane dane
+Wszystkie zapisane dane
+Aktualna szybkoœæ przesy³ania
+ KB/s
+Aktualna szybkoœæ odczytu
+Aktualna szybkoœæ zapisu
+Aktualna aktywnoœæ dysku
+Aktywnoœæ dysku %
+Szybkoœæ przesy³ania (MB/s)
+Podsumowanie dysku twardego
+Numer dysku twardego
+ID dysku twardego
+Oprogramowanie sprzêtowe:
+Numer seryjny dysku
+Rozmiar ca³kowity
+Informacje ATA
+Iloœæ cylindrów dysku twardego
+Iloœæ g³owic dysku twardego
+Iloœæ sektorów dysku twardego
+Wszystkich sektorów
+Wersja ATA
+Bajtów na sektor
+Bajtów na œcie¿kê logiczn¹
+Rozmiar bufora
+Wiele sektorów
+Bajtów korekcji b³êdów
+Pojemnoœæ niesformatowana
+Maksymalny tryb PIO
+Aktywny tryb PIO
+Maksymalny tryb UDMA
+Aktywny tryb UDMA
+Cechy ATA
+Obs³ugiwane
+Nieobs³ugiwane
+Atrybut
+Próg
+Wartoœæ
+Najgorsza
+Dane
+Stan
+Informacje o partycji
+Dysk logiczny
+Ca³kowita iloœæ miejsca
+Wolne miejsce
+Rodzaj partycji
+bajtów
+U¿ywane miejsce
+Dysk:
+Maksymalna szybkoœæ przesy³ania
+Maksymalna szacunkowa szybkoœæ przesy³ania
+Szybkoœæ zapisu DVD
+Konieczne do pomiaru, wiêksze wykorzystanie dysku.
+OK (Zawsze zaliczone)
+Zawiod³o(Zawsze zawodzi)
+Poradnik: Przekroczono limit u¿ycia
+Przed awari¹: Przewidywana utrata danych
+Kopiuj ca³¹ stronê do schowka
+Historia &temperatury dysku twardego
+od czasu instalacji
+O programie
+&Rejestracja
+Nazwa u¿ytkownika:
+Klucz rejestracyjny:
+Nieprawid³owy klucz rejestracyjny, nie mo¿na zarejestrowaæ.
+Zarejestrowano pomyœlnie. Dziêkujemy za Twoje wsparcie.
+Wyœwietl okno g³ówne po uruchomieniu
+Dostêpne dopiero po rejestracji i aktywacji.
+Wersja niezarejestrowana, proszê zarejestrowaæ.
+Zarejestrowany dla:
+Przegl¹d
+Temperatura aktualna:
+Temperatura maksymalna (dzisiaj):
+Stan temperatury dysku jest dobry.
+Aktualna temperatura jest zbyt wysoka. Zaleca siê je¿eli jest to mo¿liwe, u¿yæ urz¹dzenia ch³odz¹cego dysk twardy (np. wentylator lub radiator).
+Aktualna temperatura jest dobra, lecz wczeœniej by³a zbyt wysoka. Zaleca siê je¿eli jest to mo¿liwe, u¿yæ urz¹dzenia ch³odz¹cego dysk twardy (np. wentylator lub radiator).
+Wydajnoœæ:
+¯ywotnoœæ:
+Doskona³a
+Dobra(e)
+Odpowiednia
+Dopuszczalna
+Z³a(e)
+Nie jest wymagane ¿adne dzia³anie.
+Zaleca siê czêste robienie Kopii Zapasowej, aby zapobiec utracie danych.
+&W³aœciwoœci
+&Przegl¹daj dysk twardy
+&Poprzedni dysk twardy
+&Nastêpny dysk twardy
+&Alarmy
+Wysy³anie alarmu e-mailem, je¿eli przewidziano awariê dysku twardego
+Wysy³anie alarmu e-mailem, je¿eli temperatura dysku jest zbyt wysoka
+Konfiguracja &e-mail
+Konto pocztowe:
+Nazwa nadawcy:
+E-mail nadawcy:
+Odbiorca e-mail:
+Serwer SMTP:
+Opcje uwierzytelniania (Pozostaw pola puste, je¿eli wpis nie jest wymagany)
+Nazwa u¿ytkownika:
+Has³o:
+Domyœlne
+Poni¿sze pola musz¹ byæ wype³nione w celu wys³ania wiadomoœci e-mail:
+Czy chcesz wprowadziæ te informacje teraz?
+Wyst¹pi³ b³¹d podczas wysy³ania alarmu e-mailem.
+Wys³ano alarm e-mailem.
+Przegrzanie
+Ustawienie progu temperatury:
+Jednostka temperatury:
+Wysy³anie raportu
+Czcionka:
+Zapisz
+Wyœwietl tylko najwy¿sz¹ temperaturê w zasobniku
+Jednostka przesy³ania danych:
+Konfiguracja zarz¹dzania akustyk¹
+Wy³¹czone
+W³¹czone
+Aktualny poziom akustyki
+Zalecany poziom akustyki
+Nieznana(y)
+Maksymalna wydajnoœæ i g³oœnoœæ
+Minimalna wydajnoœæ i g³oœnoœæ
+Zrównowa¿ona wydajnoœæ i g³oœnoœæ
+Zarz¹dzanie akustyk¹
+Domyœlny
+Œrednia dzienna odczytu
+Œrednia dzienna zapisu
+Przyci¹gnij do krawêdzi ekranu
+Ostrze¿enie
+Wyœlij/wyœwietl wiadomoœæ
+Zamknij system
+Kiedy oczekiwano awarii
+Kiedy temperatura jest zbyt wysoka
+Kiedy dodano nowy wpis dziennika
+Stan codziennego wysy³ania e-mail
+AM
+Krytyczna wartoœæ degradacji
+Aktualny stan
+B³¹d wysy³ania poczty e-mail.
+Pomyœlnie wys³ano pocztê e-mail.
+&Aktualizacja
+ZnajdŸ now¹ wersjê i aktualizuj co tydzieñ
+ZnajdŸ now¹ wersjê i aktualizuj teraz
+Data ostatniego sprawdzania:
+Nie zrobiono sprawdzenia
+Anuluj
+Zainstalowana wersja:
+Najnowsza wersja:
+Aktualizowanie plików
+Aktualny plik:
+Ca³oœæ procesu:
+Obecna wersja oprogramowania jest aktualna.
+Wyst¹pi³ b³¹d podczas pobierania. SprawdŸ sieæ i ponów próbê.
+Aktualizacjê zakoñczono pomyœlnie.
+Stan: Sprawdzanie dostêpnej wersji
+Stan: Pobieranie
+Zamknij
+Nie znaleziono dysku twardego.
+Brak funkcjonalnoœci S.M.A.R.T. Nale¿y skopiowaæ plik Smartvsd.vxd z folderu Windows\System do folderu Windows\System\IoSubsys i ponownie uruchomiæ komputer. Proszê sprawdziæ Pomoc -> Szczegó³y instalacji.
+Wymagane s¹ uprawnienia administratora w celu dostêpu do informacji na dysku twardym.
+Dziennik
+Iloœæ zarejestrowanych problemów:
+Uwaga: Zarejestrowana wersja mo¿e wysy³aæ alarmy na e-mail oraz wy³¹czaæ komputer po wykryciu i zarejestrowaniu nowego problemu z dyskiem twardym.
+Nie zg³oszono ¿adnych problemów.
+Stan dysku twardego jest stabilny.
+Ostrze¿enie: stan dysku twardego obni¿a siê w ostatnich dniach.
+Data
+Poprzednia wartoœæ
+Nowa wartoœæ
+Ostrze¿enie: znaleziono wiele problemów w ostatnich dniach.
+Dysk twardy poprzednio pracuj¹cy nie odpowiada. Mo¿liwe jest, ¿e dzia³aj¹cy system zatrzyma³ urz¹dzenie, aby zapobiec problemom (dalszym).
+Stan programu:
+B³¹d odczytu informacji o aktywacji.
+Pomyœlnie zarejestrowano i aktywowano.
+Zarejestrowano, ale nie aktywowano.
+Nie zarejestrowano i nie aktywowano.
+Rejestracja i aktywacja on-line
+Rejestracja i aktywacja przez e-mail
+Plik aktywacyjny jest zapisywany jako
+Proszê wys³aæ ten plik ze swoj¹ nazw¹ rejestracyjn¹ oraz kluczem rejestracji do info@hdsentinel.com. Producent odeœle Twój plik rejestracji, który powinieneœ wczytaæ wciskaj¹c przycisk "Wczytaj klucz aktywacyjny", (lub je¿eli to jest mo¿liwe, rêcznie skopiowaæ do folderu z programem).
+Zaleca siê u¿ycie metody aktywacji on-line, poniewa¿ jest szybsza i bardziej komfortowa.
+Osi¹gniêto maksymaln¹ iloœæ aktywacji dla tego klucza rejestracyjnego.
+B³¹d aktywacji
+Wyst¹pi³ b³¹d podczas komunikacji z serwerem aktywacji.
+Proszê skontaktowaæ siê z producentem w sprawie Twojej licencji.
+Aplikacja jest ju¿ aktywowana tym kluczem rejestracyjnym na 5 ró¿nych konfiguracjach.
+Wyst¹pi³ b³¹d podczas odczytu danych z serwera.
+Aktywacja nie jest mo¿liwa.
+Aktywacja dokonana, dziêkujemy za Twoje wsparcie.
+Aktywowano pomyœlnie
+Aktywacja przez E-mail
+W systemie Windows 98 mo¿liwe jest, ¿e urz¹dzenie USB powoduje problem, poniewa¿ urz¹dzenie USB mo¿e powodowaæ problemy ze S.M.A.R.T. w pomocniczym kanale IDE.
+Dysk nie odpowiada.
+Dysk nie odpowiada przez d³u¿szy czas. Mo¿e nie jest pod³¹czony.
+Poka¿ aplikacjê na pasku zadañ i w zasobniku systemowym
+Analizujê system. Proszê czekaæ.
+Pomoc
+Proszê wprowadziæ swoj¹ nazwê rejestracyjn¹ (swoj¹ nazwê lub pseudonim) oraz otrzymany klucz rejestracji. Je¿eli Twój komputer ma aktywne po³¹czenie z internetem, proszê wybraæ aktywacjê online: ta forma rejestracji i aktywacji jest automatyczna, ¿adne inne dzia³ania nie s¹ potrzebne. W innym przypadku proszê wybraæ metodê aktywacji przez e-mail i wys³aæ wyœwietlany plik do producenta. Otrzymasz swój aktywowany plik klucza, który nale¿y umieœciæ w folderze aplikacji.
+Zdarzenia
+T³umaczenie wykonane przez:
+Wies³aw Jurgielewicz
+xpertcomp@onet.eu
+E-mail
+Pliki TXT
+Wszystkie pliki
+Ikona powinna byæ czerwona, je¿eli temperatura jest za wysoka
+Op&cje zaawansowane
+Czêstotliwoœæ wykrywania:
+1 sekunda
+5 sekund
+10 sekund
+30 sekund
+1 minuta
+2 minuty
+5 minut (domyœlnie)
+10 minut
+30 minut
+1 godzina
+W³¹cz ostrze¿enie, je¿eli dysk twardy nie odpowiada
+Temperatura œrednia (dzisiaj):
+Aktualna(y)
+Œrednia dzienna
+Maksymalna dzienna
+Alarm dŸwiêkowy
+Wybierz plik dŸwiêkowy
+Pliki dŸwiêkowe
+Kliknij podwójnie lub prawym przyciskiem myszki, aby wyœwietliæ wiêcej informacji.
+Dostosuj
+OK
+Anuluj
+Wyst¹pi³ b³¹d podczas wykonywania tego polecenia.
+Ta funkcja wymaga systemu Windows 2000, XP lub nowszego systemu operacyjnego.
+Kiedy ma³o jest miejsca na dysku
+Ustaw próg wolnego miejsca na dysku
+U¿yj tego samego ustawienia dla wszystkich zainstalowanych dysków twardych
+Ustawienia globalne
+Ostrzegaj, je¿eli iloœæ wolnego miejsca jest poni¿ej
+Zbyt ma³o miejsca na dysku
+Ma³o
+Wy³¹cz automatyczne skanowanie podczas uruchamiania Windows
+Konieczne jest ponowne uruchomienie komputera, aby zastosowaæ nowe ustawienia.
+Synchronizuj zegar komputera z zegarem atomowym
+Kiedy aplikacja jest uruchamiana
+Czy chcesz zobaczyæ stan dysku(ów) twardego w ma³ym oknie stanu?\n(PóŸniej mo¿na zmieniæ to ustawienie poprzez klikniêcie prawym przyciskiem myszki\nna ikonê w zasobniku i wybraæ w menu "Konfiguracja".)
+Pomiar temperatury nie jest obs³ugiwany na tym dysku twardym.
+Nie mo¿na zakoñczyæ procesu na twardym dysku
+Pomo&c
+Pomoc nie jest dostêpna. Pobierz pakiet pe³nej instalacji ze strony internetowej.
+Ta funkcja nie jest dostêpna na wybranym dysku twardym.
+Modyfikuj domyœlne ikony dysku twardego w Eksploratorze Windows
+Informacje SCSI
+Informacje o producencie
+Wersja
+Typ urz¹dzenia
+Dysk
+Wymienny
+Prognozowanie awarii
+Dysk sta³y
+Napêd zdalny
+Napêd optyczny
+Zaznaczone dyski logiczne nale¿¹ do aktualnego dysku fizycznego.
+Zmieñ tryb wyœwietlania
+Etykieta woluminu
+Numer seryjny
+Monitoruj miejsce na dyskach sieciowych
+&Klawisze skrótów
+Polecenie
+W³¹cz systemowe klawisze skrótów (mog¹ byæ u¿yte w dowolnej aplikacji)
+&Kontrola dysku
+Zmieñ domyœlne ikony systemowe dla dysków sieciowych
+Monitoruj miejsce na dyskach wymiennych
+Zmieñ domyœlne ikony systemowe dla dysków wymiennych
+Nie sprawdzaj informacji o miejscu dla nastêpuj¹cych dysków: (np. CDE)
+Nie zmieniaj domyœlnych ikon systemowych dla nastêpuj¹cych dysków: (np. KL)
+Kliknij podwójnie, aby otworzyæ napêd. F5, aby odœwie¿yæ.
+Brak dysku w napêdzie
+Testowy e-mail
+Je¿eli ten komunikat zosta³ dostarczony, konfiguracja poczty e-mail jest prawid³owa.
+Testowy e-mail zosta³ pomyœlnie wys³any.
+Wyst¹pi³ b³¹d podczas wysy³ania testu poczty. SprawdŸ, konfiguracjê poczty e-mail.
+Czas zasilania:
+dni
+godzin(y)
+minuta(t)
+Szacunkowy pozosta³y czas ¿ywotnoœci:
+wiêcej ni¿
+sekund(ê)
+Port:
+OpóŸnienie przed uruchomieniem scandisk (sekund):
+Wartoœæ ¿ywotnoœci:
+Kiedy ¿ywotnoœæ dysku jest niska
+Alarmowa Kopia Zapasowa
+Próg ¿ywotnoœci:
+Wyœwietl wiadomoœæ na ekranie
+Wyœlij wiadomoœæ do komputera zdalnego:   
+Ta funkcja jest dostêpna tylko, je¿eli jest zainstalowana wersja PROFESJONALNA.\nKorzystaj¹c z tej funkcji, mo¿liwe jest uruchomienie opcji wstêpnej konfiguracji Kopii Zapasowej, gdy wystêpuje problem.\n\nProszê odwiedziæ stronê g³ówn¹ (www.hdsentinel.com), aby przeczytaæ wiêcej o tej funkcji.
+Niska ¿ywotnoœæ
+Utwórz raport testowy
+Wyst¹pi³ b³¹d podczas wysy³ania raportu.\nProszê otworzyæ okno konfiguracji, wybraæ opcjê Wyœlij raport testowy, zapisaæ raport oraz go wys³aæ do reports@hdsentinel.hu
+Ustawienia wiado&moœci
+Wyœlij e-mail
+Wybierz przed wys³aniem domyœlne po³¹czenie telefoniczne
+Zamknij po³¹czenie po wys³aniu
+Wyœwietl równie¿ niest. wiadomoœæ z pliku tekstowego
+Proszê czekaæ, pomiar ...
+Niew³aœciwe szczegó³y rejestracji - ta funkcja jest wy³¹czona.
+Informacje o ¿ywotnoœci
+B³¹d zapisu. Dysk mo¿e byæ zape³niony lub tylko do odczytu.
+Progi / &Ikona zasobnika
+Wyœwietl w zasobniku temperaturê dysku twardego
+Poni¿ej
+Pomiêdzy \1 a \2
+Temperatura:
+Powy¿ej
+U¿yj klasycznej (numerycznej) ikony w zasobniku
+Pierwszy plan
+W tle
+Przyk³ad
+Wyœwietl na ikonie w zasobniku znak ¿ywotnoœci dysku twardego
+Informacje o aplikacji
+Aktualna data i godzina
+Informacje systemowe
+Wersja Windows
+Typ CPU & Szybkoœæ
+Producent BIOS
+Wielkoœæ pamiêci fizycznej
+Karta graficzna
+Rozdzielczoœæ ekranu
+Drukarka
+Kontroler sieci
+Informacje o urz¹dzeniach PCI
+Informacje o komputerze
+Nazwa komputera
+Nazwa u¿ytownika
+Adres IP
+Adres MAC
+Informacje o dysku fizycznym
+Flagi
+Krytyczny
+Statystyczny
+Wydajnoœæ
+WskaŸnik b³êdu
+Iloœæ zdarzeñ
+Samozachowawczoœæ
+Pulpit
+Serwer
+Mobilny
+Typ komputera
+Informacje ogólne
+Pliki HTML|*.html|Wszystkie pliki|*.*
+Zapisz raport
+Wyœlij raport e-mailem
+Typ raportu:
+Szczegó³owy raport HTML
+Krótki tekst raportu
+Wyœlij &raport RAW
+Wyœwietl nformacje o dysku
+Model dysku twardego
+Dysk logiczny
+¯ywotnoœæ
+Stan / Problem
+Dysk fizyczny
+Stan dysku twardego jest nieznany.
+Stan dysku twardego jest dodskona³y.
+Stan dysku twardego nie jest doskona³y.
+Niepowodzenie oczekiwania na ten dysk sta³y.
+Istnieje(¹) \1 uszkodzone(y) sektor(y) na powierzchni dysku. Zawartoœæ tych sektorów zosta³a przeniesione do obszaru zapasowego.
+W oparciu o iloœæ mapowanych operacji, ¿ywotnoœæ dysku by³a zmniejszona w ró¿nych etapach.
+W oparciu o iloœæ mapowanych operacji, uszkodzone sektory mog¹ stanowiæ ci¹g³y obszar.
+Na dysku znaleziono \1 uszkodzony(e) sektor(y) podczas auto-testu.
+Wyst¹pi³ problem podczas rozpêdzania talerzy dysku w czasie \1 sek. Mo¿e to byæ spowodowane przez sam dysk, lub zbyt du¿e obci¹¿enie (s³abe zasilanie).
+Istnieje(¹) \1 s³aby(e) sektory na powierzchni dysku. Mo¿na je bêdzie odwzorowaæ w dowolnym momencie póŸniejszego u¿ycia dysku.
+Problem wyst¹pi³ w komunikacji pomiêdzy dyskiem a hostem \1 raz(y). W przypadku wyst¹pienia nag³ej awarii lub ponownego rozruchu, zalecane jest, aby wypróbowaæ ró¿ne, krótkie kabelki danych (unikaæ okr¹g³ych przewodów, nale¿y u¿ywaæ 80 ¿y³owych standardowych przewodów).
+Zaleca siê regularne sprawdzanie dziennika dysku. Wszystkie nowe znalezione problemy bêd¹ w nim zarejestrowane.
+Stan dysku twardego jest DOSKONA£Y. Nie znaleziono problematycznych lub s³abych sektorów, problemów z rozpêdzaniem talerzy oraz b³êdów przesy³ania danych. 
+Zastosuj
+Przesuniêcie
+Przesuniêcie:
+Zaleca siê skalibrowanie temperatur i ustawienie przesuniêcia temperatury na stronie S.M.A.R.T. W ten sposób bêd¹ wyœwietlane prawid³owe wartoœci temperatury. 
+Metoda obliczania ¿ywotnoœci:
+Analiza pola danych (domyœlnie)
+Analiza wartoœci okreœlona przez producenta (NIE ZALECANE)
+Próg wychodzi poza:
+Atrybuty wykresu
+Wyœwietl pole danych
+Poka¿ wartoœci producenta
+Nieoczekiwany
+Wydarzy³o siê
+Szczegó³owy raport tekstowy
+Plik
+Podgl¹d
+Raport
+Zapisz raport jako TXT
+Zapisz raport jako HTML
+Wyœlij raport jako TXT
+Wyœlij raport jako HTML
+Zaleca siê sta³e monitorowanie stanu dysku twardego.
+Analiza pola danych (bardziej rygorystyczna, zalecana dla serwerów)
+Zmodyfikuj atrybut przesuniêcia
+U¿ycie tej opcji jest zalecane tylko dla zaawansowanych u¿ytkowników. Za pomoc¹ tej opcji, wyœwietlany stan mo¿e nie odzwierciedlaæ stanu aktualnego. Czy jesteœ pewien, ¿e chcesz zmieniæ tê opcjê?
+Nie pokazuj tego ponownie
+U¿ycie tej opcji jest zalecane tylko dla zaawansowanych u¿ytkowników. Przy u¿yciu tej opcji mo¿na wyœwietliæ niew³aœciwe po³o¿enie jak równie¿ alarmy o mo¿liwych do utracenia niektórych zmianach po³o¿enia. Czy jesteœ pewny, ¿e chcesz zmieniæ tê opcjê?
+Wy³¹cz alarmy dŸwiêkowe
+W³¹cz alarmy dŸwiêkowe
+Wyst¹pi³ b³¹d podczas ustawiania poziomu akustyki.\nKontroler dysku twardego lub jego sterownik nie obs³uguj¹ tej funkcji.
+Monitorowanie wydajnoœci w czasie rzeczywistym nie jest obs³ugiwane dla tego dysku.
+Uwaga: Wersja niezarejestrowana nie przechowuje zmian tych opcji. Ustawienia zostan¹ zresetowane do wartoœci domyœlnych, po ponownym uruchomieniu aplikacji.
+W³¹cz atrybuty
+Powtórz alarm dŸwiêkowy
+U¿yj g³oœniczka PC
+Wyœlij test
+Pomyœlnie wys³ano wiadomoœæ do komputera docelowego.
+Wyst¹pi³ b³¹d podczas operacji. SprawdŸ po³¹czenie sieciowe i aktualny stan us³ugi Pos³aniec na obu komputerach.
+Problemy spowodowa³y alarm dŸwiêkowy
+Ponownie w³¹cz alarmy
+Bajt kontrolny ATA
+Prawid³owa(y)
+Nieprawid³owa
+Wartoœæ sumy kontrolnej ATA
+wyœwietlane informacje mog¹ nie byæ poprawne.
+Testuj alarm dŸwiêkowy
+Utwórz skrót do tego projektu na pulpicie
+Tworzenie skrutu
+Skrót dla tego projektu zosta³ pomyœlnie utworzony na pulpicie.
+Wyst¹pi³ b³¹d podczas tworzenia skrutu dla tego projektu.
+Informacje rejestracyjne wygas³y. Proszê skontaktowaæ siê z autorem w sprawie przed³u¿enia licencji.
+Wyœlij, klikaj¹c myszk¹ okno pod oknem stanu
+Wyœwietl informacje na pulpicie
+Licencja wa¿na do:
+Do¿ywotnio
+Wygas³a
+Brak
+Pe³na przezroczystoœæ t³a
+I&ntegracja
+Us³ugi
+Wymagaj has³a do otwarcia g³ównego okna informacyjnego
+Wymagaj has³a do otwarcia lub zamkniêcia okna Hard Disk Sentinel
+Wyloguj po
+minutach
+Has³o:
+Wyl&oguj teraz
+U¿yj jako u&s³ugi
+U¿yj j&ako aplikacji
+Zdalna kontrola
+W³¹cz po³¹czenie zdalne do serwera Hard Disk Sentinel
+Nazwa serwera i adres IP:
+Port TCP (domyœlny = 61210):
+Ochrona
+Wyst¹pi³ b³¹d podczas instalcji us³ugi Hard Disk Sentinel.
+Wyst¹pi³ b³¹d podczas uruchamiania us³ugi Hard Disk Sentinel.
+Wyst¹pi³ b³¹d podczas zatrzymywania us³ugi Hard Disk Sentinel.
+Hard Disk Sentinel zapisuje aktualn¹ konfiguracjê i zostanie zamkniêty. Bêdzie on ponownie uruchomiony w trybie us³ugi.
+Hard Disk Sentinel zapisuje aktualn¹ konfiguracjê i zostanie zamtrzymany. Bêdzie on ponownie uruchomiony w trybie aplikacji.
+Wymagana autoryzacja dostêpu
+Wprowadzono nieprawid³owe has³o. Nie jest mo¿liwe u¿ywanie tej funkcji.
+Aby zamkn¹æ Hard Disk Sentinel, proszê u¿yæ skrutu "Zatrzymaj us³ugê", lub prze³¹czyæ z powrotem do trybu aplikacji w panelu Integracji z okna Konfiguracji i zamkn¹æ aplikacjê.
+Nie
+Wysoki
+Maksymalny
+Aktualizacja nie jest dostêpna, kiedy jest uruchomiony Hard Disk Sentinel jako us³uga. Proszê Prze³¹czyœ siê ponownie do trybu aplikacji w panelu integracji przed aktualizacj¹ aplikacji do nowej wersji.
+Tryb us³ugi
+Tryb awaryjny (Wy³¹cza wykrywanie sprzêtu)
+Us³uga Hard Disk Sentinel nie jest zainstalowana. Otwórz okno konfiguracji, wybierz panel integracji i zainstaluj us³ugê Hard Disk Sentinel.
+Us³uga Hard Disk Sentinel jest ju¿ uruchomiona.
+Us³uga Hard Disk Sentinel nie jest uruchomiona.
+Œrednia szybkoœæ przesy³ania
+Œrednia aktywnoœæ dysku
+Powtórz test
+Informacje nie s¹ jeszcze dostêpne
+Us³uga Hard Disk Sentinel zatrzymana.\nCzy chcesz wy³¹czyæ us³ugê i u¿yæ oprogramowania w trybie aplikacji?
+Microsoft Vista i nowsze systemy operacyjne nie pozwalaj¹ us³ugom na wspó³dzia³anie z pulpitem.\n\nHard Disk Sentinel bêdzie dzia³aæ w sposób niewidoczny:\njego okna i ikony nie bêd¹ wyœwietlane i nie bêdzie mo¿liwe uzyskanie\ndostêpu do konfiguracji.\n\nAby zatrzymaæ us³ugê i skorzystaæ z oprogramowania w trybie aplikacji,\nwybierz skrót "Zatrzymaj us³ugê" z grupy Hard Disk Sentinel.\n\nCzy na pewno chcesz kontynuowaæ?
+Dowiedz siê, jak ta wartoœæ jest obliczana
+Proszê w³¹czyæ t¹ aplikacjê i uruchomiæ z w³aœciwymi uprawnieniami.
+Zestaw ikon dysku:
+XP
+Vista
+Kliknij, aby uruchomiæ
+Testowanie dysku twardego
+Operacja testowania:
+Stan:
+Pozosta³o czasu:
+Wyst¹pi³ b³¹d podczas uruchamiania testu. Kod b³êdu:
+Uruchomiono, Nie znaleziono problemów
+OdpowiedŸ:
+Minê³o czasu:
+Ten klucz rejestracyjny mo¿e byæ u¿yty tylko do rejestraci wersji STANDARDOWEJ.\nProszê pobraæ i zainstalowaæ wersjê STANDARDOW¥ z www.hdsentinel.com\naby u¿yæ tego klucza rejestracji.
+Ten klucz rejestracyjny mo¿e byæ u¿yty tylko do rejestraci wersji PROFESJONALNEJ.\nProszê pobraæ i zainstalowaæ wersjê PROFESJONALN¥ z www.hdsentinel.com\naby u¿yæ tego klucza rejestracji.
+U¿yj jednostki progu w megabajtach
+PotwierdŸ:
+Obydwa has³a nie s¹ takie same.\nProszê wprowadziæ dwa razy takie same has³o, aby to potwierdziæ.
+W³¹cz stan sieci
+Zapytaj o has³o, aby nawi¹zaæ po³¹czenie
+Port po³¹czenia HTTP
+Adres portu (>1023)
+Atrybut komentarzy
+Pola danych dziesiêtnych
+Próbowano sprawdziæ w napêdzie i rozdzieliæ sektor(y) \1 razy.Sprawdzany obszar jest doskona³y.
+Natychmiast zast¹p dysk twardy.
+Szczegó³owe elementy raportu:
+Kopia zapasowa / Przywróæ aktualn¹ konfiguracjê
+Kopia zapasowa konfiguracji
+Przywróæ konfiguracjê
+Napêd optyczny
+Generuj i aktualizuj plik XML
+Czujnik temperatury dysku twardego jest uszkodzony. Zmierzona wartoœæ jest:
+Akceptuj po³¹czenia zdalne z serwera
+Port po³¹czenia zdalnego
+Wy³¹cz w zasobniku balonik alarmu
+Wy³¹cz wykrywanie napêdów USB oraz SCSI
+Wyœlij
+Komentarze:
+Wyœlij do producenta
+Nawi¹zywanie kontaktu z serwerem - www.hdsentinel.com
+Wysy³anie raportu
+Raport wys³ano pomyœlnie. \nDziêkujemy za Twoje wsparcie.
+Wyœlij raport testowy do producenta
+Tworzenie raportu
+Chcê otrzymaæ odpowiedŸ po ocenie raportu
+To jest raport b³êdów
+Otwórz &okno g³ówne HD Sentinel
+Widoczna(e)
+Jednostka wielkoœci dysku:
+Jednostka wielkoœci partycji:
+DW (do wiadomoœci):
+UDW (wielu odbiorców):
+Uaktualnij raport testowy
+(szacunkowo)
+Obliczanie czasu, proszê czekaæ... Aktualny szacunek wartoœci mo¿e nie byæ dok³adny.
+Œcie¿ka zdalna
+Temperatura osi¹gnê³a poziom ¿ó³ty.
+Temperatura osi¹gnê³a poziom czerwony.
+¯ywotnoœæ osi¹gnê³a poziom ¿ó³ty.
+¯ywotnoœæ osi¹gnê³a poziom czerwony.
+Limit:
+Temperatura:
+Atrybuty zmieniono
+Wyczyœæ dziennik
+W tle
+W³¹cz us³ugê DynDNS
+W³¹cz us³ugê NO-IP
+W³¹cz niestandardow¹ us³ugê dynamicznego DNS
+Konfiguracja
+Nazwa u¿ytkownika
+Has³o
+Nazwa Hosta (pe³na)
+Pe³ny URL aktualizacji (%ip% zmienia aktualny IP)
+Ostatnia odpowiedŸ serwera:
+Gad¿et
+W³¹cz Gad¿et
+Wyœwietl nag³ówek
+Wyœwietl aktywnoœæ dysku
+Czy chcesz przetestowaæ teraz konfiguracjê poprzez aktualizacjê adresu IP?
+Iloœæ znalezionych problemów jest za du¿a wa nastêpuj¹cymo atrybucie:
+Odczyt:
+Zapis:
+Wszystkie dyski
+Ikony aktywnoœci
+Wyœwietl aktywnoœæ dysku w postaci jednej ikony w zasobniku
+(DU¯E litery)
+(ŒREDNIE litery)
+(MA£E litery)
+Stan zasilania
+Aktywny
+Uœpiony
+(od \1)
+Czas pracy systemu
+Od rejestracji 
+Kontroler dysku
+Lokalizacja dysku
+Od&wiedŸ witrynê sieciow¹
+Kontakt E-mail
+Kup teraz
+Wpisz klucz rejestracyjny
+Lista zawiera \1 element(y). Proszê zarejestrowaæ oprogramowanie, aby wyœwietliæ wszystkie elementy.
+U¿ycie CPU
+CPU
+Pamiêæ wirtualna
+U¿ywane:
+Dysk twardy dzia³a w trybie PIO, co zmniejsza wydajnoœæ. Zaleca siê sprawdzenie i wymianê kabla danych lub modyfikacjê konfiguracji.
+Dysk twardy dzia³a w trybie UDMA 2 (33 megabajty/sek), co zmniejsza wydajnoœæ. Zaleca siê, aby u¿yæ kabla IDE 80 ¿y³owego, jeœli kontroler obs³uguje wy¿sze szybkoœci przesy³ania danych.
+Kontroler Silicon Image (SiI) mo¿e nie zapewniaæ pe³nych informacji na temat wszystkich pod³¹czonych dysków. . 
+Aktualny sterownik kontrolera dysku nie zapewnia pe³nego dostêpu do samego odczytu wszystkich szczegó³ów dotycz¹cych dysku. SprawdŸ, czy jest dostêpny zaktualizowany sterownik.
+To urz¹dzenie pamiêci USB nie dostarcza wiêkszej iloœci informacji o sobie. Jednak¿e mo¿e byæ testowane na problemy wystêpuj¹ce na dysku, funkcja Dysk > "Sprawdzanie powierzchni dysku".
+Ta macierz RAID nie zapewnia dostêpu w tablicy do szczegó³ów dysku. Mimo tego mo¿na przetestowaæ problemy na dysku -> funkcja Test powierzchni.
+Proszê u¿yæ menu "Raport" > "Wyslij raport testowy do producenta", opcja ta pomo¿e nam ustaliæ, czy mo¿liwe jest wykrycie\ni pokazanie wiêcej informacji.
+Proszê odwiedziæ sekcjê "Sprzêt komputerowy" oraz "Wsparcie > FAQ"  na stronie www.hdsentinel.com, aby uzyskaæ wiêcej szczegó³ów.
+W³¹cz
+Temperatura maksymalna (kiedykolwiek mierzona):
+Temperatura minimalna (kiedykolwiek mierzona):
+2 godziny
+4 godziny
+6 godzin
+8 godzin
+12 godzin
+Zarezerwowany 1
+Zarezerwowany 2
+Osi¹gniêto zakres temperatury ¿ó³ty. Je¿eli temperatura dysku bêdzie nadal wzrastaæ, zaleca siê je¿eli jest to mo¿liwe, u¿yæ urz¹dzenia ch³odz¹cego dysk twardy (np. wentylatora lub radiatora).
+Wybierz "Progi / Ikona zasobnika" strona do konfiguracji ¿ywotnoœci oraz progi temperatury dla poziomów ¿ó³ty i czerwony.
+Krytyczna
+Zaleca siê utworzenie natychmiast Kopii zapasowej, aby zapobiec utracie danych.
+Przyciski kompaktowe
+Przyciski normalne
+Du¿e przyciski
+Wyd.:
+Interfejs:
+Wiadomoœæ
+Test losowego wyszukiwania
+Test wyszukiwania wydajnoœci, ha³asu i temperatury
+Czas szukania
+Minimalna(y)
+Maksymalny
+Œredni(a)
+Test
+Up³ynê³o
+Pozosta³o
+Dzia³ania
+B³êdów
+Uruchom &test
+Zatrzymaj te&st
+Szybki test
+Normalny test
+Dok³adny test
+D³ugi dok³adny test
+Niestandardowy czas trwania
+Czas do zakoñczenia testu (GG:MM:SS): 
+Test ODCZYTU
+Test ZAPISU
+Funkcja ta mo¿e byæ u¿yta tylko raz w wersji niezarejestrowanej.
+Czy chcesz otworzyæ teraz stronê internetow¹ oprogramowania, aby zobaczyæ szczegó³y rejestracji?
+Czy na pewno chcesz zatrzymaæ tê operacjê?
+Ta funkcja nie jest dostêpna dla wybranego napêdu z powodu konfiguracji tego kontrolera i napêdów.
+Wersja próbna Hard Disk Sentinel
+Zarejestrowana wersja Hard Disk Sentinel oferuje najwy¿szy poziom ochrony danych porzez alarmy, diagnostyki dysku, automatyczn¹ Kopiê zapasow¹ (tylko wersja PRO), zdalne zarz¹dzanie i inne funkcje, aby testowaæ i zwiêkszaæ stabilnoœæ i wydajnoœæ urz¹dzeñ pamiêci.\n\nTa wersja demo mo¿e byæ u¿ywana do 30 dni, aby oceniæ kilka najwa¿niejszych funkcji i zweryfikowaæ kompatybilnoœæ z systemem. Po tym okresie próbnym powinieneœ zaktualizowaæ program do wersji zarejestrowanej poprzez zakup licencji lub zaprzestaæ u¿ywania oprogramowania.\n\nKorzyœci z zakupu licencjonowanej wersji:\n\n- najwy¿szy poziom ochrony danych\n- szybkie, bezpieczne i elastyczne p³atnoœci\n- natychmiastowy dostêp do wszystkich funkcji i odblokowania wszystkich funkcji\n- bezp³atne wsparcie techniczne i pomoc\n- do¿ywotnia licencja, bezp³atna prenumerata i aktualizacjas\n- brak ograniczeñ i irytuj¹cych wiadomoœci
+Przesuniêcie S.M.A.R.T. jest skonfigurowane dla atrybutu u¿ywanego do obliczenia tej wartoœci
+Wybierz czcionkê ikony za&sobnika
+Nie dopuœæ do zmniejszania obrotów dysków (oddziel , np. 1,2 lub * dla wszystkich)
+SprawdŸ w trybie Online 
+Porównaj wartoœci S.M.A.R.T. tego urz¹dzenia z innymi (z tego samego modelu) Aby sprawdziæ, czy atrybuty s¹ lepsze czy gorsze ni¿ œrednie
+Testowanie powierzchni dysku
+Analiza powierzchni dysku ró¿nymi metodami i testowanie
+Mapa powierzchni dysku
+Temperatura i szybkoœæ przesy³ania
+Blok
+Uszkodzone
+Postêp
+Zaliczone
+Czas
+Szac.
+sektor(y)
+Test zatrzymany
+Nie mo¿na zablokowaæ dysku do wy³¹cznego u¿ytku.\nCzy chcesz mimo to go przetestowaæ (NIE zalecane)?
+Test zakoñczony
+Po³o¿enie
+Test ci¹g³y
+Testowanie bloków od pocz¹tkowego do koñcowego
+Test losowy
+Testowanie bloków w kolejnoœci losowej
+Test przemienny
+testowanie jednego bloku od pocz¹tkowego i jednego od koñcowego
+Test ci¹g³y od koñca
+Testowanie bloków od koñcowego do pocz¹tkowego
+Sektor
+Zweryfiuj b³¹d
+Zapi&sz informacje o dysku
+W&czytaj informacje o dysku
+Inicjowanie ...
+Inspektora dysku
+&Poprzedni
+&Nastêpny
+&IdŸ do ...
+Proszê wybraæ napêd (dostêpny dla systemu operacyjnego) do testowania i metodê testowania.\nPrzeczytaj uwa¿nie informacje szczegó³owe przed rozpoczêciem testowania.\nKliknij Widok, aby zobaczyæ szczegó³y, u¿yj \1 lub zobacz wyniki poprzedniego testu.
+Test odczytu
+Odczytuje powierzchniê dysku, aby sprawdziæ czy wszystkie sektory s¹ dostêpne i czytelne.\n\nTest jest bezpieczny i nie wp³ywa na przechowywane dane.\n\nProblemy z dyskiem mog¹ pozostaæ ukryte a ujawnione problemy dysku NIE s¹ sta³e (jak w ScanDisk).
+Test ZAPISU
+Nadpisuje powierzchniê dysku konfigurowalnym wzorcem. Wymusza analizê s³abych sektorów i sprawdza wszelkie ukryte problemy oraz naprawia je przez ponowny przydzia³ uszkodzonych sektorów\n(jest to regeneracja dysku).\n\nUmo¿liwia lepsze wykorzystanie dysku, aby po teœcie powierzchni móg³ byæ u¿yty zamiast jakichœ\nproblematycznych sektorów.
+ZAPIS + test odczytu
+Nadpisuje powierzchniê dysku konfigurowalnym wzorcem i nastêpnie odczytuje zawartoœæ sektora wstecz, aby sprawdziæ, czy s¹ dostêpne i zgodne. Wymusza analizê s³abych sektorów i sprawdza wszelkie ukryte problemy oraz naprawia je przez ponowny przydzia³ uszkodzonych sektorów\n(jest to regeneracja dysku).\n\nUmo¿liwia lepsze wykorzystanie dysku, aby po teœcie powierzchni móg³ byæ u¿yty zamiast jakichœ\nproblematycznych sektorów.
+Odczyt + ZAPIS + test odczytu (odœwie¿a obszar danych)
+Odczytuje przechowywane dane z ka¿dego bloku, ponownie zapisuje zawartoœæ i ostatecznie odczytuje informacje oraz porównuje je z oryginaln¹ zawartoœci¹. Poprzez szczególowy test i dodatowy cykl zapisu dane bêd¹ u¿yte przed ponownym zapisem zawartoœci w celu poprawy efektywnoœci korekcji b³êdów (regeneracja dysku).\n\nOperacja jest zazwyczaj bezpieczna dla przechowywanych informacji, ale mo¿e wyst¹piæ utrata danych, jeœli system nie jest stabilny i/lub po awarii zasilania, przetaktowania, zasilania/pamiêci/problemami z kablem zasilaj¹cym oraz innymi czynnikami.\n\nTesty mog¹ s³u¿yæ do odœwie¿enia obszaru danych urz¹dzenia magazynuj¹cego bez potrzeby pe³nego wymazywania, ale nadal zalecane jest utworzenie kopii zapasowej wa¿nych danych przed tym testem.
+Reinicjacja powierzchni dysku
+Nadpisuje powierzchniê dysku specjalnym inicjowanym wzorcem, aby przywróciæ sektory do stanu domyœlnego (puste) oraz odczytuje zawartoœæ sektora w celu jego weryfikacji, je¿eli jest dostêpny i spójny. Wymusza analizê s³abych sektorów i weryfikuje ukryte problemy oraz naprawia je przez przydzia³ z³ych sektorów (jest to regeneracja dysku).\n\nUmo¿liwia lepsze wykorzystanie dysku, poniewa¿ po teœcie zapasowy obszar bêdzie u¿yty zamiast jakichœ problematycznych sektorów.\nBardzo intensywny i czasoch³onny test, szczególnie, je¿eli poziom (iloœæ cykli nadpisywania) jest ustawiona na wy¿sz¹ wartoœæ.\n\nProsta wersja tego testu zazwyczaj nazywana jest (nieprawid³owo) jako formatowanie niskopoziomowe.
+Kolejnoœæ sektorów
+Nieniszcz¹cy - dane bezpieczne
+Zablokuj napêd podczas testowania (odmontuj woluminy)
+Powtórz test
+razy
+Ograniczenie testowania do okreœlonych bloków danych
+Pierwszy blok:
+Ostatni blok:
+NISZCZ¥CY - wszystkie dane bêd¹ usuniête
+Puste dane (zera)
+Losowe dane
+Numer sektora
+Obszerny test odczyt-zapis-odczyt z dod. operacj¹ zapisu
+Poziom reinicjalizacji powierzchni 
+W wiêkszoœæ przypadków nieniszcz¹cy (patrz uwagi i pomoc) 
+Ten test trwale zniszczy WSZTSTKIE DANE na wybranym dysku.\nFunkcji nie mo¿na cofn¹æ.\n\nCzy na pewno chcesz przeprowadziæ test i utraciæ WSZYSTKIE DANE przechowywane na dysku?
+Ten test wykonuje operacjê ZAPISU na wybranym dysku.\nSam test nie jest niszcz¹cy, ale mo¿e wyst¹piæ utrata danych.\n\nCzy na pewno chcesz wykonaæ ten test?
+Potwierdzenie testu 
+Kliknij na mapie powierzchni, aby zobaczyæ zawartoœæ sektora.\n\nKliknij prawym przyciskiem myszki, aby otworzyæ menu kontekstowe.
+Test mierzy czas przesy³ania dla wszystkich bloków, aby ujawniæ, które obszary powierzchni s¹ wolniejsze. Gdy blok jest wolniejszy, skojarzony kolor jest ciemniejszy.
+Autor nie daje ¿adnej gwarancji na dane przechowywane na którymkolwiek dysku.
+Aktualnie zaliczono
+Wszystkie zaliczono
+Nie mo¿na wykonaæ testu zapisu na dysku systemowym, zawieraj¹cym dowolny z nastêpuj¹cych folderów
+Wczytane informacje nale¿¹ do innego dysku.\nJednak¿e po klikniêciu myszk¹ na mapê powierzchni, sektory aktywnego napêdu s¹ wyœwietlane.
+W tym momencie gwarancyjna wymiana dysku nie jest jeszcze mo¿liwa, jedynie mo¿na to bêdzie zrobiæ, je¿eli ¿ywotnoœæ dysku bêdzie siê obni¿aæ.
+Czy chcesz równie¿ obudziæ wszystkie uœpione dyski twarde?\nW przeciwnym razie zostan¹ zaktualizowane tylko informacje o aktywnym dysku.
+Uaktualnij informacje o dysku
+Typ testu:
+Wp³yw na dane:
+Wzorzec zapisu
+Resetuj maksymalne i minimalne wartoœci temperatury
+Temperatura maksymalna (w okresie eksploatacji):
+Poka¿ wartoœci
+U¿yj SSL
+Kontroler SSD
+Stwierdzony stan dysku twardego jest DOSKONA£Y. Nie znaleziono sektorów problematycznych lub s³abych. 
+¯ywotnoœæ jest wyznaczana przez okreœlenie SSD atrybutu(ów) S.M.A.R.T.: 
+Funkcje zarz¹dzania dyskiem
+Wyst¹pi³ b³¹d podczas wysy³ania polecenia do dysku.\nKontroler dysku lub jego sterownik nie obs³uguje tej funkcji.\n\nPolecenia mog¹ byæ zakoñczone po aktualizacji sterownika lub\npodczas korzystania z innego systemu operacyjnego, innego kontrolera dysku\nlub obs³ugiwane obudowy USB / w³¹czenie i dostosowanie stacji dokuj¹cej
+Wy³¹cz i dostosuj
+Wy³¹cz
+OpóŸnij (sekund):
+Niestandardowe progi temperatury
+Temperatura dopuszczalna ¿ó³ty:
+Temperatura dopuszczalna czerwony:
+Wy³¹cz niestandardowe progi dla wybranego dysku
+Niestandardowe ustawienia temperatury
+Modyfikuj niestandardowe progi temperatury
+Niestandardowe
+Globalne
+Tylko jeden dysk w wersji bezp³atnej Hard Disk Sentinel mo¿e mieæ skonfigutowany próg temperatury niestandardowej.
+Brakuje aterownika S.M.A.R.T. z aktualnego systemu Win9x/ME.\nCzy chcesz teraz automatycznie uaktualniæ konfiguracjê i zrestarowaæ komputer?
+Wczytaj klucz aktywacyjny
+Punkt(y) instalacji NTFS
+Punkt instalacji
+Uwaga: Twoje dane nie mog¹ byæ w pe³ni zabezpieczone.
+Oferta ograniczona czasowo: uaktualnij dzisiaj i zapisz \1 na op³atê za licencjê!!
+(wpisz kod kuponu \1 podczas rejestracji online lub kliknij poni¿szy link)
+Proszê czekaæ \1 sekundê(y) przed kontynuacj¹ ...
+Informacje o woluminie
+Styl partycji
+Aktywny
+Wyrównanie
+Przesuniêcie pocz¹tkowe
+D³ugoœæ
+Rozmiar jednostki alokacji
+Rozmiar wszystkich jednostek alokacji
+Wolne jednostki alokacji
+U¿ywane jednostki alokacji
+Typ woluminu
+Dynamiczny
+Podstawowy
+&Otwórz stan dysku(ów) w trybie offline
+Wybierz dysk(i) z pól wyboru, aby zobaczyæ ich stan, ta jak po³¹czenia (online) dysku(ów).
+Offline
+Wybierz dysk(i) z pola wyboru, aby do³¹czyæ do autentycznego raportu dysku.
+Zapi&sz autentyczny raport dysku (HTML)
+&SprawdŸ autentycznoœæ raportu dysku
+Wybrany plik nie jest autentycznym raportem dysku.
+Autentycznoœæ raportu dysku zweryfikowano pomyœlnie i prawid³owo.
+Autentyczny raport dysku jest niew³aœciwy lub uszkodzony.
+Autentyczny raport dysku
+&Wolumin Windows / Informacje RAID
+Wyst¹pi³o \1 b³êdów podczas przesy³ania danych. Mo¿e to wskazywaæ na problem z urz¹dzeniem lub z danymi/kable zasilaj¹ce. Zalecane jest, aby sprawdziæ i je¿eli jest to mo¿liwe wymieniæ kable. 
+Zg³oszono \1 b³êdów podczas zapisu do urz¹dzenia.
+Ograniczenie kontrolera RAID mo¿e uniemo¿liwiæ wykrycie dalszych informacji o dysku. Nie jest to ograniczenie oprogramowania Hard Disk Sentinel.
+Prenumeruj biuletyn, aby otrzymywaæ wiadomoœci o aktualizacjach i ofertach specjalnych
+Wybierz w menu Raport -> Wyœlij raport testu do producenta oraz wybierz Zaprenumeruj biuletyn, aby otrzymaæ informacjê o ofertach specjalnych i uaktualnieniach.
+Minimalna dzienna
+Zakres standardowy
+Cecha TRIM z SSD jest obs³ugiwana oraz w³¹czona dla zapewnienia optymalnej wydajnoœci..
+Cecha TRIM z SSD jest obs³ugiwana, lecz wy³¹czona. Zalecane jest uaktualnienie systemu operacyjnego, kontrolera dysku lub jego sterownika w celu poprawy wydajnoœci.
+Czas zywotnoœci zapisów:
+Iloœæ cykli start/stop:
+Konfiguracja nie dostarcza dalszych informacji o stanie dysku. Jakkolwiek menu "Dysk" funkcja "Test Powierzchni" mo¿e spawdziæ funkcjonalnoœæ dysku, ujawniæ lub naprawiæ mo¿liwe problemy.
+Aktualna wersja wygas³a. WprowadŸ klucz rejestracyjny, aby kontynuowaæ korzystanie z oprogramowania.
+Dziennik nie zawiera ¿adnych wpisów.
+Eksportuj wartoœci szybkoœci przesy³ania
+Automatycznie dopasuj ustawienia przy ponownym restarcie
+Wiêcej informacji:
+Kliknij, aby dodaæ komentarz ...
+Komentarz
+Zmieñ &folder do przechowywania ustawieñ i statystyk
+Ostrze¿enie o duplikacie licencji
+Ten sam kod rejestracji zosta³ u¿yty, dla obu zainstalowanych wersjii przenoœnych.\nAby w pe³ni u¿yæ cech obu wersji, wymagane s¹ oddzielne licencje dla tych wersji.
+Stan ostatniej aktualizacji:
+Sprawdzanie gwarancji online
+Kopiuj wybrane wartoœci do schowka
+Uzyskiwanie dostêpu do niektórych obszarów powierzchni podczas\ntestowania mo¿e byæ wolniejsze z powodu aktywnego systemu operacyjnego i aplikacji, mo¿e to spowodowaæ ciemnienie\nzielonych bloków.
+Resetuj liczniki obci¹¿enia
+Czy chcesz zapisaæ oddzielne raporty dla wybranych dysków?
+Wykryta pojemnoœæ (\1) dysku \2 nie jest prawid³owa, pojemnoœæ dysku powinna wynosiæ \3.
+Aktualny kontroler dysku/sterownik/karta mo¿e nie byæ w pe³ni zgodny z \1
+Korzystanie z dysku mo¿e spowodowaæ uszkodzenie systemu plików i/lub utratê danych.
+Aby bezpiecznie korzystaæ z tego urz¹dzenia, zaleca siê sprawdzenie oraz zmianê konfiguracji lub aktualizacjê systemu operacyjnego, kontrolera dysku twardego i/lub sterowników.
+Szczegó³owe informacje o urz¹dzeniu
+Kontroler dysku twardego zapewnia jedynie ogólne samokontrolê stanu (S.M.A.R.T.), bez dodatkowych informacji. 
+Stan S.M.A.R.T. to: 
+Zawsze na wierzchu
+Wymagane, aby ca³kowicie zamkniêcie Plik -> Zakoñcz i uruchom ponownie, aby zmiany przynios³y efekt.
+Czas bezczynnoœci systemu
+Wykryto nastêpuj¹cy b³¹d(y):
+Informacje o stanie i mo¿liwym b³êdzie(ach) kontrolera dysku twardego (RAID). Mo¿e ró¿niæ siê od stanu fizycznego dysku.
+
+
+
+
+
+
+
+
+
+DMA=DMA
+Ultra DMA=Ultra DMA
+S.M.A.R.T.=S.M.A.R.T.
+Security Mode=Tryb bezpieczny
+Power Management=Zarz¹dzanie energi¹
+Write Cache=Zapis pamiêci podrêcznej
+Host Protected Area=Ochrona obszaru Hosta
+Advanced Power Management=Zaawansowane zarz¹dzanie energi¹
+Advanced Power Management Level=Poziom zaawansowanego zarz¹dzania energi¹
+Current APM Level=Aktualny poziom APM
+Extended Power Management=Rozszerzone zarz¹dzanie energi¹
+APM01=Minimalny zu¿ycie energii w trybie czuwania
+APM02=Poœrednie poziomy zarz¹dzania energi¹ w trybie czuwania
+APM80=Minimalny pobór mocy poza stanem czuwania
+APM81=Poœrednie poziomy zarz¹dzania energi¹ poza stanem czuwania
+APMFE=Maksymalna wydajnoœæ i zu¿ycie energii
+FreeFall01=Najni¿sza czu³oœæ na zdarzenia wolnego opadania
+FreeFall02=Zrównowa¿ona czu³oœæ na zdarzenia wolnego opadania
+FreeFallFF=Najwy¿sza czu³oœæ na zdarzenia wolnego opadania
+Current Sensitivity=Aktualna czu³oœæ
+Power Up In Standby=Zasilanie w stanie czuwania
+48-bit LBA Addressing=48-bitowe adresowanie LBA
+Device Configuration Overlay=Nak³adka konfiguracji urz¹dzenia
+Read/Write DMA Queue=Kolejkowanie Odczytu/Zapisu DMA
+Native Command Queuing=Kolejkowanie wiadomoœci poleceñ (NCQ)
+Read Ahead Buffer=Buforowanie odczytu z wyprzedzeniem
+Maximum Multiword DMA Mode=Maksymalny tryb wielos³owowy DMA
+Active Multiword DMA Mode=Aktywny tryb wielos³owowy DMA
+IORDY Support=Obs³uga IORDY
+Maximum sectors transferred on R/W multiple=Maksymalna iloœæ przes³anych sektorów na wiele R/W
+Minimum multiword DMA transfer time=Minimalny wielos³owowy czas przesy³ania DMA
+Recommended multiword DMA transfer time=Zalecany wielos³owowy czas przesy³ania DMA
+Minimum PIO transfer time without IORDY=Minimalny czas przesy³ania PIO  bez IORDY
+Minimum PIO transfer time with IORDY=Minimalny czas przesy³ania PIO z IORDY
+Security Erase=Usuwanie zabezpieczeñ
+Security Erase Time=Czas usuwania zabezpieczeñ
+Security Enhanced Erase Feature=Funkcja usuwania rozszerzonych zabezpieczeñ
+Security Enhanced Erase Time=Czas usuwania rozszerzonych zabezpieczeñ
+Security Enabled=Zabezpieczenie w³¹czone
+Security Locked=Zabezpieczenie zablokowane
+Security Frozen=Zabezpieczenie zamro¿one
+Security Counter Expired=Wygaœniêcie licznika zabezpieczeñ
+Security Level=Poziom zabezpieczenia
+Serial ATA Features=Funckje S-ATA
+Interface=Interfejs
+S-ATA Compliance=Zgodnoœæ z S-ATA
+S-ATA I Signaling Speed (1.5 Gps)=Sygnalizacja szybkoœci S-ATA I (1.5 Gps)
+S-ATA II Signaling Speed (3 Gps)=Sygnalizacja szybkoœci S-ATA II (3 Gps)
+Receipt Of Power Management Requests From Host=Otrzymanie ¿¹dania zarz¹dzania energi¹ z hosta
+PHY Event Counters=Licznik zdarzeñ PHY
+Non-Zero Buffer Offsets In DMA Setup FIS=Niezerowy bufor przesuniêcia w ustawieniu DMA FIS
+DMA Setup Auto-Activate Optimization=Optymalizacja ustawienia automatycznej aktywacji DMA
+Device Initiating Interface Power Management=Zarz¹dzanie interfejsem urz¹dzenia inicjowania zasilania
+In-Order Data Delivery=Kolejkowanie dostarczania danych
+Asynchronous Notification=Powiadamianie asynchroniczne
+Software Settings Preservation=Ustawienia ochrony oprogramowania
+Queue Length=D³ugoœæ kolejki
+Disk Family=Rodzina dysku
+Form Factor=Rozmiar obudowy
+Capacity=Pojemnoœæ
+Number Of Disks=Iloœæ talerzy
+Number Of Heads=Iloœæ g³owic
+Rotational Speed=Szybkoœæ obrotów
+RPM=RPM
+Rotation Time=Czas obrotu
+Average Rotational Latency=Œrednie opóŸnienie obrotów
+Disk Interface=Interfejs dysku
+Buffer-Host Max. Rate=Maksymalna szybkoœæ buforowania Hosta
+Drive Ready Time (typical)=Czas gotowoœci napêdu (typowy)
+Average Seek Time=Œredni czas wyszukiwania
+Track To Track Seek Time=Czas wyszukiwania od œcie¿ki do œcie¿ki
+Full Stroke Seek Time=Czas pe³nego skoku wyszukiwania
+Width=Szerokoœæ
+Depth=G³êbokoœæ
+Height=Wysokoœæ
+Weight=Waga
+grams=gram
+pounds=funt(a)
+Acoustic=Akustyka
+Idle=Bezczynny
+Required power for spinup=Wymagana moc zasilania do ropêdzenia talerzy
+Power required (seek)=Wymagana moc zasilania (wyszukiwanie)
+Power required (idle)=Wymagana moc zasilania (bezczynnoœæ)
+Power required (standby)=Wymagana moc zasilania (tryb gotowoœci)
+Manufacturer=Producent
+Manufacturer Website=Strona internetowa producenta
+; lista cech SMART
+S.M.A.R.T. Details=Szczegó³y S.M.A.R.T.
+Off-line data collection=Stan zbierania danych off-line
+OFF00=Nigdy nie uruchamiano
+OFF02=Zakoñczono pomyœlnie
+OFF03=Dzia³alnoœæ w toku
+OFF04=Zawieszone przez przerwanie polecenia z hosta
+OFF05=Przerwane przez przerwanie polecenia z hosta
+OFF06=Przerwane przez urz¹dzenie z krytycznym b³êdem
+Self test execution status=Stan wykonania auto-testu
+SET00a=Zakoñczono pomyœlnie
+SET00b=Nigdy nie uruchamiano
+SET01=Przerwane przez Hosta
+SET02=Przerwane przez hosta z resetem sprzêtu/oprogramowania
+SET03=Podczas testowaniawyst¹pi³ b³¹d krytyczny/nieznany
+SET04=Test nie powiód³ siê przez nieznany element
+SET05=Test nie powiód³ siê przez element elektryczny
+SET06=Test nie powiód³ siê przez serwo/wyszukiwanie elementu
+SET07=Test nie powiód³ siê przez element odczytu
+SET08=Test nie powiod³a siê obs³uga podejrzewanych uszkodzeñ
+SET15=Sprawdzanie jest w toku
+SETCO=zakoñczono
+Total time to complete off-line data collection=Ca³kowity czas do zakoñczenia zbierania danych Off-line
+Execute off-line immediate=Natychmiastowe wykonanie Off-line
+Abort/restart off-line by host=Przerwij/restartuj Off-line porzez Hosta
+Off-line read scanning=Skanowanie odczytu Off-line
+Short Self-test=Autotest krótki
+Extended Self-test=Autotest rozszerzony
+Selective Self-test=Autotest Selektywny
+Conveyance self-test=Autotest transportowy
+Save data before/after power saving mode=Zapis danych przed/po trybie oszczêdzania energii
+Enable/Disable attribute autosave=W³¹cz/wy³¹cz atrybut auto-zapisu
+Error logging capability=Funkcja rejestrowania b³êdów
+Short Self-test Estimated Time=Szacunkowy czas auto-testu krótkiego
+Extended Self-test Estimated Time=Szacunkowy czas auto-testu rozszerzonego
+Last Short Self-test Result=Wynik ostatniego auto-testu krótkiego
+Last Short Self-test Date=Data ostatniego auto-testu krótkiego
+Last Short Self-test Duration=Czas trwania ostatniego auto-testu krótkiego
+Last Extended Self-test Result=Wynik ostatniego auto-testu rozszerzonego
+Last Extended Self-test Date=Data ostatniego auto-testu rozszerzonego
+Last Extended Self-test Duration=Czas trwania ostatniego auto-testu rozszerzonego
+Conveyance Self-test estimated time=Auto-test transportowy ¿ywotnoœci
+Last Conveyance Self-test Result=Wynik ostatniego auto-testu transportowego
+Last Conveyance Self-test Date=Data ostatniego testu transportowego
+Conveyance self-test estimated time=Szacunkowy czas auto-testu transportowego
+Last Conveyance Self-test Duration=Czas trwania ostatniego auto-testu transportowego
+NOP Command=Polecenie NOP
+Trusted Computing=Wiarygodne œrodowisko uruchamiania
+64-bit World Wide ID=64-bitowy ogólnoœwiatowy ID
+Streaming=Przesy³anie strumieniowe
+Media Card Pass Through=Bezpoœrednie przekazywanie z karty pamiêci
+General Purpose Logging=Logowanie ogólnego przeznaczenia
+Error Logging=B³¹d logowania
+CFA Feature Set=Zestaw funkcji CFA
+Long Physical Sectors=D³ugie sektory fizyczne
+Long Logical Sectors=D³ugie sektory logiczne
+Write-Read-Verify=Sprawdzanie odczytu i zapisu
+NV Cache Feature=Funkcja pamiêci podrêcznej NV
+NV Cache Power Mode=Tryb zasilania pamiêci podrêcznej NV
+
+# dodano 23 Maj 2012 
+Transport Version=Wersja transportowa
+NV Cache Size=Rozmiar pamiêci podrêcznej NV
+Free-fall Control=Kontrola swobodnego opadania
+Free-fall Control Sensitivity=Kontrola czu³oœci swobodnego opadania
+Non-rotating Media (SSD)=Noœnik nieobrotowy (SSD)
+Nominal Media Rotation Rate=Nominalna szybkoœæ obrotów dysku
+S-ATA Gen3 Signaling Speed (6 Gps)=S-ATA Gen3 Sygnalizacja Szybkoœci (6 Gps)
+
+# dodano 19 Czerwca 2009
+CFast Device=Urz¹dzenie CFast
+SSD Features=Cechy SSD
+Data Set Management=Zarz¹dzanie zestawem danych
+TRIM Command=Polecenie TRIM
+Deterministic Read After TRIM=Deterministyczny odczyt po TRIM
+
+Operating System TRIM Function=Funkcja TRIM Systemu operacynego
+
+# dodano 3 PaŸdziernika 2011
+
+Self-Test Results=Wyniki auto-testu
+SST05=Niepowodzenie testu pierwszego segmentu
+SST06=Niepowodzenie testu drugiego segmentu
+SST07=Niepowodzenie autotestu w testowanym segmencie
+SSTN=Auto-test segmentu
+SSTN0=ID segmentu nie jest dostêpne
+SSTH=Godzin zasilania
+SSTL=Nieprawid³owy adres (LBA)
+SSHL=Dysk twardy zg³asza nastêpuj¹ce problemy:
+
+
+SA1=Wyst¹pi³y b³êdy podczas odczytu danych raw z dysku\Wskazuje na problem z powierzchni¹ dysku lub g³owicami odczytu/zapisu.
+SA2=£¹czna (ogólna) sprawnoœæ dysku twardego\Wskazuje na problem z silnikiem lub ³o¿yskami, servo lub ³o¿yskami.
+SA3=Czas potrzebny do rozpêdzenia wrzeciona do pe³nych obrotów\Wskazuje na problem z silnikiem lub ³o¿yskami.
+SA4=Iloœæ cykli start/stop wrzeciona\Wartoœæ ta nie wp³ywa bezpoœrednio na stan dysku.
+SA5=Iloœæ przeniesionych sektorów do wolnego obszaru\Wskazuje na problem z powierzchni¹ dysku lub g³owicami odczytu/zapisu.
+SA6=Margines kana³u podczas odczytu danych\Dok³adna funkcja tego atrybutu nie jest okreœlona.
+SA7=B³êdy wspó³czynnika pozycjonowania g³owic odczytu/zapisu\Wskazuje na problem z serwo, g³owic¹. Wysoka temperatura równie¿ mo¿e spowodowaæ problem.
+SA8=Œredni czas operacji przeszukiwania g³owic\Wskazuje na problem z serwo.
+SA9=Ca³kowity czas zasilania dysku\Jednostki miary, zale¿¹ od producenta.
+SA10=Iloœæ prób ponowieñ uruchamiania wirowania\Wskazuje na problem z silnikiem, ³o¿yskami lub zasilaczem.
+SA11=Iloœæ prób kalibracji dysku\Wskazuje na problem z silnikiem, ³o¿yskami lub zasilaczem.
+SA12=Iloœæ pe³nych cykli w³/wy³ dysku\Wartoœæ ta nie wp³ywa bezpoœrednio na stan dysku.
+SA13=Iloœæ niekorygowalnych b³êdów odczytu aplikacji\Iloœæ niekorygowalnych b³êdów odczytu
+SA184=Iloœæ b³êdów parzystoœci podczas przesy³ania miêdzy pamiêci¹ podrêczn¹ RAM a hostem.
+SA187=B³êdy, które nie mog¹ byæ odzyskane przy u¿yciu metod  korekcji sprzêtowej.
+SA187MTRON=Iloœæ kasowania bloku wirtualnego\wskazuje na zu¿ycie urz¹dzenia pamiêci masowej.
+SA188=Iloœæ przerwanych operacji z powodu przekroczenia limitu czasu HDD. Wartoœæ wiêksza ni¿ zero mo¿e wskazywaæ na Ÿród³o zasilania lub problem z po³¹czeniem kablem danych.
+SA189=Iloœæ niebezpiecznych operacji zapisu poza normalnym zakresem ruchów g³owicy.
+SA190=Temperatura przep³ywu powietrza\Temperatura powietrza wewn¹trz obudowy dysku twardego.
+SA191=Iloœæ b³êdów mechanicznych\Iloœæ b³êdów wynikaj¹ca ze wstrz¹sów lub wibracji.
+SA192=Iloœæ cykli wy³¹czania dysku\Wartoœæ ta nie wp³ywa bezpoœrednio na stan dysku.
+SA193=Iloœæ cykli parkowania/wyparkowania\Iloœæ cykli  w których g³owica przesunê³a sie na pozycjê strefy wczytywania.
+SA194=Temperatura dysku\Temperatura wewn¹trz obudowy dysku twardego.
+SA195=Iloœæ b³êdów poprawialnych\Iloœæ poprawionych b³êdów przez wewnêtrzny mechanizm korecji b³êdów.
+SA196=Iloœæ b³êdów podczas przesy³ania danych miêdzy dyskiem a hostem.
+SA197=Iloœæ niestabilnych sektorów\Aktualna iloœæ sektorów oczekuj¹cych na remapowanie.
+SA198=Iloœæ niekorygowalnych b³êdów podczas odczytu/zapisu\Wskazuje na problem z powierzchni¹ dysku lub g³owicami odczytu/zapisu.
+SA199=Iloœæ b³êdów podczas przesy³ania danych miêdzy dyskiem a hostem\Wskazuje na problem z zasilaniem lub kablem do transmisji danych.
+SA200=Wyst¹pi³y b³êdy podczas zapisu danych raw na dysk\Wskazuje na problem z powierzchni¹ dysku lub g³owicami odczytu/zapisu.
+SA201=Iloœæ b³êdów odczytu oprogramowania\Iloœæ niekorygowalnych b³êdów odczytu.
+SA202=Iloœæ b³êdów w znacznikach danych adresowych\Iloœæ b³êdnych znaczników lub nieprawid³owy adres.
+SA203=Iloœæ b³êdów korekcji danych\ Nieprawid³owa suma kontrolna korekcji b³êdów znalezionych podczas korekcji b³êdów.
+SA204=Iloœæ poprawionych b³êdów danych\B³êdy poprawione przez wewnêtrzny mechanizm korekcji b³êdów.
+SA205=Iloœæ problemów cieplnych\Ca³kowita iloœæ problemów spowodowanych przez zbyt wysokie temperatury.
+SA206=Wysokoœæ ruchów g³owicy\Wysokoœæ g³owicy powy¿ej powierzchni dysku.
+SA207=Wartoœæ pr¹du do rozpêdzenia talerzy\Wymagany pr¹d do rozpêdzenia dysku.
+SA208=Iloœæ wymaganych cykli do rozpêdzenia talerzy dysku\Iloœæ ponowieñ podczas wirowania z powodu niskiego dostêpnego pr¹du.
+SA209=Wydajnoœæ dysku podczas operacji w trybie offline\Test wydajnoœci g³owic napêdu podczas wewnêtrznych auto-testów.
+SA211=Wykryto wibracje podczas operacji zapisu.
+SA212=Wykryto wstrz¹sy podczas operacji zapisu.
+SA220=Odleg³oœæ przesuniêcia dysku wzglêdem wrzeciona\Niew³aœciwe wirowanie dysku mo¿e byæ spowodowane przez wstrz¹s mechaniczny lub wysok¹ temperaturê.
+SA221=Iloœæ b³êdów mechanicznych\Iloœæ b³êdów z powodu wstrz¹sów lub wibracji.
+SA222=Iloœæ godzin zasilania\Wartoœæ ta ci¹gle wzrasta (raz na godzinê)).
+SA223=Iloœæ operacji parkowania/wyparkowania\Iloœæ zg³oszonych g³owic napêdu/opuszczaj¹cych strefê danych.
+SA224=Wielkoœæ tarcia mechanicznego\Wielkoœæ tarcia miêdzy czêœciami mechanicznymi. Wskazuje na problem z podsystemem mechanicznym dysku.
+SA226=Ca³kowity czas wczytywania g³owicy\Czas oddczytu/zapisu g³owicy w strefie danych.
+SA227=Szybkoœæ wzrostu momentu obrotowego\Wzrost momentu obrotowego podczas operacji wirowania dysku twardego.
+SA228=Iloœæ cykli wy³¹czania zasilania\Iloœci czasu wycofania g³owicy w wyniku utraty zasilania.
+SA230=Czêsttliwoœæ pozycjonowania g³owicy\Odleg³oœci przemieszczania g³owicy miêdzy operacjami.
+SA231=Temperatura dysku\Temperatura wewn¹trz obudowy dysku twardego.
+SA240=Iloœæ godzin pozycjonowania g³owicy\Zu¿yty czas na pozycjonowanie g³owicy napêdu.
+SA250=Iloœæ ponowieñ podczas operacji odczytu\Iloœæ b³êdów podczas odczytu sektora z powierzchni dysku.
+SA254=Iloœæ swobodnych spadków zdarzeñ wykrytych przez sensor przyspieszeniomierza.
+SA255=Okreœla producent\Funkcja i wartoœæ tego atrybutu jest okreœlona przez producenta.
+
+SC01=Bufor powy¿ej/poni¿ej uruchomionej iloœci
+SC02_0000=Poprawione b³êdy zapisu bez dopuszczalnego opóŸnienia
+SC02_0001=poprawione b³êdy zapisu z dopuszczalnymi opóŸnieniami
+SC02_0002=Wszystkie b³êdy zapisu
+SC02_0003=Wszystkie poprawione b³êdy zapisu
+SC02_0004=Wszystkie b³êdy zapisu poprawione przez algorytm
+SC02_0005=Wszystkie b³êdy zapisu
+SC02_0006=Wszystkie niekorygowalne b³êdy zapisu
+SC03_0000=Naprawione sprzêtowe b³êdy ECC
+SC03_0001=Wszystkie poprawione b³êdy odczytu z dopuszczalnymi opóŸnieniami
+SC03_0002=Wszystkie b³êdy odczytu
+SC03_0003=wszystkie poprawione b³êdy odczytu
+SC03_0004=Wszystkie b³êdy odczytu poprawione przez algorytm
+SC03_0005=Wszystkie bajty odczytu
+SC03_0006=Wszystkie niekorygowalne b³êdy odczytu
+SC04_0000=Wszystkie b³êdy wstecznego odczytu poprawione metod¹ sprzêtow¹ z funkcj¹ ECC
+SC04_0001=Wszystkie poprawione b³êdy wstecznego odczytu z dopuszczalnymi opóŸnieniami
+SC04_0002=Wszystkie b³êdy wstecznego odczytu
+SC04_0003=Wszystkie poprawione b³êdy wstecznego odczytu
+SC04_0004=Wszystkie b³êdy wstecznego odczytu poprawione przez algorytm
+SC04_0005=Wszystkie bajty wstecznego odczytu 
+SC04_0006=Wszystkie niepoprawione b³êdy wstecznego odczytu
+SC05_0000=SprawdŸ, czy poprawiono b³êdy bez dopuszczalnego opóŸnienia
+SC05_0001=SprawdŸ, czy poprawiono b³êdy z dopuszczalnymi opóŸnieniami
+SC05_0002=Wszystkie sprawdzone b³êdy
+SC05_0003=Wszystkie sprawdzone poprawione b³êdy
+SC05_0004=Wszystkie sprawdzone b³êdy poprawione przez algorytm
+SC05_0005=Wszystkie sprawdzone bajty
+SC05_0006=Wszystkie niepoprawione b³êdy weryfikacji
+SC06_0000=Nie uœrednione b³êdy
+SC07=Ostatnie b³êdy zdarzeñ
+SC0B=Ostatnio odroczony b³¹d lub zdarzenia asynchroniczne
+SC0D_0000=Temperatura
+SC0D_0001=Temperatura odniesienia
+SC0E_0001=Data produkcji (rok/dzieñ)
+SC0E_0002=Data sprawozdania
+SC0E_0003=Okreœlona iloœæ cykli przez ca³y okres u¿ytkowania urz¹dzenia
+SC0E_0004=Skumulowane cykle start-stop
+SC0E_0005=Okreœlona iloœæ obci¹¿eñ spowodowanych operacjami odczytu, zapisu w ci¹gu ca³ego okresu u¿ytkowania urz¹dzenia
+SC0E_0006=Skumulowane cykle odci¹¿ania
+SC0F=Dane klienta parametru aplikacji
+SC10=Dziennik wyników auto-testu
+SC18=Dziennik protoko³u okreœlonego portu
+SC1A_0001=Skumulowane przejœcia do trybu aktywnego
+SC1A_0002=Skumulowane przejœcia do trybu bezczynnoœci_a
+SC1A_0003=Skumulowane przejœcia do trybu bezczynnoœci_b
+SC1A_0004=Skumulowane przejœcia do trybu bezczynnoœci_c
+SC1A_0008=Skumulowane przejœcia do trybu gotowoœci_z
+SC1A_0009=Skumulowane przejœcia do trybu gotowoœci_y
+SC37_0000=Bloki wysy³ane do inicjatora
+SC37_0001=Bloki odebrane z inicjatora
+SC37_0002=Bloki odczytane z pamiêci podrêcznej i wys³ane do inicjatora
+SC37_0003=Polecenia I/O rozmiaru mniejszego ni¿ rozmiar segmentu
+SC37_0004=Polecenia I/O rozmiaru wiêkszego ni¿ rozmiar segmentu
+SC3E_0000=Iloœæ godzin zasilania dysku
+SC3E_8000=Iloœæ godzin zasilania dysku
+SC3E_0008=Pozosta³o minut do nastêpnego testu wewnêtrznego
+

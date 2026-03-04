@@ -1,0 +1,1673 @@
+[Information]
+; (Latest Translator, First Translator, Second Translator ...)
+TRANSLATOR=Marián Hikaník, Ján Kinčeš, Maxix
+VERSION=9.2.3
+
+[Language]
+LANGUAGE=Slovensky
+CHARACTER_CODE=Unicode (UTF-16, LE, w/ BOM)
+; Locale ID: https://docs.microsoft.com/previous-versions/windows/embedded/ms912047(v=winembedded.10)
+LOCALE_ID=Ox041B
+
+[Url]
+WIKIPEDIA_SMART=https://sk.wikipedia.org/wiki/S.M.A.R.T.
+
+[Menu]
+FILE=&Súbor
+CUSTOMIZE=&Prispôsobiť
+EXIT=&Ukončiť
+EDIT=Ú&pravy
+COPY=&Kopírovať
+FUNCTION=F&unkcia
+HIDE_SMART_INFO=Skryť hodnoty &S.M.A.R.T.
+HIDE_SERIAL_NUMBER=Skryť sériové čís&lo
+SHOW_DRIVE_LETTER=Zobraziť písmeno &jednotky
+ADVANCED_DISK_SEARCH=Pokročilé &vyhľadávanie na disku
+EVENT_LOG=Záznam &udalostí
+AAM_APM_CONTROL=Ovládanie hlučnosti a spotreby disku
+AUTO_AAM_APM_ADAPTION=Automatické prispôsobenie hlučnosti a spotreby disku
+RESIDENT=Ponechať spustené v systémovom panel&i
+STARTUP=&Spustenie
+OPEN_DISK_MANAGEMENT=Otvoriť "Správu &diskov"
+OPEN_DEVICE_MANAGER=Otvoriť "Správcu &zariadení"
+ADVANCED_FEATURE=Pokročilé n&astavenia
+REFRESH=O&bnoviť
+RESCAN=Pres&kenovať znovu
+DISABLE=Vyp&núť
+AUTO_REFRESH=&Automaticky obnoviť
+AUTO_REFRESH_TARGET=Automa&ticky obnoviť a označiť
+AUTO_REFRESH_TARGET_ALL_DISK=Automatické obnovenie - ozn&ačiť všetky disky
+AUTO_REFRESH_UNTARGET_ALL_DISK=Automatické obnovenie - ne&označiť všetky disky
+WAIT_TIME_AT_STARTUP=Čas &čakania pri spustení
+GRAPH=&Graf
+THEME=&Téma
+DISK=&Disk
+HELP=&Pomocník
+HELP_WEB=&Pomocník [Web]
+HELP_ABOUT=&O programe CrystalDiskInfo
+HELP_ABOUT_SMART=O systéme &S.M.A.R.T. (Wikipedia) [Web]
+LANGUAGE=&Jazyk
+ITEM=&Položka
+TEMPERATURE_TYPE=Typ &teploty
+CELSIUS=v stupňoch Celzia (°C)
+FAHRENHEIT=v stupňoch Fahrenheita (°F)
+HEALTH_STATUS_SETTING=Nastavenie &stavu disku
+
+;Graph
+OPTION=&Nastavenie
+LEGEND_POSITION=Pozícia &legendy
+NORTH_WEST=Vľavo-&hore
+NORTH_EAST=Vpravo-h&ore
+SOUTH_WEST=V&ľavo-dole
+SOUTH_EAST=V&pravo-dole
+MAX_PLOT_POINT=&Max. bod grafu
+TIME_FORMAT=Formát &času
+PAINT_WEEKEND=&Podfarbiť dni víkendu
+ALL=&Všetky
+
+;2.7.0
+COPY_OPTION=Nastavenie &kopírovania
+RESIDENT_STYLE=S&pôsob rezidentnosti
+MINIMIZE=Minimalizovať
+HIDE=Skryť
+
+;3.0.0
+ZOOM=&Priblíženie
+AUTO=&Auto
+ATTRIBUTE=&Atribúty
+
+;3.5.0
+ASCII_VIEW=Náhľad ASCII
+AUTO_DTECTION=Automatická detekcia
+SECOND=sek.
+MINUTE=min.
+HOUR=hod.
+
+:3.9.4
+WORKAROUND=Po&môcka na riešenie problému
+
+;4.0.0
+ALERT_MAIL=Upozornenie e-mailom
+MAIL_SETTINGS=Nastavenia e-mailu
+SMART_IN_ENGLISH=Parametre S.M.A.R.T. v angličtine
+FONT_SETTING=Nastavenie písma
+
+;5.0.0
+ALERT_FEATURES=Nastavenia u&pozornenia
+ALARM_HISTORY=História alarmov
+ALERT_SOUND=Zvuk alarmu
+SOUND_SETTINGS=Nastavenia zvuku
+GADGET_SUPPORT=Podpora gadgetov
+INSTALL_GADGET=Nainštalovať gadget
+ENABLE_AUTO=Zapnúť (automatická detekcia)
+ENABLE_ALL=Zapnúť (všetky disky)
+ENABLE_RAID=Zapnúť (iba RAID-disky)
+
+;6.0.0
+HIDE_NO_SMART_DISK=S&kryť disky bez technológie S.M.A.R.T.
+GREEN_MODE=Z&elený režim
+
+;8.6.0
+SAVE_TEXT=Uložiť (&text)
+SAVE_IMAGE=&Uložiť (obrázok)
+
+;9.0.0
+DRIVE_SORT_METHOD=Spôsob zoraďovania jednotiek
+PHYSICAL_DRIVE_ID=ID fyzickej jednotky
+DRIVE_LETTER=Písmeno jednotky
+DRIVE_MENU_NUMBER=Zobraziť číslo jednotky
+
+;9.2.0
+VOICE=Hlas
+
+[TrayMenu]
+EXIT=Ukončiť
+REFRESH=Obnoviť
+RESCAN=Opätovne skontrolovať
+ENABLE=Zapnúť
+DISABLE=Vypnúť
+ENABLE_ALL=Zapnúť všetko
+DISABLE_ALL=Vypnúť všetko
+AUTO_REFRESH=Automatické obnovenie
+AUTO_REFRESH_01_MIN=1 min.
+AUTO_REFRESH_03_MIN=3 min.
+AUTO_REFRESH_05_MIN=5 min.
+AUTO_REFRESH_10_MIN=10 min.
+AUTO_REFRESH_30_MIN=30 min.
+AUTO_REFRESH_60_MIN=60 min.
+AUTO_REFRESH_TARGET=Automatické obnovenie a označenie
+AUTO_REFRESH_TARGET_ALL_DISK=Automatické obnovenie - označiť všetky disky
+AUTO_REFRESH_UNTARGET_ALL_DISK=Automatické obnovenie - neoznačiť všetky disky
+ALARM_SETTING_TEMPERATURE=Nastavenie alarmu - teplota
+ALARM_SETTING_HEALTH_STATUS=Nastavenie alarmu - stav disku
+SHOW_MAIN_WINDOW=Zobraziť hlavné okno
+SHOW_TEMPERATURE_ICON=Zobraziť ikonu teploty
+SHOW_ALL_TEMPERATURE_ICON=Zobraziť všetky ikony teploty
+HIDE_ALL_TEMPERATURE_ICON=Skryť všetky ikony teploty
+COLLECTIVE_SETTING=Kolektívne nastavenie
+GRAPH=Graf
+;Added 3.0
+SHOW_TEMPERATURE_ICON_ONLY=Zobraziť len ikonu teploty
+
+[DiskStatus]
+GOOD=Dobrý
+CAUTION=Pozor
+BAD=Zlý
+UNKNOWN=Neznámy
+DISK=Disk
+
+[Dialog]
+LIST_ID=ID
+LIST_CURRENT=Aktuálna hodnota
+LIST_WORST=Najhoršia hodnota
+LIST_THRESHOLD=Hranica
+LIST_RAW_VALUES=Hodnoty RAW
+;LIST_DESCRIPTION=Opis
+LIST_ATTRIBUTE_NAME=Názov atribútu
+
+FIRMWARE=Firmware
+SERIAL_NUMBER=Sériové číslo
+INTERFACE=Rozhranie
+STANDARD=Štandard
+TRANSFER_MODE=Prenosový režim
+BUFFER_SIZE=Veľkosť vyrov. pamäte
+NV_CACHE_SIZE=Vyrovnávacia pamäť NV
+ROTATION_RATE=Rýchlosť otáčania
+TEMPERATURE=Teplota
+POWER_ON_HOURS=Hodiny napájania
+POWER_ON_COUNT=Počet zapnutí
+DRIVE_LETTER=Písmeno jednotky
+FEATURE=Funkcie
+HEALTH_STATUS=Stav disku
+
+UNKNOWN=Neznámy
+POWER_ON_COUNT_UNIT=krát
+POWER_ON_HOURS_UNIT=hod.
+POWER_ON_DAYS_UNIT=dní
+POWER_ON_YEARS_UNIT=rokov
+
+;4.3
+TOTAL_HOST_WRITES=Celkové zápisy host.
+TOTAL_HOST_READS=Celkové čítania host.
+TOTAL_NAND_WRITES=Celkové zápisy NAND
+
+;4.5
+WEAR_LEVELING_COUNT=Počet korekcií údaja o opotrebovaní
+
+;6.1
+CURRENT_MODE_SUPPORTED_MODE=Aktuálny režim | Podporovaný režim
+MAJOR_VERSION_MINOR_VERSION=Hlavná verzia | Minoritná verzia
+
+;8.5.0
+FONT_FACE=Vzhľad písma
+FONT_SCALE=Mierka písma (%)
+DEFAULT=Predvolené
+OK=OK
+
+;8.9.0
+ENABLED=Zapnuté
+DISABLED=Vypnuté
+
+[Message]
+DETECT_UNIT_POWER_ON_HOURS=Detekcia hodín napájania (vyžaduje cca 130 sekúnd)
+DETECT_DISK=Deteguje sa disk
+PLEASE_ENABLE_WMI=Prosím zapnite súčasť WMI (Windows Management Instrumentation)
+PLEASE_RESTART_THIS_APPLICATION=Ak chcete zmeniť tému vzhľadu, prosím reštartujte tento program
+DISK_NOT_FOUND=Disk sa nenašiel
+
+[Alarm]
+ALARM_TEMPERATURE=Alarm - teplota
+ALARM_HEALTH_STATUS=Alarm - stav disku
+DEGRADATION=Degradácia
+RECOVERY=Obnova
+;3.5.0
+INFO_HEALTH_STATUS=Info - stav
+
+[Graph]
+PLEASE_SELECT_ITEM=Prosím vyberte položku
+ACTUAL_VALUE=Aktuálna hodnota (RAW)
+NORMALIZED_VALUE=Normalizovaná hodnota (aktuálna)
+ALL_ON=Všetko zapnuté
+ALL_OFF=Všetko vypnuté
+RESET=Reset
+
+[Customize]
+LINE_COLOR=Farba čiary
+BACKGROUND_IMAGE=Obrázok na pozadí
+SUPPORTED_IMAGE_FORMAT=Podporovaný formát obrázka
+ALL_FILES=Všetky súbory
+
+;5.0.0
+SUPPORTED_SOUND_FORMAT=Podporovaný formát zvuku
+
+[AamApm]
+AAM_LOW=<- Potichu (80h)
+AAM_HIGH=Výkon (FEh) ->
+AAM_RECOMMEND=Odporúčaná hodnota
+APM_LOW=<- Min. energia (01h)
+APM_HIGH=Výkon (FEh) ->
+;3.5.0
+AUTOMATIC_ACOUSTIC_MANAGEMENT=Automatický akust. manažment (AAM)
+ADVANCED_POWER_MANAGEMENT=Pokročilá správa napájania (APM)
+
+[WindowTitle]
+ABOUT=O programe CrystalDiskInfo
+GRAPH=Graf
+CUSTOMIZE=Prispôsobiť
+VERSION_INFORMATION=Informácia o verzii
+AAM_APM_CONTROL=Ovládanie AAM/APM
+HEALTH_STATUS_SETTING=Nastavenie stavu disku
+
+;5.0.0
+ALARM_HISTORY=História alarmov
+SOUND_SETTINGS=Nastavenia zvuku
+
+;5.1.0
+FONT_SETTING=Nastavenie písma
+
+[HealthStatus]
+THRESHOLD_OF_CAUTION=Hranica upozorňovania
+APPLY=Použiť
+DEFAULT=Predvolené
+
+[Smart]
+UNKNOWN=Neznámy
+VENDOR_SPECIFIC=Špecifický pre výrobcu
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+04=Počet spustení/zastavení
+05=Počet realokovaných sektorov
+06=Počet dosiahnutí konca pri čítaní
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0B=Pokusy o rekalibrovanie
+0C=Počet cyklov napájania
+0D=Miera pokusov o softvérové opravenie chýb pri čítaní
+16=Aktuálna úroveň hélia
+B8=Chyba typu End-to-End
+BB=Zaznamenané neopraviteľné chyby
+BC=Prerušenie príkazu
+BD=Zápisy s prebehnutím mimo oblasti
+BE=Teplota toku vzduchu
+BF=Miera chýb zaznamenaných otrasovým senzorom
+C0=Počet stiahnutí pri vypnutí napájania
+C1=Počet cyklov načítania/odstránenia
+C2=Teplota
+C3=Hardvérové ECC - obnovené
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných sektorov
+C7=Počet chýb v kontrolnom súčte UltraDMA
+C8=Miera chýb pri zápise
+C9=Miera soft. chýb pri čítaní
+CA=Chyba pri označovaní adresy dát
+CB=Neplatné kontrolné súčty opravy chýb, nájdené pri oprave chýb
+CC=Oprava soft. ECC
+CD=Miera chýb spôsobených vysokou teplotou
+CE=Výška pohybu hlavičiek nad diskom
+CF=Napätie potrebné na roztočenie disku
+D0=Počet opakovaní roztáčania disku pri nedostatočnom napájaní
+D1=Výkon pri vyhľadávaní na disku offline
+D3=Počet vibrácií pri zápise
+D4=Počet otrasov pri zápise
+DC=Posunutie disku
+DD=Miera chýb zaznamenaných otrasovým senzorom
+DE=Počet hodín v zapnutom stave
+DF=Počet opakovaní načítania/odstránenia
+E0=Trenie pri zaťažení
+E1=Počet cyklov načítania/odstránenia
+E2=Doba spúšťania hlavičiek
+E3=Počet zvýšení krútiaceho momentu
+E4=Počet cyklov stiahnutia hlavičiek disku
+E6=Zosilnenie zvuku spôsobeného presunom hlavičiek
+E7=Teplota
+F0=Hodiny pohybu hlavičiek
+FA=Miera opakovaní chybného čítania
+FE=Ochrana pred voľným pádom
+
+;Updated 5.4.0
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartSsd]
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+04=Počet spustení/zastavení
+05=Počet realokovaných sektorov
+06=Počet dosiahnutí konca pri čítaní
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0B=Pokusy o rekalibrovanie
+0C=Počet cyklov napájania
+0D=Miera pokusov o softvérové opravenie chýb pri čítaní
+C0=Počet nebezpečných vypnutí
+C2=Teplota
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných sektorov
+; CrystalDiskInfo assign
+FF=Zostávajúca životnosť
+
+;Updated 5.4.0
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartMtron]
+BB=Počet úplných vymazaní
+
+[SmartIndilinx]
+01=Miera chybných čítaní
+09=Hodiny napájania
+0C=Počet cyklov napájania
+B8=Počiatočný počet zlých blokov
+C2=Teplota
+C3=Počet blokov so zlyhaním programu
+C4=Počet blokov so zlyhaním vymazania
+C5=Počet blokov so zlyhaním čítania
+C6=Celkový počet čítaných sektorov
+C7=Celkový počet zapísaných sektorov
+C8=Celkový počet príkazov na čítanie
+C9=Celkový počet príkazov na zápis
+CA=Celkový počet chybných bitov z flash-pamäte
+CB=Celkový počet čítaných sektorov s opraviteľnými chybami bitov
+CC=Úplný príznak chybného bloku
+CD=Max. počet prog./vymazaní (PE) - špecifikácia
+CE=Minimálny počet vymazaní
+CF=Maximálny počet vymazaní
+D0=Priemerný počet vymazaní
+D1=Zostávajúca životnosť jednotky
+
+[SmartJMicron60x]
+09=Hodiny napájania
+0C=Počet cyklov napájania
+C2=Teplota
+E5=ID zastavenia systému, Flash ID
+E8=Informácia o verzii firmware
+E9=Záznam zlyhaní ECC
+EA=Priemerný počet vymazaní, max. počet vymazaní
+EB=Počet dobrých blokov, počet systémových blokov
+
+[SmartIntel]
+03=Čas rozbehu
+04=Počet spustení/zastavení
+05=Počet realokovaných sektorov
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+AA=Dostupné rezervované miesto
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AE=Neočakávaná strata napájania
+AF=Zlyhanie ochrany proti výpadku napájania
+B7=Počet spomalení SATA
+B8=Počet detekcií chyby typu End to End
+BB=Počet neopraviteľných chýb
+BE=Teplota
+C0=Počet nebezpečných vypnutí
+C2=Teplota
+C5=Počet podozrivých sektorov
+C7=Počet chýb CRC
+E1=Zápisy host.
+E2=Opotrebovanie média pracovnou záťažou (časovo)
+E3=Pracovné zaťaženie s ohľadom na čas - pomer čítania/zapisovania hostiteľa
+E4=Časovač pracovnej záťaže
+E8=Dostupné rezervované miesto
+E9=Indikátor opotrebovania média
+EA=Stav teplotnej brzdy
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F3=Celkové zápisy NAND
+F9=Celkové zápisy NAND
+
+[SmartSamsung] ;Updated 6.6
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet zapnutí
+AF=Počet zlyhaní programu (čip)
+B0=Počet zlyhaní pri vymazávaní (čip)
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet využitých rezervovaných blokov (čip)
+B3=Počet využitých rezervovaných blokov (celkovo)
+B4=Počet nevyužitých rezervovaných blokov (celkovo)
+B5=Počet prog. zlyhaní (celkovo)
+B6=Počet zlyhaní pri vymazávaní (celkovo)
+B7=Počet zlých blokov počas behu (celkovo)
+BB=Počet neopraviteľných chýb
+BE=Teplota toku vzduchu
+C2=Teplota
+C3=Miera chýb ECC
+C6=Počet neopraviteľných chýb offline
+C7=Počet chýb CRC
+C9=Stav Super cap
+CA=Stav režimu SSD
+EB=Počet obnovení napájania
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+
+;Added 6.6
+AA=Počet nevyužitých rezervovaných blokov (čip) 
+AB=Počet zlyhaní programu (čip)
+AC=Počet zlyhaní pri vymazávaní (čip)
+AD=Počet korekcií údaja o opotrebovaní
+AE=Počet neočakávaných strát napájania
+B8=Detekcia chyby
+E9=Normalizované opotrebovanie média
+
+[SmartSandForce] ;Updated 3.7.0
+01=Miera chýb pri čítaní RAW dát
+05=Počet vyradených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+0D=Miera soft. chýb pri čítaní
+64=Vymazané GB
+AA=Počet blokov v rezerve
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AE=Počet neočakávaných strát napájania
+B1=Rozsah opotrebovania - rozdiel
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+B8=Zaznamenané chyby kódu na detekciu I/O chyby
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota
+C3=Počet neopraviteľných chýb ECC typu On-the-Fly
+C4=Počet udalostí realokovania
+C6=Počet neopraviteľných sektorov
+C7=Počet chýb typu SATA R-Errors
+C9=Miera neopraviteľných soft. chýb pri čítaní
+CC=Miera opravy soft. chýb ECC
+E6=Stav ochrany životnosti jednotky
+E7=Zostávajúca životnosť SSD
+E8=Dostupné rezervované miesto
+EB=Stav zálohy výpadku napájania
+F1=Zápisy od hostiteľa počas existencie
+F2=Čítania od hostiteľa počas existencie
+
+[SmartJMicron61x] ;Added 3.9.0
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+05=Počet realokovaných sektorov
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0C=Počet cyklov napájania
+A8=Počet chýb SATA PHY
+AF=Počet tabuliek pre zlý klaster (počet zlyhaní ECC)
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C5=Počet aktuálne podozrivých sektorov
+AA=Počet zlých blokov
+AD=Počet vymazaní
+
+[SmartMicron] ;Added 4.0.0/ Updated 6.6.0
+; RAIN = Redundant Array of Independent NAND
+01=Miera chýb pri čítaní RAW dát
+05=Realokované bloky NAND
+09=Hodiny napájania
+0C=Počet cyklov napájania
+0D=Miera soft. chýb
+0E=Kapacita zariadenia (NAND)
+0F=Používateľská kapacita
+10=Dostupné náhradné bloky
+11=Zostávajúce náhradné bloky
+64=Počet úplných vymazaní
+AA=Počet rezervovaných blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet vymazaní bloku
+AE=Počet neočakávaných strát napájania
+B4=Nevyužité rezervné bloky NAND
+B5=Počet prístupov bez zarovnania
+B7=Spomalenie rozhrania SATA
+B8=Počet opráv chyby
+BB=Zaznamenané neopraviteľné chyby
+BC=Počet prerušení príkazu
+BD=Počet zlých blokov z výroby
+C2=Teplota
+C3=Kumulatívny počet opráv ECC bitu
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných chýb zistených off-line skenovaním Smart
+C7=Miera chýb CRC Ultra DMA
+CA=Percento využitej životnosti
+CE=Miera chýb pri zápise
+D2=Počet úspešných obnovení RAIN
+EA=Prečítané bajty spolu
+F2=Proces ochrany pred zápisom
+F3=Opravené ECC bity
+F4=ECC - kumulatívne hraničné udalosti
+F5=Kumulatívne stránky programu pre NAND
+F6=Celkové zápisy host. sektora
+F7=Počet stránok host. programu
+F8=Počet stránok programov v pozadí
+
+; Updated 8.11.0
+F9=Celkový počet obnovení ISP
+FA=Celkový počet Do RefCal
+FB=Celkový počet rovín NAND - čítanie (Low 4Bytes)
+FC=Celkový počet rovín NAND - čítanie (High 4Bytes)
+FD=Celkový počet úspešných premapovaní bloku
+FE=Celkový počet skenovaní na pozadí nad limit
+DF=Celkový počet skenovaní na pozadí
+
+[SmartMicronMU02] ;Updated 8.17.0
+; RAIN = Redundant Array of Independent NAND
+01=Miera chýb pri čítaní RAW dát
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+0D=Miera soft. chýb
+0E=Kapacita zariadenia (NAND)
+0F=Používateľská kapacita
+10=Dostupné náhradné bloky
+11=Zostávajúce náhradné bloky
+64=Počet úplných vymazaní
+AA=Počet rezervovaných blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet vymazaní bloku
+AE=Počet neočakávaných strát napájania
+B4=Nevyužité rezervné bloky NAND
+B7=Spomalenie rozhrania SATA
+B8=Počet opráv chyby
+BB=Zaznamenané neopraviteľné chyby
+BC=Počet prerušení príkazu
+BD=Počet zlých blokov z výroby
+C2=Teplota
+C3=Kumulatívny počet opráv ECC bitu
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných chýb zistených off-line skenovaním Smart
+C7=Miera chýb CRC Ultra DMA
+CA=Percento využitej životnosti
+CE=Miera chýb pri zápise
+D2=Počet úspešných obnovení redundantného poľa nezávislých NAND
+EA=Prečítané bajty spolu
+F3=Opravené ECC bity
+F4=ECC - kumulatívne hraničné udalosti
+F5=Kumulatívne stránky programu pre NAND
+F6=Celkové zápisy host. sektora
+F7=Počet stránok host. programu
+F8=Počet stránok programov v pozadí
+
+; Updated 6.6.0
+A0=Počet neopraviteľných sektorov
+A1=Platné náhradné bloky
+A3=Počiatočné neplatné bloky
+94=Celkový počet vymazaní jednoúrovňovej bunky (SLC)
+95=Maximálny počet vymazaní jednoúrovňovej bunky (SLC)
+96=Minimálny počet vymazaní jednoúrovňovej bunky (SLC)
+97=Priemerný počet vymazaní jednoúrovňovej bunky (SLC)
+A4=Celkový počet vymazaní NAND
+A5=Maximálny počet vymazaní NAND
+A6=Minimálny počet vymazaní NAND
+A7=Priemerný počet vymazaní NAND
+A9=Zostávajúca životnosť v percentách
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+C0=Počet stiahnutí pri vypnutí napájania
+E8=Dostupné rezervované miesto
+F1=Zápis LBA (adresovanie logických blokov) celkovo
+F2=Prečítané LBA (adresovanie logických blokov) celkovo
+F5=Celkový počet zápisov NAND
+F6=Celkový počet zápisov jednoúrovňovej bunky (SLC)
+F7=Počet obnovení RAID
+
+; Updated 8.10.0
+F9=Celkový počet obnovení ISP
+FA=Celkový počet Do RefCal
+FB=Celkový počet rovín NAND - čítanie (Low 4Bytes)
+FC=Celkový počet rovín NAND - čítanie (High 4Bytes)
+FD=Celkový počet úspešných premapovaní bloku
+FE=Celkový počet skenovaní na pozadí nad limit
+DF=Celkový počet skenovaní na pozadí
+
+[SmartOcz] ;Added 4.5.0
+01=Miera chýb pri čítaní RAW dát
+03=Čas rozbehu
+04=Počet spustení/zastavení
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+C2=Teplota
+E8=Celkový počet zapísaných sektorov
+E9=Zostávajúca životnosť
+
+; Added 6.6.0
+64=Celkový počet vymazaných blokov
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+A9=Počet zlých blokov
+AD=Počet vymazaní
+B8=Počet zlých blokov z výroby
+C0=Počet neočakávaných strát napájania
+CA=Celkový počet opravených bitov
+CD=Max. hodnotené počty prog./vymazania
+CE=Minimálne počty vymazaní
+CF=Maximálne počty vymazaní
+D3=SATA - počet neopraviteľných chýb
+D4=Čítania stránky NAND počas opakovania
+D5=Pokusy o opakovanie jednoduchého čítania
+D6=Pokusy o opakovanie adaptívneho čítania
+DD=Neopraviteľné chyby internej dátovej cesty
+DE=Počet obnovení RAID
+E6=Ochrana pred stratou napájania
+FB=Počet čítaní NAND
+
+;Updated 6.7.0
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartPlextor] ;Added (5.1.0)/Updated (5.4.0)
+01=Miera chybných čítaní
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+AA=Pribudnuté zlé bloky
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet program./vymazaní
+AE=Počet neočakávaných strát napájania
+AF=Počet prog. zlyhaní (najhorší prípad)
+B0=Počet zlyhaní pri vymazávaní (najhorší prípad)
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet použitých rezervovaných blokov (najhorší prípad)
+B3=Počet použitých rezervovaných blokov
+B4=Počet nevyužitých rezervovaných blokov (celkovo)
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+B7=Spomalenie rozhrania SATA
+B8=Opravené dátové chyby typu End-to-End
+BB=Počet neopraviteľných chýb
+BC=Vypršanie časového limitu príkazu
+C0=Počet nebezpečných vypnutí
+C3=Miera ECC
+C4=Počet udalostí realokovania
+C6=Počet neopraviteľných sektorov
+C7=Počet chýb Ultra CRC
+E8=Dostupné rezervované miesto
+E9=NAND - zapísané GB
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartSanDisk] ;Added 5.2.0
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+AA=Počet blokov v rezerve
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet zápisov/vymazaní
+AE=Počet neočakávaných strát napájania
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota
+E6=Percento celkového počtu zápisov/vymazaní
+E8=Zostávajúce náhradné bloky
+EA=Percento celkového počtu zápisov/vymazaní (bloky BC)
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartOczVector] ;Added 5.3.0
+05=Akumulované zlé bloky počas chodu
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+AB=Dostupný počet blokov poskytovaných navyše
+AE=Počet cyklov napájania (neplánované)
+BB=Celkový počet neopraviteľných čítaní NAND
+C2=Teplota
+C3=Celkový počet zlyhaní programovania
+C4=Celkové zlyhania pri vymazávaní
+C5=Celkové zlyhania pri čítaní (neopraviteľné)
+C6=Čítania host.
+C7=Zápisy host.
+D0=Priemerný počet vymazaní
+D2=Počet chýb kontrolného súčtu SATA
+E9=Zostávajúca životnosť
+F9=Celkový počet programovaní NAND
+
+;Updated 5.5.0
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+;Updated 6.6.0
+64=Celkový počet vymazaných blokov
+B8=Celkový počet zlých blokov z výroby
+CA=Celkové číslo prečítaných bitov po oprave
+CD=Max. hodnotený počet prog./vymazania
+CE=Min. počet vymazaní
+CF=Max. počet vymazaní
+D4=Celkový počet čítaní NAND stránok vyžadujúcich opätovné čítanie
+D5=Celkový počet pokusov o opakovanie jednoduchého čítania
+D6=Celkový počet pokusov o opakovanie adaptívneho čítania
+DD=Ochrana internej dátovej cesty - neoprav. chyby
+DE=Počet obnovení RAID
+E0=V záruke
+E1=DAS polarita
+E2=Parciálne P-zlyhanie
+E6=Zápis príznaku pre aktivovanie brzdy
+F9=Celkový počet programovaní NAND (stránky)
+FB=Celkový počet čítaní NAND
+
+[SmartCorsair] ;Added 6.2.0
+01=Miera chýb pri čítaní RAW dát
+05=Počet vyradených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+AA=Počet blokov v rezerve
+AC=Počet zlyhaní pri vymazávaní
+AE=Počet neočakávaných strát napájania
+B5=Počet prog. zlyhaní
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota
+C4=Počet udalostí realokovania
+E7=Zostávajúca životnosť SSD
+F1=Existencia - zapísané GB
+F2=Existencia - prečítané GB
+
+[SmartToshiba] ;Added 6.2.0
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+04=Počet spustení/zastavení
+05=Počet realokovaných sektorov
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0B=Pokusy o rekalibrovanie
+0C=Počet cyklov napájania
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+A9=Celkový počet zlých blokov
+AD=Počet vymazaní
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných sektorov
+F1=Celkový počet zápisov host.
+F2=Celkový počet čítaní hostiteľa
+
+[SmartSanDiskGb] ;Added 6.2.0
+01=Miera chybných čítaní
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A5=Počet vymazaní bloku (jednoúrovňová bunka, SLC)
+A6=Minimálne cykly prog./vymazania (P/E)
+A7=Maximálny počet zlých blokov na čip
+A8=Maximálny počet cyklov prog./vymazania
+A9=Zlé bloky spolu
+AA=Pribudnuté zlé bloky
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerné cykly prog./vymazania (P/E)
+AE=Počet neočakávaných strát napájania
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Zaznamenané neopraviteľné chyby
+BC=Počet prerušení príkazu
+C2=Teplota
+C7=Počet chýb CRC
+D4=Chyba SATA PHY
+E6=Indikátor opotrebovania média
+E7=Zostávajúca životnosť SSD
+E8=Zostávajúci rezervný priestor
+E9=NAND - zapísané GB
+EA=Zapísané GB - NAND (jednoúrovňová bunka, SLC)
+EE=Indikátor opotrebovania média (zostávajúce cykly)
+F1=Celkový počet zapísaných GB
+F2=Celkové prečítané GB
+F4=Stav teplotnej brzdy
+F9=NAND - zapísané GB
+
+[SmartKingston] ;Added 6.6.0
+;https://media.kingston.com/support/downloads/MKP_521_Phison_SMART_attribute.pdf
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+05=Počet realokovaných sektorov
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0C=Počet cyklov napájania
+A8=Počet chýb SATA PHY
+AA=Počet zlých blokov
+AD=Počet vymazaní
+AF=Počet tabuliek pre zlý klaster
+BB=Neopraviteľné chyby
+C0=Počet nebezpečných vypnutí
+C2=Teplota
+C4=Počet neskorších zlých blokov
+C5=Počet aktuálne podozrivých sektorov
+C7=Počet chýb CRC
+DA=Počet chýb CRC
+E7=Zostávajúca životnosť SSD
+E9=Zápisy do flash počas existencie
+F0=Hlavička pre zápisy
+F1=Zápisy host.
+F2=Čítania host.
+F4=Priemerný počet vymazaní
+F5=Max. počet vymazaní
+F6=Počet úplných vymazaní
+
+[SmartNVMe] ;Added 6.7.0
+01=Kritické varovanie
+02=Teplota kompoz.
+03=Dostupná náhrada
+04=Hranica pre dostupnú náhradu
+05=Percentuálne využitie
+06=Prečítané dátové jednotky
+07=Zapísané dátové jednotky
+08=Príkazy pre čítanie host.
+09=Príkazy pre zápis host.
+0A=Čas zaneprázdnenia ovládača
+0B=Cykly napájania
+0C=Hodiny napájania
+0D=Nebezpečné vypnutia
+0E=Chyby integrity média a dát
+0F=Počet vykonaných záznamov informácií o chybách
+
+[SmartRealtek] ;Added by Realtek
+01=Miera chýb nespracovaných dát
+05=Počet realokovaných sektorov
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+A1=GDN
+A2=Počet úplných vymazaní
+A3=Max. cyklus prog./vymazania (PE)
+A4=Priemerný počet vymazaní
+A5=Počiatočný počet zlých blokov
+A6=Celkový počet zlých blokov
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+A9=Zdravie
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AE=Počet neočakávaných strát napájania
+AF=Počet zlyhaní ECC
+B5=Počet prístupov bez zarovnania
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota krytu
+C3=Kumulatívne opravené ECC
+C4=Počet udalostí realokovania
+C7=Počet chýb v kontrolnom súčte Ultra DMA
+CE=Min. počet vymazaní
+CF=Max. počet vymazaní
+E7=Zostávajúca životnosť
+E8=Dostupné rezervované miesto
+F1=Životnosť pre zápisy
+F2=Životnosť pre čítanie
+F9=Celkové GB zapísané na NAND
+FA=Celkové GB zapísané na NAND (jednoúrovňová bunka)
+
+[SmartSKhynix] ; Updated 8.8.0
+01=Miera chybných čítaní
+05=Počet opätovne pridelených sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+64=Počet úplných vymazaní
+A8=Min. počet vymazaní
+A9=Max. počet vymazaní
+AA=Počet blokov v rezerve
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AE=Počet neočakávaných strát napájania
+AF=Počet prog. zlyhaní (najhorší prípad)
+B0=Počet zlyhaní pri vymazávaní (najhorší prípad)
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet využitých rezervných blokov (najhorší prípad)
+B3=Počet využitých rezervných blokov (celkovo SSD)
+B4=Počet nevyužitých rezervných blokov (celkovo SSD)
+B5=Počet prog. zlyhaní (celkovo SSD)
+B6=Počet zlyhaní pri vymazávaní (celkovo SSD)
+B7=Počet spomalení SATA
+B8=Počet detekcii chyby typu End-to-End
+BB=Počet neopraviteľných chýb
+BC=Počet prerušení príkazu
+BF=Počet udalostí spojených s otrasom
+C2=Teplota
+C3=Miera ECC
+C4=Počet udalostí realokovania
+C6=Počet neopraviteľných sektorov
+C7=Počet chýb CRC
+C9=Miera neopraviteľných soft. chýb pri čítaní
+CC=Miera opravy soft. chýb ECC
+D4=Počet chýb PHY
+E7=Zostávajúca životnosť SSD
+E9=Zostávajúca životnosť SSD
+EA=NAND - zapísané
+F1=Zapísané LBA (adresovanie logických blokov) celkovo
+F2=Prečítané LBA (adresovanie logických blokov) celkovo
+FA=Celkový počet opätovných pokusov o čítanie NAND
+
+[SmartKioxia] ; Added 8.8.0
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+A9=Počet zlých blokov
+AD=Počet vymazaní (používateľské údaje)
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+F1=Zápisy host.
+
+[SmartWdc] ; Added 8.8.0
+01=Miera chybných čítaní
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A5=Počet vymazaní bloku (jednoúrovňová bunka, SLC)
+A6=Minimálne cykly prog./vymazania (P/E)
+A7=Maximálny počet zlých blokov na čip
+A8=Maximálny počet cyklov prog./vymazania
+A9=Zlé bloky spolu
+AA=Pribudnuté zlé bloky
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerné cykly prog./vymazania (P/E)
+AE=Počet neočakávaných strát napájania
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Zaznamenané neopraviteľné chyby
+BC=Počet prerušení príkazu
+C2=Teplota
+C7=Počet chýb CRC
+D4=Chyba SATA PHY
+E6=Indikátor opotrebovania média
+E8=Zostávajúci rezervný priestor
+E9=NAND - zapísané GB
+EA=Zapísané GB - NAND (jednoúrovňová bunka, SLC)
+EE=Indikátor opotrebovania média (zostávajúce cykly)
+F1=Celkový počet zapísaných GB
+F2=Celkové prečítané GB
+F3=Celkové zápisy NAND
+F4=Stav teplotnej brzdy
+F9=NAND - zapísané GB
+
+[SmartKingstonSuv]
+; https://media.kingston.com/support/downloads/UV400-SMART-attribute.pdf
+; https://media.kingston.com/support/downloads/UV500_SMART_attribute.pdf
+01=Miera chybných čítaní
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+AA=Počet použitých rezervovaných blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AE=Počet neočakávaných strát napájania
+AF=Počet zlyhaní programu - najhorší čip
+B0=Počet zlyhaní pri vymazávaní - najhorší čip
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet použitých rezervovaných blokov - najhorší čip
+B4=Počet nepoužitých rezervovaných blokov (SSD celkovo)
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota
+C3=Počet chýb On-the-Fly ECC
+C4=Počet udalostí realokovania
+C5=Počet podozrivých sektorov
+C7=Počet chýb UDMA CRC
+C9=Miera neopraviteľných chýb pri čítaní
+CC=Miera opravy soft. chýb ECC
+E7=Zostávajúca životnosť SSD
+EA=Zápisy NAND počas existencie
+F1=Zápisy host. počas existencie
+F2=Čítania host. počas existencie
+FA=Celkový počet opätovných pokusov o čítanie NAND
+
+[SmartKingstonKC600]
+;https://media.kingston.com/support/downloads/KC600-SMART-attribute.pdf
+01=Miera chybných čítaní
+05=Počet realokovaných blokov NAND
+09=Hodiny napájania
+0C=Počet cyklov napájania
+94=Rezervované
+95=Rezervované
+96=Rezervované
+97=Jednoúrovňová bunka (SLC) - priemerný počet vymazaní
+9F=Počet chýb typu DRAM 1 bit
+A0=Zaznamenané chyby UECC (neopraviteľné)
+A1=Dostupné rezervované miesto
+A4=Rezervované
+A5=Rezervované
+A6=Rezervované
+A7=Priemerný počet vymazaní
+A8=Rezervované
+A9=Zostávajúce percento určenej životnosti
+B1=Rezervované
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+C0=Počet neočakávaných strát napájania
+C2=Teplota zariadenia
+C3=Hardvérové ECC - obnovené
+C4=Počet udalostí realokovania
+C7=Počet chýb UDMA CRC
+E7=Zostávajúce percento určenej životnosti
+E8=Počet nepoužitých rezervovaných blokov
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F5=Celkové zápisy na médium
+
+[SmartKingstonDC500]
+;https://media.kingston.com/support/pdf/MKP_521-7_SMART-DC500_attribute_hr.pdf
+01=Počet host. chýb UNC
+09=Hodiny napájania
+0C=Cykly zapnutia/vypnutia
+A7=Režim ochrany
+A8=Počet chýb SATA PHY
+A9=Miera chybných blokov
+AA=Informácia o chybnom bloku
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+BB=Počet host. chýb UNC
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C4=Celkový počet neskorších zlých blokov
+C7=Počet chýb CRC
+CF=Počet spomalení z dôvodu teploty
+DA=Počet chýb CRC
+E7=Zostávajúca životnosť SSD
+E8=Počet zlyhaní pri čítaní
+E9=Zápis NAND
+F1=Host. zápis
+F2=Host. čítanie
+F4=Priemerný počet vymazaní
+F5=Max. počet vymazaní
+F6=Počet úplných vymazaní
+
+[SmartKingstonSA400]
+;https://github.com/hiyohiyo/CrystalDiskInfo/issues/20
+01=Neopraviteľné chyby
+09=Hodiny napájania
+0C=Cykly napájania
+94=Unikátny parameter výrobcu
+95=Unikátny parameter výrobcu
+A7=Unikátny parameter výrobcu
+A8=Počet chýb SATA PHY
+A9=Unikátny parameter výrobcu
+AA=Počet zlých blokov
+AC=Unikátny parameter výrobcu
+AD=Počet vymazaní
+B5=Unikátny parameter výrobcu
+B6=Unikátny parameter výrobcu
+BB=Neopraviteľné chyby ECC
+C2=Teplota
+C4=Udalosti realokovania
+C7=Chyba CRC SATA
+DA=Počet chýb CRC
+E7=Indikátor opotrebovania SSD
+E9=Zápisy NAND počas existencie
+F1=Zápisy od hostiteľa počas existencie
+F2=Čítania od hostiteľa počas existencie
+F4=Priemerný počet vymazaní
+F5=Max. počet vymazaní
+F6=Počet úplných vymazaní
+
+[SmartSsstc]
+01=Miera chýb pri čítaní RAW dát
+05=Počet realokovaných blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+AA=Dostupné rezervované miesto
+AB=Počet prog. zlyhaní (celkovo)
+AC=Počet zlyhaní pri vymazávaní (celkovo)
+AD=Priemerný počet program./vymazaní
+AE=Počet neočakávaných strát napájania
+AF=Počet prog. zlyhaní (najhorší prípad)
+B0=Počet zlyhaní pri vymazávaní (najhorší prípad)
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet použitých rezervovaných blokov (najhorší prípad)
+B3=Počet využitých rezervovaných blokov (celkovo)
+B4=Počet nevyužitých rezervovaných blokov (celkovo)
+B7=Spomalenie rozhrania SATA
+B8=Počet dátových chýb typu End-to-End
+BB=Počet neopraviteľných chýb
+BC=Vypršanie časového limitu príkazu
+C2=Teplota jednotky
+C3=Miera ECC
+C6=Počet neopraviteľných chýb offline
+C7=Počet chýb kontrolného súčtu SATA
+E5=Zlyhanie ochrany proti výpadku napájania
+E7=Zostávajúca životnosť v percentách
+E8=Dostupné rezervované miesto 
+E9=NAND - zapísané GB
+F1=Celkové zápisy hostiteľa
+F2=Celkové čítania hostiteľa 
+F3=NAND - zapísané GB
+
+[SmartIntelDc]
+;https://github.com/hiyohiyo/CrystalDiskInfo/issues/18
+01=Miera chybných čítaní raw
+05=Počet realokovaných blokov flash
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+0E=Kapacita zariadenia
+0F=Používateľská kapacita
+10=Dostupné náhradné bloky
+11=Dostupná zostávajúca náhrada
+AC=Celkové zlyhanie vymazania bloku
+AD=Max. počet vymazaní na jeden blok
+AE=Počet neočakávaných strát napájania
+AF=Priemerný počet vymazaní
+B0=Chyba ochrany proti výpadku napájania
+B5=Celkové prog. zlyhanie bloku
+B8=Počet detekcii chyby typu End-to-End
+BB=Počet neopraviteľných chýb
+C2=Teplota
+C5=Počet podozrivých sektorov
+C6=Počet neopraviteľných chýb offline
+C7=Počet chýb CRC
+CA=Percento využitej životnosti zariadenia
+E2=Opotrebovanie média pracovnou záťažou (časovo)
+E3=Pracovné zaťaženie s ohľadom na čas - pomer čítania/zapisovania hostiteľa
+E4=Časovač pracovnej záťaže
+EA=Stav teplotnej brzdy
+EB=Celkový počet bajtov/sektorov zapísaných host.
+F1=Celkový počet bajtov/sektorov zapísaných NAND
+
+[SmartApacer]
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A3=Maximálny počet vymazaní
+A4=Priemerný počet vymazaní
+A6=Celkový počet neskorších zlých blokov
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AF=Počet tabuliek pre zlý klaster
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+E7=Zostávajúca životnosť
+F1=Celkový zápis sektorov
+
+[SmartSiliconMotion]
+01=Miera chybných čítaní
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+94=Jednoúrovňová bunka (SLC) - celkový počet vymazaní
+95=Jednoúrovňová bunka (SLC) - maximálny počet vymazaní
+96=Jednoúrovňová bunka (SLC) - minimálny počet vymazaní
+97=Jednoúrovňová bunka (SLC) - priemerný počet vymazaní
+9F=Počet chýb typu DRAM 1 bit
+A0=Počet neopraviteľných sektorov pri čítaní/zápise
+A1=Počet/číslo platných náhradných blokov
+A2=Počet/číslo blokov pre údaje vyrovnávacej pamäte
+A3=Počet/číslo blokov neplatných od počiatku
+A4=Počet úplných vymazaní
+A5=Maximálny počet vymazaní
+A6=Minimálny počet vymazaní
+A7=Priemerný počet vymazaní
+A8=Max. počet vymazaní zo špec.
+A9=Zostávajúca životnosť
+AF=Počet prog. zlyhaní v najhoršom čipe
+B0=Počet zlyhaní pri vymazávaní v najhoršom čipe
+B1=Úroveň opotrebovania - celkový počet
+B2=Počet neplatných blokov - doba chodu
+B5=Celkový počet prog. zlyhaní
+B6=Celkový počet zlyhaní pri vymazávaní
+BB=Počet neopraviteľných chýb
+C0=Počet stiahnutí pri vypnutí napájania
+C2=Teplota
+C3=Hardvérové ECC - obnovené
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých sektorov
+C6=Počet neopraviteľných chýb off-line
+C7=Počet chýb v kontrolnom súčte Ultra DMA
+E8=Dostupné rezervované miesto
+F1=Zapísané LBA (adresovanie logických blokov) celkovo
+F2=Prečítané LBA (adresovanie logických blokov) celkovo
+F5=Počet sektorov pre flash-zápis
+
+[SmartJMicron66x]
+01=Miera chybných čítaní
+02=Výkonnosť a priepustnosť
+03=Čas rozbehu
+05=Počet realokovaných sektorov
+07=Miera chýb pri vyhľadávaní
+08=Výkon z hľadiska času vyhľadávania
+09=Hodiny napájania
+0A=Počet opakovaných roztočení
+0C=Počet cyklov napájania
+A7=Režim ochrany SSD
+A8=Počet chýb SATA PHY
+AA=Počet zlých blokov
+AD=Počet vymazaní
+AF=Počet tabuliek pre zlý klaster
+B4=Počet náhradných blokov
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C5=Počet aktuálne podozrivých sektorov
+E7=Životnosť zariadenia
+E9=Zápis sektora - počet (NAND)
+F0=Hlavička pre zápisy
+F1=Zapísané LBA (adresovanie logických blokov) celkovo
+F2=Prečítané LBA (adresovanie logických blokov) celkovo
+
+[SmartPhison]
+01=Miera chybných čítaní
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A8=Počet chýb SATA PHY
+AA=Počet zlých blokov
+AD=Počet vymazaní
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+DA=Počet chýb CRC
+E7=Zostávajúca životnosť SSD
+F1=Zápisy host.
+
+[SmartSeagate]
+; https://crystalmark.info/board/c-board.cgi?cmd=one;no=1818;id=#1818
+01=Miera chybných čítaní
+05=Počet vyradených sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+10=Dostupné náhradné bloky
+11=Zostávajúce náhradné bloky
+A8=Počet chýb SATA PHY
+AA=Počet zlých blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+AE=Počet neočakávaných strát napájania
+B1=Rozsah opotrebovania - rozdiel
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C9=Miera soft. chýb
+CC=Miera opravy soft. chýb ECC
+DA=Počet chýb CRC
+E7=Zostávajúca životnosť SSD
+E8=Počet blokov so zlyhaním čítania
+E9=Zapísané GiB - NAND
+EA=Zápisy do flash počas existencie
+EB=Zapísané sektory NAND
+F1=Zápisy od hostiteľa počas existencie
+F2=Čítania od hostiteľa počas existencie
+FA=Opätovné pokusy o čítanie NAND počas existencie
+
+[SmartSeagateIronWolf]
+; https://www.seagate.com/www-content/manuals/ironwolf-110-ssd/pdf/IronWolf_110_SSD_PM-100841919_B.pdf
+01=Miera chýb pri čítaní RAW dát
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+64=Vymazané gigabajty - flash
+66=Počet vstupov do stavu PS4 počas existencie
+67=Počet vstupov do stavu PS3 počas existencie
+AA=Počet pribudnutých zlých blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet program./vymazaní
+AE=Počet neočakávaných strát napájania
+B1=Rozsah opotrebovania - rozdiel
+B7=Počet spomalení rozhrania SATA/PCIe
+BB=Počet neopraviteľných ECC
+C2=Teplota
+C3=RAISE ECC - počet opraviteľných
+C6=Počet neopraviteľných chýb pri čítaní
+C7=SATA R-Error (CRC) - počet chýb
+E6=Stav ochrany životnosti jednotky
+E7=Zostávajúca životnosť SSD
+E8=Dostupné rezervované miesto
+E9=Zápisy do flash počas existencie
+F1=Zápisy od hostiteľa počas existencie
+F2=Čítania od hostiteľa počas existencie
+F3=Voľné miesto
+
+[SmartMarvell] ; Added 8.8.3
+05=Počet nových zlých blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A4=Počet úplných vymazaní
+A5=Maximálny počet vymazaní
+A6=Minimálny počet vymazaní
+A7=Priemerný počet vymazaní
+C0=Počet stiahnutí pri vypnutí napájania
+C2=Teplota
+C7=Počet chýb kontrolného súčtu SATA
+F1=Celkovo zapísané
+F2=Celkovo prečítané
+
+[SmartMaxiotek] ; Added 8.8.6
+05=Počet realokovaných sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+A7=Režim ochrany SSD
+A8=Počet chýb PHY
+A9=Počet zlých blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+AF=Počet tabuliek pre zlý klaster
+B1=Počet opätovných pokusov o čítanie
+B4=Zostávajúci počet náhradných blokov
+BB=Zaznamenané chyby UNC
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C4=Počet udalostí realokovania
+C7=Počet chýb UDMA CRC
+CE=Minimálny počet vymazaní
+CF=Maximálny počet vymazaní
+D0=Priemerný počet vymazaní
+D1=Minimálny počet vymazaní bloku jednoúrovňovej bunky (SLC)
+D2=Maximálny počet vymazaní bloku jednoúrovňovej bunky (SLC)
+D3=Priemerný počet vymazaní bloku jednoúrovňovej bunky (SLC)
+E7=Zostávajúca životnosť SSD
+E9=Počet zápisov sektorov na NAND
+EA=Počet čítaní sektorov z NAND
+F1=Zápis sektora - počet
+F2=Čítanie sektora - počet
+F5=Počet bitových chýb
+
+[SmartSeagateBarraCuda] ; Added 8.9.0
+01=Počet chýb UECC
+05=Počet vyradených sektorov
+09=Hodiny napájania
+0C=Počet cyklov napájania
+10=Dostupné náhradné bloky
+11=Zostávajúce náhradné bloky
+A8=Počet chýb SATA PHY
+AA=Počet zlých blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+AE=Počet neočakávaných strát napájania
+B1=Rozsah opotrebovania - rozdiel
+B5=Počet prog. zlyhaní
+B6=Počet zlyhaní pri vymazávaní
+C0=Počet neočakávaných strát napájania
+C2=Teplota
+C9=Miera soft. chýb
+CC=Miera opravy soft. chýb ECC
+DA=Počet chýb CRC
+E7=Zostávajúca životnosť SSD
+E8=Počet blokov so zlyhaním čítania
+E9=Zapísané GiB - NAND
+EA=Zápisy do flash počas existencie
+EB=Zapísané sektory NAND
+F1=Zápisy od hostiteľa počas existencie
+F2=Čítania od hostiteľa počas existencie
+FA=Opätovné pokusy o čítanie NAND počas existencie
+
+[SmartYmtc] ; Added 8.10.0
+05=Počet nových zlých blokov
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+AA=Max. počet zlých blokov
+A8=Počet chýb SATA PHY
+A9=Počet zlých blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+AF=Počet zlých klastrov
+B7=Spomalenie rozhrania SATA
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Počet neopraviteľných chýb
+BE=Teplota
+C0=Počet neočakávaných strát napájania
+C4=Počet udalostí realokovania
+C7=Počet chýb CRC
+CE=Minimálny počet vymazaní
+CF=Maximálny počet vymazaní
+D0=Priemerný počet vymazaní
+D1=Jednoúrovňová bunka (SLC) - minimálny počet vymazaní
+D2=Jednoúrovňová bunka (SLC) - maximálny počet vymazaní
+D3=Jednoúrovňová bunka (SLC) - priemerný počet vymazaní
+E7=Zostávajúca životnosť SSD
+E9=Počet zápisov sektora do NAND
+EA=Počet čítaní sektora - NAND
+F1=Zapísané LBA (adresovanie logických blokov) celkovo
+F2=Prečítané LBA (adresovanie logických blokov) celkovo
+F3=Teplota NAND
+F5=Počet bitových chýb
+
+[SmartScy] ;Added 8.12.8
+01=Miera chýb pri čítaní RAW dát
+05=Počet realokovaných sektorov
+07=Miera chýb pri vyhľadávaní
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+A7=Priemerný počet vymazaní
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+B1=Počet opätovných pokusov o čítanie
+B4=Zostávajúci počet náhradných blokov
+B7=Zlý blok počas doby chodu
+BB=Zaznamenané chyby UNC
+C0=Počet neočakávaných strát napájania
+C2=Kontrolovaná teplota
+C3=Kumulatívny počet opráv ECC bitu
+C4=Počet udalostí realokovania
+C5=Aktuálne podozrivý sektor
+C7=Počet chýb UDMA CRC
+E7=Zostávajúca životnosť SSD
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F5=NAND Flash - celkovo zapísané
+
+[SmartRecadata] ;Added 8.14.0
+07=Miera chýb pri vyhľadávaní
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+A7=Priemerný počet vymazaní
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet vymazaní
+B1=Počet opätovných pokusov o čítanie
+B4=Zostávajúci počet náhradných blokov
+B7=Zlý blok počas doby chodu
+BB=Zaznamenané chyby UNC
+C0=Počet neočakávaných strát napájania
+C2=Kontrolovaná teplota
+C3=Kumulatívny počet opráv ECC bitu
+C4=Počet udalostí realokovania
+C5=Aktuálne podozrivý sektor
+C7=Počet chýb UDMA CRC
+E7=Zostávajúca životnosť SSD
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F5=NAND Flash - celkovo zapísané
+
+[SmartSanDiskHp] ;Added 8.17.0
+01=Miera chýb pri čítaní RAW dát
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+AA=Počet rezervovaných blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet korekcií údaja o opotrebovaní
+AE=Počet neočakávaných strát napájania
+B0=Počet nepoužitých rezervovaných blokov
+B7=Počet spomalení rozhrania SATA
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Počet neopraviteľných chýb
+BC=Vypršanie časového limitu príkazu
+BE=Teplota toku vzduchu
+C2=Teplota
+C4=Počet udalostí realokovania
+C7=Počet chýb CRC
+C9=Zostávajúca životnosť SSD
+E6=Indikátor opotrebovania média
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F3=Štatistiky spomalenia
+F4=Stav teplotnej brzdy
+F9=Zapísané GB TLC NAND
+
+[SmartSanDiskHpVenus] ;Added 8.17.0
+01=Miera chýb pri čítaní RAW dát
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+AA=Počet rezervovaných blokov
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Počet korekcií údaja o opotrebovaní
+AE=Počet neočakávaných strát napájania
+B0=Počet nepoužitých rezervovaných blokov
+B7=Počet spomalení rozhrania SATA
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Počet neopraviteľných chýb
+BC=Vypršanie časového limitu príkazu
+BE=Teplota toku vzduchu
+C2=Teplota
+C4=Počet udalostí realokovania
+C7=Počet chýb CRC
+C9=Zostávajúca životnosť SSD
+E6=Indikátor opotrebovania média
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F3=Celkové zápisy NAND
+F4=Stav spomalenia kvôli teplote
+F9=Zapísané GB TLC NAND
+
+[SmartSanDiskDell] ;Added 8.17.0
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+AF=Počet prog. zlyhaní (najhorší prípad komponentu)
+B0=Počet zlyhaní pri vymazávaní (najhorší prípad komponentu)
+B1=Počet korekcií údaja o opotrebovaní
+B2=Počet použitých rezervovaných blokov (najhorší prípad komponentu)
+B3=Počet využitých rezervovaných blokov (celkovo pre SSD)
+B4=Počet zostávajúcich nepoužitých rezervovaných blokov (SSD celkovo)
+B5=Počet prog. zlyhaní (celkovo SSD)
+B6=Počet zlyhaní pri vymazávaní (celkovo SSD)
+BB=Počet neopraviteľných chýb
+C2=Teplota
+C3=Miera ECC
+C7=Počet chýb CRC
+E6=Indikátor opotrebovania média
+EE=Indikátor opotrebovania média (zostávajúce cykly)
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+
+[SmartSanDiskLenovo] ;Added 8.17.0
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+A6=Minimálne cykly prog./vymazania (P/E)
+A7=Maximálny počet zlých blokov na čip
+A8=Maximálny počet cyklov prog./vymazania
+A9=Zlé bloky spolu
+AA=Pribudnuté zlé bloky
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Atribút priemerných cyklov prog./vymazania (P/E)
+AE=Počet neočakávaných strát napájania
+B2=Počet použitých rezervovaných blokov
+B4=Počet zostávajúcich rezervovaných blokov
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Počet neopraviteľných chýb ECC (UECC)
+BC=Vypršanie časového limitu príkazu
+C2=Teplota
+C7=Chyby CRC SATA
+D4=Chyby SATA PHY
+E6=Indikátor opotrebovania média
+E8=Dostupné rezervované miesto
+E9=NAND - zapísané GB
+EA=Zapísané GB - NAND (jednoúrovňová bunka, SLC)
+F1=Celkové zápisy GB hostiteľa
+F2=Celkové prečítané GB
+F3=Štatistiky spomalenia
+F4=Stav teplotnej brzdy
+
+[SmartSanDiskLenovoHelenVenus] ;Added 8.17.0
+05=Počet opätovne pridelených blokov
+09=Hodiny napájania
+0C=Počet cyklov napájania zariadenia
+A6=Minimálne cykly prog./vymazania (P/E)
+A7=Maximálny počet zlých blokov na čip
+A8=Maximálny počet cyklov prog./vymazania
+A9=Zlé bloky spolu
+AA=Pribudnuté zlé bloky
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Atribút priemerných cyklov prog./vymazania (P/E)
+AE=Počet neočakávaných strát napájania
+B2=Počet použitých rezervovaných blokov
+B4=Počet zostávajúcich rezervovaných blokov
+B8=Počet detekcií/opráv chyby typu End to End
+BB=Počet neopraviteľných chýb ECC (UECC)
+BC=Vypršanie časového limitu príkazu
+C2=Teplota
+C7=Chyby CRC SATA
+D4=Chyby SATA PHY
+E8=Dostupné rezervované miesto
+E9=Indikátor opotrebovania média
+EA=Zapísané GB - NAND (jednoúrovňová bunka, SLC)
+F1=Celkové zápisy GB hostiteľa
+F2=Celkové prečítané GB
+F3=Štatistiky spomalenia
+F4=Stav teplotnej brzdy
+F9=NAND - zapísané GB (trojúrovňová bunka, TLC)
+
+[SmartMicronMU03] ;Added 8.17.0
+01=Miera chýb pri čítaní RAW dát
+05=Počet realokovaných blokov NAND
+09=Počet hodín napájania
+0C=Počet cyklov napájania
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet vymazaní bloku
+AE=Počet neočakávaných strát napájania
+B4=Nevyužité náhradné bloky NAND
+B5=Prístup bez 4K zarovnania
+B7=Spomalenie rozhrania SATA
+B8=Počet opráv chyby
+BB=Zaznamenané neopraviteľné chyby
+C2=Teplota
+C4=Počet udalostí realokovania
+C5=Počet aktuálne podozrivých udalostí ECC
+C6=Počet neopraviteľných chýb offline skenovania SMART
+C7=Počet chýb UDMA CRC
+CA=Zostávajúca životnosť
+CE=Miera chýb pri zápise
+D2=Počet úspešných obnovení RAIN
+F0=Počet stránok host. programu
+F1=Zapísané LBA (adresy logických blokov) celkovo
+F2=Prečítané LBA (adresy logických blokov) celkovo
+F3=Celkový počet stránok host. programu
+F6=Kumulatívne sektory zapísané hostiteľom
+F7=Počet stránok host. programu NAND
+F8=Počet stránok FTL programu NAND
+
+[SmartSanDiskCloud] ;Added 9.0.0
+05=Počet vyradených blokov
+09=Hodiny napájania
+0D=Počet neopraviteľných chýb ECC
+20=Zosilnenie zápisu vynásobené hodnotou 100
+21=Faktor zosilnenia zápisu
+AA=Počet blokov v rezerve
+AB=Počet prog. zlyhaní
+AC=Počet zlyhaní pri vymazávaní
+AD=Priemerný počet zápisov/vymazaní
+AE=Počet neočakávaných strát napájania
+B2=Zostávajúca životnosť SSD (až do 0,01 %)
+BF=Počet čistých vypnutí
+C0=Počet nečistých vypnutí
+C2=Teplota
+C4=Počet realokovaných blokov
+E6=Percento celkového počtu zápisov/vymazaní
+E8=Zostávajúce náhradné bloky
+E9=Celkový počet zápisov NAND 64 GB
+EB=Stav kondenzátora
+F1=Celkový počet zápisov host. 64 GB
+F2=Celkový počet čítaní hostiteľa 64 GB
+F4=Aktivácie teplotnej brzdy počas životnosti
+F5=Zostávajúce percentá životnosti jednotky
+FD=Zostávajúce testy SPI

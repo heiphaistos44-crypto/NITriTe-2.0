@@ -1,0 +1,4434 @@
+[
+  {
+    "name": "DISM Check",
+    "description": "Vérifier la santé de l'image Windows",
+    "command": "DISM /Online /Cleanup-Image /CheckHealth",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "DISM Scan",
+    "description": "Scanner l'image Windows en profondeur",
+    "command": "DISM /Online /Cleanup-Image /ScanHealth",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "DISM Restore",
+    "description": "Réparer l'image Windows",
+    "command": "DISM /Online /Cleanup-Image /RestoreHealth",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "SFC Scan",
+    "description": "Vérifier et réparer les fichiers système",
+    "command": "sfc /scannow",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "CHKDSK C:",
+    "description": "Vérifier et réparer le disque C:",
+    "command": "chkdsk C: /f /r",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "CHKDSK D:",
+    "description": "Vérifier et réparer le disque D:",
+    "command": "chkdsk D: /f /r",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset WinSock",
+    "description": "Réinitialiser le catalogue WinSock",
+    "command": "netsh winsock reset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset TCP/IP",
+    "description": "Réinitialiser la pile TCP/IP",
+    "command": "netsh int ip reset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Firewall",
+    "description": "Réinitialiser le pare-feu Windows",
+    "command": "netsh advfirewall reset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Proxy",
+    "description": "Réinitialiser les paramètres proxy",
+    "command": "netsh winhttp reset proxy",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset DNS",
+    "description": "Vider le cache DNS",
+    "command": "ipconfig /flushdns",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Network",
+    "description": "Réinitialisation complète du réseau",
+    "command": "netsh int ip reset && netsh winsock reset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Repair BCD",
+    "description": "Réparer le BCD de démarrage",
+    "command": "bcdedit /export C:\\BCD_Backup & attrib c:\\boot\\bcd -h -r -s & ren c:\\boot\\bcd bcd.old & bootrec /rebuildbcd",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Repair Boot",
+    "description": "Réparer le secteur de démarrage",
+    "command": "bootrec /fixmbr && bootrec /fixboot && bootrec /rebuildbcd",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "System Reset",
+    "description": "Réinitialiser Windows",
+    "command": "systemreset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Windows Update Reset",
+    "description": "Réinitialiser Windows Update complètement",
+    "command": "net stop wuauserv && net stop cryptSvc && net stop bits && net stop msiserver && ren C:\\Windows\\SoftwareDistribution SoftwareDistribution.old && ren C:\\Windows\\System32\\catroot2 catroot2.old && net start wuauserv && net start cryptSvc && net start bits && net start msiserver",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Repair Store",
+    "description": "Réinitialiser le Microsoft Store",
+    "command": "wsreset",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Windows Defender Repair",
+    "description": "Réparer Windows Defender",
+    "command": "cd %ProgramFiles%\\Windows Defender && MpCmdRun.exe -removedefinitions -dynamicsignatures && MpCmdRun.exe -SignatureUpdate",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "DISM Mount Cleanup",
+    "description": "Nettoyer les points de montage DISM",
+    "command": "DISM /Cleanup-Mountpoints",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Check Disk Bad Sectors",
+    "description": "Rechercher les secteurs défectueux",
+    "command": "chkdsk /r /f",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Verify System Files",
+    "description": "Vérifier les fichiers système sans réparer",
+    "command": "sfc /verifyonly",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Export DISM Log",
+    "description": "Exporter le log DISM de restauration",
+    "command": "DISM /Online /Cleanup-Image /RestoreHealth /LogPath:C:\\DISM_RestoreHealth.log",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Repair Windows Image",
+    "description": "Réparer l'image Windows depuis un WIM",
+    "command": "DISM /Online /Cleanup-Image /RestoreHealth /Source:WIM:X:\\sources\\install.wim:1 /LimitAccess",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "SFC Extended",
+    "description": "SFC étendu sur partition hors-ligne",
+    "command": "sfc /scannow /offbootdir=C:\\ /offwindir=C:\\Windows",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Windows Activation",
+    "description": "Réinitialiser l'activation Windows",
+    "command": "slmgr /rearm",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Network Adapter",
+    "description": "Réinitialiser l'adaptateur Ethernet",
+    "command": "netsh interface set interface \"Ethernet\" admin=disable && netsh interface set interface \"Ethernet\" admin=enable",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Wi-Fi",
+    "description": "Réinitialiser l'adaptateur Wi-Fi",
+    "command": "netsh interface set interface \"Wi-Fi\" admin=disable && netsh interface set interface \"Wi-Fi\" admin=enable",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Rebuild Icon Cache",
+    "description": "Reconstruire le cache des icônes",
+    "command": "ie4uinit.exe -show && ie4uinit.exe -ClearIconCache",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Rebuild Search Index",
+    "description": "Reconstruire l'index de recherche Windows",
+    "command": "net stop WSearch && del /f /s /q %ProgramData%\\Microsoft\\Search\\Data\\Applications\\Windows\\Windows.edb && net start WSearch",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Repair Start Menu",
+    "description": "Réparer le menu Démarrer",
+    "command": "Get-AppXPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\\AppXManifest.xml\"}",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "Reset Windows Store",
+    "description": "Réinitialiser complètement le Windows Store",
+    "command": "wsreset && powershell -ExecutionPolicy Unrestricted Add-AppxPackage -DisableDevelopmentMode -Register $Env:SystemRoot\\WinStore\\AppxManifest.xml",
+    "is_url": false,
+    "section": "Réparation Système",
+    "icon": "🔧"
+  },
+  {
+    "name": "PowerToys",
+    "description": "Outils avancés Microsoft PowerToys",
+    "command": "https://aka.ms/installpowertoys",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Office FR",
+    "description": "Liens de téléchargement Office (FR)",
+    "command": "https://gravesoft.dev/office_c2r_links",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Office EN",
+    "description": "Liens de téléchargement Office (EN)",
+    "command": "https://gravesoft.dev/office_c2r_links",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "MS Activation Scripts",
+    "description": "Scripts d'activation Microsoft",
+    "command": "https://massgrave.dev/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Activation Scripts",
+    "description": "Scripts d'activation Windows/Office",
+    "command": "https://get.activated.win",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Windows ISO",
+    "description": "Télécharger l'ISO Windows 10",
+    "command": "https://www.microsoft.com/fr-fr/software-download/windows10ISO",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Windows 11 ISO",
+    "description": "Télécharger l'ISO Windows 11",
+    "command": "https://www.microsoft.com/fr-fr/software-download/windows11",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Media Creation Tool",
+    "description": "Outil de création de média Windows",
+    "command": "https://www.microsoft.com/fr-fr/software-download/windows10",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Rufus",
+    "description": "Créer des clés USB bootables",
+    "command": "https://rufus.ie",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Ventoy",
+    "description": "Clé USB multiboot",
+    "command": "https://www.ventoy.net",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "WinToUSB",
+    "description": "Installer Windows sur USB",
+    "command": "https://www.easyuefi.com/wintousb/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Etcher",
+    "description": "Flasher des images sur clé USB",
+    "command": "https://etcher.balena.io/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Ninite",
+    "description": "Installer plusieurs apps en un clic",
+    "command": "https://ninite.com",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Patch My PC",
+    "description": "Mettre à jour tous les logiciels",
+    "command": "https://patchmypc.com/home-updater",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Windows Toolkit",
+    "description": "Boîte à outils Windows Chris Titus",
+    "command": "https://christitustech.github.io/winutil/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "KMS Tools",
+    "description": "Outils KMS d'activation",
+    "command": "https://www.tgbus.com/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Office Tool Plus",
+    "description": "Outil de déploiement Office",
+    "command": "https://otp.landian.vip/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Windows Repair Toolbox",
+    "description": "Boîte à outils de réparation Windows",
+    "command": "https://windows-repair-toolbox.com/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Windows Update Blocker",
+    "description": "Bloquer les mises à jour Windows",
+    "command": "https://www.sordum.org/9470/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Sysinternals Suite",
+    "description": "Suite d'outils Sysinternals Microsoft",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Ultimate Windows Tweaker",
+    "description": "Tweaker avancé pour Windows",
+    "command": "https://www.thewindowsclub.com/ultimate-windows-tweaker-4-windows-10",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "O&O ShutUp10++",
+    "description": "Contrôler la télémétrie Windows",
+    "command": "https://www.oo-software.com/en/shutup10",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Winaero Tweaker",
+    "description": "Personnaliser Windows en profondeur",
+    "command": "https://winaero.com/winaero-tweaker/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Rainmeter",
+    "description": "Widgets et skins pour le bureau",
+    "command": "https://www.rainmeter.net/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "DisplayFusion",
+    "description": "Gestion multi-écrans avancée",
+    "command": "https://www.displayfusion.com/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "HWiNFO",
+    "description": "Informations matérielles détaillées",
+    "command": "https://www.hwinfo.com/",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Speccy",
+    "description": "Infos système par Piriform",
+    "command": "https://www.ccleaner.com/speccy",
+    "is_url": true,
+    "section": "Activation & Téléchargements",
+    "icon": "🔑"
+  },
+  {
+    "name": "Disk Cleanup",
+    "description": "Nettoyage de disque Windows",
+    "command": "cleanmgr",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Cleanup Full",
+    "description": "Nettoyage complet avec options avancées",
+    "command": "cleanmgr /sageset:1 & cleanmgr /sagerun:1",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Clean WinSxS",
+    "description": "Nettoyer le dossier WinSxS",
+    "command": "DISM /Online /Cleanup-Image /StartComponentCleanup",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "WinSxS Analyze",
+    "description": "Analyser la taille du WinSxS",
+    "command": "DISM /Online /Cleanup-Image /AnalyzeComponentStore",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "WinSxS Deep Clean",
+    "description": "Nettoyage profond du WinSxS",
+    "command": "DISM /Online /Cleanup-Image /StartComponentCleanup /ResetBase",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Temp Cleanup",
+    "description": "Supprimer les fichiers temporaires",
+    "command": "del /q/f/s %TEMP%\\*",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Delete Prefetch",
+    "description": "Supprimer le cache Prefetch",
+    "command": "del /q/f/s C:\\Windows\\Prefetch\\*",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Empty Recycle Bin",
+    "description": "Vider la corbeille",
+    "command": "rd /s /q C:\\$Recycle.bin",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Clean Update Cache",
+    "description": "Nettoyer le cache des mises à jour",
+    "command": "dism /online /Cleanup-Image /StartComponentCleanup /ResetBase",
+    "is_url": false,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "CCleaner",
+    "description": "Nettoyeur système populaire",
+    "command": "https://www.ccleaner.com/",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "BleachBit",
+    "description": "Nettoyeur open source",
+    "command": "https://www.bleachbit.org/",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Wise Disk Cleaner",
+    "description": "Nettoyage de disque intelligent",
+    "command": "https://www.wisecleaner.com/wise-disk-cleaner.html",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Glary Utilities",
+    "description": "Suite utilitaire de maintenance",
+    "command": "https://www.glarysoft.com/",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "Privazer",
+    "description": "Nettoyeur de traces de confidentialité",
+    "command": "https://privazer.com/",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "CleanMyPC",
+    "description": "Nettoyeur système par MacPaw",
+    "command": "https://macpaw.com/cleanmypc",
+    "is_url": true,
+    "section": "Maintenance & Nettoyage",
+    "icon": "🧹"
+  },
+  {
+    "name": "msinfo32",
+    "description": "Informations système complètes",
+    "command": "msinfo32",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "dxdiag",
+    "description": "Diagnostic DirectX",
+    "command": "dxdiag",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Event Viewer",
+    "description": "Observateur d'événements Windows",
+    "command": "eventvwr.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Device Manager",
+    "description": "Gestionnaire de périphériques",
+    "command": "devmgmt.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Task Manager",
+    "description": "Gestionnaire des tâches",
+    "command": "taskmgr",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Resource Monitor",
+    "description": "Moniteur de ressources",
+    "command": "resmon",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Disk Management",
+    "description": "Gestion des disques",
+    "command": "diskmgmt.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Computer Management",
+    "description": "Gestion de l'ordinateur",
+    "command": "compmgmt.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Services",
+    "description": "Gestionnaire des services Windows",
+    "command": "services.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Performance Monitor",
+    "description": "Moniteur de performances",
+    "command": "perfmon",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Reliability Monitor",
+    "description": "Moniteur de fiabilité",
+    "command": "perfmon /rel",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Defragment",
+    "description": "Défragmenter et optimiser les disques",
+    "command": "dfrgui",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Registry Editor",
+    "description": "Éditeur du registre Windows",
+    "command": "regedit",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Group Policy",
+    "description": "Éditeur de stratégie de groupe",
+    "command": "gpedit.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Security Policy",
+    "description": "Stratégie de sécurité locale",
+    "command": "secpol.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "User Accounts",
+    "description": "Comptes utilisateurs avancés",
+    "command": "netplwiz",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Print Management",
+    "description": "Gestion des imprimantes",
+    "command": "printmanagement.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Component Services",
+    "description": "Services de composants",
+    "command": "dcomcnfg",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Programs and Features",
+    "description": "Programmes et fonctionnalités",
+    "command": "appwiz.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "System Properties",
+    "description": "Propriétés système avancées",
+    "command": "systempropertiesadvanced",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Display Settings",
+    "description": "Paramètres d'affichage",
+    "command": "desk.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Sound Settings",
+    "description": "Paramètres audio",
+    "command": "mmsys.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Game Controllers",
+    "description": "Contrôleurs de jeu",
+    "command": "joy.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Mouse Settings",
+    "description": "Paramètres de la souris",
+    "command": "main.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Keyboard Settings",
+    "description": "Paramètres du clavier",
+    "command": "control keyboard",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Regional Settings",
+    "description": "Options régionales",
+    "command": "intl.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Date and Time",
+    "description": "Date et heure",
+    "command": "timedate.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Power Options",
+    "description": "Options d'alimentation",
+    "command": "powercfg.cpl",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Windows Security",
+    "description": "Sécurité Windows",
+    "command": "windowsdefender:",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Windows Update",
+    "description": "Mise à jour Windows",
+    "command": "ms-settings:windowsupdate",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Connected Devices",
+    "description": "Appareils connectés",
+    "command": "ms-settings:connecteddevices",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Personalization",
+    "description": "Personnalisation du bureau",
+    "command": "ms-settings:personalization",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Sound",
+    "description": "Paramètres sonores",
+    "command": "ms-settings:sound",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Network Status",
+    "description": "État du réseau",
+    "command": "ms-settings:network-status",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Wi-Fi",
+    "description": "Paramètres Wi-Fi",
+    "command": "ms-settings:network-wifi",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Ethernet",
+    "description": "Paramètres Ethernet",
+    "command": "ms-settings:network-ethernet",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "VPN",
+    "description": "Paramètres VPN",
+    "command": "ms-settings:network-vpn",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Proxy",
+    "description": "Paramètres proxy",
+    "command": "ms-settings:network-proxy",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Storage Sense",
+    "description": "Assistant de stockage",
+    "command": "ms-settings:storagesense",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Battery Saver",
+    "description": "Économiseur de batterie",
+    "command": "ms-settings:batterysaver",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Display",
+    "description": "Paramètres d'affichage",
+    "command": "ms-settings:display",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Night Light",
+    "description": "Éclairage nocturne",
+    "command": "ms-settings:nightlight",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Gaming",
+    "description": "Paramètres de jeu",
+    "command": "ms-settings:gaming",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Game Mode",
+    "description": "Mode jeu",
+    "command": "ms-settings:gaming-gamemode",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Game Bar",
+    "description": "Barre de jeu Xbox",
+    "command": "ms-settings:gaming-gamebar",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Volume Mixer",
+    "description": "Mélangeur de volume",
+    "command": "sndvol",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Background",
+    "description": "Fond d'écran du bureau",
+    "command": "ms-settings:personalization-background",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Lock Screen",
+    "description": "Écran de verrouillage",
+    "command": "ms-settings:lockscreen",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Colors",
+    "description": "Couleurs et thème",
+    "command": "ms-settings:colors",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Mouse & Touchpad",
+    "description": "Souris et pavé tactile",
+    "command": "ms-settings:mousetouchpad",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "Typing",
+    "description": "Paramètres de saisie",
+    "command": "ms-settings:typing",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "msconfig",
+    "description": "Configuration système Windows démarrage",
+    "command": "msconfig",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⚙️"
+  },
+  {
+    "name": "diskpart",
+    "description": "Partitionnement disque ligne de commande",
+    "command": "diskpart",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "💾"
+  },
+  {
+    "name": "ipconfig /all",
+    "description": "Afficher toutes les infos réseau Windows",
+    "command": "ipconfig /all",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🌐"
+  },
+  {
+    "name": "arp -a",
+    "description": "Afficher la table ARP réseau local",
+    "command": "arp -a",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🌐"
+  },
+  {
+    "name": "getmac",
+    "description": "Afficher les adresses MAC des interfaces réseau",
+    "command": "getmac /v",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🌐"
+  },
+  {
+    "name": "systeminfo",
+    "description": "Informations système détaillées Windows",
+    "command": "systeminfo",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "wmic cpu get name",
+    "description": "Nom du processeur via WMIC",
+    "command": "wmic cpu get name",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⚡"
+  },
+  {
+    "name": "mdsched",
+    "description": "Diagnostic mémoire Windows",
+    "command": "mdsched",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🧠"
+  },
+  {
+    "name": "taskschd.msc",
+    "description": "Planificateur de tâches Windows",
+    "command": "taskschd.msc",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⏰"
+  },
+  {
+    "name": "wmic memorychip",
+    "description": "Détails mémoire RAM via WMIC",
+    "command": "wmic memorychip get capacity,speed,manufacturer",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🧠"
+  },
+  {
+    "name": "wmic diskdrive",
+    "description": "Informations disques via WMIC",
+    "command": "wmic diskdrive get model,size,status",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "💾"
+  },
+  {
+    "name": "powercfg /batteryreport",
+    "description": "Rapport batterie Windows",
+    "command": "powercfg /batteryreport /output C:\\battery-report.html",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔋"
+  },
+  {
+    "name": "powercfg /energy",
+    "description": "Rapport énergie et efficacité Windows",
+    "command": "powercfg /energy /output C:\\energy-report.html",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔋"
+  },
+  {
+    "name": "netsh wlan show profiles",
+    "description": "Afficher les profils Wi-Fi enregistrés",
+    "command": "netsh wlan show profiles",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🌐"
+  },
+  {
+    "name": "bcdedit",
+    "description": "Afficher configuration démarrage BCD",
+    "command": "bcdedit /enum all",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⚙️"
+  },
+  {
+    "name": "driverquery",
+    "description": "Lister tous les pilotes installés",
+    "command": "driverquery",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "💿"
+  },
+  {
+    "name": "sc query",
+    "description": "Lister tous les services Windows",
+    "command": "sc query type= all state= all",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⚙️"
+  },
+  {
+    "name": "tasklist",
+    "description": "Lister tous les processus en cours",
+    "command": "tasklist",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "📊"
+  },
+  {
+    "name": "winver",
+    "description": "Afficher la version de Windows",
+    "command": "winver",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🪟"
+  },
+  {
+    "name": "osk",
+    "description": "Clavier virtuel Windows",
+    "command": "osk",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "⌨️"
+  },
+  {
+    "name": "Ping Google",
+    "description": "Tester la connexion vers Google DNS",
+    "command": "ping 8.8.8.8 -n 10",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "NSLookup",
+    "description": "Résolution DNS de google.com",
+    "command": "nslookup google.com",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "IPConfig",
+    "description": "Afficher la configuration IP complète",
+    "command": "ipconfig /all",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Release IP",
+    "description": "Libérer l'adresse IP",
+    "command": "ipconfig /release",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Renew IP",
+    "description": "Renouveler l'adresse IP",
+    "command": "ipconfig /renew",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Flush DNS",
+    "description": "Vider le cache DNS",
+    "command": "ipconfig /flushdns",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Display DNS",
+    "description": "Afficher le cache DNS",
+    "command": "ipconfig /displaydns",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Route Print",
+    "description": "Afficher la table de routage",
+    "command": "route print",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Tracert Google",
+    "description": "Tracer la route vers Google",
+    "command": "tracert google.com",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "PathPing",
+    "description": "Diagnostic réseau avancé vers Google",
+    "command": "pathping google.com",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "NetStat",
+    "description": "Connexions réseau avec PID",
+    "command": "netstat -ano",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "NetStat Active",
+    "description": "Toutes les connexions actives",
+    "command": "netstat -a",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "NetStat Routes",
+    "description": "Table de routage réseau",
+    "command": "netstat -r",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "ARP Table",
+    "description": "Afficher la table ARP",
+    "command": "arp -a",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Network Connections",
+    "description": "Connexions réseau (panneau)",
+    "command": "ncpa.cpl",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Network Reset",
+    "description": "Réinitialisation réseau complète",
+    "command": "netsh winsock reset && netsh int ip reset",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Reset TCP/IP Stack",
+    "description": "Réinitialiser la pile TCP/IP",
+    "command": "netsh int ip reset",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Test Connection",
+    "description": "Test de connexion continu",
+    "command": "ping 1.1.1.1 -t",
+    "is_url": false,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Speedtest.net",
+    "description": "Test de débit internet",
+    "command": "https://www.speedtest.net",
+    "is_url": true,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "WhatIsMyIP",
+    "description": "Connaître son adresse IP publique",
+    "command": "https://www.whatismyip.com",
+    "is_url": true,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "DNS Benchmark",
+    "description": "Benchmark des serveurs DNS",
+    "command": "https://www.grc.com/dns/benchmark.htm",
+    "is_url": true,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "YouGetSignal",
+    "description": "Outils réseau en ligne",
+    "command": "https://www.yougetsignal.com",
+    "is_url": true,
+    "section": "Réseau & Internet",
+    "icon": "🌐"
+  },
+  {
+    "name": "Upgrade All",
+    "description": "Mettre à jour tous les paquets",
+    "command": "winget upgrade --all",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "List Upgrades",
+    "description": "Lister les mises à jour disponibles",
+    "command": "winget upgrade",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Search",
+    "description": "Rechercher un paquet WinGet",
+    "command": "winget search",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "List Installed",
+    "description": "Lister les paquets installés",
+    "command": "winget list",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Show Info",
+    "description": "Afficher les infos d'un paquet",
+    "command": "winget show",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Install App",
+    "description": "Installer un paquet",
+    "command": "winget install",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Uninstall App",
+    "description": "Désinstaller un paquet",
+    "command": "winget uninstall",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Export List",
+    "description": "Exporter la liste des paquets",
+    "command": "winget export -o C:\\winget-export.json",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Import List",
+    "description": "Importer une liste de paquets",
+    "command": "winget import -i C:\\winget-export.json",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Update WinGet",
+    "description": "Mettre à jour WinGet lui-même",
+    "command": "winget upgrade Microsoft.Winget.Source",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "WinGet Help",
+    "description": "Afficher l'aide WinGet",
+    "command": "winget --help",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "WinGet Settings",
+    "description": "Ouvrir les paramètres WinGet",
+    "command": "winget settings",
+    "is_url": false,
+    "section": "WinGet Package Manager",
+    "icon": "📦"
+  },
+  {
+    "name": "Settings",
+    "description": "Ouvrir les paramètres Windows",
+    "command": "start ms-settings:",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Display",
+    "description": "Paramètres d'affichage",
+    "command": "start ms-settings:display",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Sound",
+    "description": "Paramètres sonores",
+    "command": "start ms-settings:sound",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Notifications",
+    "description": "Paramètres de notifications",
+    "command": "start ms-settings:notifications",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Power & Sleep",
+    "description": "Alimentation et mise en veille",
+    "command": "start ms-settings:powersleep",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Storage",
+    "description": "Paramètres de stockage",
+    "command": "start ms-settings:storagesense",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Network & Internet",
+    "description": "Réseau et Internet",
+    "command": "start ms-settings:network",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Personalization",
+    "description": "Personnalisation",
+    "command": "start ms-settings:personalization",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Phone",
+    "description": "Appareils mobiles liés",
+    "command": "start ms-settings:mobile-devices",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Accounts",
+    "description": "Informations du compte",
+    "command": "start ms-settings:yourinfo",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Time & Language",
+    "description": "Date, heure et langue",
+    "command": "start ms-settings:dateandtime",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Gaming",
+    "description": "Paramètres de jeu",
+    "command": "start ms-settings:gaming",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Privacy",
+    "description": "Paramètres de confidentialité",
+    "command": "start ms-settings:privacy",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Update & Security",
+    "description": "Mises à jour et sécurité",
+    "command": "start ms-settings:windowsupdate",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Ease of Access",
+    "description": "Options d'ergonomie",
+    "command": "start ms-settings:easeofaccess",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Search",
+    "description": "Paramètres de recherche",
+    "command": "start ms-settings:search",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Cortana",
+    "description": "Paramètres Cortana",
+    "command": "start ms-settings:cortana",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Apps & Features",
+    "description": "Applications et fonctionnalités",
+    "command": "start ms-settings:appsfeatures",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "For Developers",
+    "description": "Mode développeur",
+    "command": "start ms-settings:developers",
+    "is_url": false,
+    "section": "Paramètres Windows",
+    "icon": "⚙️"
+  },
+  {
+    "name": "Dell",
+    "description": "Support Dell France",
+    "command": "https://www.dell.com/support/home/fr-fr",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "HP",
+    "description": "Support HP France",
+    "command": "https://support.hp.com/fr-fr",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Lenovo",
+    "description": "Support Lenovo France",
+    "command": "https://support.lenovo.com/fr/fr",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "ASUS",
+    "description": "Support ASUS France",
+    "command": "https://www.asus.com/fr/support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Acer",
+    "description": "Support Acer France",
+    "command": "https://www.acer.com/ac/fr/FR/content/support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "MSI",
+    "description": "Support MSI",
+    "command": "https://www.msi.com/support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Samsung",
+    "description": "Support Samsung France",
+    "command": "https://www.samsung.com/fr/support/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Toshiba (Dynabook)",
+    "description": "Support Toshiba/Dynabook",
+    "command": "https://support.dynabook.com/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Gigabyte",
+    "description": "Support Gigabyte",
+    "command": "https://www.gigabyte.com/Support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "ASRock",
+    "description": "Support ASRock",
+    "command": "https://www.asrock.com/support/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Intel",
+    "description": "Support Intel France",
+    "command": "https://www.intel.fr/content/www/fr/fr/support.html",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "AMD",
+    "description": "Support AMD France",
+    "command": "https://www.amd.com/fr/support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "NVIDIA",
+    "description": "Téléchargement pilotes NVIDIA",
+    "command": "https://www.nvidia.fr/Download/index.aspx",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Western Digital",
+    "description": "Support Western Digital",
+    "command": "https://support.wdc.com/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Seagate",
+    "description": "Support Seagate France",
+    "command": "https://www.seagate.com/fr/fr/support/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Corsair",
+    "description": "Support Corsair France",
+    "command": "https://www.corsair.com/fr/fr/support",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Logitech",
+    "description": "Support Logitech",
+    "command": "https://support.logi.com/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "Razer",
+    "description": "Support Razer",
+    "command": "https://support.razer.com/",
+    "is_url": true,
+    "section": "Support Fabricants",
+    "icon": "🏭"
+  },
+  {
+    "name": "1fo Trade",
+    "description": "Grossiste informatique 1fo Trade",
+    "command": "https://www.1fotrade.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Acadia Info",
+    "description": "Grossiste Acadia Info",
+    "command": "https://www.acadiainfo.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Flexit",
+    "description": "Grossiste Flexit",
+    "command": "https://www.flexit.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "1fo Discount",
+    "description": "Grossiste 1fo Discount",
+    "command": "https://www.1fodiscount.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Noriak Distri",
+    "description": "Grossiste Noriak Distribution",
+    "command": "https://www.noriakdistri.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Amazon FR",
+    "description": "Amazon France",
+    "command": "https://www.amazon.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Cdiscount",
+    "description": "Cdiscount marketplace",
+    "command": "https://www.cdiscount.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "eBay FR",
+    "description": "eBay France",
+    "command": "https://www.ebay.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Leboncoin",
+    "description": "Petites annonces Leboncoin",
+    "command": "https://www.leboncoin.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Fnac",
+    "description": "Fnac - high-tech et culture",
+    "command": "https://www.fnac.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Darty",
+    "description": "Darty - électroménager et high-tech",
+    "command": "https://www.darty.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Boulanger",
+    "description": "Boulanger - électroménager",
+    "command": "https://www.boulanger.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "E.Leclerc",
+    "description": "E.Leclerc marketplace",
+    "command": "https://www.leclerc.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Rue Commerce",
+    "description": "Rue du Commerce",
+    "command": "https://www.rueducommerce.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Rakuten",
+    "description": "Rakuten France",
+    "command": "https://fr.shopping.rakuten.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "TopAchat",
+    "description": "TopAchat - composants PC",
+    "command": "https://www.topachat.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Grosbill",
+    "description": "Grosbill - informatique",
+    "command": "https://www.grosbill.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Inmac Wstore",
+    "description": "Inmac Wstore - fournitures IT",
+    "command": "https://www.inmac-wstore.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Visiodirect",
+    "description": "Visiodirect - consommables",
+    "command": "https://www.visiodirect.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "LDLC",
+    "description": "LDLC - matériel informatique",
+    "command": "https://www.ldlc.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Materiel.net",
+    "description": "Materiel.net - composants PC",
+    "command": "https://www.materiel.net",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PC21",
+    "description": "PC21 - informatique pro",
+    "command": "https://www.pc21.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Cybertek",
+    "description": "Cybertek - composants et PC",
+    "command": "https://www.cybertek.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Config-Gamer",
+    "description": "Config-Gamer - PC gaming",
+    "command": "https://www.config-gamer.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Idealo",
+    "description": "Comparateur de prix Idealo",
+    "command": "https://www.idealo.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Dealabs",
+    "description": "Bons plans et promotions",
+    "command": "https://www.dealabs.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Le Dénicheur",
+    "description": "Comparateur de prix",
+    "command": "https://ledenicheur.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "OKA Mac",
+    "description": "Mac reconditionnés",
+    "command": "https://www.okamac.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "MacWay",
+    "description": "Accessoires et produits Apple",
+    "command": "https://www.macway.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Digitec CH",
+    "description": "Digitec Suisse",
+    "command": "https://www.digitec.ch",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Amazon DE",
+    "description": "Amazon Allemagne",
+    "command": "https://www.amazon.de",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Amazon UK",
+    "description": "Amazon Royaume-Uni",
+    "command": "https://www.amazon.co.uk",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Amazon US",
+    "description": "Amazon États-Unis",
+    "command": "https://www.amazon.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Newegg",
+    "description": "Newegg - composants PC (US)",
+    "command": "https://www.newegg.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "B&H Photo",
+    "description": "B&H Photo Video",
+    "command": "https://www.bhphotovideo.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "BackMarket",
+    "description": "Produits reconditionnés",
+    "command": "https://www.backmarket.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Refurbed",
+    "description": "Appareils reconditionnés",
+    "command": "https://www.refurbed.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "2ememain.be",
+    "description": "Petites annonces Belgique",
+    "command": "https://www.2ememain.be",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "AliExpress",
+    "description": "AliExpress marketplace",
+    "command": "https://www.aliexpress.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Wish",
+    "description": "Wish marketplace",
+    "command": "https://www.wish.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Banggood",
+    "description": "Banggood marketplace",
+    "command": "https://www.banggood.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Crucial FR",
+    "description": "Crucial France - mémoire et SSD",
+    "command": "https://www.crucial.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Dell FR",
+    "description": "Dell France boutique",
+    "command": "https://www.dell.com/fr-fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "HP FR",
+    "description": "HP France boutique",
+    "command": "https://www.hp.com/fr-fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Lenovo FR",
+    "description": "Lenovo France boutique",
+    "command": "https://www.lenovo.com/fr/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Samsung FR",
+    "description": "Samsung France boutique",
+    "command": "https://www.samsung.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "La Centrale",
+    "description": "Annonces automobiles",
+    "command": "https://www.lacentrale.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "ProtonVPN",
+    "description": "VPN sécurisé Proton",
+    "command": "https://protonvpn.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "NordVPN",
+    "description": "Service VPN NordVPN",
+    "command": "https://nordvpn.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "ExpressVPN",
+    "description": "Service VPN ExpressVPN",
+    "command": "https://www.expressvpn.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Surfshark",
+    "description": "Service VPN Surfshark",
+    "command": "https://surfshark.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PIA VPN",
+    "description": "Private Internet Access VPN",
+    "command": "https://www.privateinternetaccess.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Mullvad VPN",
+    "description": "Service VPN Mullvad",
+    "command": "https://mullvad.net",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "CyberGhost",
+    "description": "Service VPN CyberGhost",
+    "command": "https://www.cyberghostvpn.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Windscribe",
+    "description": "Service VPN Windscribe",
+    "command": "https://windscribe.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Malwarebytes",
+    "description": "Anti-malware Malwarebytes",
+    "command": "https://www.malwarebytes.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Kaspersky",
+    "description": "Antivirus Kaspersky",
+    "command": "https://www.kaspersky.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Bitdefender",
+    "description": "Antivirus Bitdefender",
+    "command": "https://www.bitdefender.fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "ESET NOD32",
+    "description": "Antivirus ESET NOD32",
+    "command": "https://www.eset.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Bitwarden",
+    "description": "Gestionnaire de mots de passe",
+    "command": "https://bitwarden.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "KeePass",
+    "description": "Gestionnaire de mots de passe local",
+    "command": "https://keepass.info",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "1Password",
+    "description": "Gestionnaire de mots de passe",
+    "command": "https://1password.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "LastPass",
+    "description": "Gestionnaire de mots de passe cloud",
+    "command": "https://www.lastpass.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Dashlane",
+    "description": "Gestionnaire de mots de passe",
+    "command": "https://www.dashlane.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "NordPass",
+    "description": "Gestionnaire de mots de passe Nord",
+    "command": "https://nordpass.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "VirusTotal",
+    "description": "Scanner de fichiers en ligne",
+    "command": "https://www.virustotal.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Have I Been Pwned",
+    "description": "Vérifier les fuites de données",
+    "command": "https://haveibeenpwned.com",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Shodan",
+    "description": "Moteur de recherche IoT",
+    "command": "https://www.shodan.io",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PC Componentes",
+    "description": "E-commerce informatique espagnol",
+    "command": "https://www.pccomponentes.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Mindfactory",
+    "description": "E-commerce informatique allemand Mindfactory",
+    "command": "https://www.mindfactory.de/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Alternate FR",
+    "description": "E-commerce informatique FR et DE Alternate",
+    "command": "https://www.alternate.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "IT-Discount",
+    "description": "Matériel informatique discount",
+    "command": "https://www.it-discount.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "iFixit",
+    "description": "Guides réparation et pièces détachées",
+    "command": "https://www.ifixit.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔧"
+  },
+  {
+    "name": "Spareka",
+    "description": "Pièces détachées électroménager Spareka",
+    "command": "https://www.spareka.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔧"
+  },
+  {
+    "name": "LDLC Pro",
+    "description": "LDLC espace professionnel B2B",
+    "command": "https://pro.ldlc.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Cdiscount Pro",
+    "description": "Cdiscount marketplace professionnel B2B",
+    "command": "https://pro.cdiscount.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Vistaprint",
+    "description": "Impression pro personnalisée en ligne",
+    "command": "https://www.vistaprint.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "SOS Accessoire",
+    "description": "Pièces détachées et SAV électronique",
+    "command": "https://www.sosav.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔧"
+  },
+  {
+    "name": "AnyDesk",
+    "description": "Télécharger AnyDesk bureau à distance",
+    "command": "https://anydesk.com/fr/downloads",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "TeamViewer",
+    "description": "Télécharger TeamViewer accès distant",
+    "command": "https://www.teamviewer.com/fr/download/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "RustDesk",
+    "description": "Télécharger RustDesk accès distant open source",
+    "command": "https://rustdesk.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Splashtop",
+    "description": "Accès distant Splashtop télécharger",
+    "command": "https://www.splashtop.com/downloads",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "RemotePC",
+    "description": "Accès distant RemotePC",
+    "command": "https://www.remotepc.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Chrome Remote Desktop",
+    "description": "Bureau à distance Google Chrome",
+    "command": "https://remotedesktop.google.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Dropbox",
+    "description": "Télécharger client Dropbox stockage cloud",
+    "command": "https://www.dropbox.com/install",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "☁️"
+  },
+  {
+    "name": "Box",
+    "description": "Stockage cloud entreprise Box télécharger",
+    "command": "https://www.box.com/fr-fr/resources/downloads",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "☁️"
+  },
+  {
+    "name": "Mega",
+    "description": "Télécharger client Mega stockage chiffré",
+    "command": "https://mega.io/desktop",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "☁️"
+  },
+  {
+    "name": "Sync.com",
+    "description": "Stockage cloud chiffré Sync.com",
+    "command": "https://www.sync.com/install/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "☁️"
+  },
+  {
+    "name": "pCloud",
+    "description": "Stockage cloud pCloud télécharger",
+    "command": "https://www.pcloud.com/fr/download-free-online-cloud-file-storage.html",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "☁️"
+  },
+  {
+    "name": "McAfee",
+    "description": "Suite sécurité McAfee télécharger",
+    "command": "https://www.mcafee.com/fr-fr/downloads.html",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "Norton",
+    "description": "Norton antivirus et sécurité télécharger",
+    "command": "https://fr.norton.com/downloads",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "Trend Micro",
+    "description": "Sécurité Trend Micro télécharger",
+    "command": "https://www.trendmicro.com/fr_fr/forHome/products/downloads.html",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "Avast",
+    "description": "Télécharger Avast antivirus gratuit",
+    "command": "https://www.avast.com/fr-fr/index#pc",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "AVG Antivirus",
+    "description": "Télécharger AVG antivirus gratuit",
+    "command": "https://www.avg.com/fr-fr/download",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "F-Secure",
+    "description": "Solution sécurité F-Secure télécharger",
+    "command": "https://www.f-secure.com/fr/home/downloads",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛡️"
+  },
+  {
+    "name": "Keeper",
+    "description": "Gestionnaire mots de passe Keeper",
+    "command": "https://www.keepersecurity.com/download.html",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔑"
+  },
+  {
+    "name": "RoboForm",
+    "description": "Gestionnaire mots de passe RoboForm",
+    "command": "https://www.roboform.com/fr/download",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔑"
+  },
+  {
+    "name": "Enpass",
+    "description": "Gestionnaire mots de passe Enpass",
+    "command": "https://www.enpass.io/downloads/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🔑"
+  },
+  {
+    "name": "UserBenchmark",
+    "description": "Benchmark comparatif en ligne",
+    "command": "https://www.userbenchmark.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "3DMark",
+    "description": "Benchmark 3D référence",
+    "command": "https://benchmarks.ul.com/3dmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "PCMark",
+    "description": "Benchmark productivité",
+    "command": "https://benchmarks.ul.com/pcmark10",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Geekbench",
+    "description": "Benchmark CPU multiplateforme",
+    "command": "https://www.geekbench.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Cinebench",
+    "description": "Benchmark CPU Maxon",
+    "command": "https://www.maxon.net/en/cinebench",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "PassMark",
+    "description": "Suite de benchmarks PassMark",
+    "command": "https://www.passmark.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "CrystalDiskMark",
+    "description": "Benchmark de disques",
+    "command": "https://crystalmark.info",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "AS SSD Benchmark",
+    "description": "Benchmark SSD",
+    "command": "https://www.alex-is.de/PHP/fusion/downloads.php",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "ATTO Disk Benchmark",
+    "description": "Benchmark disque ATTO",
+    "command": "https://www.atto.com/disk-benchmark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "HD Tune",
+    "description": "Test et diagnostic de disques",
+    "command": "https://www.hdtune.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Unigine Heaven",
+    "description": "Benchmark GPU Heaven",
+    "command": "https://benchmark.unigine.com/heaven",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Unigine Valley",
+    "description": "Benchmark GPU Valley",
+    "command": "https://benchmark.unigine.com/valley",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Unigine Superposition",
+    "description": "Benchmark GPU Superposition",
+    "command": "https://benchmark.unigine.com/superposition",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "FurMark",
+    "description": "Test de stress GPU",
+    "command": "https://geeks3d.com/furmark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Prime95",
+    "description": "Test de stress CPU",
+    "command": "https://www.mersenne.org/download/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "AIDA64",
+    "description": "Diagnostic et benchmark complet",
+    "command": "https://www.aida64.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "MemTest86",
+    "description": "Test de mémoire RAM bootable",
+    "command": "https://www.memtest86.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "MemTest64",
+    "description": "Test de mémoire RAM sous Windows",
+    "command": "https://www.techpowerup.com/memtest64/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "OCCT",
+    "description": "Test de stabilité complet",
+    "command": "https://www.ocbase.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Intel Burn Test",
+    "description": "Test de stress CPU Intel",
+    "command": "https://www.majorgeeks.com/files/details/intelburntest.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "LinX",
+    "description": "Test de stress CPU LinX",
+    "command": "https://www.techspot.com/downloads/4292-linx.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Y-Cruncher",
+    "description": "Benchmark calcul Pi",
+    "command": "http://www.numberworld.org/y-cruncher/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Blender Benchmark",
+    "description": "Benchmark rendu Blender",
+    "command": "https://opendata.blender.org",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "V-Ray Benchmark",
+    "description": "Benchmark rendu V-Ray",
+    "command": "https://www.chaosgroup.com/vray/benchmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "NovaBench",
+    "description": "Benchmark rapide et simple",
+    "command": "https://novabench.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "CPU Monkey",
+    "description": "Comparateur de CPU",
+    "command": "https://www.cpu-monkey.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "GPU Check",
+    "description": "Comparateur de GPU",
+    "command": "https://www.gpucheck.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "CPU-World",
+    "description": "Base de données CPU",
+    "command": "https://www.cpu-world.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "TechPowerUp",
+    "description": "Reviews et outils hardware",
+    "command": "https://www.techpowerup.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Samsung Magician",
+    "description": "Outil SSD Samsung",
+    "command": "https://semiconductor.samsung.com/consumer-storage/magician/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "WD Dashboard",
+    "description": "Outil SSD Western Digital",
+    "command": "https://support.wdc.com/downloads.aspx",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Crucial SE",
+    "description": "Outil SSD Crucial Storage Executive",
+    "command": "https://www.crucial.com/support/storage-executive",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "ADATA SSD Toolbox",
+    "description": "Outil SSD ADATA",
+    "command": "https://www.adata.com/en/ss/software-6/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "Basemark GPU",
+    "description": "Benchmark GPU multiplateforme",
+    "command": "https://www.basemark.com/benchmarks/basemark-gpu/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "GFXBench",
+    "description": "Benchmark graphique cross-platform",
+    "command": "https://gfxbench.com",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "CPU-Z Benchmark",
+    "description": "Benchmark CPU monocore et multicore CPU-Z",
+    "command": "https://www.cpuid.com/softwares/cpu-z.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Cinebench R23",
+    "description": "Benchmark CPU rendu 3D Maxon R23",
+    "command": "https://www.maxon.net/cinebench",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Cinebench R24",
+    "description": "Benchmark CPU dernière génération Maxon R24",
+    "command": "https://www.maxon.net/cinebench",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "HWBot",
+    "description": "Base de données benchmarks overclocking",
+    "command": "https://hwbot.org",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Geekbench 6",
+    "description": "Benchmark CPU/GPU multiplateforme v6",
+    "command": "https://www.geekbench.com/download/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "PassMark CPU Test",
+    "description": "Benchmark CPU PassMark PerformanceTest",
+    "command": "https://www.passmark.com/products/performancetest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Corona Benchmark",
+    "description": "Benchmark CPU rendu Corona Renderer",
+    "command": "https://corona-renderer.com/benchmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "7-Zip Benchmark",
+    "description": "Benchmark compression CPU via 7-Zip",
+    "command": "https://www.7-zip.org/download.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "MSI Kombustor",
+    "description": "Test de stress GPU MSI Kombustor",
+    "command": "https://www.geeks3d.com/furmark/kombustor/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "GPU Benchmark Online",
+    "description": "Comparatif GPU VideoCardz en ligne",
+    "command": "https://www.videocardbenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "GPU-Z Download",
+    "description": "Infos et capteurs GPU TechPowerUp GPU-Z",
+    "command": "https://www.techpowerup.com/gpuz/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "RealBench ASUS",
+    "description": "Benchmark système complet ASUS RealBench",
+    "command": "https://rog.asus.com/rog-pro/realbench-v2-benchmark-tool/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Unigine Suite",
+    "description": "Suite benchmarks Unigine Heaven Valley Superposition",
+    "command": "https://benchmark.unigine.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "MemTest86+",
+    "description": "Test RAM bootable open source MemTest86+",
+    "command": "https://www.memtest.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "Testmem5",
+    "description": "Test RAM avancé TM5",
+    "command": "https://www.overclock.net/threads/1751596/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "HCI MemTest",
+    "description": "Test RAM Windows espace utilisateur HCI",
+    "command": "https://hcidesign.com/memtest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "RAMMap Sysinternals",
+    "description": "Analyse utilisation RAM Windows Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/rammap",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "AIDA64 Memory Benchmark",
+    "description": "Benchmark bande passante mémoire AIDA64",
+    "command": "https://www.aida64.com/downloads",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "DiskSpeed",
+    "description": "Benchmark vitesse disque simple Microsoft Store",
+    "command": "https://apps.microsoft.com/detail/9nblggh4bfk3",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "Parkdale",
+    "description": "Benchmark lecture écriture disques et réseau",
+    "command": "https://www.quartetcomputers.com/parkdale.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "Anvil Storage Utilities",
+    "description": "Benchmark stockage SSD complet Anvil",
+    "command": "https://anvilbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "CrystalDiskInfo",
+    "description": "Santé SMART et infos disques CrystalDiskInfo",
+    "command": "https://crystalmark.info/en/software/crystaldiskinfo/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "iPerf3",
+    "description": "Test débit réseau LAN iPerf3",
+    "command": "https://iperf.fr/iperf-download.php",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "NetIO-GUI",
+    "description": "Test bande passante réseau local NetIO",
+    "command": "https://www.bandinelli.com/netio-gui/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "LAN Speed Test",
+    "description": "Test vitesse réseau local LAN Speed Test",
+    "command": "https://totusoft.com/lanspeed",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "nPerf",
+    "description": "Test débit internet et qualité réseau nPerf",
+    "command": "https://www.nperf.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Fast.com",
+    "description": "Test vitesse internet Netflix Fast.com",
+    "command": "https://fast.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Speedtest CLI",
+    "description": "Test débit internet Ookla ligne de commande",
+    "command": "https://www.speedtest.net/apps/cli",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "PingTest Net",
+    "description": "Test latence et pertes paquets réseau",
+    "command": "https://pingtest.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "HWiNFO64",
+    "description": "Diagnostic et monitoring système complet HWiNFO",
+    "command": "https://www.hwinfo.com/download/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Sandra Lite",
+    "description": "Benchmark et diagnostic système SiSoftware Sandra",
+    "command": "https://www.sisoftware.co.uk/sandra/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "BurnIn Test",
+    "description": "Test stabilité système complet PassMark BurnIn",
+    "command": "https://www.passmark.com/products/burnintest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "PerformanceTest",
+    "description": "Suite benchmarks complète PassMark PerformanceTest",
+    "command": "https://www.passmark.com/products/performancetest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "PCMark 10",
+    "description": "Benchmark productivité quotidienne UL PCMark",
+    "command": "https://benchmarks.ul.com/pcmark10",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "CapFrameX",
+    "description": "Analyse frametime et performance gaming CapFrameX",
+    "command": "https://www.capframex.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🎮"
+  },
+  {
+    "name": "Steam Hardware Survey",
+    "description": "Statistiques matériel joueurs Steam",
+    "command": "https://store.steampowered.com/hwsurvey/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🎮"
+  },
+  {
+    "name": "Can You Run It",
+    "description": "Vérifier compatibilité PC et jeux",
+    "command": "https://www.systemrequirementslab.com/cyri",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🎮"
+  },
+  {
+    "name": "PresentMon",
+    "description": "Capture métriques performance jeux DirectX",
+    "command": "https://github.com/GameTechDev/PresentMon/releases",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🎮"
+  },
+  {
+    "name": "FCAT VR",
+    "description": "Analyse performance VR Intel FCAT",
+    "command": "https://www.intel.com/content/www/us/en/download/17763",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🎮"
+  },
+  {
+    "name": "HWMonitor",
+    "description": "Monitoring températures tensions vitesses CPUID",
+    "command": "https://www.cpuid.com/softwares/hwmonitor.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "Core Temp",
+    "description": "Monitoring température CPU par core",
+    "command": "https://www.alcpu.com/CoreTemp/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "ThrottleStop",
+    "description": "Gestion throttling et températures CPU",
+    "command": "https://www.techpowerup.com/download/throttlestop/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "Open Hardware Monitor",
+    "description": "Monitoring open source températures tensions",
+    "command": "https://openhardwaremonitor.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "Fan Control",
+    "description": "Contrôle ventilateurs PC Fan Control",
+    "command": "https://github.com/Rem0o/FanControl.Releases",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "GPU Temp",
+    "description": "Monitoring température GPU simple",
+    "command": "https://www.gputemp.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "WinSAT Formal",
+    "description": "Évaluation performances Windows WinSAT",
+    "command": "winsat formal",
+    "is_url": false,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "V-Ray 6 Benchmark",
+    "description": "Benchmark rendu 3D V-Ray Chaos Group",
+    "command": "https://www.chaos.com/vray/benchmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Blender Open Data",
+    "description": "Base de données benchmarks Blender open data",
+    "command": "https://opendata.blender.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "LuxMark",
+    "description": "Benchmark rendu GPU CPU LuxRender OpenCL",
+    "command": "https://luxmark.info/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "MSI Afterburner",
+    "description": "Overclocking GPU et monitoring MSI Afterburner",
+    "command": "https://www.msi.com/Landing/afterburner",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "RTSS",
+    "description": "RivaTuner Statistics Server OSD monitoring",
+    "command": "https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "GPU Shark",
+    "description": "Monitoring GPU léger multi-GPU",
+    "command": "https://www.geeks3d.com/gpushark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "FurMark 2",
+    "description": "Test stress GPU FurMark 2 Geeks3D",
+    "command": "https://www.geeks3d.com/furmark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "OCCT CPU Test",
+    "description": "Test stabilité CPU OCCT",
+    "command": "https://www.ocbase.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "OCCT GPU Test",
+    "description": "Test stabilité GPU OCCT",
+    "command": "https://www.ocbase.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "OCCT Power Supply",
+    "description": "Test stabilité alimentation OCCT",
+    "command": "https://www.ocbase.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "CompuBench",
+    "description": "Benchmark GPU calcul généraliste CompuBench",
+    "command": "https://compubench.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Intel MLC",
+    "description": "Mesure latence mémoire Intel MLC",
+    "command": "https://www.intel.com/content/www/us/en/download/736633/multi-core-latency-checker.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "Sapphire TriXX",
+    "description": "Overclocking et monitoring GPU AMD Sapphire",
+    "command": "https://www.sapphiretech.com/en/trixx",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Basemark Web",
+    "description": "Benchmark navigateur web GPU HTML5",
+    "command": "https://web.basemark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "JetStream 2",
+    "description": "Benchmark JavaScript navigateur Apple",
+    "command": "https://browserbench.org/JetStream2.0/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Speedometer 3",
+    "description": "Benchmark réactivité applications web",
+    "command": "https://browserbench.org/Speedometer3.0/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "MotionMark",
+    "description": "Benchmark graphiques navigateur web",
+    "command": "https://browserbench.org/MotionMark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Sandra Memory Benchmark",
+    "description": "Test bande passante mémoire SiSoftware",
+    "command": "https://www.sisoftware.co.uk/sandra/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "HD Tune Pro",
+    "description": "Test benchmark et santé disque HD Tune Pro",
+    "command": "https://www.hdtune.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "Snappy Driver",
+    "description": "Installation automatique de drivers",
+    "command": "https://sdi-tool.org",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Driver Booster",
+    "description": "Mise à jour de drivers IObit",
+    "command": "https://www.iobit.com/en/driver-booster.php",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Driver Easy",
+    "description": "Mise à jour facile des drivers",
+    "command": "https://www.drivereasy.com",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "DriverPack",
+    "description": "Pack de drivers hors-ligne",
+    "command": "https://driverpack.io",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Driver Genius",
+    "description": "Gestion avancée des drivers",
+    "command": "https://www.driver-soft.com",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "NVIDIA Drivers",
+    "description": "Pilotes NVIDIA officiels",
+    "command": "https://www.nvidia.fr/Download/index.aspx",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "AMD Drivers",
+    "description": "Pilotes AMD officiels",
+    "command": "https://www.amd.com/fr/support",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Intel Drivers",
+    "description": "Détection auto des pilotes Intel",
+    "command": "https://www.intel.fr/content/www/fr/fr/support/detect.html",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Dell Drivers",
+    "description": "Pilotes Dell France",
+    "command": "https://www.dell.com/support/home/fr-fr",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "HP Drivers",
+    "description": "Pilotes HP France",
+    "command": "https://support.hp.com/fr-fr/drivers",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Lenovo Drivers",
+    "description": "Pilotes Lenovo France",
+    "command": "https://support.lenovo.com/fr/fr/solutions/ht003029",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "ASUS Drivers",
+    "description": "Centre de téléchargement ASUS",
+    "command": "https://www.asus.com/fr/support/Download-Center/",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "MSI Drivers",
+    "description": "Téléchargement pilotes MSI",
+    "command": "https://www.msi.com/support/download",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Realtek Drivers",
+    "description": "Pilotes audio Realtek HD",
+    "command": "https://www.realtek.com/en/component/zoo/category/pc-audio-codecs-high-definition-audio-codecs-software",
+    "is_url": true,
+    "section": "Drivers",
+    "icon": "💿"
+  },
+  {
+    "name": "Microsoft Docs",
+    "description": "Documentation Microsoft officielle",
+    "command": "https://learn.microsoft.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Windows Tips",
+    "description": "Astuces Windows Microsoft",
+    "command": "https://support.microsoft.com/fr-fr/windows",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Sysinternals",
+    "description": "Documentation Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "SS64 CMD",
+    "description": "Référence commandes CMD",
+    "command": "https://ss64.com/nt/",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "PowerShell Docs",
+    "description": "Documentation PowerShell",
+    "command": "https://learn.microsoft.com/en-us/powershell/",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "TechNet",
+    "description": "Microsoft TechNet",
+    "command": "https://technet.microsoft.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "How-To Geek",
+    "description": "Tutoriels tech How-To Geek",
+    "command": "https://www.howtogeek.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Stack Overflow",
+    "description": "Forum développeurs Stack Overflow",
+    "command": "https://stackoverflow.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Reddit r/techsupport",
+    "description": "Support technique Reddit",
+    "command": "https://www.reddit.com/r/techsupport/",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Bleeping Computer",
+    "description": "Forum et tutos Bleeping Computer",
+    "command": "https://www.bleepingcomputer.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Ninite",
+    "description": "Installateur batch d'applications",
+    "command": "https://ninite.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "AlternativeTo",
+    "description": "Trouver des alternatives logicielles",
+    "command": "https://alternativeto.net",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "CNET Download",
+    "description": "Téléchargements CNET",
+    "command": "https://download.cnet.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "PortableApps",
+    "description": "Applications portables",
+    "command": "https://portableapps.com",
+    "is_url": true,
+    "section": "Documentation",
+    "icon": "📚"
+  },
+  {
+    "name": "Cinebench R20",
+    "description": "Benchmark CPU rendu 3D Maxon R20",
+    "command": "https://www.maxon.net/cinebench",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "SuperPI",
+    "description": "Calcul Pi monocore benchmark CPU",
+    "command": "https://www.techpowerup.com/download/super-pi/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "wPrime",
+    "description": "Benchmark CPU calcul nombres premiers",
+    "command": "https://wprime.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "HandBrake Benchmark",
+    "description": "Transcodage vidéo benchmark CPU HandBrake",
+    "command": "https://handbrake.fr/downloads.php",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "x264 Benchmark",
+    "description": "Encodage vidéo x264 benchmark CPU",
+    "command": "https://openbenchmarking.org/test/pts/x264",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "x265 Benchmark",
+    "description": "Encodage vidéo x265 HEVC benchmark CPU",
+    "command": "https://openbenchmarking.org/test/pts/x265",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Phoronix Test Suite",
+    "description": "Suite de tests open source multiplateforme",
+    "command": "https://www.phoronix-test-suite.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "OpenBenchmarking",
+    "description": "Base de données benchmarks open source",
+    "command": "https://openbenchmarking.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "GPU-Z Sensors",
+    "description": "Capteurs GPU en temps réel GPU-Z",
+    "command": "https://www.techpowerup.com/gpuz/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "LatencyMon",
+    "description": "Analyse latence audio et système temps réel",
+    "command": "https://www.resplendence.com/latencymon",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "DPC Latency Checker",
+    "description": "Vérifier latence DPC pour audio professionnel",
+    "command": "https://www.thesycon.de/eng/latency_check.shtml",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Aida64 System Stability",
+    "description": "Test stabilité système AIDA64",
+    "command": "https://www.aida64.com/downloads",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "CPU Benchmark Online",
+    "description": "Benchmark CPU en ligne comparatif",
+    "command": "https://www.cpubenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "GPU Benchmark Online 2",
+    "description": "Benchmark GPU en ligne comparatif PassMark",
+    "command": "https://www.videocardbenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "SSD UserBenchmark",
+    "description": "Benchmark SSD comparatif UserBenchmark",
+    "command": "https://ssd.userbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "HDD UserBenchmark",
+    "description": "Benchmark HDD comparatif UserBenchmark",
+    "command": "https://hdd.userbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "RAM UserBenchmark",
+    "description": "Benchmark RAM comparatif UserBenchmark",
+    "command": "https://ram.userbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "Disk Detective",
+    "description": "Analyse performance et santé disque",
+    "command": "https://diskdetective.io/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "StorageMark",
+    "description": "Benchmark stockage PCMark",
+    "command": "https://benchmarks.ul.com/resources/storage-benchmarks",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "Network Speed Test",
+    "description": "Test vitesse réseau Microsoft",
+    "command": "https://www.microsoft.com/en-us/p/network-speed-test/9wzdncrfhx52",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Ping.pe",
+    "description": "Test ping multilocations mondial",
+    "command": "https://ping.pe/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Cloudflare Speed Test",
+    "description": "Test vitesse internet Cloudflare",
+    "command": "https://speed.cloudflare.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "LibreSpeed",
+    "description": "Test débit internet open source auto-hébergé",
+    "command": "https://librespeed.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "DSLReports",
+    "description": "Test débit et qualité connexion internet DSL",
+    "command": "https://www.dslreports.com/speedtest",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Battery Report",
+    "description": "Rapport état batterie PowerCfg",
+    "command": "powercfg /batteryreport",
+    "is_url": false,
+    "section": "Benchmark & Tests",
+    "icon": "🔋"
+  },
+  {
+    "name": "Sleep Diagnostics",
+    "description": "Rapport diagnostics veille PowerCfg",
+    "command": "powercfg /sleepstudy",
+    "is_url": false,
+    "section": "Benchmark & Tests",
+    "icon": "🔋"
+  },
+  {
+    "name": "WhySoSlow",
+    "description": "Analyser pourquoi le PC est lent",
+    "command": "https://www.resplendence.com/whysoslow",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Process Monitor",
+    "description": "Surveillance processus et activité fichiers Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/procmon",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Process Explorer",
+    "description": "Gestionnaire processus avancé Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/process-explorer",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Autoruns",
+    "description": "Programmes au démarrage Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "TCPView",
+    "description": "Connexions TCP/IP actives Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/tcpview",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Disk2VHD",
+    "description": "Convertir disque en VHD Sysinternals",
+    "command": "https://learn.microsoft.com/en-us/sysinternals/downloads/disk2vhd",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "BenchmarkDOTnet",
+    "description": "Framework benchmark code .NET",
+    "command": "https://benchmarkdotnet.org/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "GPU-Shark Download",
+    "description": "Télécharger GPU Shark monitoring léger",
+    "command": "https://www.geeks3d.com/gpushark/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "NVFlash",
+    "description": "Flash BIOS GPU NVIDIA",
+    "command": "https://www.techpowerup.com/download/nvidia-nvflash/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "ATIFlash",
+    "description": "Flash BIOS GPU AMD ATI",
+    "command": "https://www.techpowerup.com/download/ati-atiflash/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "GPU Tweak III",
+    "description": "Overclocking GPU ASUS GPU Tweak III",
+    "command": "https://www.asus.com/campaign/gpu-tweak-III/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Precision X1",
+    "description": "Overclocking GPU EVGA Precision X1",
+    "command": "https://www.evga.com/precisionx1/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Watt Meter Online",
+    "description": "Calculateur consommation électrique PC",
+    "command": "https://outervision.com/power-supply-calculator",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "PSU Calculator",
+    "description": "Calculateur alimentation PC BeQuiet",
+    "command": "https://www.bequiet.com/en/psucalculator",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "Crucial Advisor",
+    "description": "Vérificateur compatibilité mémoire Crucial",
+    "command": "https://www.crucial.com/store/advisor",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "Kingston Memory Search",
+    "description": "Recherche mémoire compatible Kingston",
+    "command": "https://www.kingston.com/fr/memory/search",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "NotebookCheck",
+    "description": "Tests et benchmarks portables NotebookCheck",
+    "command": "https://www.notebookcheck.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "AnandTech",
+    "description": "Analyses hardware approfondies AnandTech",
+    "command": "https://www.anandtech.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Tom's Hardware",
+    "description": "Tests et benchmarks Tom's Hardware",
+    "command": "https://www.tomshardware.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Hardware Unboxed",
+    "description": "Tests GPU et CPU Hardware Unboxed",
+    "command": "https://www.youtube.com/@Hardwareunboxed",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🔍"
+  },
+  {
+    "name": "Thermal Grizzly",
+    "description": "Guide pâte thermique Thermal Grizzly",
+    "command": "https://www.thermal-grizzly.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "HWInfo Sensors",
+    "description": "Capteurs système HWiNFO64 temps réel",
+    "command": "https://www.hwinfo.com/download/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "SpeedFan",
+    "description": "Surveillance températures et vitesse ventilateurs",
+    "command": "https://www.almico.com/speedfan.php",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "CoolerMaster Calc",
+    "description": "Calculateur refroidissement CoolerMaster",
+    "command": "https://www.coolermaster.com/en-global/cases/cooling-solutions/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌡️"
+  },
+  {
+    "name": "UserBenchmark CPU",
+    "description": "Benchmark CPU comparatif UserBenchmark",
+    "command": "https://cpu.userbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "UserBenchmark GPU",
+    "description": "Benchmark GPU comparatif UserBenchmark",
+    "command": "https://gpu.userbenchmark.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "3DMark Port Royal",
+    "description": "Benchmark Ray Tracing 3DMark Port Royal",
+    "command": "https://benchmarks.ul.com/3dmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "3DMark Storage",
+    "description": "Benchmark stockage jeux 3DMark",
+    "command": "https://benchmarks.ul.com/3dmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "3DMark CPU Profile",
+    "description": "Benchmark CPU profil 3DMark",
+    "command": "https://benchmarks.ul.com/3dmark",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "WebGL Aquarium",
+    "description": "Test WebGL navigateur fish aquarium",
+    "command": "https://webglsamples.org/aquarium/aquarium.html",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "UNIGINE Superposition 1080",
+    "description": "Test stress GPU Superposition 1080p Extreme",
+    "command": "https://benchmark.unigine.com/superposition",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "OC Scanner NVIDIA",
+    "description": "Scanner overclocking automatique GPU NVIDIA",
+    "command": "https://www.nvidia.com/en-us/geforce/oc-scanner/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "AMD Adrenalin OC",
+    "description": "Overclocking GPU AMD Radeon Software",
+    "command": "https://www.amd.com/fr/technologies/software",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🖥️"
+  },
+  {
+    "name": "CPU Stress FPU",
+    "description": "Test stress FPU processeur OCCT",
+    "command": "https://www.ocbase.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "PassMark Disk",
+    "description": "Benchmark disque PassMark DiskMark",
+    "command": "https://www.passmark.com/products/performancetest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "PassMark Memory",
+    "description": "Benchmark mémoire PassMark",
+    "command": "https://www.passmark.com/products/performancetest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🧠"
+  },
+  {
+    "name": "PassMark Network",
+    "description": "Benchmark réseau PassMark",
+    "command": "https://www.passmark.com/products/performancetest/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "Micro-Star",
+    "description": "MSI France boutique officielle",
+    "command": "https://fr.msi.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "ASUS Store",
+    "description": "ASUS France boutique officielle",
+    "command": "https://fr.asus.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Acer Store FR",
+    "description": "Acer France boutique officielle",
+    "command": "https://store.acer.com/fr-fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Gigabyte Store",
+    "description": "Gigabyte boutique officielle",
+    "command": "https://www.gigabyte.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Corsair Store",
+    "description": "Corsair boutique officielle France",
+    "command": "https://www.corsair.com/fr/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Kingston",
+    "description": "Kingston mémoire et stockage officiel",
+    "command": "https://www.kingston.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Seagate Store",
+    "description": "Seagate disques durs boutique officielle",
+    "command": "https://www.seagate.com/fr/fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "WD Store",
+    "description": "Western Digital boutique officielle",
+    "command": "https://www.westerndigital.com/fr-fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Noctua",
+    "description": "Refroidissement Noctua boutique officielle",
+    "command": "https://noctua.at/fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "be quiet!",
+    "description": "Alimentation et refroidissement be quiet!",
+    "command": "https://www.bequiet.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Fractal Design",
+    "description": "Boîtiers PC Fractal Design",
+    "command": "https://www.fractal-design.com/fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Seasonic",
+    "description": "Alimentations PC Seasonic",
+    "command": "https://seasonic.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "EVGA Store",
+    "description": "EVGA composants gaming boutique",
+    "command": "https://www.evga.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Zotac",
+    "description": "GPU et mini-PC Zotac boutique",
+    "command": "https://www.zotac.com/fr",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Palit",
+    "description": "GPU Palit boutique officielle",
+    "command": "https://www.palit.com/palit/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PowerColor",
+    "description": "GPU AMD PowerColor boutique",
+    "command": "https://www.powercolor.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "XFX",
+    "description": "GPU AMD XFX boutique officielle",
+    "command": "https://www.xfxforce.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "G.Skill",
+    "description": "Mémoire RAM G.Skill boutique officielle",
+    "command": "https://www.gskill.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "TeamGroup",
+    "description": "Mémoire et SSD TeamGroup boutique",
+    "command": "https://www.teamgroupinc.com/fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Noctua Direct",
+    "description": "Ventilateurs Noctua vente directe",
+    "command": "https://noctua.at/fr/products",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Micro Center",
+    "description": "Revendeur composants PC Micro Center US",
+    "command": "https://www.microcenter.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PCPartPicker",
+    "description": "Configurateur PC et comparateur prix",
+    "command": "https://fr.pcpartpicker.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Camelcamelcamel",
+    "description": "Historique prix Amazon",
+    "command": "https://fr.camelcamelcamel.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "LDLC Occasion",
+    "description": "LDLC produits d'occasion reconditionnés",
+    "command": "https://www.ldlc.com/occasion/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "G2A",
+    "description": "Marketplace jeux et logiciels G2A",
+    "command": "https://www.g2a.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Eneba",
+    "description": "Marketplace jeux et logiciels Eneba",
+    "command": "https://www.eneba.com/fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "CDKeys",
+    "description": "Marketplace clés jeux et logiciels CDKeys",
+    "command": "https://www.cdkeys.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Humble Bundle",
+    "description": "Bundles jeux et logiciels Humble Bundle",
+    "command": "https://www.humblebundle.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Logiciel.fr",
+    "description": "Achat logiciels et licences en ligne",
+    "command": "https://www.logiciel.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Microsoft Store",
+    "description": "Microsoft Store applications et jeux",
+    "command": "https://www.microsoft.com/fr-fr/store/apps/windows",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Geizhals",
+    "description": "Comparateur prix matériel informatique Geizhals",
+    "command": "https://geizhals.eu/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "PriceRunner",
+    "description": "Comparateur de prix PriceRunner France",
+    "command": "https://www.pricerunner.fr/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "Provantage",
+    "description": "Revendeur IT professionnel US",
+    "command": "https://www.provantage.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "IT4Store",
+    "description": "Boutique IT professionnelle FR",
+    "command": "https://www.it4store.com/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "inet.de",
+    "description": "Revendeur composants PC Suede",
+    "command": "https://www.inet.se/",
+    "is_url": true,
+    "section": "Fournisseurs & Achats",
+    "icon": "🛒"
+  },
+  {
+    "name": "CPU Benchmark Online",
+    "description": "Base de donnees benchmarks CPU comparatifs",
+    "command": "https://www.cpubenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "VideoCardBenchmark",
+    "description": "Base de donnees benchmarks GPU VideoCard",
+    "command": "https://www.videocardbenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "📊"
+  },
+  {
+    "name": "HDD Benchmark",
+    "description": "Base de donnees benchmarks disques durs",
+    "command": "https://www.harddrivebenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "💾"
+  },
+  {
+    "name": "Network Benchmark",
+    "description": "Test bande passante reseau local",
+    "command": "https://www.networkbenchmark.net/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "🌐"
+  },
+  {
+    "name": "CPUID CPU-Z Validator",
+    "description": "Validation resultats CPU-Z en ligne",
+    "command": "https://valid.x86.fr/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "OCCT Benchmark",
+    "description": "Test stabilite complet OCCT benchmark",
+    "command": "https://www.ocbase.com/",
+    "is_url": true,
+    "section": "Benchmark & Tests",
+    "icon": "⚡"
+  },
+  {
+    "name": "wmic OS info",
+    "description": "Informations systeme via WMIC",
+    "command": "wmic os get Caption,Version,BuildNumber /value",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🖥️"
+  },
+  {
+    "name": "wmic BIOS",
+    "description": "Informations BIOS via WMIC",
+    "command": "wmic bios get Manufacturer,Name,Version /value",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🖥️"
+  },
+  {
+    "name": "Get-PnpDevice",
+    "description": "Lister les peripheriques PnP PowerShell",
+    "command": "Get-PnpDevice | Format-Table -AutoSize",
+    "is_url": false,
+    "section": "Diagnostics & Infos",
+    "icon": "🔍"
+  },
+  {
+    "name": "MajorGeeks",
+    "description": "Base de logiciels systeme, securite et utilitaires",
+    "command": "https://www.majorgeeks.com/",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  },
+  {
+    "name": "Malekal",
+    "description": "Guides securite Windows, drivers et depannage",
+    "command": "https://www.malekal.com/",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  },
+  {
+    "name": "YggTorrent",
+    "description": "Tracker torrent francophone",
+    "command": "https://www.yggtorrent.org/auth/login",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  },
+  {
+    "name": "La Cale",
+    "description": "Portail de telechargement communautaire",
+    "command": "https://la-cale.space/login",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  },
+  {
+    "name": "Gemini Tracker",
+    "description": "Tracker torrent prive",
+    "command": "https://gemini-tracker.org/login",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  },
+  {
+    "name": "C411 Tracker",
+    "description": "Portail torrent communautaire",
+    "command": "https://staging-68d548c5bd4.c411.org/login",
+    "is_url": true,
+    "section": "Activation & Telechargements",
+    "icon": "📥"
+  }
+]

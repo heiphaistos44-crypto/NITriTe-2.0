@@ -1,0 +1,1003 @@
+# 📋 Plan Complet des Fonctionnalités — NiTriTe V25 → V26 Tauri/Rust
+
+> **Objectif** : Document de référence exhaustif listant **toutes les fonctionnalités** de la version Python (V25) de NiTriTe, organisées par catégorie, avec les fonctions concrètes et les dépendances utilisées.
+> Utilisez ce document comme checklist pour votre migration Tauri + Rust.
+
+---
+
+## Table des matières
+
+1. [Interface Principale & Navigation](#1-interface-principale--navigation)
+2. [Système de Thèmes & Apparence](#2-système-de-thèmes--apparence)
+3. [Diagnostic Système](#3-diagnostic-système)
+4. [Monitoring Temps Réel](#4-monitoring-temps-réel)
+5. [Applications & Installation](#5-applications--installation)
+6. [WinGet Manager & Commandes Système](#6-winget-manager--commandes-système)
+7. [Outils Système (548+ outils)](#7-outils-système-548-outils)
+8. [Master Install & Profils](#8-master-install--profils)
+9. [Apps Portables](#9-apps-portables)
+10. [Mises à Jour](#10-mises-à-jour)
+11. [Optimisations & Nettoyage](#11-optimisations--nettoyage)
+12. [Sauvegarde & Restauration](#12-sauvegarde--restauration)
+13. [Scan Antivirus](#13-scan-antivirus)
+14. [Drivers & Scanner Pilotes](#14-drivers--scanner-pilotes)
+15. [Réseau (5 onglets)](#15-réseau-5-onglets)
+16. [Terminal Intégré](#16-terminal-intégré)
+17. [Scripts Windows & Automation](#17-scripts-windows--automation)
+18. [Agent IA (Ollama)](#18-agent-ia-ollama)
+19. [Base de Connaissances](#19-base-de-connaissances)
+20. [Logs & Statistiques](#20-logs--statistiques)
+21. [Paramètres & Configuration](#21-paramètres--configuration)
+22. [Internationalisation (FR/EN)](#22-internationalisation-fren)
+23. [Système d'Élévation Admin](#23-système-délévation-admin)
+24. [Nettoyage Application (Cleanup)](#24-nettoyage-application-cleanup)
+25. [Build & Distribution](#25-build--distribution)
+
+---
+
+## 1. Interface Principale & Navigation
+
+**Fichier source** : [gui_modern_v13.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py) (2632 lignes)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| `ModernApp.__init__` | Fenêtre principale 1400×900, fond noir, titre NiTriTe |
+| `ModernApp._create_sidebar` | Sidebar 240px avec sections catégorisées, icônes emoji, scroll |
+| `ModernApp._create_content_area` | Zone de contenu principal avec switch de pages |
+| `ModernApp._navigate_to` | Navigation entre les pages (lazy loading des composants) |
+| [ModernSearchBar](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py#184-259) | Barre de recherche avec coins arrondis, focus/blur, filtrage temps réel |
+| `AnimationEngine.fade_in` | Animation fondu entrant (steps, durée configurable) |
+| `AnimationEngine.slide_in` | Animation slide depuis gauche/droite |
+| `AnimationEngine.ripple_effect` | Effet ripple Material Design au clic |
+| `bind_mousewheel` | Scroll molette sur les frames défilables |
+
+### Sidebar — 19 pages catégorisées
+
+| Catégorie | Pages |
+|---|---|
+| **Système** | Diagnostic, Monitoring |
+| **Logiciels** | Applications, Outils Système, Master Install, Apps Portables, OS & USB Tools |
+| **Maintenance** | Mises à jour, Drivers, Scanner Pilotes, Sauvegarde, Scan Antivirus, Optimisations |
+| **Réseau & Terminal** | Réseau, Terminal, Scripts Windows |
+| **Intelligence** | Agent IA, Base de Connaissances |
+| **Rapports** | Logs, Statistiques |
+| **Config** | Paramètres |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `customtkinter` ≥5.2.0 | Interface graphique moderne (widgets, thèmes) |
+| `tkinter` | Base GUI Python (inclus avec Python) |
+| `Pillow` ≥10.0.0 | Traitement images/logos |
+
+---
+
+## 2. Système de Thèmes & Apparence
+
+**Fichiers source** : [themes.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py) (519 lignes), [modern_colors.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/modern_colors.py)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| `Theme.__init__` | Classe de base thème : 15 propriétés couleur (BG_DARK, BG_MEDIUM, BG_LIGHT, BG_CARD, ACCENT, ACCENT_HOVER, TEXT, TEXT_SECONDARY, TEXT_MUTED, SUCCESS, WARNING, DANGER, INFO, BORDER_COLOR, BORDER_HOVER) |
+| [get_theme(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#489-492) | Récupère un thème par nom |
+| [get_theme_names()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#494-497) | Liste tous les thèmes disponibles |
+| [get_free_themes()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#499-502) | Liste les thèmes gratuits |
+| [get_premium_themes()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#504-507) | Liste les thèmes premium |
+| [is_premium_theme(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#509-512) | Vérifie si un thème est premium |
+| [set_current_theme(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/themes.py#514-519) | Applique un thème globalement |
+| `ThemeManager.apply_theme()` | Applique le thème sur tous les widgets + CustomTkinter |
+| `ThemeManager.save_theme_preference()` | Sauvegarde dans [config/theme_config.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/config/theme_config.json) |
+| `ThemeManager.load_theme_preference()` | Charge la préférence au démarrage |
+| `ModernColors` | Classe de constantes couleurs pour l'interface |
+| `set_corner_radius() / get_corner_radius()` | Personnalisation arrondi des bords |
+| `PremiumManager` | Gestion licences premium pour thèmes payants |
+
+### Thèmes disponibles (10)
+
+> Sombre Orange (défaut), Cyber Blue, Matrix Green, Purple Haze, Red Alert, Midnight Gold, Arctic Light, Sunset Gradient, plus thèmes premium
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `customtkinter` | Mode d'apparence (dark/light) + set_default_color_theme |
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | Sauvegarde/chargement préférence thème |
+
+---
+
+## 3. Diagnostic Système
+
+**Fichier source** : [advanced_pages.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py) — classe [DiagnosticPage](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py#73-76) (lignes 539–1343)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| [_create_widgets()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#268-309) | Layout complet : score santé, tabs CPU/RAM/Disque/GPU/OS |
+| `_create_pc_health_section()` | Score santé PC /100 avec barre colorée |
+| `_create_system_info_section()` | Infos statiques : CPU model, cores, threads, fréquence, RAM totale, OS, carte mère |
+| `_create_performance_section()` | Performances temps réel : % CPU, % RAM, % disque |
+| `_create_benchmark_section()` | Benchmarks intégrés CPU/RAM/Disque |
+| `_benchmark_cpu()` | Benchmark CPU : calculs mathématiques, opérations en virgule flottante, multithreading |
+| `_benchmark_ram()` | Benchmark RAM : allocations mémoire, lecture/écriture |
+| `_benchmark_disk()` | Benchmark disque : lecture/écriture séquentielle fichiers temporaires |
+| `_refresh_diagnostics()` | Rafraîchissement complet de toutes les données |
+| [_get_cpu_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#146-164) | Via WMI : modèle CPU, cores, threads, fréquence max, architecture |
+| `_get_ram_info()` | Via WMI + psutil : modules RAM (fabricant, type DDR, fréquence, capacité par slot) |
+| [_get_disk_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#186-211) | Via WMI + psutil : modèle disque, type (SSD/HDD/NVMe), espace total/libre |
+| `_get_gpu_info()` | Via WMI : modèle GPU, VRAM, version driver |
+| `_get_os_info()` | Nom OS, version, build number, architecture |
+| `_get_motherboard_info()` | Via WMI : fabricant, modèle, version BIOS |
+| [_get_battery_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#279-293) | Via WMI : état batterie (portables) |
+| `_export_diagnostic()` | Export JSON + copie presse-papiers |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| [psutil](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#42-60) ≥5.9.0 | CPU %, RAM usage, disk usage, cpu_count |
+| `wmi` ≥1.5.1 | WMI queries : Win32_Processor, Win32_PhysicalMemory, Win32_DiskDrive, Win32_VideoController, Win32_ComputerSystem, Win32_BaseBoard, Win32_BIOS, Win32_Battery |
+| `platform` | OS name, version, architecture |
+| `subprocess` | Commandes système (systeminfo, etc.) |
+
+---
+
+## 4. Monitoring Temps Réel
+
+**Fichiers source** : [system_monitor.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py) (441 lignes), [monitoring_dashboard.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py) (840 lignes)
+
+### Backend — [SystemMonitor](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#22-407)
+
+| Fonction | Description |
+|---|---|
+| [start_monitoring(callback, interval)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#512-527) | Démarre thread dédié, émet données chaque seconde |
+| [stop_monitoring()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#528-544) | Arrête le thread de surveillance |
+| [add_callback() / remove_callback()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#91-95) | Gestion des observers |
+| [_get_cpu_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#146-164) | % global + % par cœur + fréquence actuelle |
+| [_get_memory_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#165-185) | Total, utilisé, libre, % usage, swap |
+| [_get_disk_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#186-211) | Par partition : espace total/libre/% + IO counters |
+| [_get_network_info(current_time)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#212-244) | Calcul débit upload/download en temps réel (bytes_sent/recv delta) |
+| [_get_temperature_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#245-278) | Via WMI OpenHardwareMonitor : températures CPU, GPU, disques |
+| [_get_battery_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#279-293) | % batterie, état charge, temps restant |
+| [_get_top_processes(limit=10)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#294-317) | Top 10 processus par CPU + Top 10 par RAM |
+| [_check_alerts()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#318-366) | Alertes si CPU>80%, RAM>85%, Disque>90%, Temp>80°C |
+| [get_system_info()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#367-386) | Infos statiques consolidées |
+| [set_threshold() / get_thresholds()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#398-403) | Seuils d'alerte personnalisables |
+| [format_bytes()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/system_monitor.py#410-417) | Formate octets en Ko/Mo/Go/To |
+
+### Frontend — [MonitoringDashboard](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#24-826)
+
+| Fonction | Description |
+|---|---|
+| [create_ui()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#64-136) | Layout grille : CPU, RAM, Réseau, Températures, Disques, Processus, Alertes, Graphique |
+| [_create_metric_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#196-252) | Widget métrique avec barre de progression colorée |
+| [_create_network_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#253-325) | Widget réseau : débit upload/download en temps réel |
+| [_create_temperature_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#326-347) | Widget températures avec seuils colorés |
+| [_create_disk_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#348-369) | Widget disques avec barres par partition |
+| [_create_process_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#370-407) | Top processus (Treeview) |
+| [_create_alerts_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#408-459) | Panneau alertes actives |
+| [_create_chart_widget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#460-495) | Graphique historique Canvas (60 derniers points) |
+| `_update_cpu/memory/network/temperatures/disks/processes/alerts/chart()` | Mise à jour de chaque widget |
+| [_draw_chart_line()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#813-826) | Dessin de courbe sur Canvas |
+| [start_monitoring() / stop_monitoring()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/monitoring_dashboard.py#512-527) | Contrôle du monitoring |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| [psutil](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#42-60) ≥5.9.0 | CPU, RAM, disques, réseau, processus, batterie |
+| `wmi` ≥1.5.1 | Températures via OpenHardwareMonitor WMI namespace |
+| `threading` | Thread dédié monitoring |
+| `customtkinter` | Widgets graphiques (CTkProgressBar, CTkFrame, etc.) |
+
+---
+
+## 5. Applications & Installation
+
+**Fichiers source** : [installer_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py) (1009 lignes), [config_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py) (466 lignes)
+
+### Base de données : 716 applications dans [data/programs.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/programs.json) (182 Ko)
+
+### [InstallerManager](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#91-1010)
+
+| Fonction | Description |
+|---|---|
+| [__init__(config_path, log_callback, app_dir)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#18-45) | Init avec chemins portables, chargement base programmes |
+| [_load_config()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#134-159) | Charge [data/programs.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/programs.json) |
+| [get_programs_db()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#160-163) | Retourne la BDD complète |
+| [install_programs_threaded(list, callback)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#164-172) | Installation dans thread séparé |
+| [install_programs(list, progress_callback, completion_callback)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#173-235) | Installation séquentielle avec suivi progression |
+| [install_single_program(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#236-308) | Logique complète : vérif installé → WinGet → Download direct → Portable |
+| [_download_program(info, retries=3)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#309-371) | Téléchargement HTTP avec retry, barre de progression |
+| [execute_installation(path, info)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#372-472) | Exécution installateur : .exe/.msi avec args silencieux, .zip extraction |
+| [_execute_command_normal(cmd, timeout)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#473-520) | Exécution sans privilèges admin |
+| [_execute_command_elevated_ps(cmd, timeout)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#521-569) | Exécution avec élévation PowerShell |
+| [_execute_command_elevated_runas(cmd, timeout)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#570-611) | Exécution avec élévation runas |
+| `check_installed(name)` | Vérification multi-méthode si déjà installé |
+| `check_winget_installation(winget_id)` | Vérification via `winget list` |
+| `check_common_installation_paths(info)` | Vérification dans Program Files, AppData |
+| `check_registry_installation(info)` | Vérification dans le registre Windows |
+| [get_desktop_path()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#86-90) | Chemin Bureau Windows (API native SHGetFolderPath) |
+
+### [ConfigManager](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#11-467)
+
+| Fonction | Description |
+|---|---|
+| [load_config() / save_config()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#54-72) | Configuration JSON portable |
+| [get() / set()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#83-86) | Get/set valeurs de configuration |
+| [create_programs_database()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#91-303) | Création initiale BDD programmes |
+| [load_programs_database()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#304-328) | Chargement BDD depuis JSON |
+| [add_custom_program()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#329-344) | Ajout programme personnalisé |
+| [remove_program() / update_program()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#345-364) | Suppression/mise à jour programmes |
+| [export_config() / import_config()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#385-402) | Export/import configuration |
+| [get_programs()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#444-447) | Programmes par catégorie |
+| [get_programs_count()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#448-458) | Comptage total |
+| [get_all_programs_flat()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py#459-467) | Dictionnaire plat de tous les programmes |
+
+### Catégories d'applications
+
+> Navigateurs, Bureautique, Développement, Multimédia, Communication, Sécurité, Système, Réseau, Gaming (9 catégories)
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `requests` ≥2.31.0 | Téléchargement HTTP direct |
+| `subprocess` | Exécution installateurs, commandes WinGet |
+| `zipfile / shutil` | Extraction .zip / copie fichiers |
+| `ctypes` (wintypes) | API Windows SHGetFolderPath |
+| `winreg` | Lecture registre Windows |
+| `hashlib` | Hash SHA256 des fichiers téléchargés |
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | BDD programmes, configuration |
+
+---
+
+## 6. WinGet Manager & Commandes Système
+
+**Fichier source** : [winget_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py) (1919 lignes)
+
+### [WingetManager](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#44-1907)
+
+| Fonction | Description |
+|---|---|
+| [__init__(auto_elevate=False)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#18-45) | Init, détection WinGet, chargement 716+ programmes |
+| [_check_winget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#67-84) | Vérifie si WinGet est installé et fonctionnel |
+| [_load_winget_programs()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#85-1459) | Charge la BDD complète (1373 lignes de données !) |
+| [get_all_programs()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1460-1463) | Retourne tous les programmes |
+| [get_program_count()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1464-1470) | Comptage total |
+| [install_program(name, info, progress_cb, log_cb)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1471-1566) | Installation via `winget install --id ... --accept-*` |
+| [install_programs(names, progress_cb, log_cb, finished_cb)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/installer_manager.py#173-235) | Installation en lot séquentielle |
+| [run_windows_repair(name, progress_cb, log_cb)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1625-1722) | Réparations Windows : DISM, SFC, CHKDSK, etc. |
+| [get_repair_commands()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1723-1726) | Liste commandes de réparation disponibles |
+| [is_repair_command(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1727-1731) | Vérifie si c'est une commande réparation |
+| [is_system_command(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1732-1748) | Vérifie si c'est une commande système (repair OU settings) |
+| [run_system_command(name, progress_cb, log_cb)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1749-1891) | Exécution commande système (réparation, ms-settings://) |
+| [export_to_json(path)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1892-1907) | Export BDD au format JSON |
+
+### Commandes système intégrées
+
+> DISM Check/Scan/Restore, SFC, CHKDSK, Reset WinSock, Reset TCP/IP, Reset Firewall, Reset DNS, Repair Boot/BCD, Windows Update Reset, Repair Store/Defender, et toutes les ms-settings://
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution `winget.exe`, commandes réparation |
+| `ctypes` | Vérification droits admin |
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | Sérialisation BDD |
+
+---
+
+## 7. Outils Système (548+ outils)
+
+**Fichier source** : [tools_data_complete.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/tools_data_complete.py) (595 lignes)
+
+### [get_all_tools()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/tools_data_complete.py#9-595) — 12 sections
+
+| Section | Nb outils | Type | Exemples |
+|---|---|---|---|
+| **Réparation Système** | ~32 | Commandes shell | DISM, SFC, CHKDSK, Reset WinSock/TCP/DNS, Repair Boot/BCD, System Reset, Windows Update Reset |
+| **Activation & Téléchargements** | ~28 | URLs | PowerToys, Office FR/EN, MAS (activation), ISO Windows, Rufus, Ventoy, Sysinternals |
+| **Maintenance & Nettoyage** | ~15 | Mix cmd/URL | Disk Cleanup, Clean WinSxS, Temp/Prefetch cleanup, CCleaner, BleachBit |
+| **Diagnostics & Infos** | ~56 | Commandes + ms-settings | msinfo32, dxdiag, devmgmt.msc, services.msc, Event Viewer + tous ms-settings (display, sound, network, gaming...) |
+| **Réseau & Internet** | ~22 | Commandes + URLs | ping, nslookup, ipconfig, tracert, netstat, ARP, Speedtest |
+| **WinGet Package Manager** | 12 | Commandes WinGet | upgrade --all, list, search, install, uninstall, export/import |
+| **Paramètres Windows** | ~19 | ms-settings:// | Display, Sound, Network, Personalization, Privacy, Update, Gaming |
+| **Support Fabricants** | 18 | URLs | Dell, HP, Lenovo, ASUS, Acer, MSI, Intel, AMD, NVIDIA, etc. |
+| **Fournisseurs & Achats** | ~96 | URLs | E-commerce FR (Amazon, LDLC, Materiel.net...), VPN, Antivirus, Password managers, Dev tools, Remote desktop |
+| **Benchmark & Tests** | ~100+ | URLs | UserBenchmark, 3DMark, Cinebench, CrystalDiskMark, FurMark, Prime95, AIDA64, MemTest |
+| **Drivers** | 14 | URLs | Snappy Driver, NVIDIA/AMD/Intel/Dell/HP/Lenovo/ASUS/MSI drivers |
+| **Documentation** | 14 | URLs | Microsoft Docs, SS64, PowerShell Docs, How-To Geek, Reddit |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution commandes shell |
+| `webbrowser` / `os.startfile` | Ouverture URLs dans le navigateur |
+
+---
+
+## 8. Master Install & Profils
+
+**Fichier source** : [profiles_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py) (482 lignes)
+
+### [ProfilesManager](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#23-339)
+
+| Fonction | Description |
+|---|---|
+| [__init__(config_dir)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#18-45) | Chargement profils prédéfinis + personnalisés + favoris + historique |
+| [get_all_profiles()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#218-223) | Retourne tous les profils (prédéfinis + custom) |
+| [get_profile_apps(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#224-230) | Liste des apps d'un profil |
+| [create_profile(name, desc, apps, icon, color)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#231-242) | Création profil personnalisé |
+| [delete_profile(name)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#243-251) | Suppression profil custom |
+| [add_favorite(app) / remove_favorite(app)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#252-257) | Gestion favoris |
+| [is_favorite(app) / get_favorites()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#264-267) | Consultation favoris |
+| [add_to_history(app, success)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#272-283) | Journalisation installation |
+| [get_history(limit=20)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#284-287) | Historique récent |
+| [get_most_installed(limit=10)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#288-297) | Apps les plus installées |
+| [clear_history()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#298-303) | Nettoyage historique |
+| [export_profile(name, path) / import_profile(path)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#304-321) | Export/import profil JSON |
+
+### Profils prédéfinis
+
+| Profil | Applications |
+|---|---|
+| 🎮 **Gaming Station** | Steam, Discord, MSI Afterburner, HWMonitor... |
+| 💼 **Bureau Pro** | LibreOffice, Chrome, Adobe Reader, 7-Zip, VLC... |
+| 👨‍💻 **Développeur** | VS Code, Git, Node.js, Python, Docker... |
+| 🎨 **Créatif** | GIMP, Blender, Audacity, OBS, Inkscape... |
+| 🔒 **Sécurité** | Malwarebytes, VeraCrypt, KeePass, ProtonVPN... |
+| ⚡ **Essentiel** | Chrome, 7-Zip, VLC, LibreOffice, Adobe Reader |
+| 🛠️ **Personnalisé** | Sélection manuelle par l'utilisateur |
+
+### [SystemScanner](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#341-482)
+
+| Fonction | Description |
+|---|---|
+| [get_installed_apps()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#348-366) | Détection apps installées (registre + Program Files + WinGet) |
+| [_scan_registry()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#367-406) | Scan registre Windows (Uninstall keys) |
+| [_scan_program_files()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#407-427) | Scan dossiers Program Files |
+| [_scan_winget()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/profiles_manager.py#428-455) | Scan via `winget list` |
+| `suggest_apps_for_profile(name, data, pm)` | Suggestions apps manquantes pour un profil |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | Sérialisation profils, favoris, historique |
+| `winreg` | Scan registre programmes |
+| `subprocess` | Commande `winget list` |
+| `portable_paths` | Chemins portables config |
+
+---
+
+## 9. Apps Portables
+
+**Fichier source** : [portable_database.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py) (611 lignes)
+
+### [PortableDatabase](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#15-568) (SQLite)
+
+| Fonction | Description |
+|---|---|
+| [__init__(db_path, apps_folder)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#18-45) | Init base SQLite locale |
+| [_init_database()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#46-126) | Création tables (applications, categories, tags, execution_history) |
+| [add_application(name, exe_path, **kwargs)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#139-220) | Ajout app : display_name, category, description, version, hash SHA256, taille |
+| [get_application(name/id)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#221-245) | Récupération info app |
+| [list_applications(category, portable_only)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#246-283) | Liste avec filtres |
+| [search_applications(term)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#284-306) | Recherche fuzzy par nom/description |
+| [update_application(name, **kwargs)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#307-343) | Mise à jour info |
+| [delete_application(name/id)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#344-369) | Suppression |
+| [get_categories()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#370-390) | Liste catégories avec comptage |
+| [get_statistics()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#391-432) | Stats : total apps, par catégorie, taille totale |
+| [import_from_json(path, folder)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#433-495) | Import depuis [programs.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/programs.json) |
+| [export_to_json(path)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/winget_manager.py#1892-1907) | Export JSON |
+| [verify_integrity()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#529-568) | Vérification intégrité : fichiers manquants, hash modifiés |
+| [_calculate_file_hash(path)](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#127-138) | Hash SHA256 fichier |
+
+### Données statiques
+
+> [data/portable_apps.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/portable_apps.json) (34 Ko) — Base d'apps portables disponibles
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `sqlite3` | Base de données locale |
+| `hashlib` | Vérification intégrité SHA256 |
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | Import/export données |
+
+---
+
+## 10. Mises à Jour
+
+**Fichier source** : [advanced_pages.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py) — classe [UpdatesPage](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py#82-85)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| [_create_widgets()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#268-309) | Interface : onglets par gestionnaire de paquets |
+| `_detect_installed_apps()` | Détection apps installées via registre + WinGet |
+| `_check_updates_winget()` | Vérification mises à jour via `winget upgrade` |
+| `_check_updates_choco()` | Vérification via `choco outdated` |
+| `_check_updates_pip()` | Vérification via `pip list --outdated` |
+| `_check_updates_npm()` | Vérification via `npm outdated -g` |
+| `_update_all()` | Mise à jour en lot |
+| `_update_single(app)` | Mise à jour individuelle |
+| `_generate_update_script()` | Génération script .bat/.ps1 de mise à jour |
+
+### Gestionnaires supportés
+
+| Gestionnaire | Commandes | Détection auto |
+|---|---|---|
+| WinGet | `upgrade --all`, [list](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/portable_database.py#246-283), `upgrade` | Natif Windows |
+| Chocolatey | `upgrade all -y`, `list --local-only`, `outdated` | Auto-install si absent |
+| Scoop | `update *`, `status` | Si présent |
+| pip | `list --outdated`, `install --upgrade` | Si Python présent |
+| npm | `outdated -g`, `update -g` | Si Node.js présent |
+
+### Liens constructeurs intégrés
+
+> Dell, HP, Lenovo, Intel, NVIDIA, AMD, ASUS, MSI, Acer + Snappy Driver Installer (Full/Lite)
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution commandes WinGet, Choco, pip, npm |
+| `winreg` | Détection apps installées |
+| `threading` | Threads pour scans non-bloquants |
+
+---
+
+## 11. Optimisations & Nettoyage
+
+**Fichier source** : [advanced_pages.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py) — classe [OptimizationsPage](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py#79-82)
+
+### Fonctions — 4 sections
+
+| Section | Fonctions |
+|---|---|
+| **Nettoyage** | `_empty_recycle_bin()`, `_clean_temp_files()`, `_clean_browser_cache()`, `_run_disk_cleanup()`, `_calculate_recoverable_size()` |
+| **Performance** | `_optimize_drives()` (défrag HDD / TRIM SSD auto-détection), `_manage_startup_programs()`, `_disable_visual_effects()`, `_open_task_manager()` |
+| **Services** | `_list_windows_services()`, `_toggle_service(name)`, `_apply_service_preset(preset)` — Presets: Gaming, Minimal, Default |
+| **Démarrage** | `_list_startup_entries()`, `_toggle_startup_entry(name)`, impact estimé sur temps boot |
+
+### Commandes système exécutées
+
+```
+cleanmgr, rd /s /q C:\$Recycle.bin, del %TEMP%\*, DISM /Online /Cleanup-Image/,
+dfrgui, Optimize-Volume -DriveLetter C -Defrag / -ReTrim,
+net stop/start [services], reg query/add HKCU\...\Run
+```
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| [psutil](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#42-60) | Disk usage, partitions, services |
+| `subprocess` | Commandes nettoyage, défrag, services |
+| `winreg` | Programmes démarrage (Run/RunOnce) |
+| `ctypes` | SHEmptyRecycleBin (vider corbeille) |
+
+---
+
+## 12. Sauvegarde & Restauration
+
+**Fichier source** : [advanced_pages.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py) — classe [BackupPage](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/gui_modern_v13.py#76-79)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| [_create_widgets()](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/advanced_pages.py#268-309) | Interface : liste éléments sauvegardables, boutons backup/restore |
+| `_backup_app_list()` | Export liste apps installées (WinGet export + registre → JSON) |
+| `_backup_drivers()` | Export pilotes via `driverquery /v /fo csv` |
+| `_backup_config()` | Copie [nitrite_config.json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/config/nitrite_config.json) |
+| `_backup_network_config()` | Export `ipconfig /all` + `netsh wlan show profiles` |
+| `_backup_startup_programs()` | Export registre Run/RunOnce |
+| `_backup_browser_bookmarks()` | Favoris Chrome, Edge, Firefox, Brave, Opera, Vivaldi |
+| `_backup_bitlocker_keys()` | Export clés BitLocker `manage-bde -protectors -get` |
+| `_backup_windows_license()` | Export licence Windows `slmgr /dli` |
+| `_backup_office_license()` | Export licence Office (registre) |
+| `_backup_firewall_rules()` | Export `netsh advfirewall export` |
+| `_backup_scheduled_tasks()` | Export `schtasks /query` |
+| `_backup_env_variables()` | Export variables d'environnement (registre) |
+| `_backup_desktop_files()` | Archive ZIP des fichiers Bureau |
+| `_backup_fonts()` | Liste polices installées |
+| `_backup_windows_features()` | Export `dism /online /get-features` |
+| `_backup_user_folder_sizes()` | Scan tailles Desktop/Documents/Downloads |
+| `_create_restore_point()` | Création point de restauration système |
+| `_restore_from_backup()` | Restauration sélective depuis sauvegarde |
+| `_create_backup_archive()` | Création archive ZIP de la sauvegarde complète |
+
+### 20+ éléments sauvegardables
+
+> Liste apps, drivers, config NiTriTe, logs, config réseau, programmes démarrage, favoris Chrome/Edge/Firefox/Brave/Opera/Vivaldi, fichiers Bureau, variables env, clés BitLocker, licence Windows/Office, règles pare-feu, polices, tâches planifiées, fonctionnalités Windows, tailles dossiers, processus suspects
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Commandes système (driverquery, slmgr, netsh, schtasks, dism) |
+| [json](file:///c:/Users/Momo/Desktop/Nitrite-26.0/data/config.json) | Export/import données |
+| `zipfile / shutil` | Création archives ZIP |
+| `winreg` | Lecture registre (licences, démarrage, env variables) |
+| `sqlite3` | Lecture `places.sqlite` Firefox (favoris) |
+| `pycryptodome` ≥3.19.0 | Déchiffrement AES mots de passe Chrome/Edge/Brave |
+
+---
+
+## 13. Scan Antivirus
+
+**Page** : `pages_categories/scanvirus/`
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| Integration Windows Defender | Via `MpCmdRun.exe` |
+| Quick Scan | `MpCmdRun.exe -Scan -ScanType 1` |
+| Full Scan | `MpCmdRun.exe -Scan -ScanType 2` |
+| Custom Scan | `MpCmdRun.exe -Scan -ScanType 3 -File <path>` |
+| Offline Scan | Planification redémarrage pour scan offline |
+| Affichage menaces | Parsing sortie Windows Defender |
+| Liens outils tiers | Malwarebytes, AdwCleaner, RogueKiller, ESET Online Scanner |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution `MpCmdRun.exe` |
+| `os` | Chemin `%ProgramFiles%\Windows Defender` |
+
+---
+
+## 14. Drivers & Scanner Pilotes
+
+**Pages** : `pages_categories/drivers/`, `pages_categories/scanner_pilotes_avancee/`
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| `_list_drivers()` | Via `driverquery /v /fo csv` — tous les pilotes installés |
+| `_detect_generic_drivers()` | Détection pilotes génériques Microsoft vs constructeur |
+| `_scan_missing_drivers()` | Scan WMI périphériques sans pilote |
+| `_identify_hardware(vendor_id, device_id)` | Identification matériel via VendorID/DeviceID |
+| `_suggest_driver_download()` | Suggestions téléchargement pilote |
+| `_export_drivers(format)` | Export liste pilotes CSV/JSON |
+| Liens constructeurs | Dell, HP, Lenovo, ASUS, Acer, MSI, Intel, AMD, NVIDIA |
+| Snappy Driver Installer | Liens vers SDI Full (~40 Go) et Lite (~2 Go) |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | `driverquery` |
+| `wmi` | Scan périphériques (Win32_PnPEntity) |
+| `webbrowser` | Ouverture liens constructeurs |
+
+---
+
+## 15. Réseau (5 onglets)
+
+**Fichiers source** : [network_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/network_manager.py) (586 lignes), [network_tools_gui.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/network_tools_gui.py) (818 lignes)
+
+### Onglet 1 — Informations
+
+| Fonction | Description |
+|---|---|
+| `get_local_ip()` | IP locale via socket |
+| `get_network_interfaces()` | Toutes les interfaces réseau (psutil.net_if_addrs) : nom, IP, masque, MAC |
+| `get_public_ip()` | IP publique + géolocalisation + FAI (via api.ipify.org + ip-api.com) |
+| `get_dns_servers()` | DNS configurés (parsing ipconfig /all) |
+
+### Onglet 2 — Connexions Actives
+
+| Fonction | Description |
+|---|---|
+| `get_active_connections()` | Toutes connexions TCP/UDP actives : adresse locale/distante, état, PID, nom processus |
+| Filtres | Par état (ESTABLISHED, LISTEN), par protocole (TCP/UDP), par processus |
+| Kill connection | Terminaison processus associé |
+
+### Onglet 3 — Scanner Réseau
+
+| Fonction | Description |
+|---|---|
+| `scan_network(network, timeout, progress_cb)` | Scan ARP réseau local, auto-détection subnet |
+| `_scan_host(host, timeout)` | Ping individuel + résolution hostname |
+| `_get_mac_address(ip)` | Adresse MAC via ARP (parsing `arp -a`) |
+| Résultats | IP, hostname, MAC, vendor lookup |
+
+### Onglet 4 — Scanner de Ports
+
+| Fonction | Description |
+|---|---|
+| `scan_ports(host, ports, timeout, progress_cb)` | Scan ports (plage configurable ou common ports) |
+| `_check_port(host, port, timeout)` | Vérification socket individuelle |
+| `_get_service_name(port)` | Mapping port → service (HTTP, HTTPS, SSH, FTP, DNS, etc.) |
+
+### Onglet 5 — Test de Vitesse
+
+| Fonction | Description |
+|---|---|
+| `test_internet_speed(progress_cb)` | Test complet download + upload + ping |
+| `_test_ping(host='8.8.8.8', count=4)` | Latence via ICMP ping |
+| `_test_download(size_mb=10)` | Téléchargement fichier test → calcul Mbps |
+| `_test_upload(size_kb=1024)` | Upload données test → calcul Mbps |
+| `traceroute(host, max_hops=30)` | Traceroute complet |
+| `stop_scan()` | Arrêt scan en cours |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `socket` | Connexions TCP, scan ports |
+| `psutil` | Interfaces réseau, connexions actives |
+| `requests` | IP publique, test téléchargement |
+| `subprocess` | ping, arp, tracert, ipconfig |
+| `threading` | Threads pour scans non-bloquants |
+| `ipaddress` | Calcul subnet pour scan réseau |
+
+---
+
+## 16. Terminal Intégré
+
+**Page** : `pages_categories/terminal/`
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| Terminal CMD | Exécution commandes via `subprocess.PIPE` |
+| Terminal PowerShell | Exécution commandes PowerShell |
+| Sortie colorée | Colorama pour couleurs terminal |
+| Commandes rapides | Boutons raccourcis : ipconfig, sfc /scannow, DISM, systeminfo |
+| Historique commandes | Historique des commandes exécutées |
+| Copier sortie | Copie dans presse-papiers |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution commandes |
+| `colorama` ≥0.4.6 | Couleurs terminal Windows |
+| `threading` | Exécution non-bloquante |
+
+---
+
+## 17. Scripts Windows & Automation
+
+**Fichiers source** : [script_automation.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/script_automation.py) (772 lignes), [script_automation_gui.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/script_automation_gui.py) (818 lignes)
+
+### `ScriptSecurityValidator`
+
+| Fonction | Description |
+|---|---|
+| `sanitize_script_name(name)` | Nettoyage nom fichier (caractères spéciaux, longueur) |
+| `validate_script_code(code, max_size)` | Validation sécurité : détection patterns dangereux (rm -rf, Format-Volume, etc.), retourne (is_safe, warnings, risk_level) |
+| `analyze_script(code, language)` | Analyse complète sécurité par langage |
+
+### Patterns dangereux détectés
+
+> `Remove-Item -Recurse -Force`, `rm -rf`, `Format-Volume`, `Clear-Disk`, `Stop-Computer`, `Restart-Computer`, `Set-ExecutionPolicy Unrestricted`, `Invoke-Expression` sur URL, manipulation registre dangereuse
+
+### `ScriptTemplate` — Templates prédéfinis
+
+| Template | Description |
+|---|---|
+| `maintenance_complete` | Script maintenance système complète |
+| `network_diagnostic` | Diagnostic réseau complet |
+| `cleanup_system` | Nettoyage système |
+| `system_info_export` | Export informations système |
+
+### `ScriptManager`
+
+| Fonction | Description |
+|---|---|
+| `create_script(name, code, language, desc, tags)` | Création script avec validation sécurité |
+| `update_script(id, code)` | Mise à jour avec revalidation |
+| `delete_script(id)` | Suppression |
+| `get_script(id) / get_all_scripts()` | Consultation |
+| `execute_script(id, output_cb)` | Exécution sécurisée (PowerShell, Batch, Python) avec timeout |
+
+### `TaskScheduler` — Planificateur
+
+| Fonction | Description |
+|---|---|
+| `add_task(name, script_id, schedule_type, schedule_value)` | Planification (daily, weekly, monthly) |
+| `_calculate_next_run(type, value)` | Calcul prochaine exécution |
+| `get_all_tasks()` | Liste tâches planifiées |
+| `toggle_task(id)` | Activer/désactiver |
+| `delete_task(id)` | Suppression |
+
+### 155 scripts Windows embarqués
+
+> Dossier `Script Windows/` — 155 scripts .bat/.ps1 embarqués
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Exécution scripts PowerShell/Batch/Python |
+| `re` | Regex pour validation sécurité |
+| `sched` | Planificateur Python natif |
+| `json` | Index scripts, tâches planifiées |
+
+---
+
+## 18. Agent IA (Ollama)
+
+**Page** : `pages_categories/agents_ia/`
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| Connexion Ollama | Client HTTP vers `localhost:11434` |
+| Sélection modèle | llama3, mistral, deepseek-r1, phi3, qwen2.5 |
+| Chat streaming | Réponses token par token |
+| Expert NiTriTe | System prompt spécialisé maintenance informatique |
+| Tool Calling sécurisé | Whitelist commandes + blacklist + confirmation UI |
+| Liens contextuels | Boutons cliquables vers pages NiTriTe pertinentes |
+| Historique conversations | Sauvegarde locale |
+| Téléchargement modèle | `ollama pull <model>` |
+
+### Sécurité Tool Calling
+
+> **Whitelist** : systeminfo, ipconfig, tasklist, hostname, ver, wmic...
+> **Blacklist absolue** : del, rm, format, diskpart, shutdown, reg delete...
+> **Blocage injection** : `;`, `&&`, `||`, `|`, `>`, `>>`
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `requests` | Client HTTP Ollama API |
+| `json` | Sérialisation messages, conversations |
+| `threading` | Streaming non-bloquant |
+| `subprocess` | Tool calling (exécution commandes) |
+
+---
+
+## 19. Base de Connaissances
+
+**Données** : `data/knowledge/` (19 fichiers)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| Documentation technique | Articles Markdown intégrés |
+| Recherche full-text | Recherche dans tous les articles |
+| Catégories | Windows, Réseau, Sécurité, Hardware, Software |
+| Consultation | Affichage articles formatés |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `json` | Index articles |
+| `os / pathlib` | Navigation fichiers |
+
+---
+
+## 20. Logs & Statistiques
+
+**Pages** : `pages_categories/logs/`, `pages_categories/statistiques_rapports/`
+
+### Fonctions Logs
+
+| Fonction | Description |
+|---|---|
+| Logging structuré | Module `logging` Python : fichiers rotatifs dans `logs/` |
+| Niveaux | DEBUG, INFO, WARNING, ERROR, CRITICAL |
+| Visualiseur | Interface filtrable par niveau |
+| Recherche | Recherche dans les logs |
+| Export | Export en fichier texte |
+| Nettoyage | Suppression vieux logs |
+
+### Fonctions Statistiques
+
+| Fonction | Description |
+|---|---|
+| Historique actions | Journal des actions NiTriTe |
+| Compteurs | Installations, nettoyages, diagnostics effectués |
+| Export rapport | Export PDF/HTML |
+| Score santé historique | Évolution dans le temps |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `logging` | Système de logs Python natif |
+| `logging.handlers` | RotatingFileHandler |
+| `json` | Statistiques |
+
+---
+
+## 21. Paramètres & Configuration
+
+**Fichiers source** : [settings_page.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/settings_page.py) (792 lignes), [config_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/config_manager.py)
+
+### `NewSettingsPage`
+
+| Fonction | Description |
+|---|---|
+| `_create_theme_section()` | Sélection thème avec aperçu couleurs, badge premium |
+| `_show_premium_dialog()` | Dialogue activation licence premium |
+| `_apply_theme(name)` | Application thème immédiate |
+| `_create_language_section()` | Sélection FR / EN |
+| `_change_language(lang)` | Changement langue avec redémarrage UI |
+| `_create_font_section()` | Slider taille police (10–20px) |
+| `_apply_font_size()` | Application taille police |
+| `_create_ui_scale_section()` | Slider échelle interface (80–150%) |
+| `_apply_ui_scale()` | Application échelle |
+| `_create_appearance_section()` | Slider arrondi des bords (0–20px) |
+| `_apply_corner_radius()` | Application arrondi |
+| `_create_advanced_section()` | Toggles : animations, auto-scroll, notifications, mode debug |
+| `_toggle_setting(key, button)` | Toggle paramètre avec sauvegarde |
+| `_load_config() / _save_config()` | Persistence dans `config/app_config.json` |
+
+### Fichiers de configuration
+
+| Fichier | Contenu |
+|---|---|
+| `config/nitrite_config.json` | Config principale (thème, langue, chemins) |
+| `config/app_config.json` | Config interface (taille police, échelle, toggles) |
+| `config/theme_config.json` | Préférence thème |
+| `config/custom_layout.json` | Layout personnalisé des catégories |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `json` | Persistence configuration |
+| `customtkinter` | Widgets settings (CTkSlider, CTkSwitch, etc.) |
+
+---
+
+## 22. Internationalisation (FR/EN)
+
+**Fichier source** : [translations.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/translations.py) (287 lignes)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| `TRANSLATIONS` | Dictionnaire FR + EN (~130 clés par langue) |
+| `set_language(lang_code)` | Changement langue active |
+| `get_text(key)` / `_(key)` | Récupération texte traduit |
+| `CURRENT_LANGUAGE` | Langue active (défaut: "fr") |
+
+### Clés traduites
+
+> Navigation, diagnostic (score santé, benchmark), paramètres (thèmes, police, échelle, arrondi, animations), optimisations (nettoyage, services, démarrage, télémétrie, Cortana, tracking), backup, mises à jour, master windows
+
+### Dépendances
+
+Aucune dépendance externe — module Python pur.
+
+---
+
+## 23. Système d'Élévation Admin
+
+**Fichier source** : [elevation_helper.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/elevation_helper.py) (280 lignes)
+
+### Fonctions
+
+| Fonction | Description |
+|---|---|
+| `is_admin()` | Vérifie si le processus a les droits administrateur |
+| `elevate_if_needed()` | Relance le script avec élévation UAC si nécessaire |
+| `auto_elevate_at_startup()` | Élévation automatique au démarrage |
+| `run_as_admin_silent(cmd, timeout=300)` | Exécution commande admin silencieuse (retourne success, returncode, stdout, stderr) |
+| `run_as_admin_batch(cmds, timeout=300)` | Exécution batch de commandes admin (1 seul popup UAC) |
+| `create_elevated_process(exe, args, working_dir)` | Création processus élevé via ShellExecuteW |
+| `disable_uac_temporarily()` | Configuration pour minimiser les prompts UAC |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `ctypes` | API Windows : IsUserAnAdmin, ShellExecuteW |
+| `subprocess` | Exécution commandes élevées |
+| `pywin32` ≥306 | API Windows complémentaire |
+
+---
+
+## 24. Nettoyage Application (Cleanup)
+
+**Fichier source** : [cleanup_manager.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/src/cleanup_manager.py) (236 lignes)
+
+### `NiTriteCleanup`
+
+| Fonction | Description |
+|---|---|
+| `get_cleanup_items()` | Liste éléments à supprimer : app, Python local, fichiers temp |
+| `_get_folder_size(folder)` | Calcul taille dossier en Mo |
+| `_is_local_python()` | Détection si Python est local ou système |
+| `create_cleanup_script()` | Génération script .bat de nettoyage post-fermeture |
+| `execute_cleanup(items)` | Lancement script nettoyage (CREATE_NEW_CONSOLE) |
+| `get_total_size()` | Taille totale tous éléments |
+| `cleanup_logs_only()` | Nettoyage fichiers .log uniquement |
+
+### Dépendances
+
+| Dépendance | Rôle |
+|---|---|
+| `subprocess` | Lancement script batch |
+| `shutil` | Suppression dossiers |
+| `pathlib` | Navigation fichiers |
+
+---
+
+## 25. Build & Distribution
+
+**Fichiers** : [BUILD_PORTABLE.bat](file:///c:/Users/Momo/Desktop/Nitrite-26.0/BUILD_PORTABLE.bat), [build_portable.py](file:///c:/Users/Momo/Desktop/Nitrite-26.0/build_portable.py), [NiTriTe_V25_Portable.spec](file:///c:/Users/Momo/Desktop/Nitrite-26.0/NiTriTe_V25_Portable.spec)
+
+### Processus de build
+
+| Étape | Description |
+|---|---|
+| PyInstaller | Création exécutable portable (~200+ Mo) |
+| spec file | Configuration PyInstaller (datas, hidden imports, icon) |
+| build_portable.py | Script automatisé de build complet |
+| BUILD_PORTABLE.bat | Script batch de lancement build |
+| LANCER_NITRITE.bat | Script lancement application |
+
+### Dépendances de build
+
+| Dépendance | Rôle |
+|---|---|
+| `pyinstaller` ≥6.0.0 | Création exécutable portable |
+
+---
+
+## Récapitulatif des Dépendances Python (requirements.txt)
+
+| Catégorie | Package | Version min | Rôle |
+|---|---|---|---|
+| **GUI** | `customtkinter` | 5.2.0 | Interface graphique moderne |
+| **GUI** | `Pillow` | 10.0.0 | Images/logos |
+| **Réseau** | `requests` | 2.31.0 | HTTP downloads |
+| **Réseau** | `urllib3` | 2.0.0 | Gestion URL |
+| **Réseau** | `certifi` | 2023.0.0 | Certificats SSL |
+| **Réseau** | `beautifulsoup4` | 4.12.0 | Parsing HTML |
+| **Réseau** | `html2text` | 2020.1.16 | HTML → Markdown |
+| **Système** | `psutil` | 5.9.0 | CPU, RAM, disques, réseau, processus |
+| **Système** | `packaging` | 23.0 | Gestion versions |
+| **Système** | `tqdm` | 4.66.0 | Barres de progression |
+| **Système** | `colorama` | 0.4.6 | Couleurs terminal |
+| **Windows** | `pywin32` | 306 | API Windows |
+| **Windows** | `wmi` | 1.5.1 | WMI queries (diagnostic avancé) |
+| **Crypto** | `pycryptodome` | 3.19.0 | Déchiffrement AES (favoris navigateurs) |
+| **Build** | `pyinstaller` | 6.0.0 | Création exécutable |
+
+---
+
+## Ressources Embarquées
+
+| Dossier | Contenu | Taille |
+|---|---|---|
+| `data/programs.json` | BDD 716 applications | 182 Ko |
+| `data/portable_apps.json` | BDD apps portables | 35 Ko |
+| `data/knowledge/` | 19 articles base de connaissances | — |
+| `data/office_links.json` | Liens Office | 3 Ko |
+| `data/custom_packs.json` | Packs installation personnalisés | — |
+| `Script Windows/` | 155 scripts .bat/.ps1 embarqués | — |
+| `Drivers/` | 18 fichiers pilotes | — |
+| `logiciel/` | 2557 fichiers apps portables | — |
+| `config/` | 6 fichiers configuration | — |
+| `pages_categories/` | 19 modules de pages (40 fichiers) | — |
+
+---
+
+> **Note** : Ce document couvre **toutes les fonctionnalités implémentées** dans la version Python V25. Utilisez-le comme checklist exhaustive pour votre migration Tauri + Rust V26. Chaque section listé ci-dessus doit être réimplémentée avec le backend Rust et le frontend Vue.js décrit dans votre PRD.

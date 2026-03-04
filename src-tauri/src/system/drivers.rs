@@ -1,0 +1,107 @@
+use serde::{Deserialize, Serialize};
+use std::process::Command;
+use std::sync::LazyLock;
+
+use crate::error::NiTriTeError;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecommendedDriver {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub category: String,
+    pub url: String,
+    pub check_registry: Option<String>, // Cle registre pour verifier si installe
+    pub check_name: Option<String>,     // Nom a chercher dans les programmes installes
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DriverStatusOutput {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub category: String,
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DriverStatus {
+    pub driver: DriverStatusOutput,
+    pub installed: bool,
+}
+
+static RECOMMENDED_DRIVERS: LazyLock<Vec<RecommendedDriver>> = LazyLock::new(|| {
+    let json = include_str!("../../data/drivers_recommended.json");
+    serde_json::from_str(json).unwrap_or_else(|e| {
+        tracing::error!("Erreur chargement drivers_recommended.json: {}", e);
+        Vec::new()
+    })
+});
+
+/// Retourne la liste des drivers recommandes avec leur statut d'installation
+pub fn get_recommended_drivers() -> Result<Vec<DriverStatus>, NiTriTeError> {
+    // Recuperer la liste des programmes installes via winget (cache)
+    let installed_apps = get_installed_apps_list();
+
+    let results: Vec<DriverStatus> = RECOMMENDED_DRIVERS
+        .iter()
+        .map(|driver| {
+            let installed = check_driver_installed(driver, &installed_apps);
+            DriverStatus {
+                driver: DriverStatusOutput {
+                    id: driver.id.clone(),
+                    name: driver.name.clone(),
+                    description: driver.description.clone(),
+                    category: driver.category.clone(),
+                    url: driver.url.clone(),
+                },
+                installed,
+            }
+        })
+        .collect();
+
+    Ok(results)
+}
+
+fn check_driver_installed(driver: &RecommendedDriver, installed_apps: &str) -> bool {
+    // Verifier via le registre si une cle est specifiee
+    if let Some(ref reg_key) = driver.check_registry {
+        if check_registry_key(reg_key) {
+            return true;
+        }
+    }
+
+    // Verifier via le nom dans la liste des programmes installes
+    if let Some(ref name) = driver.check_name {
+        let name_lower = name.to_lowercase();
+        if installed_apps.to_lowercase().contains(&name_lower) {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn check_registry_key(key_path: &str) -> bool {
+    // Verifier l'existence d'une cle registre via reg query
+    let output = Command::new("reg")
+        .args(["query", key_path])
+        .output();
+
+    match output {
+        Ok(o) => o.status.success(),
+        Err(_) => false,
+    }
+}
+
+fn get_installed_apps_list() -> String {
+    // Utiliser wmic pour lister rapidement les programmes installes
+    let output = Command::new("wmic")
+        .args(["product", "get", "name", "/format:list"])
+        .output();
+
+    match output {
+        Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(),
+        Err(_) => String::new(),
+    }
+}

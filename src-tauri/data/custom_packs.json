@@ -1,0 +1,21 @@
+{
+  "Pack Gaming": {
+    "apps": [
+      "Steam",
+      "Epic Games Launcher",
+      "EA App",
+      "Brave Browser",
+      "qBittorrent",
+      "Malwarebytes",
+      "Spybot Search & Destroy",
+      "AdwCleaner Portable",
+      "Wise Disk Cleaner",
+      "VLC Media Player",
+      "Discord",
+      "GOG Galaxy",
+      "Rockstar Games Launcher",
+      "MSI Afterburner"
+    ],
+    "description": "Pack personnalisé avec 14 applications"
+  }
+}

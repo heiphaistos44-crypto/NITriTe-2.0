@@ -1,0 +1,836 @@
+Hard Disk Sentinel kører allerede.
+Fejl
+Harddisk temperatur
+Svigt forudset
+OK
+Understøttet
+Ikke understøttet
+Ja
+ &Harddiske
+Vælg den harddisk du vil se i systembakken. Dobbeltklik = vis/skjul systembakke ikonet. Højdeklik = menu.
+#
+Navn (Størrelse)
+Temperatur
+Systembakke ikon
+ &Opsætning 
+Vis status vinduet når Hard Disk Sentinel starter
+Start med windows
+Gennemsigtighed:
+Sprog:
+&Luk
+Hard Disk Sentinel
+Vælg harddisk for at se dens temperatur i systembakken
+&Vis status vindue
+Skjul status vindue
+&Konfiguration
+&Afslut
+Mindst en harddisk skal være valgt.
+ &Status vindue
+Baggrundsfarve
+Baggrundsbilled
+Vælg
+Fejl ved åbning af billedfilen.
+Understøttede billedfiler|*.jpg;*.bmp|Alle filer|*.*
+Information
+S.M.A.R.T.
+Ydeevne
+Partitioner
+Informationsblad
+Overførselsinformationer 
+Data læst ialt
+Data skrevet ialt
+Aktuel overførelseshastighed
+ KB/s
+Aktuel læse hastighed
+Aktuel skrive hastighed
+Aktuel aktivitet
+Normal aktivitet %
+Overførelseshastighed (MB/s)
+Harddisk information
+Port
+Model ID
+Firmware revision
+Serial nummer
+Kapacitet
+ATA information
+Cylindre
+Hoveder
+Sektorer
+Sektorer ialt
+ATA revision
+Byte pr sektor
+Byte pr logisk spor
+Buffer størrelse
+Multi-sektorer
+Fejl korrektion byte
+Uformateret kapacitet
+Højeste PIO tilstand
+Aktiv PIO tilstand
+Max UDMA tilstand
+Aktiv UDMA tilstand
+ATA funktioner
+Understøttet
+Ikke understøttet
+Attribut
+Sikkerhedsniveau
+Værdi
+Værst
+Data
+Status
+Partition informationer
+Partition bogstav [Navn]
+Samlet størrelse
+Ledig plads
+Partition type
+byte
+Anvendt plads
+Harddisk:
+Max overførelseshastighed
+Anslået højeste overførelseshastighed
+DVD skrive hastighed
+Større anvendelse af harddisk behøves for målingen
+OK (Passerer altid)
+Fejl (Fejler altid)
+Rådgivning brugsgrænse overskredet
+Forudset fejlning data tab forudset
+Kopier hele siden til udklipsholderen
+Harddisk & temperatur historie
+Siden installation
+Om
+Registrering
+Registreringsnavn:
+Registreringsnøgle:
+Ugyldig registreringsnøgle, Registrering fejlede.
+Registreringen blev fuldført. Tak for din støtte.
+Vis hovedvinduet når Hard Disk Sentinel starter
+Tilgængelig efter registrering og aktivering.
+Uregisreret version, registrer venligst.
+Registreret til:
+Oversigt
+Aktuel temperatur:
+Højeste temperatur (I dag):
+Temperatur status er god.
+Den aktuelle temperatur er for høj. Det anbefales at bruge en harddisk køleenhed (Fx. en blæser eller passiv heatsink).
+Den aktuelle temperatur er god, men tidligere var den for høj. Det anbefales at bruge en harddisk køleenhed (Fx. en blæser eller passiv heatsink).
+Ydeevne:
+Sundhed:
+Fremragende
+Gode
+Fair
+Acceptabel
+Dårlige
+Ingen handlinger er nødvendige.
+Det anbefales at lave backup ofte for at undgå data tab.
+Egenskaber
+Harddisk oversigt
+Tidligere harddisk
+Næste harddisk
+Alarmer
+Seng e-mail alarm hvis harddisk fejl forudses
+Send e-mail alarm hvis harddisk temperatur er over
+E-mail konfiguration
+Mail konto:
+Afsenders navn:
+Afenders e-mail:
+Modtagers e-mail:
+SMTP server:
+Godkender muligheder (Efterlad disse felter tomme hvis det ikke påkræves)
+Brugernavn:
+Kodeord:
+Standard
+De følgende felter skal være udfyldte for at kunne sende e-mailen:
+Vil du indtaste disse oplysninger nu?
+Fejl under afsendelsen af alarm e-mail.
+Alarm e-mail sendt.
+Meget varm
+Indstilling af sikkerhedsniveau for temperatur:
+Temperatur måling:
+Sender rapport
+Skrifttype:
+Gem
+Vis kun den højeste temperatur på ikonet
+Overførsel data enhed:
+Konfigurer akustisk håndtering
+Deaktiveret
+Aktiveret
+Aktuelle akustisk niveau
+Anbefalede akustisk niveau
+Ukendt
+Maksimal ydeevne og plads
+Minimal ydeevne og plads
+Balanceret ydeevne og plads
+Akustisk håndtering
+Standard
+Normal læsninger pr dag
+Normal skrivning pr dag
+Tilpas programvindue størrelse til hjørnerne
+Advarsel
+Send/Vis besked
+Luk ned
+Når svigt forventes
+Når temperatur er for høj
+Når en ny log post er tilføjet
+Send dagligt status e-mail
+Klokken:
+Kritisk værdi nedbrydning
+Aktuelle status
+Status e-mail sender fejl.
+Status e-mail sendt med success.
+Opdater
+Opdater Hard Disk Sentinel ugentligt
+Opdater Hard Disk Sentinel
+Sidst søgte dato:
+Ingen søgninger er foretaget
+Afbryd
+Installeret version:
+Sidst nye version:
+Opdaterer filer
+Aktuelle fil:
+Hele processen:
+Du har den seneste version af Hard Disk Sentinel.
+Hentningsfejl. Tjek din internet forbindelse og forsøg igen.
+Opdateringen blev fuldført.
+Status: Søger efter tilgængelig version
+Status: Henter
+Luk
+Harddisk ikke fundet.
+S.M.A.R.T. funktionalitet mangler. Du mangler at kopiere filen: "Smartvsd.vxd" fra Windows\System mappe til Windows\System\IoSubsys mappe og genstarte din computer. Tjek venligst Hjælp -> Installation for detaljer.
+System administrator rettigheder mangler for at kunne tilgå harddisk information.
+Log
+problemer er blevet logget:
+Bemærk: Den registrerede version kan sende e-mail alarm og slukke computeren når harddisk problemer opstår og blevet logget.
+Ingen problemer er fundet.
+Harddiskens status er stabil.
+Advarsel: Harddisk status er forringet de sidste par dage.
+Dato
+Tidligere værdi
+Ny værdi
+Advarsel: Flere problemer fundet de sidste par dage.
+En tidligere fungerende harddisk svarer ikke. Det er muligt at operativ systemet stoppede enheden for at undgå problemer.
+Program status:
+Fejl under læsning af aktiveringsoplysningerne.
+Registrering og aktivering er fuldført.
+Registreret, men ikke aktiveret.
+Hverken registreret eller aktiveret.
+Registrer og aktiver online
+Registrer og aktiver via e-mail
+Aktiveringsfilen er gemt som:
+Send venligst denne fil med dit registreringsnavn og registreringsnøgle til info@hdsentinel.com  Udvikleren vil sende filen tilbage til dig som skal indlæses med "Indlæs Aktiverede nøglefil knap (Det er dog os muligt at kopiere/flytte nøglefilen til programmets installerede destination).
+Det anbefales at bruge online aktiverings metoden fordi det er nemt og hurtigt.
+Det maksimale antal aktiveringer er opnået for denne registreringsnøgle.
+Aktiveringsfejl
+Der opstod en fejl under kommunikationen med aktiveringsserveren.
+Kontakt venligst udvikleren omkring din licens.
+Programmet er allerede aktiveret med denne registreringsnøgle på 5 forskellige computere.
+Fejl under læsning af data fra serveren.
+Aktivering fejlede.
+Aktiveringen er færdig, tak for din støtte.
+Aktiveringen er fuldført
+Aktiver via e-mail
+Under Win98 er det muligt at en USB enhed er skyld i dette problem, fordi usb enheden måske konflikter med S.M.A.R.T. på den anden IDE kanal.
+Harddisken svarer ikke.
+Harddisken har ikke svaret i længere tid. Den kan være afbrudt.
+Vis programmet på processlinjen
+Analyserer system. Vent venligst.
+Hjælp
+Indtast venligst registreringsnavn og registreringsnøglen du har modtaget. Hvis din computer har en aktiv internet forbindelse anbefales det at du bruger online aktivering: Så vil programmet blive registreret og aktiveret automatisk og ingen andre handlinger skal udføres. Du kan os aktivere via email og sende den viste fil til info@hdsentinel.com. Du vil modtage din aktiverede nøglefil, anbring den i samme destination som dette program er.
+Begivenhed
+Grænsefladen er oversat af:
+Kenneth Rasmussen
+kenneth.90rasmussen@gmail.com
+E-mail
+TXT filer
+Alle filer
+Ikonet skal blive rødt hvis temperaturen overstiger
+Avancerede indstillinger
+Inspektions frekvens:
+1 sekund
+5 sekunder
+10 sekunder
+30 sekunder
+1 minut
+2 minutter
+5 minutter (Standard)
+10 minutter
+30 minutter
+1 time
+Aktiver advarsel hvis harddisken ikke svarer
+Normal temperatur (I dag)
+Aktuel
+Daglig gennemsnit
+Daglig højeste
+Lyd alarm
+Vælg lydfil
+Lyd filer
+Dobbeltklik eller højreklik for at se mere information.
+Ændre/Anvend
+OK
+Annuller
+Der opstod en fejl under udførelsen af denne kommando.
+Denne funktion kræver Windows: 2000, XP eller nyere operativ system.
+Når ledig plads er lav
+Sæt ledig plads sikkerhedsniveau
+Brug samme indstilling for alle harddiske
+Global indstilling
+Advar hvis ledig plads er lavere end
+Lav plads
+Lav
+Deaktiver automatisk scandisk under opstart af Windows
+Det er påkrævet at genstarte computeren for at benytte de nye indstillinger.
+Synkroniser computerens ur med et atomur
+Når programmet er startet
+Vil du se status for harddiskene i et lille status vindue?\n(Senere vil det være muligt at ændre denne indstilling ved højreklik\n på systembakke ikonet og vælge "Konfiguration" fra menuen.)
+Temperatur sensor er ikke tilgængelig på denne harddisk.
+Kan ikke blive vurderet på denne harddisk.
+Hjælp
+Hjælp er ikke tilgængeligt. Hent venligst den fulde installationspakke fra (http://www.hdsentinel.com).
+Denne funktion er ikke tilgængelig på den valgte harddisk.
+Ændre harddisk ikon i Windows
+SCSI information
+Sælgers informationer
+Version
+Enhed type
+Harddisk
+Aftagelig
+Fejl forventes
+Partitioneret drev
+Fjerntliggende harddisk
+Optisk lagring
+Det markerede logiske drev tilhører den fysiske harddisk.
+Skift visningstilstand
+Enhedsnavn
+Serial nummer
+Overvåg plads på netværksharddisk
+Genvejstaster
+Kommando:
+Aktiver system genvejstaster (Kan blive brugt fra hvilket som helst program)
+Harddisk kontrol
+Skift standard system ikon for netværksharddisk
+Overvåg plads på den aftagelige harddisk
+Skift standard system ikon for aftagelige harddisk
+Undersøge ikke plads information af de følgende partitioner (etc. C: D: E:)
+Skift ikke standard system ikon af de følgende partitioner (etc. J: K: L:)
+Dobbeltklik for at åbne partition. F5 = genopfrisk.
+Ingen partitioner på harddisken
+Mail test
+Hvis denne besked er afsendt, så er e-mail konfigurationen korrekt.
+Test mail successfuldt sendt.
+Afsendelsen af test mailen fejlede. Tjek venligst e-mail konfigurationen.
+Tændt tid:
+dage
+timer
+minutter
+Anslået levetid:
+Mere end
+sekunder
+Port:
+Forsinkelse før scandisk startes (sekunder):
+Sundhed værdi:
+Når harddiskens sundhed er lav
+Panik opbakning
+Sundhedssikkerhedsniveau:
+Vis besked på skærmen
+Send beskeder til fjernstyret computer (NET SEND):
+Denne funktion er tilgængeligt hvis den PROFESSIONELLE version er installeret. \nved at bruge denne funktion, er det muligt at starte de forudkonfigurerede backup opgave(r) når et problem bliver opdaget \n\nDu kan læse mere om denne funktion på (www.hdsentinel.com).
+Lav sundhed
+Opret test rapport
+Afsendelsen af rapporten fejlede.\nÅben venligst Konfigurationsvinduet, vælg Send test rapport, gem rapporten og send den til reports@hdsentinel.hu
+Besked indstillinger
+Send e-mail
+Undersøg internet forbindelse før afsendelse
+Luk forbindelsen efter afsendelse
+Vis brugerdefineret besked fra tekst fil også
+Vent venligst, måling igang ...
+ugyldig registreringsdetaljer - Denne funktion er deaktiveret.
+Sundhedsinformation
+Forsendelseesfejl. harddisken er måske fyldt eller skrivebeskyttet.
+Sikkerhedsniveau / systembakke ikon
+Vis harddisk temperatur på systembakke ikonet
+Under
+Mellem \1 og \2
+Temperatur:
+Over
+Brug digitale tal på systembakke ikonet
+Baggrund
+Forgrund
+Eksempel
+Vis harddisk sundhed på systambakke ikonet
+Ansøgningsinformation
+Aktuelle dato og tid
+System information
+Windows version
+CPU type & hastighed
+BIOS producent
+Fysisk hukommelse størrelse
+Vis adapter
+Vis opløsning
+Printer
+Netværkscontroller
+PCI enhed information
+Computer information
+Computernavn
+Brugernavn
+IP adresse
+MAC adresse
+Fysisk harddisk information
+Flag
+Kritisk
+Statistisk
+Ydeevne
+Fejlprocent
+Begivenhedstæller
+Selvkontrol
+Stationær
+Server
+Mobil
+Computertype
+Generel information
+HTML filer|*.html|Alle filer|*.*
+Gem rapport
+Send rapport i e-mail
+Rapport type:
+Detaljeret HTML rapport
+Kort TXT rapport
+Send test rapport
+Harddisk information at vise
+Harddisk model
+Logiske harddiske
+Sundhed
+Status / Problem
+Fysisk harddisk
+Harddiskens status er ukendt.
+Harddiskens status er perfekt.
+Harddiskens status er ikke perfekt.
+Fejl forventet på denne harddisk.
+Der er \1 dårlig(e) sektorer på harddiskens overflade. Indhodet er flyttet til det reserverede areal.
+Baseret på antallet af gentagende kortlæggende opgaver, er sunheden af harddisken lav i forskellige trin.
+Baseret på antallet af gentagende kortlæggende opgaver, de dårlige sektorer kan danne kontinuerlige områder.
+Harddisken fandt \1 dårlig sektor gennem dens selv-test.
+Der opstod problemer under opstarten af harddisken \1 gang. Dette kan skyldes harddisken eller stor strømforbrug (For lille strømforsyning).
+Der er fundet \1 svag sektor på harddiskens overflade. De kan omfordeles under en efterfølgende brug af harddisken.
+Der er opstået \1 problemer mellem harddisken og værtens kommunikation. I tilfælde af et øjeblikkeligt nedbryd eller genstart anbefales det at prøve et andet kort data-kabel. (Undgå runde kabler, brug 80 wire standard kabler i stedet).
+Det anbefales at gennemgå harddiskens log regelmæssigt. Alle nye problemer der bliver registreret vil blive gemt der.
+Harddiskens status er fremragende. Ingen svage sektorer, rotations/overførelsesfejl fundet.
+Godkend
+Forskydning
+Forskydning:
+Det anbealfes at kalibrere temperaturen og sætte temperatur forskydning på S.M.A.R.T. siden. På denne måde vil temperaturens værdi blive vist korrekt.
+Sundheds beregningsmetode:
+Analyser data felt (standard)
+Analyser leverandør-specifikke værdier (ANBEFALES IKKE)
+sikkerhedsniveau oversteget den:
+Attribut graf
+Vis data felt
+Vis leverandør specifikke vædier
+Ikke forventet
+Skete
+Detaljeret TXT rapport
+Filer
+Vis
+Rapport
+Gem TXT rapport
+Gem HTML rapport
+Send TXT rapport
+Send HTML rapport
+Det anbefales løbende at overvåge harddiskens status.
+Analyser data felt mere strengt (Anbefales for servere)
+Ændre attribut forskydning
+Brugen af denne funktion anbefales kun for avancerede brugere. Ved at bruge denne funktion er det muligt at den viste status ikke er den aktuelle. Er du sikker på at du vil ændre denne funktion?
+Vis ikke dette igen
+Brugen af denne funktion anbefales kun for avancerede brugere. Ved brugen af denne funktion er det muligt at vise en ukorrekt tilstand, men også muligt at gå glip af nogle alarmer om fremtidige tilstandes ændringer. Er du sikker på at du vil ændre denne funktion?
+Deaktiver lyd alarmer
+Aktiver lyd alarmer
+Der opstod en fejl da den akustiske niveau blev justeret.\nHarddiskens controller eller driver understøtter ikke denne funktion.
+Realtid ydeevne overvågning er ikke understøttet på denne harddisk.
+Bemærk: Den uregistrerede version gemmer ikke på ændringer af denne funktion. Funktionerne vil blive nulstillet til standard værdier når programmer genstartes.
+Aktiver atribut
+Gentag lydalarm
+Brug PC højtaler
+Send test
+Beskeden blev sendt med success til den valgte computer.
+Der opstod en fejl under opgaven. Tjek venligst netværksforbindelsen og den aktuelle status for besked servicen på begge computere.
+Problemer forsagede lyd alarmen
+Gen-aktiver alarmer
+ATA kontrol Byte
+Verificeret
+Ugyldig
+ATA kontrolsum værdi
+Den viste information er måske ikke korrekt.
+Test lydalarm
+Lav en genvej for dette projekt på skrivebordet
+Genvej skabelse
+En genvej for dette projekt er blevet successfuldt oprettet på skrivebordet.
+Der opstod en fejl under oprettelsen af genvejen for dette projekt.
+Registreringen er udløbet. Kontakt venligst info@hdsentinel.com for at forlænge licensen.
+Deaktiver flytbarhed + klibarhed af Status vinduet. (Fjern kryds for at tillade)
+Vis information på skrivebordet.
+Gyldig indtil:
+Forevigt
+Udløbet
+Ingen
+Gør status vinduets baggrund gennemsigtig
+Integration
+Service
+Kodeord påkrævet for at åbne Informations vindue
+Kordord påkrævet for at åbne konfiguration vindue eller at lukke Hard Disk Sentinel
+Log ud efter
+Minutter
+Kodeord:
+Log ud nu
+Brug som service
+Brug som program
+Fjernkontrol
+Aktiver fjernforbindelse til Hard Disk Sentinel server
+Server navn eller IP adresse:
+TCP port (standard = 61210):
+Beskyttelse
+Der opstod en fejl under installation af Hard Disk Sentinel service.
+Der opstod en fejl under start af Hard Disk Sentinel service.
+Der opstof en fejl under stop af Hard Disk Sentinel service.
+Hard Disk Sentinel gemmer nu den aktuelle konfiguration og vil blive lukket. Det vil genstarte som en service.
+Hard Disk Sentinel service gemmer nu den aktuelle konfiguration og vil blive stoppet. Det vil genstarte som program.
+Autoriseret adgang påkrævet
+Ugyldig kodeord indtastet. Det er ikke muligt at bruge denne funktion.
+For at lukke Hard Disk Sentinel service, brug venligst "Stop service" genvejen eller skift tilbage til program tilstand på det integrerede panel fra konfigurations vinduet og luk programmet.
+Nej
+Høj
+Højeste
+Det er ikke muligt at opdatere Hard Disk Sentinel mens det kører som service. Skift venligst tilbage til program tilstand på det integrede panel før du vil opdatere programmet til en nyere version.
+Service tilstand
+Sikker tilstand (deaktiver hardware afsløring)
+Hard Disk Sentinel service er ikke installeret. Åben venligst konfigurations vinduet, vælg det integrerede panel og installer Hard Disk Sentinel service.
+Hard Disk Sentinel service kører allerede.
+Hard Disk Sentinel service kører ikke.
+Normal overførelseshastighed
+Normal harddisk aktivitet
+Gentag test
+Informationen er ikke tilgængelig endnu
+Hard Disk Sentinel service stoppede.\nVil du deaktivere servicen og bruge Hard Disk Sentinel i program tilstand?
+Windows Vista og nyere operativ systemer tillader ikke servicer til at interagere med skrivebordet.\n\nHard Disk Sentinel vil nu køre usynligt: Dets vinduer og ikoner vil ikke blive\nvist og det vil ikke være muligt at få adgang til konfiguration.\n\nFor at stoppe servicen og bruge program tilstanden,\n vælg venligst "Stop service" genvejen fra Hard Disk Sentinel gruppe.\n\nEr du sikker på at du vil fortsætte?
+Find ud af hvordan denne værdi er beregnet?
+Aktiver venligst dette program for at køre med de rette rettigheder.
+Harddisk ikon:
+XP
+Vista
+Klik for at starte
+harddisk test
+Operation:
+Status:
+Resterende tid:
+Der opstod en fejl under start af testen. Fejl koden er:
+Fremragende
+Svar:
+Forløbet tid:
+Denne registreringsnøgle kan kun bruges til STANDARD udgaven.\nHent veligste og installer STANDARD udgaven fra www.hdsentinel.com\nto brug denne registreringsnøgle.
+Denne registreringsnøgle kan kun bruges til PROFESSIONAL udgaven.\nHent venligst og installer PROFESSIONAL udgaven fra www.hdsentinel.com\nto brug denne retistreringsnøgle.
+Brug mb enheder for sikkerhedsniveau
+Bekræft:
+De 2 adgangskoder er ikke identiske.\nIndtast venligst samme kodeord 2 gange for at verificere det.
+Aktiver webstatus
+Spørg efter adgangskode for at oprette forbindelse
+HTTP forbindelses port
+Port adresse (>1023)
+Vis/skjul detaljer for attributerne
+Decimal data felter
+Harddisken forsøgte at undersøge og genlokalisere data sektorer \1 gange. Det undersøgte data område er perfekt.
+Erstat harddisken omgående.
+Detaljeret rapport komponenter:
+Backup / Gendan aktuelle konfiguration
+Backup konfiguration
+Gendan konfiguration
+Optisk harddisk	
+Generer og opdater .XML fil
+Harddiskens temperatur sensor er forkert. Den målte værdi er:
+Accepter fjernforbindelse fra server
+fjernforbindelse port
+Deaktiver systembakke popup alarmer
+Deaktiver afsløring af USB og SCSI harddiske
+Send
+Kommentare:
+Send til udvikler
+Kontakter server - www.hdsentinel.com
+Sender rapport
+Rapport successfuldt sendt. \nTak for din støtte.
+Send test rapport til udvikler 
+Opretter rapport
+Jeg vil godt modtage svar efter evalueringsrapporten
+Dette er en fejl rapport
+Åben Hard Disk Sentinel program vindue
+Synlig
+Partition størrelse enhed:
+Harddisk størrelse enhed:
+CC:
+BCC:
+Opdater test rapport
+(Anslået)
+Beregner tid, Vent venligst ... Den aktuelle værdi er muligvis ikke beregnet korrekt.
+Fjernrute
+Gul temperatur niveau er opnået
+Rød temperatur niveau opnået
+Gul sundhedsniveau er opnået
+Rød sundhedsniveau er opnået
+Grænse:
+Temperatur:
+Attribut ændret
+Rens log
+Baggrund
+Aktiver DynDNS service
+Aktiver No-IP servicee
+Aktiver brugerdefineret dynamisk DNS service
+Konfigurer
+Brugernavn
+Kodeord
+Værtsnavn (fuld)
+Fuld URL for at opdatere (%ip% ændret med aktuelle IP)
+Sidste server svar:
+Gadget
+Aktiver gadget
+Vis titel
+Vis harddisk aktivitet
+Vil du teste konfigurationen nu ved opdatering af IP adresse?
+Antallet af fundne problemer er høj for den følgende attribut
+Læs
+Skriv
+Alle partitioner
+Aktivitets ikon
+Vis harddisk aktivitet på et enkelt systembakke ikon
+(HØJ ord)
+(MID ord)
+(LAV ord)
+Strøm status
+Aktiv
+Sovende
+(siden \1)
+System oppetid
+System tændt siden
+Harddisk controller
+Harddisk port
+HDSentinel hjemmeside
+Kontakt
+Køb nu
+Registrer nu
+Listen indeholder \1 muligheder. Registrer venligst Hard Disk Sentinel for at se alle muligheder
+CPU forbrug
+CPU
+Virtuel hukommelse
+Brugt
+Harddisken arbejder i PIO tilstand hvilket reducerer ydeevnen. Det anbefales at tjekke og erstatte data kabel eller ændre konfigurationen.
+Harddisken arbejder i UDMA tilstand 2 (33 Mb/s) hvilket reducerer ydeevnen. Det anbefales at bruge 80 dirigent IDE kabel hvis controlleren understøtter højere data overførelseshastighed.
+Silicon Image (Sil) controllere giver måske ikke komplet information om alle tilsluttede harddiske.
+Den aktuelle harddisks controller giver ikke fuld adgang til alle harddiskens detaljer. Tjek venligst om der er nyere driver tilgængelig.
+Denne USB lagringsenhed giver ikke mere information om sig selv. Alligevel kan den blive testet for problemer via Harddisk -> Overflade test funktion.
+Denne RAID række giver ikke fuld adgan til harddiskens detaljer i rækken. Alligevel kan den blive testet for problemer via Harddisk -> Overflade test funktion
+Brug venligst "Rapport" menuen "Send test rapport til udvikler" mulighed for at hjælpe med med at bestemme om det er muligt at opdage og vise flere oplysninger.
+Besøg venligst "Hardware" og "Support -> FAQ" sektioner på www.hdsentinel.com for detaljer.
+Aktiver
+Højeste temperatur (Nogensinde målt)
+Laveste temperatur (Nogensinde målt)
+2 timer
+4 timer
+6 timer
+8 timer
+12 timer
+Reserveret 1
+Reserveret 2
+Gul temperatur begrænsning opnået. Hvis harddiskens temperatur stadig forøges, så anbefales det at bruge en harddisk køleenhed (Eksempelvis en blæser eller passiv heatsink) hvis det er muligt.
+Vælg "sikkerhedsniveau / systembakke ikon" sige for at konfigurere sundhed og temperatur sikkerhedsniveau for gul og rød niveau.
+Kritisk.
+Det anbefales at lave en backup omgående for at undgå tab af data.
+Kompakte knapper
+Normale knapper
+Store knapper
+Ydeevne:
+Grænseflade
+Besked
+Tilfældig søgetest
+Test harddisk søge ydeevne, larm og temperatur
+Søgetid
+Min
+Maks
+Normal
+Testet
+Forløbet
+Resterende
+Operationer
+Fejl
+Start test
+Afbryd test
+Hurtig test
+Normal test
+Dyb test
+Lang intensiv test
+Brugerdefineret varighed
+Forventet tid før test er fuldført (TT:MM:SS)
+Læse test
+Skrive test
+Denne funktion kan kun blive brugt en gang i en uregistreret udgave.
+Vil du åbne hdsentinel.com for at se detaljer om registrering?
+Er du sikker på at du vil afbryde denne operation?
+Denne funktion er ikke tilgængelig på det valgte drev pga. konfigurationen af dens controller og harddisk.
+Hard Disk Sentinel Prøveversion
+Den registrerede version af Hard Disk Sentinel tilbyder højeste sikkerhesniveau med data sikkerhedsalarmer, harddisk diagnoser, automatisk backup(Kun PRO version), fjernstyret håndtering og flere funktioner til test og forbedring af stabilitet og ydeevne af lagringsenheder.\n\nDenne prøve version kan bruges op til 30 dage til de mest vigtige funktioner og verificering af kompentiablitiet med systemet. Efter prøveperioden kan du opgradere til en registreret version ved køb af licens.\n\Fordelene ved at købe licens:\n\n- Højeste niveau af databeskyttelse\n- Hurtig, sikker og fleksibel betalingsmuligheder\n- Adgang til alle funktioner\n- Gratis teknisk support og hjælp\n- Livstidslicens, ingen tilmeldinger eller ekstra omkostninger\n- Ingen begrænsninger eller irriterende bemærkninger.
+S.M.A.R.T. forskydning er konfigureret til en attribut til beregning af denne værdi.
+&Vælg systembakke ikon skrifttype
+Tillad ikke hardiske at gå ned i omdrejninger (tal med komma, eksempelvis 1,2 eller * for alle)
+Verificer online 
+Sammenlign S.M.A.R.T. værdier fra denne enhed med andres for at se om attributterne er bedre, ens eller dårligere (af samme harddisk model).
+Overfladetest
+Analyser harddisk overflade med forskllige metoder og tests
+harddisk overfladekort
+Temperatur og overførelseshastighed
+Blok
+Svage
+Fremgang
+Passere
+Forløbet tid
+Forventet tid ialt:
+sektorer
+Test stoppet
+Ude af stand til at låse harddisken for eksklusiv brug.\n Er du sikker på at du vil teste den alligevel?(Anbefales ikke)
+Test fuldført
+Position
+Sekventiel test
+Test blockke fra første til sidste blok
+Tilfældig test
+Test blockke i tilfældig rækkefølge
+Butterfly test
+Alternativ: test en blok fra begyndelsen og en fra slutningen
+Sekventiel baglæns test
+Test blokke fra slutningen til begyndelsen
+Sektor
+Verificer fejl
+&Gem harddisk information
+&Åbn harddisk information
+Initialiserer ...
+Harddisk indhold inspektør
+&Tidligere
+&Næste
+&Gå til ...
+Vælg en harddisk (Tilgængelig for operativ systemet) til at blive testet og test metode.\nLæs den detaljerede information omhyggeligt før du starter testen.\nKlik vis for at se overflade detaljer, brug den \1 eller se tidligere test resultater.
+Læse test
+Læser harddiskens overflade for at verificere om alle sektorer er tilgængelige os læsbare.\n\nTesten er sikker, Den påvirker ikke dataen.\n\nHarddisk problemer kan fortsat være skjulte og aflørede harddisk problemer er IKKE håndteret (Ligesom med ScanDisk).
+Skrive test
+Overskriver harddiskens overflade med konfigurerbare mønstre. Tvinger analysen af alle svage sektorer og verificerer alle skjulte problemer og håndterer dem med omfordeling af dårlige sektorer (Dette er drevet regenerering).\n\nAktiverer bedre brug af harddisken og efter testen vil det overskydende areal blive brugt i stedet for problematiske sektorer.
+Skrive + læse test
+Overskriver harddiskens overflade med konfigrerbare mønstre, læser efterfølgende tilbage på sektorernes indhold, for at verificere at de er tilgængelige og konsistente. Tvinger analyse af alle svage og verficerer alle skjulte problemer og håndterer dem med omfordeling af dårlige sektorer (Dette er harddisk regenerering).\n\nAktiverer bedre brug af harddisken, efter testen vil det ocerskydende areal blive brugt i stedet for problematiske sektorer.
+Læse + skrive + læse test (Genopfrisk data areal)
+Læser gemt data fra alle blokke, skriver det igen og læser informationen og sammenligner det med det oprindelige indhold. Med udvidelsestesten vil en ekstra skrive cyklus bliver brugt før genskrivningen af indholdet for at forbedre effektiviteten af fejlrettelsen (Harddisk regenerering).\n\nOperationen er normalt sikker, men det er stadig muligt at miste data hvis systemet ikke er stabilt, strømsvigt, OC af RAM, strøm forsyningskabel problemer og andre faktorer.\n\nTesten kan blive brugt til at opdatere data arealerne på lagringsenheden, uden brug af komplet sletning. (Det anbefales stadig at lave backup af indholdet før test)
+Reinitialisere harddiskens overflade
+Overskriver harddiskens overflade med specielle initialiseringsmønstre til at gendanne sektorernes standard (tom) status og læser sektorernes indhold, for at verificere om de er tilgængelige og konsistente. Tvinger analyse af alle svage sektorer og verificerer alle skjulte problemer og håndterer dem ved omfordeling af dårlige sektorer (Harddisk regenerering).\n\nAktiverer bedre brug af harddisken efter testen vil det overskydende areal blive brugt i steder for problematiske sektorer.\nMeget intensiv og tidsforbrugende test, specielt hvis niveauet (nummeret af overskrevne cyklusser) er sat til højere værdi.\n\nDen simple version af testen kaldes lav niveau formatering (Fejlagtigt) af andre værktøjer.
+Sektor kontrol
+Sletter intet - Sikker for data
+Lås harddisk under test (Afmonter enhed)
+Gentag test
+gange
+Begræns testen til specifikke data blokke
+Første blok:
+Sidste blok:
+DESTRUKTIV - alle data slettes
+Fjerner data (zeroes)
+Tilfældig data
+Sektor nummer
+Omfattende læse-skrive-læse test med ekstra skrive operation
+Overflade reinitialization niveau
+Fleste tilfælde ikke desktruktiv (Se noter og hjælp)
+Denne test vil permanent slette ALT DATA på den valgte harddisk.\nFunktionen kan ikke fortrydes.\n\nEr du sikker på at du vil starte denne test og miste ALLE DATA gemt på harddisken?
+Denne test udfører SKRIVE operation på det valgte harddisk.\nSelv-testen er ikke destruktiv, men datatab kan stadig ske.\n\nEr du sikker på at du vil starte denne test?
+Bekræft test
+Klik på overfladekortet for at inspektere sektorernes indhold.\n\nHøjreklik for at åbne kontekst menuen.
+testen måler overførelsestiden for alle blokke for at se hvilke arealer af overfladen der er sløve. Jo langsommere blokke er, jo mørkere er farven.
+Udvikleren tilbyder ingen garanti af data på harddiske som går tabt!
+Aktuelle test
+Alle testse
+Kan ikke udføre skrive test på system harddisk som indeholder nogle af de følgende mapper:
+Den indlæste information tilhører en anden harddisk.\nDog ved museklik på overfladekortet, sektorerne af den aktuelle harddisk vises allerede.
+Ved dette punkt er garanti erstatning af harddisken ikke muligt.\nMedmindre sundheden falder yderligere.
+Vil du vække alle sovende harddiske også?\nEllers vil kun information af aktive harddiske blive opdateret.
+Opdater harddisk Information
+Test type:
+Data påvirkning:
+Skriv mønster
+Nulstil højeste og laveste temperatur værdier
+Højeste temperatur (I harddiskens levetid):
+Vis værdier
+Brug SSL
+SSD controller
+SSD'ens status er fremragende.\n- Problematiske eller svage sektorer blev ikke fundet.
+Sundheden er bestemt af SSD'en specifikke S.M.A.R.T. attribut(ter):
+Håndter harddisk funktioner
+Der opstod en fejl under afsendelsen af kommandoen til harddisken.\nHarddiskens controller/driver understøtter ikke denne funktion.\n\nKommandoen kan måske gennemføres efter en driver opdatering eller\nved brug af et andet OS, harddisk controllere\neller et understøttet USB kabinet/docking station.
+Aktiver og juster
+Deaktiver
+Forsink opstart (sekunder):
+Brugerdefineret temperatur sikkerhedsniveau
+Gul temperatur grænse:
+Rød temperatur grænse:
+Deaktiver brugerdefinerede sikkerhedsniveauer for den valgte harddisk
+Ændre sikkerhedsniveau for temperatur
+Ændre brugerdefineret temperatur sikkerhedsniveau
+Brugerdefineret
+Global
+Kun en harddisk må have brugerdefineret temperatur sikkerhedsniveau konfigureret i denne gratis version af Hard Disk Sentinel.
+S.M.A.R.T. driveren mangler fra den aktuelle Win9x/ME system.\nVil du automatisk opdatere konfigurationen og genstarte computeren nu?
+Åbn aktiveringsnøglefil
+NTFS Monteringspunk(er)
+Monteringspunkt
+Advarsel: Dine data er muligvis ikke beskyttet helt.
+Begrænset tilbud: Opgrader i dag og spar \1 på licens prisen!
+(indtast rabatkoden \1 under sikker online registrering eller klik på linket nedenfor)
+Vent venligst \1 sekund(er) før fortsættelse ...
+Partition information
+Partition stil
+Aktiv
+Alignment
+Start forskydning
+Længde
+Tildel enhedsstørrelse
+Samlet allokeringsenheder
+Ledig allokeringsenheder
+Anvendte allokeringsenheder
+Enhedstype
+Dynamisk
+Basis
+&Vis status for lokale harddiske
+Vælg harddiske med afkrydsningsfeltet for at se deres status ligesom tilsluttede (online) harddiske.
+Offline
+Vælg harddiske via afkrydsningsboksen til at blive indraget i den autentiske harddisk rapport.
+&Gem autentisk harddisk rapport (HTML)
+&Verificer autentisk harddisk rapport
+Den valgte fil er ikke en autentisk harddisk rapport.
+Den autentiske harddisk rapport blev successfuldt verificeret og gyldig.
+Den autentiske harddisk rapport er ugyldig eller beskadiget.
+Autentisk harddisk rapport
+&Windows enhed/RAID information
+\1 fejl opstod under data overførelsen. Dette kan indikere problemer med enheden eller data/strøm kabel. Det anbefales at undersøge og erstatte kablerne hvis muligt. 
+\1 fejl blev rapporteret under skrivning til enheden.
+Begrænsningen af RAID controlleren kan forhindre sløringen af fremtidige harddisk information. Dette er ikke en begrænsning af Hard Disk Sentinel software.
+Abonner på nyhedsbrev og blev påmindet om opdateringer og specielle tilbud
+Vælg Rapport (Menuen) -> Send test rapport til udvikler og vælg abonner til nyhedsbrev for at modtage information om specielle tilbud og opdateringer.
+Daglig laveste
+Standard bredde
+TRIM funktionen af SSD'en er understøttet og aktiveret for optimal ydeevne.
+TRIM funktionen af SSD'en er understøttet men deaktiveret. Det anbefales at opgradere operativ systemet, harddiskens controller eller driver for at forbedre ydeevnen.
+Livstids skrivninger:
+Antal opstart:
+Konfigurationen tilbyder ikke yderligere harddisk status information. men harddisk menu "overflade test" funktionen kan undersøge harddiskens funktionaliteter, afsløre og håndtere mulige problemer.
+Den aktuelle version er udløbet. Indtast venligst en registreringsnøgle for at fortsætte brugen af Hard Disk Sentinel.
+Loggen indeholder ingen poster.
+eksporter overførselshastighed værdier
+Automatisk juster indstlinnger ved genstart
+Mere information:
+Klik for at tilføje en kommentar ...
+Kommentar
+Vælg &mappe at gemme statestikker og indstliinger
+Advarsel Licens er duplikeret
+Den samme registreringsnøgle er brugt til den installerde og bærbare version af Hard Disk Sentinel.\nFor at kunne bruge alle funktioner af begge versioner påkræves separerede licenser for disse versioner.
+Status sidst opdateret:
+Se garanti online
+Kopier valgte værdi til udklipsholderen
+tilgåelse af nogle arealer af overfladen gennem testen kan\nvære langsomme grundet styresystemet og\nprogrammerne på systemet, dette kan være årsagen til mørke grønne blokke.
+Nulstil arbejdsbyrde tællerne
+Vil du gemme separate rapporter for de udvalgte harddiske?
+Den detekterede totale kapacitet (\1) af harddisken \2 er ikke korrekt, kapaciteten burde være \3
+Den aktuelle harddisks controller/driver/adapter er ikke helt kompentiablet med \1
+Anvendelse af denne harddisk kan forårsage korruption i fil systemet eller data tab.
+Det anbefales at undersøge og ændre konfigurationen eller opgradere operativ systemets harddisk controller og/eller drivere for sikker anvendelse af denne enhed
+Enhed Specifik Information

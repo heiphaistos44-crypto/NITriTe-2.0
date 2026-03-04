@@ -1,0 +1,248 @@
+Ýþlemler
+Projeler 
+Program 
+Projenin adý: 
+Yeni 
+Sil
+Proje türü: 
+Çalýþtýrmak dýþ uygulama veya toplu iþ dosyasý 
+Komut satýrý: 
+pencere göstermeden, görünmez Baþlat 
+Baþlama Günü: 
+Oluþturmak Yeni Proje 
+Proje 
+Geçersiz projenin adý. ve boþluklarý olmayacak bir henüz mevcut olmayan adý olmalýdýr olmalý. 
+Kaydet
+Varsayýlan Projeleri Onar
+Baþlat
+Zaman 
+Sonra çalýþtýr
+Çalýþtýrma Öncesi Sor
+Düzeltmek zaman 
+yükledikten sonra 
+Sil
+Listeye yeni proje ekle 
+Proje hata kaydedin. 
+Bu proje çalýþtýrmak istiyor musunuz? 
+Proje Baþlangýç 
+Proje baþlangýç hatasý. 
+Yorum: 
+Ara 
+Yürütülebilir | *. exe, *. bat, *. com | Tüm dosyalar | *.* 
+Etkin 
+Eðer modifiye yapýlandýrmasýný kaydetmek istiyor musunuz? 
+Eðer bu proje silmek istediðinizden emin misiniz \ nArka proje takviminden da silinecektir \ Bu proje için zamanlama seçenekleri nNumber?.: 
+Eðer proje silmek istediðinizden emin misiniz? 
+Transfer dosyalarý ve klasörleri 
+Kaynak 
+Hedef 
+Yapýlandýrmak 
+Eklemek 
+Istisnalar 
+dosyalarý uygulama tarafýndan tutulacak belirtin: 
+Burada belirtilen dosyalarý Hard Disk Sentinel tarafýndan göz ardý edilecektir. Onlar ve kopyalanmaz herhangi bir seçenek etkilenmez olacak. 
+Genel Ayarlar 
+Proje Ýþlemleri 
+Proje Seçenekleri 
+Bu klasörlerin içeriðini belirtilen hedef klasör (ler) kaydedilir. 
+Kaynak klasör 
+Hedef klasör 
+Dosya maskesi 
+Klasör Ayarlarý 
+Hedef klasörü otomatik olarak (gerekirse) oluþturulacaktýr. Bir klasör belirtmek için aþaðýdaki deðiþkenleri kullanmak mümkündür: - ad kullanýcý \ n \ n% BÝLGÝSAYAR -% adýnýn bilgisayarýn \ n \ n% IP% - \ n \ n% KULLANICI% bilgisayarýn IP adresi \ n \ n% SON = klasör% - Belirtilen klasördeki son olarak yaratýlan ve modifiye (yeni) klasör \ n \ nBu adý, iki veya daha fazla hedef klasörleri belirtmek için onlarý ayrý lütfen mümkündür; (noktalý virgül). 
+seçmek ya da en azýndan bir kaynak klasör belirtin. 
+geçerli bir hedef klasör belirtin. 
+Düzenlemek 
+veri hesaplama miktarý kopyalanacak 
+Doðrulamak veriler kopyalanýr 
+sadece yeni ve güncelleþtirilmiþ dosyalarý kopyalayýn 
+kopyalanan dosyalarý temizle arþiv bit 
+Baþarýlý kopyaladýktan sonra kaynak dosyalarý silme 
+klasör adý olarak geçerli tarihi kullanýn ve tutmak son 
+tam arþiv 
+(Önceki arþivleri otomatik olarak gerçek iþlemi baþlamadan önce silinir) 
+Durum: 
+Dosya: 
+veri miktarý: 
+Veri kaydetme 
+veri hesaplama miktarý 
+Dosya kopyalama 
+Güncelleme dosyalarý 
+önceki arþiv silme 
+arþiv Doðrulama 
+ MB / sn 
+Kalan dakika 
+saniye kaldý 
+Klasör: 
+Hedef: 
+Kaydetmek alt klasörler 
+tamamlanmasýndan sonra 
+bir sorun oluþtu yalnýzca / raporu görüntüler gönder 
+Gönderme / her durumda raporu görüntüler 
+göndermek veya rapor görüntüleme 
+Eðer arþivleme sonra kaynak dosyalarý silmek? \ n (iki veya daha fazla nüsha olarak ya da eðer arþiv dosyalarý "doðrulamak kopyalanan verileri" seçeneði etkinleþtirildiðinde, yalnýzca bu seçeneði kullanmanýz önerilir veri güvenliði maksimize etmek istediðinizden emin misiniz. ) 
+kaynak dosyalarý silme 
+Tamamlandý 
+Projesi baþarýyla tamamlandý 
+Proje durum 
+Hata projenin yürütülmesi sýrasýnda 
+kaydedilen dosyalarýn sayýsý: 
+Geçen toplam süre: 
+Hatalarýn Listesi 
+kaydedilmiþ veriler toplam tutarý: 
+ilerleme kaydetmek pencere gösterme 
+Görevleri baþarýyla tamamlandý 
+Ýptal edildi 
+Hiçbir veri kaydetmek 
+Bu klasörden doðrulamak için dosya listesini açýlamýyor: 
+silinemiyor: 
+E-posta yapýlandýrma eksik 
+baþarýsýzlýk gönderme E-posta 
+Yapamaz dosyayý açmak için: 
+dosya oluþturulamýyor: 
+Yapamaz dosyasýný okumak için: 
+Yapamaz (dolu veya yazýlamýyor) dosyasý yazmak için: 
+dosya doðrulanamýyor: 
+Eksik CRC Checksum deðeri: 
+Hatalý CRC Checksum deðeri: 
+Þimdi Baþlat 
+Iþlem önceliði 
+Boþ 
+Normal 
+Maksimum 
+Hedef klasör açýk hata 
+yük 1/day sonra 
+Tekrarlayan 
+Sonra: 
+Otomatik 
+Sonraki güne ertele
+Herhangi bir sabit disk 
+Bir diðer bekleyen proje devre dýþý olduðundan aþaðýdaki proje idam olmayacak. 
+Eðer ayarlarýný deðiþtirmek istiyor musunuz? 
+Iþleme raporu 
+Dosyayý kaydetmek operasyon baþladý. Bu iletiyi görürseniz, kaydetme iþlemi iptal edildi. 
+Hard Disk Sentinel Pro bu sürümü kayýtdýþý olduðu \ nin çýkarmak mümkündür kayýtlý sürüm yedek projeler otomatik açýlmasýný \ n \ nLütfen de \ n \ nhttp bizim web sayfasýný ziyaret izin vermek için iletiþim soru:.. / / Www.hdsentinel . com \ n \ nfor uygulama. \ n \ musunuz þimdi bizim web sitesi açmak istiyorum kayýt hakkýnda talimatlar? 
+problem Ses uyarýsý 
+veri miktarý az ise baþlamayýn 
+kbytes 
+Konu uyarý yeterli deðilse veri 
+Ayrýca içeriði ile tasarruf kaynak klasör adý 
+NERO ile CD / DVD 'leri 
+Sýkýþtýrmak RAR kullanarak dosyalarý 
+Sýkýþtýrmak 7-Zip kullanarak dosyalarý 
+Seçmek Uygulama 
+Görmek Komut Satýrý 
+Hedef sürücüyü: 
+Medya: 
+Hýz: 
+Burn-proof 
+Parametreleri: 
+Hedef dosya: 
+Birden çok birim, birim boyutu: 
+Nerocmd.exe yeri belirtilmemiþ. 
+Rar.exe yeri belirtilmemiþ. 
+7Z.exe yeri belirtilmemiþ. 
+Þimdi yapýlandýrmak istiyor musunuz? 
+Kýsmi Yapýlandýrma 
+(CTRL + C panoya pencerenin içeriðini kopyalamak için). 
+Hata Uyarýsý 
+Dikkat ! .... Uygulama tamamlandýðýnda (yapýlandýrýlmýþ mesaj ayarlarýna baðlý olarak) 0'dan farklý bir çýkýþ kodu ile uyarý oluþacaktýr.
+Doðrulamak yazmak 
+Dýþ Uygulama Hatasý 
+bir hata ile tamamlandý aþaðýdaki komut satýrý: 
+Uygulama Hata kodu: 
+Wake-on-LAN seçeneði hedef bilgisayarda aktif hale getirilmesi gerekmektedir. 
+bilgisayar kadar bekleyin (PING yanýt) hazýr 
+Stop çalýþýyor eðer yanýt için 
+Hedef bilgisayar: 
+Eylem: 
+Yeniden 
+Bekleme 
+Hibernate 
+Kaynak dosya (lar): 
+Kaynak klasör (ler): 
+Birden çok posta, posta baþýna bir dosya 
+FTP sunucusu: 
+Pasif mod 
+Ihracat kayýt defteri öðeleri 
+bilgisayar Güç AÇIK 
+OFF bilgisayar 
+E-posta ile dosya gönderin 
+FTP dosya transferi 
+Upload HDS Server Dosyalarý 
+Kök düðüm: 
+Anahtar: 
+Bir kayýt defteri ihracat anahtarý belirtin. 
+Belirtilen No Key 
+Uzak bir klasörü: 
+Seçmek bilgisayar ya da girmek \ \ bilgisayaradý 
+Ihracat kayýt defteri öðeleri ... 
+Baþlangýç bilgisayar (lar) 
+iptal öncesi kalan saniye: 
+& Þimdi Ýptal 
+Bekleme 
+Yanýt 
+kapatýlýyor ... 
+Kapatma baþlatýlan 
+ayýrarak belirtin hedef bilgisayarlar, \ nSpecify. Yerel bilgisayar \ nNot için: Bekleme ve hazýrda bekleme uzak bilgisayarlarda mevcut deðildir 
+Transfer deneme: 
+Gecikme denemeleri arasýnda (sn): 
+Transfer hatasý. 
+toplam büyüklüðü ulaþana kadar toplayýn resimler 
+Test sabit disk (ler) 
+Mevcut tüm sabit disklerde Run testi 
+Sürücü (ler) test etmek için: 
+sabit disk testi yapýlamýyor 
+Sabit disk testi baþarýsýz 
+Sabit disk test sonuçlarý: 
+Desteklenen kendini test: 
+Sabit disk testi ayrýntýlar 
+Yeni tahsis sektörler bulundu 
+yeni spin hatalar bulundu yeniden deneyin 
+yeni yeniden tahsis olaylarý bulundu 
+Yeni bekleyen sektörler bulundu 
+sabit bekleyen sektörler 
+yeni off-line uncorrectable sektörler bulundu 
+kaynaktan dosya kopyalama hedef 
+hedef Güncel veri ve kaynak kaldýrýldý hedef devam dosyalarý 
+Tek yönlü senkronizasyon 
+hedef Güncel veri ve kaynak kaldýrýldý hedef dosyalarý kaldýrmak 
+Iki yönlü senkronizasyon 
+her iki lokasyonda da en son dosyalarý tutarak hem kaynak hem de hedef Güncel veri 
+Yedek Denetim 
+Senkronizasyon Seçenekleri 
+Hedef kaldýrýlýr Toplam dosya: 
+hedef Güncelleme Toplam veri: 
+Toplam veri kaynaðý kopyalanýr: 
+Süreç Sadece Dosyalar 
+Belirtilen filtreler Eþleþtirme 
+Yapýlandýrmak Dosya Filtreler 
+tarihleri arasýnda 
+ve 
+Deðil, daha büyük 
+boyutu ile 
+nitelikleri ile 
+Arþiv 
+Salt okunur 
+Gizli 
+Sistem 
+Oluþturmak ve dosya CRC deðerlerini depolamak için CRC dosyalarýný kullanabilirsiniz 
+Dahil Eþleþtirme Dosyalar 
+Hariç Dosyalar Eþleþtirme 
+Dosya maskesi: 
+hafta 
+ay 
+yýl 
+\1 hatalarýn tam listesini içerir. 
+hatalarýn sayýsý bulundu: 
+Yapýlandýrmak Klasörler Yedekleme için 
+Kullanýlmasý onay kutularýný KAYNAK klasörleri seçmek veya ayrýlmýþ klasörler girin; klasörlerin listesi aþaðýda 
+Seçmek HEDEF klasör veya aþaðýdaki listeden yoluna girmek 
+Bu seçenek ENGELLÝ ise tüm kaynak klasörlerdeki tüm kaynak dosyalarýný ayný hedef için arþivlenir. \ nBu çünkü yol bilgileri kaybetme sorunlara neden olabilir. 
+Bu seçenek ile bir veya iki yönlü senkronizasyon kullanma eksik arþiv neden olabilir. 
+Devam etmek istediðinizden emin misiniz? 
+Duraklatmak 
+Devam 
+Duraklatýlmýþ - Basýn Devam düðmesini 
+(Paylaþýlabilir deðil) kullanan dosyalarý yoksay 
+Devre dýþý uyarý uyarý mesajý

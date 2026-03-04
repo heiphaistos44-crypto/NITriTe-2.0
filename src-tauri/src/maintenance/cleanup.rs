@@ -1,0 +1,119 @@
+use serde::Serialize;
+use std::process::Command;
+
+use crate::error::NiTriTeError;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CleanupResult {
+    pub action: String,
+    pub success: bool,
+    pub freed_mb: f64,
+    pub message: String,
+}
+
+pub fn empty_recycle_bin() -> Result<CleanupResult, NiTriTeError> {
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-Command", "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"])
+        .output()?;
+
+    Ok(CleanupResult {
+        action: "Vider la corbeille".into(),
+        success: output.status.success(),
+        freed_mb: 0.0,
+        message: if output.status.success() { "Corbeille videe".into() } else { "Erreur".into() },
+    })
+}
+
+pub fn clean_temp_files() -> Result<CleanupResult, NiTriTeError> {
+    let temp_dir = std::env::temp_dir();
+    let mut freed: u64 = 0;
+
+    if let Ok(entries) = std::fs::read_dir(&temp_dir) {
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if meta.is_file() {
+                    freed += meta.len();
+                    let _ = std::fs::remove_file(entry.path());
+                }
+            }
+        }
+    }
+
+    Ok(CleanupResult {
+        action: "Supprimer fichiers temporaires".into(),
+        success: true,
+        freed_mb: freed as f64 / 1_048_576.0,
+        message: format!("{:.1} MB liberes", freed as f64 / 1_048_576.0),
+    })
+}
+
+pub fn run_disk_cleanup() -> Result<CleanupResult, NiTriTeError> {
+    let status = Command::new("cleanmgr").arg("/d").arg("C").status()?;
+
+    Ok(CleanupResult {
+        action: "Nettoyage disque Windows".into(),
+        success: status.success(),
+        freed_mb: 0.0,
+        message: "Nettoyage disque lance".into(),
+    })
+}
+
+pub fn get_startup_programs() -> Result<Vec<StartupEntry>, NiTriTeError> {
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-Command",
+            "Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, Location, User | ConvertTo-Json"])
+        .output()?;
+
+    let text = String::from_utf8_lossy(&output.stdout);
+    let entries: Vec<serde_json::Value> = serde_json::from_str(&text).unwrap_or_default();
+
+    Ok(entries.iter().map(|e| StartupEntry {
+        name: e["Name"].as_str().unwrap_or("").to_string(),
+        command: e["Command"].as_str().unwrap_or("").to_string(),
+        location: e["Location"].as_str().unwrap_or("").to_string(),
+        user: e["User"].as_str().unwrap_or("").to_string(),
+        enabled: true,
+    }).collect())
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct StartupEntry {
+    pub name: String,
+    pub command: String,
+    pub location: String,
+    pub user: String,
+    pub enabled: bool,
+}
+
+/// Desactive un programme au demarrage via le registre
+pub fn disable_startup_program(name: &str, location: &str) -> Result<CleanupResult, NiTriTeError> {
+    // Determiner la ruche (HKCU ou HKLM) et le chemin
+    let reg_path = if location.starts_with("HKLM") || location.starts_with("HKU") {
+        return Err(NiTriTeError::ElevationRequired(
+            "La desactivation de programmes systeme necessite les droits administrateur".into(),
+        ));
+    } else {
+        location
+    };
+
+    let ps_cmd = format!(
+        "Remove-ItemProperty -Path 'Registry::{}' -Name '{}' -ErrorAction Stop",
+        reg_path, name
+    );
+
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-Command", &ps_cmd])
+        .output()?;
+
+    if output.status.success() {
+        Ok(CleanupResult {
+            action: format!("Desactiver {}", name),
+            success: true,
+            freed_mb: 0.0,
+            message: format!("{} retire du demarrage", name),
+        })
+    } else {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(NiTriTeError::System(format!("Impossible de desactiver {}: {}", name, err.trim())))
+    }
+}

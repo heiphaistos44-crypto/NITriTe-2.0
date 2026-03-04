@@ -1,0 +1,11 @@
+{
+    "app_version": "2.0.0",
+    "language": "fr",
+    "auto_cleanup": true,
+    "max_concurrent_downloads": 3,
+    "download_timeout": 300,
+    "install_timeout": 600,
+    "verify_signatures": true,
+    "create_restore_point": false,
+    "log_level": "INFO"
+}

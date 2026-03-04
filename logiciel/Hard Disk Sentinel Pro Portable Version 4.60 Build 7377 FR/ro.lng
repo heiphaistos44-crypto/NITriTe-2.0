@@ -1,0 +1,1088 @@
+Hard Disk Sentinel Este Deja Pornit
+Eroare
+Temperatura Hard Disk
+Eroare Anticipata
+OK
+Compatibil
+Incompatibil
+Da
+ Hard Disk-uri
+Selectati Hard Disk-ul(rile) pe care doriti sa le vedeti in fereastra status. Dublu click pentru a selecta pictograma in system tray. Click dreapta pentru a afisa meniul local.
+Nu
+Nume (Marime)
+Temperatura
+Tray Icon
+ Preferinte
+Afiseaza fereastra la start
+Porneste odata cu Windows
+Transparenta:
+Limba:
+I&nchide
+Hard Disk Sentinel
+Afiseaza temperatura acestui disc in system tray
+A&fiseaza Fereastra Status
+&Ascunde Fereastra Status
+&Configurare
+I&esire
+Cel putin un Hard Disk trebuie selectat
+ Setari Fereastra Status
+Optiuni culoare:
+Fundal
+Selecteaza
+Eroare deschidere fisier imagine.
+Fisiere Imagine Compatibile|*.jpg;*bmp|Toate Fisierele|*.*
+Informatii
+S.M.A.R.T.
+Performante Hard Disk
+Partitii
+Informatii Disc
+Informatii Rata Transfer
+Total Date Citite
+Total Date Scrise
+Rata Transfer curenta
+ KB/s
+Rata Citire Curenta
+Rata Scriere Curenta
+Spatiu Disc Utilizat
+Spatiu Disc Utilizat %
+Rata Transfer (MB/s)
+Sumar Hard Disk
+Numar Hard Disk
+ID Model Hard Disk
+Hard Disk Editie
+Hard Disk Numar Serie
+Hard Disk Dimensiune Totala
+Informatii ATA
+Hard Disk Cilindri
+Hard Disk Capete
+Hard Disk Sectoare
+Total Sectoare
+ATA Editie
+Numar Bytes Per Sector
+Numar Bytes Per Pista Logica
+Marime Buffer
+Sectoare Multiple
+Bytes Corectie Erori
+Capacitate Neformatata
+Mod PIO Maxim
+Mod PIO Activ
+Mod UDMA Maxim
+Mod UDMA Activ
+Proprietati EIDE
+Compatibil
+Incompatibil
+Caracteristici
+Prag
+Valoare
+Cel mai rau caz
+Informatii
+Status
+Informatii Partitii
+Disc Logic
+Spatiu Total
+Spatiu Liber     
+Tip Partitie
+bytes
+Spatiu Folosit
+Disc:
+Rata Transfer Maxima
+Rata Transfer Maxima Estimata
+Viteza Scriere DVD
+Pentru masurare este necesara utilizarea extinsa a discului
+OK (Reusita)
+Esec (Esec permanent)
+Recomandare: Depasire nivel folosire
+Alerta Eroare: Anticipare Pierdere Date
+Copiaza intreaga pagina in Clipboard
+&Jurnal Temperaturi
+de la instalare
+Despre
+Inregistrare
+Nume Inregistrare:
+Cheie Inregistrare:
+Cheie inregistrare nevalida, inregistrare esuata.
+Inregistrare reusita. Multumiri pentru sprijin.
+Afiseaza ecran splash
+Disponibil numai dupa inregistrare!
+Versiune neinregistrata
+Inregistrat pentru:
+Sumar
+Temperatura Curenta:
+Temperatura Maxima:
+Temperatura in parametri.
+Temperatura prea ridicata. Este recomandata folosirea unui dispozitiv de racire a Hard Disk-ului (ventilator sau sistem de racire pasiv).
+Temperatura in parametri dar cu frecvente depasiri ale nivelului de siguranta. Este recomandata folosirea unui dispozitiv de racire a Hard Disk-ului (ventilator sau sistem de racire pasiv).
+Performante
+Stare:
+Excelent
+Buna
+Satisfacator
+Acceptabil
+Slab
+Nici o actiune necesara.
+Se recomanda salvarea periodica pentru a preveni pierderea datelor.
+&Proprietati
+Hard Disk &Sumar
+Hard Disk &Anterior
+Hard Disk &Urmator
+Alerte
+Trimite e-mail de avertizare la anticipare pierdere date
+Trimite e-mail de avertizare daca temperatura Hard Disk-ului depaseste nivelul admis.
+Configurare E-mail
+Cont e-mail:
+Nume Expeditor:
+Adresa Expeditor:
+Adresa Destinatar:
+Server SMTP:
+Optiuni Autentificare (Nu completati daca autentificarea nu este necesara)
+Nume:
+Parola:
+Standard
+Campul urmator trebuie completat pentru a trimite mesajul:
+Doriti sa introduceti aceste date acum?
+Eroare in timpul trimiterii mesajului.
+Mesaj de avertizare trimis.
+Supraincalzire
+Setare prag temperatura
+Unitati Temperatura
+Raportati Problema
+Font:
+Salveaza
+Afiseaza doar cea mai mare temperatura
+Unitati Transfer date:
+Configurare Management Acustic
+Dezactivat
+Activat
+Nivel Acustic Curent
+Nivel Acustic Recomandat
+Necunoscut
+Performanta si Volum Maxime
+Performanta si Volum Minime
+Performanta si Volum Echilibrate
+Management Acustic 
+Standard
+Citire - Medie Zilnica
+Scriere - Medie Zilnica
+Aliniere la marginea ecranului
+Avertisment
+Trimite mesaj
+Inchide
+La anticipare cadere
+La temperatura prea ridicata
+La fiecare noua mentiune in jurnal
+Trimite zilnic email status
+La
+Valoare Critica Degradare
+Status Curent
+Status e-mail eroare transmisie.
+Status e-mail trimis cu succes.
+Update
+Verificare versiune noua si update saptamanal
+Verificare versiune noua si update acum
+Data ultimei verificari:
+Nici o verificare
+Anuleaza
+Versiune instalata:
+Versiune disponibila:
+Update fisiere
+Fisier Curent:
+Intregul proces:
+Nici o versiune noua disponibila.
+Eroare la descarcare. Verificati reteaua si incercati din nou.
+Update reusit.
+Status: Verificare versiune disponibila
+Status: Descarca
+Inchide
+Nu gaseste Hard disk.
+Instalare pachet SMART necesara. Verificati pagina web a producatorului pentru detalii.
+Sunt necesare drepturi de administrator de sistem pentru a controla Hard Disk-urile:
+Jurnal
+Numar probleme inregistrate:
+Nota: Versiunea inregistrata poate trimite email de avertizare si inchide computerul la inregistrarea unei probleme.
+Nici o problema inregistrata.
+Starea Hard Disk-ului stabila.
+Avertisment: Starea Hard Disk-ului degradata in ultimele zile.
+Data
+Valoare Anterioara
+Valoare Noua
+Avertisment: Probleme multiple in ultimele zile.
+Un hard-disc nu raspunde. Este posibil ca sistemul de operare sa fi dezactivat dispozitivul pentru a preveni eventuale probleme.
+Status Program:
+Eroare citire date activare.
+Inregistrat si activat cu succes.
+Inregistrat dar neactivat.
+Neinregistrat si neactivat.
+Inregistrare si Activare On-Line
+Inregistrare si Activare prin E-Mail
+Fisierul de activare este salvat ca
+Trimiteti acest fisier impreuna cu Numele si cheia de inregistrare la info@hdsentinel.hu  Autorul va trimite fisierul de inregistrare care trebuie copiat in directorul aplicatiei.
+Recomandabil folositi activarea on-line deoarece este mai rapida si comoda.
+Depasire numar maxim de activari pentru aceasta cheie de inregistrare.
+Eroare Activare
+Eroare comunicare cu serverul de activare.
+Contactati autorul referitor la licenta.
+Aplicatie deja activata cu aceasta cheie pe 5 computere.
+Eroare citire informatii de pe server.
+Activare nereusita.
+Activare reusita, multumiri pentru sprijin.
+Activare Reusita
+Activare prin E-mail
+Sub Windows 98, este posibil ca un instrument USB sa cauzeze aceasta problema  deoarece instrumentele USB pot cauza probleme cu sistemul S.M.A.R.T. pe canalul secundar IDE.
+Discul nu raspunde.
+Discul nu raspunde de prea mult timp. Este posibil sa fie deconectat.
+Afiseaza aplicatia si in bara de programe
+Analiza sistem. Asteptati.
+Ajutor
+Introduceti numele (poate fi orice) si cheia de inregistrare primita de la autor. Daca aveti o conexiune activa la internet, selectati activare on-line: in acest caz inregistrarea si activarea se efectueaza automat, nefiind necesara alta operatiune. Altfel, selectati activare prin e-mail si trimiteti autorului fisierul afisat. Veti primi fisierul de activare, pe care trebuie sa il copiati in directorul aplicatiei.
+Eveniment
+Interfata tradusa de:
+Cristian Stefan
+crstfn@yahoo.com
+e-mail
+Fisiere text
+Toate fisierele
+Icon rosu daca temperatura depaseste
+Optiuni Avansate
+Frecventa detectie
+1 secunda
+5 secunde
+10 secunde
+30 secunde
+1 minut
+2 minute
+5 minute (default)
+10 minute
+30 minute
+1 ora
+Activeaza avertisment daca Hard Disk-ul nu raspunde
+Temperatura medie:
+Curenta
+Media zilnica
+Maxima zilnica
+Alerta sonora
+Selectati Fisier Sunet
+Fisiere Sunet
+Dublu click sau click dreapta pentru a afisa mai multe informatii.
+Modifica
+OK
+Anuleaza
+Eroare la executarea acestei comenzi.
+Aceasta facilitate necesita Windows 2000, XP sau mai nou.
+Cand spatiul liber pe disc este redus
+Seteaza prag spatiu liber pe disc
+Foloseste aceleasi setari pentru toate Hard-Disk-urile instalate
+Setari generale
+Avertisment daca spatiul liber este sub
+Spatiu liber redus
+Redus
+Dezactiveaza scandisk automat la pornirea Windows
+Este necesara repornirea Windows pentru aplicarea acestor setari
+Sincronizeaza ceasul computerului cu un ceas atomic
+La pornirea aplicatiei
+Doriti sa vedeti starea Hard-disk-ului(urilor) in fereastra mica?\n(Ulterior este posibila schimbarea acestei setari prin click dreapta\npe icon in bara de programe si selectarea "Configurare" din meniu.)
+Temperatura nu este suportata pe acest Hard-Disk.
+Nu poate fi determinata pe acest Hard-Disk.
+Ajutor
+Ajutor nu este disponibil. Rugam descarcati intregul pachet de instalare de pe website-ul aplicatiei.
+Aceasta functie nu este disponibila pe Hard-Disk-ul selectat.
+Schimba icon-ul standard al hard-disk-urilor
+Informatii SCSI
+Informatii Producator
+Versiune
+Tip dispozitiv
+Disc
+Detasabil
+Predictie eroare
+Disc Fix
+Disc in retea
+Dispozitiv Stocare Optic
+Volumele selectate apartin discului fizic.
+Schimba modul de afisare
+Nume volum
+Numar serie
+Monitorizeaza spatiul pe discuri din retea
+Taste Rapide
+Comanda
+Activeaza sistemul taste rapide (poate fi folosit din orice aplicatie)
+Control disc
+Schimba pictograma standard pentru discurile din retea
+Monitorizeaza spatiul pe discurile detasabile
+Schimba pictograma standard pentru discurile detasabile
+Nu examineaza spatiul pe urmatoarele discuri: (ex. CDE)
+Nu schimba pictograma standard pentru urmatoarele discuri: (ex. KL)
+Dublu click pentru a deschide un disc. F5 pentru Actualizare.
+Nici un disc
+Test Mail
+Primirea acestui mesaj denota configurarea corecta a e-mail-ului.
+E-mail test trimis cu succes.
+Eroare la trimitere e-mail test. Verificati configurare e-mail.
+Durata functionare:
+zile
+ore
+minute
+Durata de viata estimata:
+mai mult de
+secunde
+Port:
+Intarziere inaintea pornirii scandisk (secunde):
+Valoare stare:
+Cand starea discului este scazuta
+Backup panica
+Prag stare:
+Afiseaza mesaj pe ecran
+Trimite mesaj la alt computer (TRIMITERE INTERNET):
+Aceasta functie este disponibila numai la instalarea versiunii PROFESSIONAL.\nPrin utilizarea acestei functii este posibila activarea operatiei(lor) pre-setate de backup atunci cand este sesizata o problema.\n\nVizitati pagina web (www.hdsentinel.com) pentru a afla mai mult despre aceasta facilitate.
+Stare scazuta
+Creaza Raport
+Eroare la trimiterea raportului. Nu s-a putut transmite raportul\nfolosind clientul de e-mail compatibil MAPI sau din cauza setarilor e-mail.\nSalvati fisierul raport si trimiteti-l la reports@hdsentinel.hu
+Setari Mesaj
+Trimite E-mail
+Formeaza numarul standard de conectare la internet inainte de transmisie (Dial up)
+Inchide conexiunea dupa transmisie
+Afiseaza mesaj propriu din fisier text
+Asteptati, calculeaza...
+Detalii inregistrare invalide - aceasta functie este dezactivata.
+Informatii Stare
+Eroare la salvare. Discul poate fi plin sau protejat la scriere.
+Praguri / Pictograme
+Afiseaza temperatura hard disc in tray icon
+Sub
+Intre \1 si \2
+Temp.:
+Peste
+Foloseste cifre clasice
+Fundal
+Prim plan
+Exemplu
+Afiseaza stare hard disc in tray icon
+Informatii Aplicatie
+Data si ora curente
+Informatii Sistem
+Versiune Windows
+Tip si Viteza CPU
+Producator BIOS
+Capacitate Memorie Fizica
+Placa Video
+Rezolutie Display
+Imprimanta
+Controller Retea
+Informatii Device PCI
+Informatii Computer
+Nume Computer
+Nume Utilizator
+Adresa IP
+Adresa MAC
+Informatii Disc Fizic
+Flags
+Critic
+Statistici
+Performante
+Rata-Eroare
+Evidenta Evenimente
+Autoconservare
+Desktop
+Server
+Mobil
+Tip Computer
+Informatii Generale
+Fisiere HTML |*.html|Toate fisierele|*.*
+Salveaza Raport
+Trimite Raport in E-mail
+Tip Raport:
+Raport detaliat HTML
+Raport sumar text
+Trimite Raport Brut
+Informatii hard disc de afisat
+Tip Hard Disc
+Disc(uri) Logice
+Stare
+Stare / probleme
+Disc(uri) Fizice
+Stare Hard Disc necunoscuta.
+Stare Hard Disc perfecta.
+Starea Hard Disc-ului nu este perfecta.
+Predictie eroare pe acest Hard disc.
+Sunt \1 sectoare defecte pe suprafata discului. Continutul acestor sectoare a fost mutat in zona libera.
+Bazat pe numarul de relocari, starea discului a scazut.
+Bazat pe numarul de relocari, sectoarele defecte pot forma zone continui.
+Discul a gasit \1 sectoare defecte in cadrul testului propriu.
+Probleme la rotirea discului. Acestea se pot datora fie discului, fie tensiunii scazute la alimentare.
+\1 sectoare predispuse la eroare. Acestea pot fi relocate la o folosire ulterioara a discului.
+Probleme la comunicarea dintre disc si gazda. In caz de cadere sau reboot se recomanda testarea unui cablu mai scurt (in cazul discurilor IDE, evitati folosirea cablurilor rotunde, folositi cabluri standard cu 80 fire).
+Se recomanda examinarea periodica a jurnalului discului. Toate problemele gasite vor fi salvate aici.
+Starea Hard Disc-ului este PERFECTA. Nu s-au gasit sectoare defecte sau predispuse la eroare si nu s-au inregistrat erori de rotire sau transfer.
+Aplica
+Offset
+Offset:
+Se recomanda calibrarea temperaturii si setarea offset-ului temperaturii pe pagina S.M.A.R.T.. Astfel, pe viitor se va afisa temperatura corecta.
+Metoda calcularii starii:
+Analiza camp date (implicit)
+Analiza valori specifice producatorului
+Depasire prag la:
+Grafic proprietati
+Afiseaza camp de date
+Afiseaza valori specifice producator
+Neasteptat
+Petrecut
+Raport text detaliat
+Fisier
+Vezi
+Raport
+Salveaza raport TXT
+Salveaza raport HTML
+Trimite raport TXT
+Trimite raport HTML
+Se recomanda monitorizarea permanenta a starii Hard Disc-ului.
+Camp analiza date (mai riguros, recomandat pentru servere)
+Modifica offset proprietati
+Folosirea acestei optiuni este recomandata numai utilizatorilor avansati. Folosind aceasta optiune, starea afisata poate sa nu indice starea reala. Doriti sa schimbati aceasta optiune?
+Nu mai afisa din nou
+Folosirea acestei optiuni este recomandata numai utilizatorilor avansati. Folosind aceasta optiune este posibila afisarea incorecta a starii si anularea unor alerte referitoare la modificari ulterioare ale starii. Doriti sa schimbati aceasta optiune?
+Dezactiveaza alerte sonore
+Activeaza alerte sonore
+Eroare la setarea nivelului acustic.\nController-ul de disc sau driver-ele acestuia nu dispun de aceasta functie.
+Monitorizarea performantei in timp real nesuportata de disc.
+Nota: versiunea neinregistrata nu salveaza modificarile acestor optiuni. Setarile vor fi resetate la valorile implicite la repornirea aplicatiei.
+Activeaza atribut
+Repeta alerta sonora
+Foloseste speaker PC
+Trimite Test
+Mesajul trimis cu succes la computerul tinta.
+Eroare. Verificati conexiunea la internet si starea servciului de mesaje pe ambele computere.
+Probleme au Generat Alerta Sonora
+Reactiveaza alerte
+ATA control byte
+Valid
+Invalid
+valoare suma de control ATA
+informatia afisata poate fi incorecta.
+Test Alerta Sonora
+Shortcut pe desktop pentru acest proiect
+Creare Shortcut
+Un shortcut pentru acst proiect a fost creat cu succes pe desktop.
+Eroare la crearea shortcut pentru acest proiect.
+Informatia de inregistrare expirata. Contactati autorul pentru extinderea licentei.
+Trimite mouse clicks in fereastra de sub fereastra status
+Afiseaza informatia pe desktop
+Licenta valida:
+Pentru Totdeauna
+Expirata
+Deloc
+Fundal transparent complet
+Integrare
+Service
+Parola necesara pentru deschidere fereastra principala
+Parola necesara pentru deschidere fereastra configurare sau pentru inchidere Hard Disk Sentinel
+Log out dupa
+minute
+Parola:
+Log &Out Acum
+Foloseste ca &Serviciu
+Foloseste ca &Aplicatie
+Remote Control
+Activeaza conexiune remote la serverul Hard Disk Sentinel
+Nume Server sau adresa IP:
+port TCP (default = 61210):
+Protectie
+Eroare la instalare serviciu Hard Disk Sentinel.
+Eroare la pornire serviciu Hard Disk Sentinel.
+Eroare la oprire serviciu Hard Disk Sentinel.
+Hard Disk Sentinel salveaza acum configuratia curenta si va fi inchis. Va fi repornit ca serviciu.
+Serviciul Hard Disk Sentinel salveaza acum configuratia curenta si va fi oprit. Va fi repornit ca aplicatie.
+Este necesar acces autorizat
+Parola incorecta. Aceasta functie nu poate fi folosita.
+Pentru a inchide serviciul Hard Disk Sentinel, folositi shortcut-ul "Stop service" sau treceti in modul Aplicatie in panoul Integrare din fereastra Configurare si inchideti aplicatia.
+Nu
+Superior
+Maximum
+Update indisponibil la rularea Hard Disk Sentinel ca serviciu. Treceti in modul Aplicatie in panoul Integrare inainte de updatarea aplicatiei la o noua versiune.
+Mod Serviciu
+Safe mode (dezactivare detectie hardware)
+Serviciul Hard Disk Sentinel nu este instalat. Deschideti fereastra Configurare, selectati panoul Integrare si instalati serviciul Hard Disk Sentinel.
+Serviciul Hard Disk Sentinel ruleaza deja.
+Serviciul Hard Disk Sentinel nu ruleaza.
+Rata medie de transfer
+Utilizare medie a discului
+Repeta Test
+Informatie indisponibila momentan
+Serviciul Hard Disk Sentinel oprit.\nDoriti sa dezactivati serviciul si sa folositi programul in modul Aplicatie?
+Microsoft Vista nu permite serviciilor sa interactioneze cu desktop.\n\nHard Disk Sentinel va rula invizibil: ferestrele si icoanele sale nu vor fi\nafisate si nu va fi posibila accesarea configuratiei.\n\nPentru a opri serviciul si a folosi programul in modul Aplicatie,\nselectati shortcut "Opreste Serviciu" din grupul Hard Disk Sentinel.\n\nDoriti sa continuati?
+Aflati cum se calculeaza aceasta valoare
+Activati aplicatia pentru a rula cu drepturile corespunzatoare.
+Setare icon disc:
+XP
+Vista
+Click Pentru Start
+Test Disk
+Operatie test:
+Status:
+Estimare Timp Ramas:
+Eroare la pornire test. Codul erorii este:
+Ruleaza, Nici o problema gasita
+Raspuns:
+Timp trecut:
+Aceasta cheie de inregistrare poate fi folosita numai pentru a inregistra versiunea STANDARD.\nDescarcati si instalati versiunea STANDARD de la www.hdsentinel.com\npentru a folosi aceasta cheie de inregistrare.
+Aceasta cheie de inregistrare poate fi folosita numai pentru a inregistra versiunea PROFESSIONAL.\nDescarcati si instalati versiunea PROFESSIONAL de la www.hdsentinel.com\npentru a folosi aceasta cheie de inregistrare.
+Foloseste Megabytes ca unitate pentru prag
+Confirmare:
+Cele doua parole nu sunt identice.\nIntroduceti aceeasi parola de doua ori pentru confirmare.
+Activeaza WebStatus
+Cere parola la stabilirea conexiunii
+port conexiune HTTP
+Adresa Port (>1023)
+Comentarii atribute
+Campuri date zecimale
+Discul a incercat sa examineze si sa realoce sector(are) \1 ori. Aria examinata este perfecta.
+Inlocuiti hard disc-ul imediat.
+Componente raport detaliat:
+Configuratie curenta Backup / Restore
+Configuratie Backup
+Configuratie Restore 
+Disc Optic
+Genereaza si actualizeaza fisierul XML
+Senzorul de temperatura al hard disc-ului este defect. Valoarea masurata este:
+Accepta conexiuni exterioare de la server
+Port conexiune exterioara
+Dezactiveaza alertele din tray icon
+Dezactiveaza detectia unitatilor USB si SCSI
+Trimite
+Comentarii:
+Trimite autorului
+Contacteaza serverul - www.hdsentinel.com
+Trimite raport
+Raport trimis cu succes. \nMultumim pentru sprijin.
+Trimite Raport Test autorului
+Creeaza raport
+Doresc sa primesc raspuns dupa evaluarea raportului
+Acesta este un raport de eroare
+Deschide fereastra principala HD Sentinel
+Vizibil
+Unitate de masura hard disc:
+Unitate de masura partitie:
+CC (carbon copy):
+BCC (blind carbon copy):
+Actualizeaza Raport
+(estimat)
+Calculeaza durata, asteptati ... Valoarea curenta s-ar putea sa nu fie exacta.
+Cale exterioara
+S-a atins nivelul galben de temperatura.
+S-a atins nivelul rosu de temperatura.
+S-a atins nivelul galben de sanatate.
+S-a atins nivelul rosu de sanatate.
+Limita:
+Temperatura:
+Atribut modificat
+Sterge jurnal
+Fundal
+Activeaza serviciu DynDNS
+Activeaza serviciu No-IP
+Activeaza serviciu Custom Dynamic DNS
+Configureaza
+Nume
+Parola
+Nume Gazda (intreg)
+URL intreg pentru actualizare (%ip% schimbat cu IP curent)
+Ultimul raspuns de la server:
+Gadget
+Activeaza Gadget
+Afiseaza Header
+Afiseaza Utilizare Disc
+Doriti sa testati acum noua configuratie actualizand adresa IP?
+Numarul de probleme gasite este mare la urmatoarele atribute:
+Citeste:
+Scrie:
+Toate discurile
+Icon Utilizare
+Afiseaza utilizare totala disc intr-un singur icon
+(HIGH)
+(MID)
+(LOW)
+Status:
+Activ
+Asteptare
+(de la\1)
+Sesiune Sistem
+Sistem pornit dela
+Controler Disc
+Locatie Disc
+Deschide Website
+Contact
+Cumpara acum
+Introducere Cheie Inregistrare
+Lista contine \1 articole. Inregistrati programul pentru a vedea tot.
+Utilizare CPU
+CPU
+Memorie Virtuala
+Folosit:
+Hard disk-ul ruleaza in mod PIO, ceea ce reduce performantele. Este recomandat sa verificati si sa inlocuiti cablul de date sau sa modificati configuratia.
+Hard disk-ul ruleaza in mod UDMA 2 (33 Mbytes/sec) ceea ce reduce performantele. Este recomandat sa folositi un cablu IDE 80 daca controler-ul suporta rate de transfer superioare.
+Controler-ele Silicon Image (SiI) ar putea sa nu ofere informatii complete despre toate discurile conectate. 
+Driver-ul curent al controler-ului de disc nu ofera acces deplin la disc pentru a citi toate detaliile. Verificati daca exista un driver actualizat.
+Acest dispozitiv de stocare USB nu ofera mai multe informatii. 
+Aceasta configuratie RAID nu permite accesul la informatiile discurilor din configuratie.
+Folositi meniul "Raport" optiunea "Trimite raport test autorului" pentru a ne ajuta sa verificam daca este posibila detectarea si afisarea mai multor informatii.
+Vizitati sectiunile "Hardware" si "Suport -> FAQ" pe www.hdsentinel.com pentru detalii.
+Activare
+Temperatura Maxima (masurata):
+Temperatura Minima (masurata):
+2 ore
+4 ore
+6 ore
+8 ore
+12 ore
+Rezervat 1
+Rezervat 2
+Atinsa limita galbena de temperatura. Daca temperatura discului mai creste, este recomandata folosirea unui dispozitiv de racire a Hard Disk-ului (ventilator sau sistem de racire pasiv).
+Selectati pagina "Praguri / Pictograme" pentru configurarea limitelor de sanatate si temperatura pentru nivelurile galben si rosu.
+Critic
+Se recomanda backup imediat pentru a preveni pierderea de date.
+Butoane Compacte
+Butoane Normale
+Butoane Mari
+Perf.:
+Interfata:
+Mesaj
+Test Cautare Aleatoare
+Testul verifica performanta, zgomotul si temperatura
+Durata Cautare
+Minimum
+Maximum
+Medie
+Test
+Trecut
+Ramas
+Operatii
+Erori
+Start &Test
+&Stop Test
+Test Rapid
+Test Normal
+Test amanuntit
+Test intensiv
+Durata operatie
+Durata terminare test (HH:MM:SS): 
+Test CITIRE
+Test SCRIERE
+Aceasta functie poate fi folosita o singura data in versiunea neinregistrata.
+Doriti sa deschideti pagina web a programului pentru detalii referitoare la inregistrare?
+Doriti sa opriti aceasta operatie?
+Aceasta functie nu este disponibila pentru discul ales din cauza configuratiei controller-discuri.
+Hard Disk Sentinel Versiune de Proba
+Multumim pentru utilizarea Hard Disk Sentinel.\n\nAceasta este ziua \1 din perioada de proba.\n\nDaca va place acest program si doriti sa ajutati la dezvoltarea sa,\nalegeti inregistrarea. Ca utilizator inregistrat puteti folosi toate facilitatile\nprogramului si il puteti actualiza gratuit pentru toate versiunile ulterioare.\n\nDoriti sa deschideti pagina de inregistrare online?
+Offset S.M.A.R.T. configurat pentru caracteristici folosite pentru a calcula aceasta valoare
+&Selectare Font Icoana Tray
+Nu permite incetinirea discurilor (numere cu virgula, de examplu 1,2 sau * pentru toate)
+Verifica Online 
+Compara valorile S.M.A.R.T. ale acestui disc cu altele (de acelasi model)pentru a vedea daca are caracteristici mai bune sau mai slabe decat media.
+Test Suprfata
+Analiza suprafata disc prin diverse metode si teste
+Harta suprafata disc
+Temperatura si viteza transfer
+Bloc
+Defect
+Progres
+Trecut
+Durata
+Est.
+sectoare
+Test oprit
+Discul nu poate fi blocat pentru uz exclusiv.\nInsistati sa testati (nerecomandat)?
+Test terminat
+Pozitie
+Test secvential
+Teseaza blocuri de la inceput la sfarsit
+Test aleator
+Testeaza blocuri in ordine aleatoare
+Test fluture
+Alternare: testeaza un bloc de la inceput si unul de la sfarsit
+Test secvential inapoi
+Testeaza bloccuri de la sfarsit la inceput
+Sector
+Verificare erori
+&Salvare informatii disc
+Incarcare informatii disc
+Initializare ...
+Inspector Continut Disc
+Anterior
+Urmator
+Mergi la ...
+Selectati discul de testat (accesibil sistemului de operare) si metoda de testare.\ Cititi cu atentie informatiile detaliate inaintea pornirii testului.\nApasati Vezi pentru detalii despre suprafata discului, folositi \1 sau revedeti rezultate anterioare ale testului.
+Test citire
+Citeste suprafata discului pentru a verifica daca toate sectoarele sunt accesibile si pot fi citite.\n\nTestul este sigur si nu afecteaza datele stocate.\n\nProblemele discului pot ramane ascunse, iar cele descoperite NU sunt reparate (la fel ca la ScanDisk).
+Test SCRIERE
+Suprascrie suprafata discului cu tipare configurabile. Forteaza analiza tuturor sectoarelor defecte si verifica toate problemele ascunse, pe care le rezolva prin realocare sectoarelor defecte (regenerare disc).\n\nPermite folosirea mai buna a discului deoarece dupa test se va folosi zona libera in loc de sectoarelor defecte.
+Test citire + SCRIERE
+Suprascrie suprafata discului cu tipare configurabile, apoi citeste continutul sectoarelor defecte, pentru a verifica daca sunt accesibile si consistente. Forteaza analiza tuturor sectoarelor defecte si verifica toate problemele ascunse, pe care le rezolva prin realocare sectoarelor defecte (regenerare disc).\n\nPermite folosirea mai buna a discului deoarece dupa test se va folosi zona libera in loc de sectoarelor defecte.
+Test citire +SCRIERE + citire (reimprospatare zona date)
+Citeste datele stocate din fiecare bloc, rescrie continutul iar apoi reciteste informatia si o compara cu continutul original. Prin testul amanuntit se foloseste un test suplimentar de scriere inaintea scrierii continutului, pentru a imbunatati eficienta corectiei erorilor (regenerare disc).\n\nOperatia este sigura pentru informatia stocata, dar pot aparea pierderi de date daca sistemul nu este stabil si/sau in cazul caderilor de tensiune, overclocking, probleme de memorie/alimentare/cabluri sau alti factori.\n\nTestul poate fi folosit pentru reimprospatarea zonei de date a discului, fara a fi nevoie de o stergere completa, dar se recomanda salvare datelor importante inaintea inceperii testului.
+Reinitializare suprafata disc
+Suprascrie suprafata discului cu un tipar special de initializare pentru a readuce sectoarele la starea  initiala (goale) si reciteste continutul sectoarelor pentru a verifica daca sunt accesibile si consistente. Forteaza analiza tuturor sectoarelor defecte, si verifica toate problemele ascunse, pe care le rezolva prin realocarea sectoarelor defecte (regenerare disc).\n\nPermite folosirea mai buna a discului deoarece dupa test se va folosi zona libera in loc de sectoarelor defecte.\nTest foarte intens si de durata, in special daca nivelul (numarul de cicluri de scriere) este setat la vlaori mari.\n\nVersiunea simpla a acestui test este de obicei numita (incorect) de alte instrumente formatare la nivel scazut.
+Ordine Sectoare
+Nedistructiv - sigur pentru date
+Blocheaza discul in timpul testului (volume nemontate)
+Repeta test
+ori
+Limiteaza testarea la anumite blocuri de date
+Primul bloc:
+Ultimul bloc:
+DISTRUCTIV - toate datele vor fi indepartate
+Informatie goala (zero-uri)
+Date aleatoare
+Numar sector
+Test amanuntit citire-scriere-citire cu operatie suplimentara de scriere
+Nivel reinitializare suprafata
+In majoritatea cazurilor nedistructiv (vezi Note si Ajutor)
+Acest test va distruge permanent TOATE DATELE de pe discul selectat.\nFunctia nu poate fi anulata.\n\nDoriti sa efectuati acest test si sa pierdeti TOATE DATELE stocate pe acest disc?
+Acest test efectueaza operatia de SCRIERE pe discul selectat.\nTestul nu este distructiv dar pot aparea pierderi de date.\n\nDoriti sa efectuati acest test?
+Confirmare Test 
+Click pe harta suprafetei pentru a inspecta continutul sectoarelor.\n\nClick dreapta pentru a deschide meniul context.
+Testul masoara timpul de transfer pentru toate blocurile pentru a afla care zone de pe suprafata sunt mai lente. Cu cat blocul este mai lent, cu atat mai inchisa este culoarea asociata.
+Autorul nu garanteaza siguranta datelor stocate pe disc.
+Trecerea curenta
+Toate trecerile
+Nu poate efectua testul de scriere pe discul sistem ce contine oricare din urmatoarele directoare
+Informatia incarcata apartine altui disc.\nTotusi, la click mouse pe harta suprafetei, sunt afisate sectoarele discului curent.
+La acest moment, inlocuirea potrivit garantiei nu este posibila, cu exceptia continuarii degradarii.
+Doriti activarea tuturor discurilor?\nAltfel doar informatiile de pe discurile active vor fi actualizate.
+Actualizare Informatii Disc
+Tip Test:
+Impact Date:
+Tipar Scriere
+Resetare valori temperatura maxima si minima
+Temperatura Maxima (de-a lungul intregii perioade de utilizare):
+Afiseaza valori
+Foloseste SSL
+Controler SSD
+Starea SSD este PERFECTA. Nu s-au gasit sectoare defecte.
+Starea este determinata de atribute S.M.A.R.T. specifice SSD:
+Gestioneaza Caracteristici Disc
+Eroare la transmiterea comenzii catre disc.\nControler-ul de disc sau driver-ul acestuia nu suporta aceasta functie.\nComanda poate fi completata dupa update de driver sau,\nla folosirea altui sistem de operare, altui controler de disc\nsau a unei unitati USB / docking station suportate.
+Activeaza si Modifica
+Dezactiveaza
+Intarziere Pre-start (secunde):
+Praguri Temperatura alese de utilizator
+Limita galbena de temperatura:
+Limita rosie de temperatura:
+Dezactiveaza pragurile proprii pentru discurile selectate
+Seteaza praguri proprii temperatura
+Modifica praguri proprii temperatura
+Propriu
+Global
+In versiunea gratuita doar un disc poate avea praguri proprii de temperatura configurate.
+Driver S.M.A.R.T. lipsa in versiunea Win9x/ME.\nDoriti update automat si repornire computer?
+Incarca Fisier Activare
+Punct(e) Montare NTFS
+Punct Montare
+Atentie: datele dvs nu sunt deplin protejate.
+Oferta limitata: Faceti upgrade azi si economisiti \1 din pretul licentei!
+(introduceti cod cupon \1 in timpul inregistrarii online securizate sau click pe link-ul de mai jos)
+Asteptati \1 secunde pentru a continua ...
+Informatii Volum
+Stil Partitie
+Activ
+Aliniament
+Offset Start
+Lungime
+Marime Unitate Alocare
+Total Unitati Alocare
+Unitati Alocare Libere
+Unitati Alocare Folosite
+Tip Volum
+Dinamic
+Basic
+Deschide Status disc(uri) offline
+Selectati disc(uri) pentru a le vedea starea la fel ca la disc(urile) conectate online. 
+Offline
+Selectati disc(uri) pentru a fi incluse in raportul autentic.
+Salveaza raport autentic disc (HTML)
+Verifica raport autentic disc
+Fisierul selectat nu este un  raport autentic de disc.
+Raportul autentic de disc verificat si validat.
+Raportul autentic de disc invalid sau corupt.
+Raport Autentic Disc
+Informatii Volum/RAID Windows
+\1 erori produse in timpul transferului de date. Posibile probleme ale discului sau ale cablului de date/alimentare. Se recomanda verificarea si inlocuirea cablurilor.
+\1 erori raportate in timpul scrierii pe disc.
+Limitarile controller-ului RAID pot impiedica detectarea datelor suplimentare. Aceasta nu este o limitare a programului Hard Disk Sentinel software.
+Subscrieti la newsletter pentru a fi anuntat despre update-uri si oferte speciale
+Selectati meniul Raport -> Trimite raport test autorului si selectati Subscrie la newsletter pentru a primi informatii despre update-uri si oferte speciale.
+Minimum Zilnic
+Latime Standard
+Facilitatea TRIM a SSD este suportata si activata pentru performanta optima.
+Facilitatea TRIM a SSD este suportata dar dezactivata. Se recomanda upgrade al sistemului de operare, al controller-ului de disc sau al driver-ului pentru imbunatatirea performantei.
+Scrieri pe toata durata de viata:
+Total porniri/opriri:
+Configuratia nu ofera informatii suplimentare despre disc. Totusi, in meniul "Disc" functia "Test Suprafata" poate examina functionalitatea discului, releva si rezolva eventualele problema.
+Versiunea curenta a expirat. Introduceti o cheie de inregistrare pentru a continua sa utilizati programul.
+Jurnalul nu contine nicio informatie.
+Exporta valori viteza de transfer
+Modifica automat setarile la repornire
+Mai multe informatii:
+Click pentru a adauga un comentariu ...
+Comentariu
+Modifica director pentru a salva statistici si setari
+Duplicare Avertizare Licenta
+Acelasi cod de inregistrare este folosit pentru ambele versiuni, cea instalata si cea portabila.\nPentru a folosi toate facilitatile ambelor versiuni, sunt necesare licente separate.
+Ultimul Update pentru Status:
+Verificare Garantie Online
+Copiaza valoarea selectata pe clipboard
+Accesarea anumitor zone in timpul testului poate fi \nmai lenta datorita sistemului de operare activ si\ndatorita aplicatiilor, acest lucru aparand sub forma de blocuri verde inchis.
+Resetare numarator 
+Doriti sa salvati rapoarte separate pentru discurile selectate?
+Capacitatea totala detectata (\1) a discului \2 nu este corecta, capacitatea ar trebui sa fie \3.
+Controller-ul de disc/driver-ul/adaptorul curent poate fi incompatibil deplin cu \1
+Folosirea discului poate cauza coruperea fisierelor sistem si/sau pierderea de date.
+Se recomanda verificarea si modificarea configuratiei sau upgrade al sistemului de operare, controller-ului de disc si/sau a driver-elor pentru utilizarea acestui disc in siguranta.
+Informatii Specifice Discului
+Controller-ul de disc ofera doar status generic auto-monitorizare (S.M.A.R.T.), fara detalii suplimentare.
+Status S.M.A.R.T.:
+Mereu deasupra
+Este necesara inchiderea completa prin Fisier -> Iesire si repornire pentru ca aceasta modificare sa produca efect.
+Erori detectate:
+Informatiile despre status si posibile erori sunt obtinute prin controller-ul (RAID). Ele pot fi diferite de status-ul discului fizic.
+
+
+
+
+
+
+
+
+
+DMA=DMA
+Ultra DMA=Ultra DMA
+S.M.A.R.T.=S.M.A.R.T.
+Security Mode=Mod Securitate
+Power Management=Power Management
+Write Cache=Scrie Cache
+Host Protected Area=Zona Gazda Protejata
+Advanced Power Management=Power Management Avansat
+Power Up In Standby=Pornire In Standby
+48-bit LBA Addressing=48-bit LBA Addressing
+Device Configuration Overlay=Device Configuration Overlay
+Read/Write DMA Queue=Read/Write DMA Queue
+Native Command Queuing=Native Command Queuing (NCQ)
+Read Ahead Buffer=Read Ahead Buffer
+Maximum Multiword DMA Mode=Maximum Multiword DMA Mode
+IORDY Support=Suport IORDY
+Maximum sectors transferred on R/W multiple=Maximum Sectors Transferred On R/W Multiple
+Minimum multiword DMA transfer time=Minimum multiword DMA Transfer Time
+Recommended multiword DMA transfer time=Recommended Multiword DMA Transfer Time
+Minimum PIO transfer time without IORDY=Minimum PIO Transfer Time Without IORDY
+Minimum PIO transfer time with IORDY=Minimum PIO Transfer Time With IORDY
+Security Erase=Security Erase
+Security Erase Time=Security Erase Time
+Security Enhanced Erase Feature=Security Enhanced Erase Feature
+Security Enhanced Erase Time=Security Enhanced Erase Time
+Security Enabled=Security Enabled
+Security Locked=Security Locked
+Security Frozen=Security Frozen
+Security Counter Expired=Security Counter Expired
+Security Level=Nivel Securitate
+Serial ATA Features=Caracteristici Serial ATA
+Interface=Interfata
+S-ATA Compliance=Compatibilitate S-ATA
+S-ATA I Signaling Speed (1.5 Gps)=S-ATA I Signaling Speed (1.5 Gps)
+S-ATA II Signaling Speed (3 Gps)=S-ATA II Signaling Speed (3 Gps)
+Receipt Of Power Management Requests From Host=Receipt Of Power Management Requests From Host
+PHY Event Counters=PHY Event Counters
+Non-Zero Buffer Offsets In DMA Setup FIS=Non-Zero Buffer Offsets In DMA Setup FIS
+DMA Setup Auto-Activate Optimization=DMA Setup Auto-Activate Optimization
+Device Initiating Interface Power Management=Device Initiating Interface Power Management
+In-Order Data Delivery=In-Order Data Delivery
+Asynchronous Notification=Asynchronous Notification
+Software Settings Preservation=Software Settings Preservation
+Queue Length=Queue Length
+Disk Family=Familie Disc
+Form Factor=Form Factor
+Capacity=Capacitate
+Number Of Disks=Numar Discuri
+Number Of Heads=Numar Capete
+Rotational Speed=Viteza Rotire
+RPM=RPM
+Rotation Time=Timp Rotire
+Average Rotational Latency=Latenta Medie Rotire
+Disk Interface=Interfata Disc
+Buffer-Host Max. Rate=Buffer-Host Max. Rate
+Drive Ready Time (typical)=Drive Ready Time (typical)
+Average Seek Time=Average Seek Time
+Track To Track Seek Time=Track To Track Seek Time
+Full Stroke Seek Time=Full Stroke Seek Time
+Width=Latime
+Depth=Adancime
+Height=Inaltime
+Weight=Greutate
+grams=grame
+pounds=pounds
+Acoustic=Acustic
+Idle=Idle
+Required power for spinup=Required power for spinup
+Power required (seek)=Power required (seek)
+Power required (idle)=Power required (idle)
+Power required (standby)=Power required (standby)
+Manufacturer=Producator
+Manufacturer Website=Website Producator
+; list of SMART features
+S.M.A.R.T. Details=Detalii S.M.A.R.T.
+Off-line data collection=Off-line Data Collection Status
+OFF00=Nepornit
+OFF02=Completat cu succes
+OFF03=Activitate in Derulare
+OFF04=Suspended By Interrupting Command From Host
+OFF05=Aborted By Interrupting Command From Host
+OFF06=Aborted By Device With Fatal Error
+Self test execution status=Self Test Execution Status
+SET00a=Completat cu succes
+SET00b=Nepornit
+SET01=Oprit de gazda
+SET02=Interrupted By Host With Hardware/Software Reset
+SET03=Fatal/Unknown Error Occurred During The Test
+SET04=Test Failed By Unknown Element
+SET05=Test Failed By Electrical Element
+SET06=Test Failed By Servo/seek Element
+SET07=Test Failed By Read Element
+SET08=Test Failed And Handling Damage Is Suspected
+SET15=Test In Derulare
+SETCO=Completat
+Total time to complete off-line data collection=Total Time To Complete Off-line Data Collection
+Execute off-line immediate=Execute Off-line Immediate
+Abort/restart off-line by host=Abort/restart Off-line By Host
+Off-line read scanning=Off-line Read Scanning
+Short Self-test=Auto-test rapid
+Extended Self-test=Auto-test extins
+Selective Self-test=Auto-test selectiv
+Conveyance self-test=Auto-test transmisie
+Save data before/after power saving mode=Save Data Before/After Power Saving Mode
+Enable/Disable attribute autosave=Enable/Disable Attribute Autosave
+Error logging capability=Error Logging Capability
+Short Self-test Estimated Time=Short Self-test Estimated Time
+Extended Self-test Estimated Time=Extended Self-test Estimated Time
+Last Short Self-test Result=Last Short Self-test Result
+Last Short Self-test Date=Last Short Self-test Date
+Last Short Self-test Duration=Last Short Self-test Duration
+Last Extended Self-test Result=Last Extended Self-test Result
+Last Extended Self-test Date=Last Extended Self-test Date
+Last Extended Self-test Duration=Last Extended Self-test Duration
+Last Conveyance Self-test Result=Last Conveyance Self-test Result
+Last Conveyance Self-test Date=Last Conveyance Self-test Date
+Last Conveyance Self-test Duration=Last Conveyance Self-test Duration
+NOP Command=Comanda NOP
+Trusted Computing=Trusted Computing
+64-bit World Wide ID=64-bit World Wide ID
+Streaming=Streaming
+Media Card Pass Through=Media Card Pass Through
+General Purpose Logging=General Purpose Logging
+Error Logging=Error Logging
+CFA Feature Set=CFA Feature Set
+Long Physical Sectors=Long Physical Sectors
+Long Logical Sectors=Long Logical Sectors
+Write-Read-Verify=Write-Read-Verify
+NV Cache Feature=NV Cache Feature
+NV Cache Power Mode=NV Cache Power Mode
+
+# added 4 Nov 2008 
+Transport Version=Versiune Transport
+NV Cache Size=Dimensiune Cache NV
+Free-fall Control=Control Free-fall
+Free-fall Control Sensitivity=Sensibilitate Controil Free-fall
+Non-rotating Media (SSD)=Non-rotating Media (SSD)
+Nominal Media Rotation Rate=Nominal Media Rotation Rate
+S-ATA Gen3 Signaling Speed (6 Gps)=S-ATA Gen3 Signaling Speed (6 Gps)
+
+
+SA1=Errors occured while reading raw data from a disk\Indicate problem with the disk surface or the read/write heads.
+SA2=General throughput performance of the hard disk\Indicate problem with motor, servo or bearings.
+SA3=Time needed by spindle to spin-up to full RPM\Indicate problem with motor or bearings.
+SA4=Count of start/stop cycles of spindle\This value does not directly affect the condition of the drive.
+SA5=Count of sectors moved to the spare area\Indicate problem with the disk surface or the read/write heads.
+SA6=Margin of a channel while reading data\The exact function of this attribute is not specified.
+SA7=Rate of positioning errors of the read/write heads\Indicate problem with servo, head. High temperature can also cause this problem.
+SA8=Average time of seek operations of the heads\Indicate problem with servo.
+SA9=Total time the drive is powered on\The unit of the measure depends on the manufacturer.
+SA10=Retry count of spin start attempts\Indicate problem with motor, bearings or power supply.
+SA11=Number of attempts to calibrate a drive\Indicate problem with motor, bearings or power supply.
+SA12=Number of complete power on/off cycles\This value does not directly affect the condition of the drive.
+SA13=Number of software read errors\The number of uncorreactable read errors.
+SA187MTRON=Virtual block erase count\Indicate the wear of the storage device.
+SA190=Airflow temperature\The temperature of the air inside the hard disk housing.
+SA191=Number of mechanical errors\Number of errors resulting from shock or vibration.
+SA192=Count of power off cycles\This value does not directly affect the condition of the drive.
+SA193=Count of load/unload cycles\Number of cycles the head moved into landing zone position.
+SA194=Disk temperature\The temperature inside the hard disk housing.
+SA195=Count of correctable errors\Number of errors corrected by the internal error correcting mechanism.
+SA196=Count of sector remap operations\Number of all (successful and failed) remap operations.
+SA197=Count of unstable sectors\These pending sectors may be remapped to the spare area.
+SA198=Count of uncorrectable errors when reading/writing\Indicate problem with the disk surface or the read/write heads.
+SA199=Count of errors during data transfer between disk and host\Indicate problem with the power supply or data cable.
+SA200=Errors occured while writing raw data from a disk\Indicate problem with the disk surface or the read/write heads.
+SA201=Number of software read errors\The number of uncorreactable read errors.
+SA202=Number of data address mark errors\Number of incorrect or invalid address marks.
+SA203=Number of data correction errors\Invalid error correction checksum found during error correction.
+SA204=Number of corrected data errors\Errors corrected by the internal error correction mechanism.
+SA205=Number of thermal problems\Total number of problems caused by high temperature.
+SA206=Head flying height\The height of the disk heads above the disk surface.
+SA207=Current value during spin up\The current needed to spin up the drive.
+SA208=Number of cycles needed to spin up\The number of retries during spin up because of low current available.
+SA209=Drive performance during offline operations\The seek performance of the drive during internal self tests.
+SA220=Distance of the disk has shifted relative to the spindle\Incorrect disk spin can be cause by mechanical shock or high temperature.
+SA221=Number of mechanical errors\Number of errors resulting from shock or vibration.
+SA222=Number of powered on hours\This value is constantly increasing (once per every hour).
+SA223=Number of load/unload operations\The number of drive head enters/leaves the data zone.
+SA224=Mechanical friction rate\The rate of friction between mechanical parts. Indicate problem with the mechanical subsystem of the drive.
+SA226=Total time the heads are loaded\The time while the read/write heads are in the data zone.
+SA227=Rate of torque increase\Torque increase during the spin up operation of the hard disk.
+SA228=Number of power off cycles\The number of times the head was retracted as a result of power loss.
+SA230=Head positioning amplitude\Head moving distances between operations.
+SA231=Disk temperature\The temperature inside the hard disk housing.
+SA240=Number of head positioning hours\Time spent during the positioning of the drive heads.
+SA250=Number of retries during read operations\Number of errors found during reading a sector from disk surface.
+SA255=Vendor-specific\The function and value of this attribute are determined by the manufacturer.
+
+SC01=Buffer over/under run counters
+SC02_0000=Write errors corrected without substantial delay
+SC02_0001=Write errors corrected with possible delays
+SC02_0002=Total write errors
+SC02_0003=Total write errors corrected
+SC02_0004=Total write errors corrected by algorythm
+SC02_0005=Total bytes written
+SC02_0006=Total uncorrected write errors
+SC03_0000=Read errors corrected by ECC hardware method
+SC03_0001=Read errors corrected with possible delays
+SC03_0002=Total read errors
+SC03_0003=Total read errors corrected
+SC03_0004=Total read errors corrected by algorythm
+SC03_0005=Total bytes read
+SC03_0006=Total uncorrected read errors
+SC04_0000=Read reverse errors corrected by ECC hardware method
+SC04_0001=Read reverse errors corrected with possible delays
+SC04_0002=Total read reverse errors
+SC04_0003=Total read reverse errors corrected
+SC04_0004=Total read reverse errors corrected by algorythm
+SC04_0005=Total bytes read reverse 
+SC04_0006=Total uncorrected read reverse errors
+SC05_0000=Verify errors corrected without substantial delay
+SC05_0001=Verify errors corrected with possible delays
+SC05_0002=Total verify errors
+SC05_0003=Total verify errors corrected
+SC05_0004=Total verify errors corrected by algorythm
+SC05_0005=Total bytes verified
+SC05_0006=Total uncorrected verify errors
+SC06_0000=Non medium errors
+SC07=Last error event
+SC0B=Last deferred error or asynchronous event
+SC0D_0000=Temperature
+SC0D_0001=Reference temperature
+SC0E_0001=Manufacture date (year/week)
+SC0E_0002=Accounting date
+SC0E_0003=Specified cycle count over device lifetime
+SC0E_0004=Accumulated start-stop cycles
+SC0F=Application client parameter data
+SC10=Self test results log
+SC18=Protocol specific port log
+SC37_0000=Blocks sent to initiator
+SC37_0001=Blocks received from initiator
+SC37_0002=Blocks read from cache and sent to initiator
+SC37_0003=I/O commands with size smaller than segment size
+SC37_0004=I/O commands with size larger than segment size
+SC3E_0000=Power on time
+SC3E_0008=Remaining minutes until next internal test

@@ -1,0 +1,1139 @@
+Hard Disk Sentinel e' già attivo.
+Errore
+Temperatura HD
+Guasto previsto a breve
+OK
+Supportato
+Non supportato
+Si
+ Lista dischi 
+Seleziona i dischi che vuoi visualizzare nella finestra di stato. Doppio click per selezionare l'icona in system tray. Tasto destro per visualizzare il menù.
+ID
+Nome (capacità)
+Temperatura
+Icona systray
+ Configurazione 
+All'avvio del programma, apri la "finestra di stato"
+Carica HD Sentinel all'avvio del sistema
+Trasparenza:
+Linguaggio:
+Chiudi
+Hard Disk Sentinel
+Seleziona il disco per il quale verrà visualizzata la temperatura in systray
+Mostra la finestra di stato
+Nascondi la finestra di stato
+Configurazione
+Esci
+Almeno un disco deve essere selezionato.
+ Finestra di stato
+Colore:
+Sfondo
+Seleziona
+Errore durante l'apertura dell'immagine del file.
+File supportati|*.jpg;*.bmp|tutti i files|*.*
+Caratteristiche
+S.M.A.R.T.
+Prestazioni
+Partizioni
+Informazioni HD
+Velocità trasferimento
+Totale dati letti
+Totale dati scritti
+Velocità di trasferimento attuale
+ KB/s
+Velocità di lettura corrente
+Velocità di scrittura corrente
+Utilizzo corrente del disco
+Utilizzo disco %
+Velocità di trasferimento (MB/s)
+Riepilogo disco:
+Numero
+Modello ID
+Revisione
+Numero di serie
+Capacità
+Informazioni ATA 
+Cilindri
+Testine
+Settori
+Totale settori
+Revisione ATA:
+Bytes per Settore
+Bytes Per Traccia Logica
+Dimensione Buffer
+Multiple Sectors
+Error Correction Bytes
+Capacità lorda
+Maximum PIO Mode
+Active PIO Mode
+Maximum UDMA Mode
+Active UDMA Mode
+Proprietà ATA :
+Supportato
+Non supportato
+Attributo
+Soglia
+Valore
+Valori peggiori
+Valore attuale
+Stato
+Stato delle partizioni:
+Drive locale
+Spazio totale
+Spazio libero
+Tipo di file systems
+bytes
+Spazio usato
+Disco:
+Massima velocità di trasferimento
+Massima Velocità di trasferimento stimata
+DVD Velocità di scrittura
+Per questa misura e' necessario un alto utilizzo del disco.
+OK (Always passing)
+Fail (Always failing)
+Consiglio: Limite uso oltrepassato
+Pre guasto: Possibile perdita di dati !!
+Copia l'intera pagina negl'appunti
+Temperatura
+dall'installazione di HDS
+Info
+Registrazione
+Registrato a nome di:
+Chiave:
+Chiave invalida, la registrazione e' fallita.
+Registrazione effettuata con successo. Grazie per il Vostro supporto.
+All'avvio del programma, apri la "finestra principale"
+Funzione disponibile solo dopo l'attivazione.
+Versione non registrata
+Registrato a nome di:
+Sommario
+Temperatura corrente:
+Temperatura massima:
+La temperatura e' buona !!.
+L'attuale temperatura e' troppo alta. Si raccomanda di usare il disco, possibilmente, in modo più freddo (per esempio si usi un ventilatore o un dissipatore passivo più adeguati).
+La temperatura corrente e' buona ma la precedente era troppo alta. Si raccomanda di usare il disco, possibilmente, in modo più freddo (per esempio si usi un ventilatore o un dissipatore passivo più adeguati).
+Prestazioni:
+Stato di salute:
+Eccellente 
+Buono
+Quasi buono
+Sufficiente
+Scadente
+Non necessita di azioni particolari.
+E' consigliato il backup frequente al fine di non perdere dati.
+Finestra principale
+Sommario
+Disco precedente
+Disco successivo
+Eventi
+Invia un'e-mail di allerta se e' previsto un guasto al disco
+Invia un'e-mail di allerta se la temperatura del disco e' troppo alta
+E-mail
+Mail account:
+Nome mittente:
+E-mail mittente:
+E-mail destinatario:
+SMTP server:
+Da compilare solo ed esclusivamente nel caso sia necessaria l'autenticazione.
+Nome utente:
+Password:
+Default
+Questi campi devono essere specificati per poter inviare un'e-mail di allerta:
+Volete introdurre queste informazioni ora?
+Errore durante l'invio di un'e-mail di allerta.
+L'e-mail di allerta e' stata inviata.
+Surriscaldamento
+Soglia di temperatura massima:
+Unità di misura:
+Invio del report
+Font:
+Salva
+Visualizza in systray solo la temperatura massima
+  Velocità di trasferimento in:
+Configurazione gestione acustica
+Disabilitato
+Abilitato
+Livello acustico corrente
+Livello acustico raccomandato
+Sconosciuto
+Massime prestazioni e mass. rumore
+Minime prestazioni e min. rumore
+Compromesso tra prestazioni e rumore
+Gestione acustica
+Default
+Letture medie per giorno
+Scritture medie per giorno
+Blocca la fuoriuscita dallo schermo
+Attenzione...
+Mostra/Invia messaggio
+Spegni
+e' previsto, a breve, un guasto grave
+la temperatura e' troppo alta
+e' successo un evento grave
+Invia un'e-mail di stato giornaliera
+Alle
+Un valore e' variato
+Situazione attuale
+Errore nella trasmissione dell'e-mail di stato.
+E-mail di stato trasmessa con successo.
+Aggiornamenti
+Cerca nuova versione settimanalmente
+Controlla se ci sono aggiornamenti
+Data dell'ultimo controllo:
+Nessun controllo e' stato fatto
+Cancella
+Versione installata:
+Versione disponibile:
+Files aggiornati
+File corrente:
+Processo completo:
+Non ci sono nuovi aggiornamenti.
+Errore durante il downloading. Verificate che la connessione a internet sia attiva e riprova.
+Aggiornamento effettato con successo.
+Stato: Controllo di nuova versione
+Stato: Downloading
+Chiudi
+Disco non trovato.
+Se e' necessaria l'installazione del pacchetto SMART: Verificate i dettagli sul web.
+Sono necessari i diritti di System administrator per controllare i dischi.
+Eventi gravi
+Numero di allarmi memorizzati:
+Nota: La versione registrata può inviare e-mail di allerta e/o spegnere il PC quando viene rilevato e registrato un problema sul disco.
+Nessun problema rilevato.
+Lo stato di salute del disco e' stabile.
+Attenzione: lo stato di salute del disco si e' degradato negl'ultimi giorni.
+Data
+Valore precedente
+Nuovo valore
+Attenzione: negl'ultimi giorni sono stati rilevati più errori.
+Un disco non risponde. E' possibile che il sistema operativo l'abbia bloccato per prevenire (ulteriori) problemi.
+Stato del programma:
+Errore di lettura delle informazioni di attivazione.
+registrato e attivato correttamente.
+registrato ma non attivato.
+non registrato ne attivato.
+Registra e attiva On-Line
+Registra e attiva via e-Mail
+File di attivazione salvato come:
+Si prega di inviare il suddetto file con il Vostro nome e la chiave a info@hdsentinel.hu  L'autore Vi ritornerà un file che dovrà essere copiato nella directory di installazione di questo programma.
+Si raccomanda di usare la registrazione on-line in quanto piu comoda e veloce!!.
+Raggiunto il massimo numero di attivazioni con questa chiave.
+Attivazione fallita
+Errore in fase di collegamento con il server adibito alla registrazione: riprova più tardi o usa la registrazione via e-mail.
+Prego contatta l'Autore riguardo la Vostra licenza.
+Questa applicazione e' già attivata con questa chiave per 5 differenti configurazioni.
+Errore in fase di collegamento al server di autenticazione.
+Attivazione non e' possibile.
+Attivazione eseguita, grazie per il Vostro supporto.
+Attivazione effettuata
+Attivazione via e-mail
+Con Windows 98, e' possibile che un'unità USB causi questo problema poiche' essa può essere incompatibile con S.M.A.R.T. su canale IDE secondario.
+Questo disco non risponde.
+Questo disco non risponde da molto tempo. Potrebbe essere disconnesso.
+Visualizza l'applicazione nella barra applicazioni attive
+Analisi del sistema. Prego attendere.
+Guida
+Digita il tuo nome (può essere qualsiasi) e la chiave ricevuta dall'Autore. Se il PC ha una connessione internet attiva, seleziona l'attivazione on-line: in questo caso la registrazione e' automatica: non dovi far nient'altro. In caso contrario, seleziona l'attivazione via e-mail e trasmetti il file all'Autore. Riceverai il file di attivazione che dovrai salvare nella directory di installazione di questa applicazione.
+Evento
+Interfaccia tradotta da:
+Luciano
+cestino50@tiscali.it.it?subject=Traduzione italiana ver. 1 del programma Hard Disk Sentinel Enterprise versione 4.40
+E-mail
+File di testo
+Tutti files
+Icona rossa se la temperatura e' maggiore di
+Opzioni avanzate
+Frequenza di controllo:
+1 secondo
+5 secondi
+10 secondi
+30 secondi
+1 minuto
+2 minuti
+5 minuti (standard)
+10 minuti
+30 minuti
+1 ora
+Abilita l'allarme se il disco non risponde
+Temperatura media:
+Corrente
+Media giornaliera
+Massima giornaliera
+Avviso acustico
+Seleziona il file acustico
+File acustico
+Doppio click o tasto destro per visualizzare altre informazioni.
+Modifica
+OK
+Cancella
+Errore durante l'esecuzione di questo comando.
+Questa opzione richiede Windows 2000, XP o sistemi operativi più recenti.
+lo spazio libero e' insufficiente
+Definisci lo spazio libero minimo
+Usa le stesse opzioni per tutti i dischi installati
+Impostazioni globali
+Segnala se lo spazio libero e' inferiore a
+Spazio libero insufficiente
+--  Spazio insufficiente --
+Disabilita lo scandisk automatico all'avvio di Windows
+E' necessario riavviare il computer per applicare le nuove opzioni.
+Sincronizza l'orologio del PC con un server atomico
+Quando il programma e' startato
+Desideri vedere lo stato del disco in una piccola finestra?\n(In seguito e' possibile cambiare questa impostazione con il tasto destro\n sull'icona in system try e selezionando dal menù "Configurazione".)
+Questo disco non fornisce il valore della temperatura.
+Non può essere determinata su questo disco.
+Guida
+La guida non e' disponibile. Scaricare il paccheto completo di installazione dal sito del produttore.
+Questa funzione non e' disponibile su questo disco.
+Modifica il simbolo standard delle icone dei dischi
+Informazioni SCSI 
+Informazioni del produttore
+Versione
+Tipo di unita'
+Disco
+Rimovibile
+Guasto previsto
+Disco fisso
+Disco remoto
+Unità ottica
+Le unità logiche visualizzate appartengono al disco fisico corrente.
+Cambia la visualizzazione
+Etichetta del Volume
+Numero di serie
+Controlla lo spazio su dischi in rete
+Tasti caldi
+Comando:
+Abilita l'uso dei tasti "caldi" (possono essere usati anche da qualsiasi applicazione)
+Controllo disco
+Modifica il simbolo standard delle icone dei dischi in rete
+Controlla lo spazio dei dischi rimovibili
+Modifica il simbolo standard delle icone dei dischi rimovibili
+Non esaminare le informazioni dello spazio sui seguenti dischi: (es: CDE)
+Non modificare il simbolo standard delle icone dei seguenti dischi: (es: KL)
+Doppio click per aprire un drive. F5 per aggiornare.
+Nessun disco nel drive
+Mail di test
+Se questo messaggio e' stato recapitato: la "configurazione e-mail" e' corretta.
+E-mail di test inviata con successo.
+Errore durante la trasmissione dell'e-mail di test. Verifica la "configurazione E-mail".
+Usato per:
+giorni
+ore
+minuti
+Durata stimata:
+maggiore di
+secondi
+Porta:
+Attendi prima di avviare lo scandisk (secondi):
+Valore di stato di salute:
+lo stato di salute del disco e' critico
+Backup di emergenza
+Soglia di stato:
+Messaggio sullo schermo
+Invia messaggio a un computer remoto (NET SEND):
+Questa funzione e' presente solo se e' installata la versione PROFESSIONALE, e' possibile avviare un'operazione di backup pre-configurata in caso di problemi.\n\nSi prega di visitare il sito www.hdsentinel.com per avere info ulteriori riguardo questa funzione.
+Stato del disco critico
+Crea report
+Errore durante l'invio del report. Non e' stato possibile recapitarlo\unsando il protocollo MAPI o a causa dei settaggi dell'e-mail.\nSi prega di salvare il report e inviarlo poi a reports@hdsentinel.hu
+Messaggi
+Invia e-mail
+Lancia la connessione a internet predefinita prima dell'invio
+Chiudi la connessione dopo l'invio
+Visualizza un testo (.txt) personale
+Si prega di attendere, sto misurando...
+Dettagli di registrazione invalidi - questa funzione e' disabilitata.
+Informazioni di stato
+Errore durante il salvataggio. Questo disco potrebbe essere pieno o solo di lettura.
+Soglie/Icone in systray
+Visualizza la temperatura nell'icona in systray
+Minore di:
+Tra \1 e  \2
+Temperatura:
+Maggiore di:
+Usa la visualizzazione digitale
+Sfondo
+Carattere
+Esempio
+Visualizza lo stato di salute in systry solo se e':
+Informazioni del programma
+Data e ora correnti:
+Informazioni del sistema
+Versione di Windows
+Tipo e velocità del processore
+Produttore BIOS
+Memoria principale (RAM)
+Controller video
+Risoluzione video
+Stampante
+Controller di rete
+Informazioni delle unità PCI
+Informazioni del computer
+Nome computer
+Nome Utente
+Indirizzo IP
+Indirizzo MAC
+Informazioni dei dischi fisici
+Tipo di parametro:
+Critico
+Statistico
+Prestazioni
+Tasso di errori
+Contatore allarmi
+Autodiagnosi
+Desktop
+Server
+Portatile
+Tipo di computer
+Informazioni generali
+HTML files|*.html|Tutti files|*.*
+Salva report
+Invia report tramite in e-mail
+Formato del report:
+HTML
+TXT ridotto
+Report Raw
+Informazioni da visualizzare:
+Tipo di disco
+Partizioni
+Stato di salute
+Stato e problemi
+Dischi fisici
+Lo stato di salute del disco e' sconosciuto.
+Lo stato di salute del disco e' perfetto.
+Lo stato di salute del disco non e' perfetto.
+Anomalia prevista per questo disco.
+In questo disco ci sono \1 settore(i) rovinato(i). I dati di questi settori sono stati riposizionati su un'area di riserva.
+Sulla base del numero di operazioni di rimappatura, lo stato di salute del disco viene decrementato in diversi steps.
+Sulla base del numero di operazioni di rimappatura, probabile che i settori danneggiati siano su aree contigue
+Il disco ha riscontrato \1 settore(i) danneggiato(i) durante l'auto-test.
+Ci sono stati problemi durante lo spin up del disco. Ciò puo' succedere a causa del disco medesimo o di sovratensione (controllare l'alimentatore).
+Ci sono \1 settori critici in questo disco. In qualsiasi momento potrebbero essere riposizionati.
+Si sono verificati problemi di comunicazione tra il disco e l'host \1 volte. In caso di crash o di reboot si consiglia di riprovare con un cavo di collegamento più corto (in caso di unità IDE, invece di cavi arrotolati usare i cavi da 80 standard).
+Si raccomanda di esaminare regolarmente queste informazioni. Eventuali nuovi problemi saranno registrati qui !!.
+Questo disco e' PERFETTO. Non sono stati registrati errori relativi ai settori, alla fase di avvio del disco o al trasferimento dati. 
+Applica
+Scostamento
+Scostamento:
+Si raccomanda di calibrare la temperatura tramite la funzione "scostamento" nella pagina S.M.A.R.T.. In questo modo verrà visualizzata la corretta temperatura. 
+Metodo di calcolo dello stato di salute:
+Analisi data (standard)
+Analisi specifica per produttore
+Soglia superata il:
+Valore sul grafico
+Visualizza "data"
+Visualizza "valore produttore"
+Non eccede
+Accaduto
+TXT completo
+File
+Mostra
+Report
+Salva report (TXT)
+Salva report (HTM)
+Invia report (TXT)
+Invia report (HTML)
+Si raccomanda di monitorare continuamente lo stato del disco.
+Analisi ristretta (consigliata per i servers)
+Modifica scostamento 
+Questa modifica e' riservata agli utenti esperti. Dopo aver fatto questa variazione, i valori (es. stato di salute, temperatura, performances) legati a questo attributo non rispecchiano più il reale stato del disco. Sei sicuro di voler proseguire?
+Non visualizzare più questo messaggio
+Questa modifica e' riservata agli utenti esperti. Dopo aver fatto questa variazione, il valore di stato potrebbe non rispecchiare il vero stato del disco oppure e' possibile perdere future segnalazioni di anomalie. Sei sicuro di voler proseguire?
+Disabilita allarme sonoro
+Abilita allarme sonoro
+Errore durante la modifica del livello acustico.\nIl controller del disco potrebbe non supportare questa funzione.
+Questo tipo di disco non supporta il monitoraggio in tempo reale.
+Note: La versione non registrata non memorizza i cambiamenti di questa opzione. Al prossimo avvio dell'applicazione verranno usate le impostazioni di default.
+Abilita attributi
+Ripeti avviso acustico
+Beep beep del PC
+Invia testo
+Il messaggio e' stato inviato con successo al computer remoto.
+Errore durante l'operazione. Si prega di verificare la connessione di rete e la comunicazione in entrambi i computers.
+Problemi che causano gli allarmi sonori
+Riattiva gli allarmi
+Byte di controllo ATA
+Valido
+Invalido
+Valore checksum ATA
+l'informazione visualizzata potrebbe non essere corretta.
+Prova il suono
+Crea un collegamento veloce sul desktop per questo progetto
+Creazione collegamento veloce
+E' stato creato con successo un collegamento veloce sul desktop per questo progetto
+Si sono verificati errori durante la creazione del collegamento veloce sul desktop per questo progetto
+Le informazioni di registrazione sono scadute. Si prega di contattare l'Autore per un'estensione della licenza.
+Finestra di stato ne chiudibile ne spostabile
+Visualizza le informazioni (anche) sul desktop
+Licenza valida fino al:
+per sempre
+scaduta
+Non trovata
+Sfondo completamente trasparente
+Integrazione
+Modalità di avvio
+Chiedi la pw per aprire la finestra principale o per la connessione via web se richiesta.
+Chiedi la pw per aprire la finestra di configurazione o per chiudere il programma.
+Sconnettiti dopo
+minuti
+Password:
+Attiva la password ora
+Avvia HDS in Service mode
+Avvia HDS come Applicazione
+Controllo remoto
+Abilita la connessione remota a HDSentinel
+Nome Server o IP address:
+Porta TCP (standard = 61210):
+Protezione
+Errore durante l'installazione di Hard Disk Sentinel in Service mode.
+Errore durante l'avvio di Hard Disk Sentinel in Service mode.
+Errore durante la chiusura di Hard Disk Sentinel in Service mode.
+Hard Disk Sentinel salva la configurazione corrente, si chiude e si riavvia automaticamente in Service mode.
+Hard Disk Sentinel salva la configurazione corrente, si chiude e si riavvia automaticamente in modo Applicazione.
+E' richiesta l'autorizzazione all'accesso
+E' stata introdotta una password non valida. Non e' possibile usare questa funzione.
+Per chiudere Hard Disk Sentinel in Service mode, si prega di chiuderlo tramite "Stop service" nel menù di avvio oppure tramite la funzione 'Avvia come Applicazione' nel menù Integrazione nel pannello di configurazione.
+No
+Alto
+Massimo
+L'aggiornamento non e' possibile quando Hard Disk Sentinel e' avviato in Service mode. Si prega di avviarlo in modo applicazione tramite la finestra Integrazione: dopo e' possibile effettuare l'aggiornamento.
+Service mode
+Modo emergenza (disabilita la rilevazione hardware)
+Hard Disk Sentinel in Service mode e' stato chiuso. Se si vuole farlo riavviarlo di nuovo in questo modo usare il menù configurazione, selezionando Avvia HDS in Service mode nella sezione integrazione.
+Hard Disk Sentinel in Service mode e' già attivo.
+Hard Disk Sentinel in Service mode non e' attivo.
+Velocità media di trasferimento
+Utilizzo medio del disco
+Ripeti test
+Informazione non disponibile
+Hard Disk Sentinel service in fase di chiusura.\ns Si desidera veramente chiudere il service mode e passare al modo applicazione?
+Microsoft Vista (o precedenti s.o.) non permette che il servizio sia interattivo con il desktop.\n\nHard Disk Sentinel sarà avviato in modo invisibile: per cui le relative finestre e icone non verranno visualizzate e non sarà possible accedere alla finestra di configurazione.\n\nPer chiudere il servizio e' necessario passare al modo Applicazione:\nper fa questo usare il collegamento veloce "Stop service" dal gruppo di Hard Disk Sentinel.\n\nSei sicuro di voler procedere?
+Visualizza come viene calcolato questo valore
+Si prega di fornire all'applicazione i diritti necessari per il funzionamento.
+Set icone disco per:
+XP
+Vista
+Clicca per avviare il test
+Tests interni del disco
+Tipo di test:
+Stato di salute:
+Tempo restante stimato:
+Errore durante il test. Il codice di errore e':
+Avviato senza problemi
+Risposta:
+Tempo trascorso:
+Questa chiave di registrazione e' valida solo per la versione STANDARD.\nSi prega di scaricare la versione STANDARD dal sito www.hdsentinel.com\nper usare questa chiave di registrazione.
+Questa chiave di registrazione e' valida solo per la versione PROFESSIONAL.\nSi prega di scaricare la versione PROFESSIONAL dal sito www.hdsentinel.com\nper usare questa chiave di registrazione.
+Definisci la soglia ( in megabyte )
+Ridigitala:
+Le due password digitate non sono uguali.\nSi prega di ridigitarle.
+Abilita controllo via Web
+Chiedi la password per la connessione web
+Porta di connessione HTTP
+Indirizzo porta (>1023)
+Commenti degl'attributi
+Campi in formato decimale
+L'unità ha tentato di esaminare e riallocare settori di dati \1 volta. La verifica dei dati e' corretta.
+Sostituisci immediatamente il disco.
+Sezioni da inserire nel report:
+Salvataggio/Ripristino della configurazione di HDS
+Salva configurazione
+Ripristina configurazione
+Unità ottica
+Genera e aggiorna XML file
+La temperatura del disco e' strana. Il valore misurato e':
+Accetta connessioni remote dal sever
+Porta di connessione remota
+Disabilita gli avvisi in systray
+Disabilita il rilievo di unità USB e SCSI
+Invia
+Commenti:
+Invia allo sviluppatore
+Connessione al server - www.hdsentinel.com
+Invio del report
+Report inviato con successo. \nGrazie per il supporto.
+Invia il report allo sviluppatore 
+Creazione report
+Desidero ricevere la risposta dopo l'esame del report
+Questo e' un errore
+Apri la finestra principale
+Visibile
+Capacità disco in:
+Capacità partizione in:
+Copia per conoscenza:
+Copia p.c. nascosta:
+Aggiornare il Raw Report
+(stimato)
+Tempo di calcolo, attendere ... Il valore stimato non e' preciso.
+Percorso remoto
+Raggiunto il livello giallo della temperatura.
+Raggiunto il livello rosso della temperatura.
+Raggiunto il livello giallo dello stato di salute.
+Raggiunto il livello rosso dello stato di salute.
+Limite:
+Temperatura:
+Attributi cambiati
+Cancella eventi
+Background
+Abilita il servizio DynDNS
+Abilita il servizio No-IP
+Abilita un servizio personalizzato
+Configura
+Nome Utente
+Password
+Nome host (completo)
+Call API (vedi sito fornitore del servizio DNS dinamico)
+Ultima risposta del server:
+Vista Sidebar
+Abilita Sidebar Gadget
+Visualizza la testata
+Visualizza utilizzo disco
+Vuoi testare la configurazione aggiornando l'indirizzo IP ?
+Il numero di problemi trovati e' alto per questo attributo:
+Lettura:
+Scrittura:
+Tutti i dischi
+Icona utilizzo
+Visualizza l'utilizzo totale del disco tramite un'apposita icona
+(word alta)
+(word centrale)
+(word bassa)
+Stato disco:
+Attivo
+Disattivo
+(da \1)
+Sistema attivo da
+Sistema attivo dal
+Controller dischi
+Locazione disco
+Apri il sito web
+Contatta lo sviluppatore
+Acquista ora
+Introduci la chiave di registrazione
+La lista contiene \1 elementi. Per vederla completamente si prega di registrare il software.
+Utilizzo CPU
+CPU
+Memoria totale (RAM + paging area)
+Usata:
+L'hard disk operando in PIO mode riduce le performances.Si raccomanda di controllare, ed eventualmente sostituire, i cavi dei dati o di modificare la configurazione.
+L'hard disk operando in UDMA mode 2 (33 Mbytes/sec) riduce le performances. Si raccomanda di usare connettori IDE a 80 connessioni ovviamente se il controller supporta il maggior data transfer.
+Il controller Silicon Image (SiI) non fornisce complete informazioni dei dischi ad esso connesso. 
+Il driver attualmente usato per il controller dischi non e' in grado di avere un accesso completo al disco per leggerne tutti i dettagli. Si prega di verificare se esiste una versione migliore.
+Questa unità di memoria USB non fornisce maggiori informazioni. 
+Questo RAID array non permette l'accesso ai dettagli dei dischi dell'array.
+Se questa unità non e' un memoria flash (pen drive ecc) ma un hard disk sarebbe auspicabile inviare il suo report allo sviluppatore del software selezionando nel menù "Report" l'opzione "Invia report allo sviluppatore" per poter verificare se e' possibile catturare maggiori informazioni per questa unità.
+Per maggiori dettagli si prega di visitare il sito www.hdsentinel.com in particolare le sezioni "Hardware" e  "Support -> FAQ".
+Abilitato
+Temperatura massima raggiunta:
+Temperatura minima raggiunta:
+2 ore
+4 ore
+6 ore
+8 ore
+12 ore
+Riservato 1
+Riservato 2
+E' stata raggiunta il limite di temperatura giallo. Se la temperatura continua a salire, si consiglia di valutare l'utilizzo di un box raffreddato (per esempio con un ventilatore o un dissipatore passivo).
+Seleziona nel menù "Soglie / Icone in systray" per configurare le soglie gialle e rosse di stato e di temperatura.
+Critico
+Si raccomanda di effettuare immediatamente il backup dei propri dati per prevenirne la perdita.
+Icone compatte
+Icone normali
+Icone complete
+Prestazioni:
+Interfaccia:
+Messaggio
+Test di posizionamento
+Test di posizionamento, rumore e temperatura
+Seek time
+Minimo
+Massimo
+Medio
+Test
+T. trascorso
+T. restante
+Operazioni
+Errori
+Avvia il test
+Termina il test
+Test veloce
+Test normale
+Test approfondito
+Test estremo
+Durata personalizzabile
+Durata del test (HH:MM:SS): 
+Test effettuato in lettura
+Test di scrittura
+Questa funzione e' disponibile solo se il programma e' stato registrato.
+Vuoi aprire il sito di Hard Disk Sentinel per i dettagli relativi alla registrazione?
+Sei sicuro di voler interrompere questa operazione?
+Questa funzione non e' disponibile per il disco selezionato a causa della propria configurazione e di quella del suo controller.
+Hard Disk Sentinel versione di prova
+Grazie per usare Hard Disk Sentinel.\n\nQuesto e' il giorno \1 del periodo di prova.\n\nSe gradisci questo software e vuoi aiutarci a svilupparlo,\nconsidera la possibilità di registrarlo. Se lo registri puoi usare tutte le sue funzioni\ne avrai diritto gratuitamente ai futuri aggiornamenti.\n\nVuoi aprire ora la pagina per registrare il prodotto?
+Questo valore e' condizionato da uno scostamento diverso da zero ( vedi tab S.M.A.R.T.)
+Imposta il font per le icone in systray
+Non permettere lo spin down per questi dischi (per esempio 1,2 oppure * per tutti)
+Verifica Online 
+Comparazione dei valori S.M.A.R.T. di questo disco con altri dischi, paragonabili a questo modello, per controllare se gli attributi hanno valori normali
+Test della superficie
+Analisi della superficie con diversi metodi
+Mappa della superficie
+Temperatura e velocità di trasferimento
+1 blocco
+Rovinato
+Avanzamento
+Ciclo
+Durata
+Rest.
+settori
+Test stoppato
+Non e' possibile avere un uso esclusivo del drive.\nVuoi continuare il test ugualmente (NON raccomandato)?
+Test completato
+Posizione
+Test sequenziale
+Test dei blocchi dal primo all'ultimo in modo sequenziale (vedi schema a destra)
+Test casuale
+Test dei blocchi con ordine casuale (vedi schema a destra)
+Butterfly test
+Alterna il test su un blocco all'inizio e uno alla fine (vedi schema a destra)
+Test sequenziale
+Test dei blocchi partendo dalla fine per raggiungere l'inizio (vedi schema a destra)
+Settori
+Verifica errori
+Salva le informazioni del disco
+Carica le informazioni del disco
+Inizializzazione...
+Esame del contenuto disco
+Precedente
+Successivo
+Vai a ...
+Seleziona il drive (che deve essere visibile dal sistema operativo) da testare e la relativa modalità di test.\nLEGGERE ATTENTAMENTE LE INFORMAZIONI PRIMA DI AVVIARE IL TEST.\nClicca sul pulsante Mostra per visualizzare la superficie o esaminare un precedente test.
+Test di SOLA lettura
+Verrà effettuata una lettura completa di tutta la superficie del disco per verificare che tutti i settori siano accessibili e leggibili.\n\nIl test e' sicuro in quanto i dati presenti sul disco non verranno modificati.\n\nEventuali errori NON verranno corretti, ovvero NON verranno riallocati nell'area di riserva poiche', in questo caso, sarebbero necessarie operazioni di scrittura (Test simile allo ScanDisk).
+Test di SCRITTURA
+Verrà sovrascritta tutta la superficie del disco con una stringa configurabile. Verranno analizzati i settori critici o rovinati per poterli riallocare definitivamente nell'area di riserva (questa e' una rigenerazione del drive).\n\nDopo il test,il disco risulta piu’ efficiente poiche’ verranno utilizzati direttamente i settori di ricambio al posto di quelli danneggiati.
+Test di SCRITTURA e lettura
+Verrà sovrascritta tutta la superficie del disco con un pattern configurabile; quindi verrà effettuata una lettura di quanto teste' scritto per verificare l'accessibilità e la consistenza.\nVerranno analizzati i settori critici o rovinati per poterli riallocare definitivamente nell'area di riserva (questa e' una rigenerazione del drive).\n\nDopo il test, il disco risulta piu’ efficiente poiche’ verranno utilizzati direttamente i settori di ricambio al posto di quelli danneggiati.
+Lettura + SCRITTURA + lettura (refresh dei dati)
+Verranno letti e riscritti tutti i blocchi, infine viene effettuata un'ulteriore lettura per comparare il contenuto iniziale con quello iniziale.Se e' selezionata l'opzione 'Test di lettura-scrittura-lettura con ulteriore operazione di scrittura viene effettuata un ulteriore scrittura prima di ripristinare il valore iniziale: questo per verificare l'efficienza della correzione errori (rigenerazione disco).\n\nL'operazione normalmente non modifica i dati iniziali,a meno che il sistema non sia stabile,ci sia un'interruzione di alimentazione,per overclocking,per problemi di memoria,per problemi sui cavi o altri motivi.\n\nQuesto tipo di test può essere usato per rigenerare l'area dati del disco senza doverlo cancellare completamente MA si raccomanda almeno di effettuare un salvataggio prima di iniziare il test.
+ReINIALIZZAZIONE della superficie
+Verrà sovrascritta tutta la superficie del disco con una speciale stringa (00) per riportare i settori al valore standard.\nVerrà quindi effettuata una lettura per verificare che tutti i settori siano accessibili e leggibili.\nVerra eseguita l'analisi dei settori critici o rovinati per poterli riallocare definitivamente nell'area di riserva (questa e' una rigenerazione del drive).\nIl test e' molto lungo, soprattutto se viene impostato un numero di cicli molto alto.\n\nQuesto test e' chiamato normalmente ma non correttamente Low Level Format\n\nDopo il test, il disco risulta piu’ efficiente poiche’ verranno utilizzati direttamente i settori di ricambio al posto di quelli danneggiati.
+Tipo di scansione
+Non-distruttivo - dati preservati
+Riserva il drive durante il test (smontaggio volume)
+Ripeti test
+volte (cicli)
+Limita il test a uno specifico blocco dati
+Primo blocco:
+Ultimo blocco:
+DISTRUTTIVO - tutti i dati andranno persi
+Dati nulli (zero)
+Dati casuali
+Numero settore
+Test di lettura-scrittura-lettura con ulteriore operazione di scrittura
+Livello di inizializzazione del disco
+Nella maggioranza dei casi non e' distruttivo (vedi note e Guida) 
+Con questo test andranno perse TUTTE le informazioni sul disco.\nQuesta funzione NON e' reversibile !!!!!!.\n\nSEI VERAMENTE SICURO DI VOLER AVVIARE IL TEST E DI VOLER PERDERE TUTTI I DATI DEL DISCO?
+Questo test effettua operazioni di scrittura sul disco selezionato.\nIl test,di per se, NON e' distruttivo,tuttavia per vari motivi ci può essere perdita di dati.\n\nSei sicuro di volerlo fare?
+Conferma del test 
+Clicca sulla mappa per visualizzare il relativo contenuto.\n\nTasto destro per il menu' disponibile.
+Il test misura il tempo di trasferimento di ogni blocco per rilevare aree lente. Blocchi lenti saranno colorati in scuro.
+Lo sviluppatore non garantisce l'inalterabilità dei dati sul disco.
+Ciclo corrente
+Tutti i cicli
+Non e' possibile effettuare un test di scrittura su un disco di sistema contenente una delle seguenti cartelle.
+Le informazioni caricate appartengono a un altro disco!!.\nComunque con un click sulla superficie verrà visualizzato il relativo contenuto relativo al disco caricato.
+Se il disco fosse ancora in garanzia, in questo momento la richiesta di sostituzione non e' ancora credibile a meno che lo stato di salute peggiorasse ulteriormente.
+Desideri riavviare ora le unità in standby (rif. risparmio di energia)?\nNel caso contrario verranno trattate solo le unità attive.
+Riaggiorna le info dei dischi
+Tipo di test:
+Impatto sui dati:
+Stringa di scrittura:
+Azzera la temperatura max e min
+Massima temperatura (durante l'intera vita):
+Mostra valori
+Usa SSL
+Controller SSD
+Lo stato del disco a stato solido e' PERFETTO. Non sono sati rilevate problematiche o settori critici. 
+Lo stato di salute dell'SSD e' determinato dallo specifico attributo S.M.A.R.T: 
+Gestisci opzioni disco
+Errore durante l'invio del comando al disco.\nIl controller del disco o il driver non supporta questa funzione.\n\nIl comando può essere eseguito dopo un aggiornamento del drive,\nusando un sistema operativo diverso o controller disco diverso\noppure usando un box USB supportato.
+Abilita e imposta
+Disabilita
+...dopo questo ritardo (sec.):
+Imposta soglie specifiche
+Limite giallo della temperatura:
+Limite rosso della temperatura:
+Disabilita le soglie specifiche per questo disco
+Imposta soglie specifiche per questo disco
+Modifica le soglie specifiche per questo disco
+Specifica
+Globale
+Con la versione free di Hard Disk Sentinel e' possibile impostare le soglie specifiche solo per un disco.
+Il driver S.M.A.R.T. per il sistema operativo Win9x/ME non e' stato trovato.\nVuoi procedere ora all'aggiornamento automatico della configurazione e quindi riavviare il computer?
+Carica il file ( .hdk ) contenente la chiave di registrazione
+Punti di montaggio NTFS
+Punto di montaggio
+Attenzione: i tuoi dati non sono del tutto protetti.
+OFFERTA SPECIALE: Acquista oggi la licenza e risparmierai il \1 !!!
+(digita questo coupon: \1 durante la l'acquisto sicuro online dopo aver cliccato sul link sottostante)
+Attendi \1 second(s) prima di continuare ...
+Informazioni del volume
+Tipo di partizione
+Attivo
+Allineamento
+Inizio Offset
+Lunghezza
+Dimensione unita' di allocazione
+Totale unita' allocate
+Unita' allocate libere
+Unita' allocate usate
+Tipo di volume
+Dinamico
+Base
+Visualizza lo stato dei dischi offline
+Seleziona i dischi di cui vuoi vedere il relativo stato come se fossero connessi al PC.
+Offline
+Seleziona i dischi da inserire nel report che contiene lo stato dei dischi.
+Salva il report con lo stato attuale dei dischi (HTML)
+Verifica se il report di stato dei dischi e' autentico
+Il file che contiene lo stato dei dischi selezionato non e' un report valido
+Autenticazione eseguita con successo.
+Autenticazione fallita poiche' il report che contiene lo stato dei dischi e' corrotto o non e' valido
+Report che contiene lo stato dei dischi
+Volumi di Windows/Informazioni RAID
+\1 errori in fase di trasferimento dati. Questo puo' essere dovuto a problemi con l'unita' o con i relativi cavi di alimentazione o dati. Valutare la sostituzione dei cavi. 
+\1 errori in fase di scrittura sull'unita'.
+Limitazioni del controller RAID possono impedire la raccolta di ulteriori informazioni del disco. Questa non e' una limitazione di Hard Disk Sentinel.
+Desidero ricevere gli annunci di nuovi aggiornamenti e le offerte speciali
+Nel menu' Report scegli -> Invia report allo sviluppatore e seleziona l'opzione Desidero ricevere gli annunci di nuovi aggiornamenti e le offerte speciali
+Minima giornaliera
+Larghezza standard
+La funzione TRIM del SSD e' supportata e attivata per ottenere prestazioni ottimali.
+La funzione TRIM del SSD e' supportata ma disabilitata. Si raccomanda di aggiornare il sistema operativo, i drivers del controller dischi e dei dischi per aumentare le prestazioni.
+Scritture totali:
+Contatore operazioni start/stop:
+La configurazione non fornisce ulteriori informazioni sullo stato del disco. Tuttavia tramite il menu "Disco" sottofunzione "Test della superficie" e' possibile esaminare le funzionalità e rilevare e correggere eventuali prolemi.
+La corrente versione sta per scadere. Introdurre la chiave di registrazione per continuare a usare il prodotto.
+Il log non contiene valori.
+Esporta il valore della velocità di trasferimento
+Imposta il nuovo valore alla prossima accensione del disco
+Altre informazioni:
+Clicca qui per aggiungere un commento ...
+Commento
+Seleziona la nuova cartella dove salvare le impostazioni e le statistiche
+Avvertimento per la licenza duplicata
+E' stato usato il medesimo codice di registrazione di Hard Disk Sentinel sia per la versione installata sia per la versione portabile . Per usufruire di tutte le funzioni sono richieste licenze separate.
+Ultima lettura dei parametri del disco:
+Controllo online della garanzia
+Copia questo campo negl'appunti
+L'utilizzo intensivo del sistema operativo o delle applicazioni può rallentare\nl'accesso a certe aree della superficie: questa situzione causa quadratini verdi.
+Ripristina i contatori del carico di lavoro
+Vuoi salvare separatamente i report delle unità selezionate?
+La capacità totale (\1) rilevata del disco \2 non e' corretta, la capacità dovrebbe essere \3.
+Questo controller dischi/driver/adattatore potrebbero non essere totalmente compatibili con \1
+Usare questo disco potrebbe causare problemi al file system e/o perdita di dati.
+Per un uso sicuro di questo disco si suggerisce di controllare e modificare la configurazione o aggiornare il sistema operativo,il controller dei dischi e/o i relativi drivers.
+Informazioni specifiche dell'unità
+Il controller del disco fornisce solo un monitoraggio (S.M.A.R.T.) generico, senza ulteriori dettagli. 
+Lo stato S.M.A.R.T. è: 
+Sempre in primo piano
+E' necessario chiudere tramite il menu' File -> Per rendere effettiva la modifica esci e riavvia il programma.
+System Idle Time
+Errore(i) rilevati:
+Le informazioni di stato e di possibili errori (i) fornito dal controller di disco rigido (RAID). Questo può essere diverso dallo stato dell'unità fisica.
+
+
+
+
+
+
+
+
+
+DMA=DMA
+Ultra DMA=Ultra DMA
+S.M.A.R.T.=S.M.A.R.T.
+Security Mode=Security Mode
+Power Management=GEstione risparmio di energia
+Write Cache=Write Cache
+Host Protected Area=Host Protected Area
+Advanced Power Management=Gestione risparmio di energia
+Advanced Power Management Level=Livello risparmio di energia
+Current APM Level=Livello corrente APM
+Extended Power Management=Extended Power Management
+APM01=Minimo consumo di energia in standby
+APM02=Livello intermedio della gestione energia in standby
+APM80=Minimo consumo di energia senza lo standby
+APM81=Livello intermedio della gestione energia senza lo standby
+APMFE=Massime performance e massimo consumo di energia
+FreeFall01=Lowest sensitivity to free fall events
+FreeFall02=Balanced sensitivity to free fall events
+FreeFallFF=Highest sensitivity to free fall events
+Current Sensitivity=Sensibilità corrente
+Power Up In Standby=Power Up In Standby
+48-bit LBA Addressing=48-bit LBA Addressing
+Device Configuration Overlay=Device Configuration Overlay
+Read/Write DMA Queue=Read/Write DMA Queue
+Native Command Queuing=Native Command Queuing (NCQ)
+Read Ahead Buffer=Read Ahead Buffer
+Maximum Multiword DMA Mode=Maximum Multiword DMA Mode
+Active Multiword DMA Mode=Active Multiword DMA Mode
+IORDY Support=IORDY Support
+Maximum sectors transferred on R/W multiple=Maximum sectors transferred on R/W multiple
+Minimum multiword DMA transfer time=Minimum multiword DMA transfer time
+Recommended multiword DMA transfer time=Recommended multiword DMA transfer time
+Minimum PIO transfer time without IORDY=Minimum PIO transfer time without IORDY
+Minimum PIO transfer time with IORDY=Minimum PIO transfer time with IORDY
+Security Erase=Security Erase
+Security Erase Time=Security Erase Time
+Security Enhanced Erase Feature=Security Enhanced Erase Feature
+Security Enhanced Erase Time=Security Enhanced Erase Time
+Security Enabled=Security Enabled
+Security Locked=Security Locked
+Security Frozen=Security Frozen
+Security Counter Expired=Security Counter Expired
+Security Level=Security Level
+Serial ATA Features=Caratteristiche ATA Seriale
+Interface=Interfaccia
+S-ATA Compliance=S-ATA Compliance
+S-ATA I Signaling Speed (1.5 Gps)=S-ATA I Signaling Speed (1.5 Gps)
+S-ATA II Signaling Speed (3 Gps)=S-ATA II Signaling Speed (3 Gps)
+Receipt Of Power Management Requests From Host=Receipt Of Power Management Requests From Host
+PHY Event Counters=PHY Event Counters
+Non-Zero Buffer Offsets In DMA Setup FIS=Non-Zero Buffer Offsets In DMA Setup FIS
+DMA Setup Auto-Activate Optimization=DMA Setup Auto-Activate Optimization
+Device Initiating Interface Power Management=Device Initiating Interface Power Management
+In-Order Data Delivery=In-Order Data Delivery
+Asynchronous Notification=Asynchronous Notification
+Software Settings Preservation=Software Settings Preservation
+Queue Length=Lunghezza coda
+Disk Family=Famiglia
+Form Factor=Formato
+Capacity=Capacità
+Number Of Disks=Numero di piatti
+Number Of Heads=Numero di testine
+Rotational Speed=Velocità di rotazione
+RPM=RPM
+Rotation Time=Tempo di rotazione
+Average Rotational Latency=Latenza media di rotazione
+Disk Interface=Interfaccia del disco
+Buffer-Host Max. Rate=Buffer-Host Max. Rate
+Drive Ready Time (typical)=Drive Ready Time (tipico)
+Average Seek Time=Tempo medio di Seek
+Track To Track Seek Time=Tempo di seek da traccia a traccia
+Full Stroke Seek Time=Full Stroke Seek Time
+Width=Larghezza
+Depth=Profondità
+Height=Altezza
+Weight=Peso
+grams=grammi
+pounds=pounds
+Acoustic=Acustica
+Idle=Idle
+Required power for spinup=Potenza richiesta per lo spinup
+Power required (seek)=Potenza richiesta (seek)
+Power required (idle)=Potenza richiesta  (idle)
+Power required (standby)=Potenza richiesta  (standby)
+Manufacturer=Produttore
+Manufacturer Website=Sito del produttore
+; list of SMART features
+S.M.A.R.T. Details=S.M.A.R.T. Dettagli
+Off-line data collection=Off-line Data Collection Status
+OFF00=Mai avviato
+OFF02=Completato con successo
+OFF03=Attività in corso
+OFF04=Suspended By Interrupting Command From Host
+OFF05=Aborted By Interrupting Command From Host
+OFF06=Aborted By Device With Fatal Error
+Self test execution status=Self Test Execution Status
+SET00a=Completato con successo
+SET00b=Mai avviato
+SET01=Interrotto dall'Host
+SET02=Interrotto dall'Host con un reset Hardware/Software
+SET03=Errore fatale/sconosciuto durante il test
+SET04=Il test ha rilevato un errore sconosciuto
+SET05=Il test ha rilevato un errore elettrico
+SET06=Il test ha rilevato un errore al Servo/seek
+SET07=Il test ha rilevato un errore di lettura
+SET08=Il test ha rilevato un probabile danneggiamento fisico
+SET15=Test in corso
+SETCO=completato
+Total time to complete off-line data collection=Total Time To Complete Off-line Data Collection
+Execute off-line immediate=Execute Off-line Immediate
+Abort/restart off-line by host=Abort/restart Off-line By Host
+Off-line read scanning=Off-line Read Scanning
+Short Self-test=Test breve
+Extended Self-test=Test esteso
+Selective Self-test=Selective Self-Test
+Conveyance self-test=Test Conveyance
+Save data before/after power saving mode=Save Data Before/After Power Saving Mode
+Enable/Disable attribute autosave=Enable/Disable Attribute Autosave
+Error logging capability=Error Logging Capability
+Short Self-test Estimated Time=Tempo stimato per il test breve
+Extended Self-test Estimated Time=Tempo stimato per il test esteso
+Last Short Self-test Result=Risultato dell'ultimo test breve
+Last Short Self-test Date=Data dell'ultimo test breve
+Last Short Self-test Duration=Durata dell'ultimo test breve
+Last Extended Self-test Result=Risultato dell'ultimo test esteso
+Last Extended Self-test Date=Data dell'ultimo test esteso
+Last Extended Self-test Duration=Durata dell'ultimo test esteso
+Last Conveyance Self-test Result=Risultato dell'ultimo Conveyance test
+Last Conveyance Self-test Date=Data dell'ultimo Conveyance test
+Last Conveyance Self-test Duration=Durata dell'ultimo Conveyance test
+NOP Command=NOP Command
+Trusted Computing=Trusted Computing
+64-bit World Wide ID=64-bit World Wide ID
+Streaming=Streaming
+Media Card Pass Through=Media Card Pass Through
+General Purpose Logging=General Purpose Logging
+Error Logging=Error Logging
+CFA Feature Set=CFA Feature Set
+Long Physical Sectors=Long Physical Sectors
+Long Logical Sectors=Long Logical Sectors
+Write-Read-Verify=Write-Read-Verify
+NV Cache Feature=NV Cache Feature
+NV Cache Power Mode=NV Cache Power Mode
+
+# added 4 Nov 2008 
+Transport Version=Transport Version
+NV Cache Size=NV Cache Size
+Free-fall Control=Free-fall Control
+Free-fall Control Sensitivity=Free-fall Control Sensitivity
+Non-rotating Media (SSD)=Dischi a stato solido (SSD)
+Nominal Media Rotation Rate=Velocità media nominale di rotazione
+S-ATA Gen3 Signaling Speed (6 Gps)=S-ATA Gen3 Signaling Speed (6 Gps)
+
+# added 19 Jun 2009
+CFast Device=CFast Device
+SSD Features=Caratteristiche SSD
+Data Set Management=Data Set Management
+TRIM Command=TRIM Command
+Deterministic Read After TRIM=Deterministic Read After TRIM
+
+Operating System TRIM Function=Operating System TRIM Function
+
+# added 3 Oct 2011
+
+Self-Test Results=Self-Test Results
+SST05=First Segment of the Test Failed
+SST06=Second Segment of the Test Failed
+SST07=Self Test Failed at Test Segment
+SSTN=Self-Test Segment
+SSTN0=No Segment ID Available
+SSTH=Power On Hours
+SSTL=Failure Address (LBA)
+SSHL=The hard disk reports the following problems:
+
+
+SA1=Indica il numero delle volte in cui e' capitato un errore di lettura leggendo un dato dalla superficie del disco\Indica problemi nella superficie del disco o nelle testine di lettura/scrittura..
+SA2=Prestazioni generali del disco\Indica problemi al motore, servomeccanismo o alla cinghia
+SA3=Tempo necessario allo spindle per arrivare ai giri nominali\Indica problemi con il motore o con la cinghia.
+SA4=Contatore di cicli di start/stop dello spindle\Questo valore non influisce sulle condizioni dello stato del disco.
+SA5=Contatore di settori mossi nell'area di riserva\Indica problemi nella superficie del disco o nelle testine di lettura/scrittura.
+SA6=Margine di un canale mentre e' in atto una lettura. La funzione di questo attributo non e' specificata.
+SA7=Numero degli errori di posizionamento delle testine magnetiche\Indica problemi al sistema di asservimento e/o alle testine. L'alta temperatura può causare questo problema.
+SA8=Tempo medio di posizionamento delle testine\Indica problemi al meccanismo di asservimento.
+SA9=Tempo totale di funzionanmento\L'unità di misura dipende dal produttore.
+SA10=Tentativi di avviamento dello spindel\Indica problemi al motore, cinghia o all'alimentatore.
+SA11=Numero di tentativi per calibrare il disco\Indicata problemi al motore, cuscinetti o all'alimentatore.
+SA12=Numero di cicli completi di accensione/spegnimenti\Questo parametro non influisce sulla condizione del disco.
+SA13=Numero di errori software di lettura\Il numero di errori di lettura incorreggibili.
+SA184=Number of parity errors during transfer between the cache RAM and the host.
+SA187=Errori che non possono esssere corretti usando i metodi di correzione hardware.
+SA187MTRON=Virtual block erase count\Indicate the wear of the storage device.
+SA188=Numero di operazioni abortite a causa del timeout del HDD. Valori maggiore di zero indicano un problema dell'alimentatore o del cavo di connessione.
+SA189=Number of unsafe write operations outside the normal head flying range.
+SA190=Temperatura dell'aria\La temperatura dell'aria all'interno dell'alloggiamento del disco.
+SA191=Contatore di problemi avvenuti da shock meccanici\L'accelerazione (per esempio a seguito di caduta) può causare uno shock meccanico.
+SA192=Contatore di cicli di spegnimento\Questo parametro non influisce sullo stato del disco.
+SA193=Contatore di cicli di load/unload\Numero di cicli nei quali le testine vengono posizionate nella zona di atterraggio.
+SA194=Temperatura del disco\La temperatura interna del disco.
+SA195=Contatore di errori correggibili\Numero di errori corretti dal meccanismo interno.
+SA196=Contatore di operazioni di remapping\Numero di operazioni di remapping dei settori (eseguiti con successo o falliti).
+SA197=Numero di settori instabili\Questi settori potrebbero essere spostati nell'area di riserva.
+SA198=Contatore di errori incorreggibili durante la lettura/scrittura\Indica problemi della superficie del disco o delle testine.
+SA199=Contatore di errori durane il trasferimento di dati tra il disco e l'host\Indica problemi di alimentazione o nei cavi di collegamento.
+SA200=Errori avvenuti durante la scrittura di dati raw\Indica problemi della superficie del disco o delle testine.
+SA201=Numero d errori software di lettura\Il numero di errori software incorreggibili.
+SA202=Numer di errori di indirizzamento\Numero di indirizzi invalidi o scorretti
+SA203=Numero di errori di correzione dati\Carattere di controllo invalido durante la correzzione dell'errore.
+SA204=Numero di errori (data) corretti\Errori corretti automaticamente dal meccanismo di correzzione errori.
+SA205=Numero di problemi termici\Numero totale di problemi termici causati dall'alta temperatura.
+SA206=Altezza di volo della testina\Spessore (di aria)  tra la testina e la superficie del disco.
+SA207=Valore di corrente durante l'avvio del disco\La corrente necessaria all'avvio del disco.
+SA208=Numero di cicli necessari allo spin up\Il numero di tentativi durante lo spin up a causa di una bassa corrente.
+SA209=Prestazioni del disco durante le operazini offline\Le prestazioni degli spostamenti del braccio durante l'autodiagnosi.
+SA211=Vibration encountered during write operations.
+SA212=Shock encountered during write operations.
+SA220=Distanza tra posizione delle testine rispetto allo spindle\Incorretto disk spin puo' causare shock meccanici o alta temperatura.
+SA221=Numero di errori meccanici\Numero di errori a causa di shock o di vibrazioni.
+SA222=Numero di ore di funzionamento\Questo valore e' incrementato costantemente (una volta al'ora).
+SA223=Numero di caricamenti/scaricamenti\Il numero di volte che le testine entrano/escono dalla zona dati.
+SA224=Tasso di attrito meccanico\Tasso di attrito tra le parti meccaniche. Indica problemi a sistema meccanicodi asservimento del disco.
+SA226=Numero di volte di caricamento delle testine\Il tempo durante il quale le testine di lettura/scrittura sono in zona dati.
+SA227=Tasso di aumento di coppia di torsione\Incremento di torsione a seguito di operazioni di spin up del disco.
+SA228=Numero di cicli di spegnimento\Il numero di volte che le testine si sono retratte a seguito mancata alimentazione.
+SA230=Ampiezza del posizionamento della testina\Distanza di spostamento della testina durante le operazioni.
+SA231=Temperatura del disco\La temperatura interna del disco.
+SA240=Numero di posizionamenti delle testine per ora\Tempo speso per il posizionamento delle testine del disco.
+SA250=Numero di tentativi durante le operazioni di lettura\Numero di errori durante la lettura di settori sulla superficie del disco.
+SA254=Number of free fall events detected by the accelerometer sensor.
+SA255=Parametro specifico\La funzione e il valore di questo parametro e' definito dal produttore.
+
+SC01=Buffer over/under run counters
+SC02_0000=Write errors corrected without substantial delay
+SC02_0001=Write errors corrected with possible delays
+SC02_0002=Total write errors
+SC02_0003=Total write errors corrected
+SC02_0004=Total write errors corrected by algorithm
+SC02_0005=Total bytes written
+SC02_0006=Total uncorrected write errors
+SC03_0000=Read errors corrected by ECC hardware method
+SC03_0001=Read errors corrected with possible delays
+SC03_0002=Total read errors
+SC03_0003=Total read errors corrected
+SC03_0004=Total read errors corrected by algorithm
+SC03_0005=Total bytes read
+SC03_0006=Total uncorrected read errors
+SC04_0000=Read reverse errors corrected by ECC hardware method
+SC04_0001=Read reverse errors corrected with possible delays
+SC04_0002=Total read reverse errors
+SC04_0003=Total read reverse errors corrected
+SC04_0004=Total read reverse errors corrected by algorithm
+SC04_0005=Total bytes read reverse 
+SC04_0006=Total uncorrected read reverse errors
+SC05_0000=Verify errors corrected without substantial delay
+SC05_0001=Verify errors corrected with possible delays
+SC05_0002=Total verify errors
+SC05_0003=Total verify errors corrected
+SC05_0004=Total verify errors corrected by algorithm
+SC05_0005=Total bytes verified
+SC05_0006=Total uncorrected verify errors
+SC06_0000=Non medium errors
+SC07=Last error event
+SC0B=Last deferred error or asynchronous event
+SC0D_0000=Temperature
+SC0D_0001=Reference temperature
+SC0E_0001=Manufacture date (year/week)
+SC0E_0002=Accounting date
+SC0E_0003=Specified cycle count over device lifetime
+SC0E_0004=Accumulated start-stop cycles
+SC0E_0005=Specified load-unload count over device lifetime
+SC0E_0006=Accumulated load-unload cycles
+SC0F=Application client parameter data
+SC10=Self test results log
+SC18=Protocol specific port log
+SC1A_0001=Accumulated transitions to active
+SC1A_0002=Accumulated transitions to idle_a
+SC1A_0003=Accumulated transitions to idle_b
+SC1A_0004=Accumulated transitions to idle_c
+SC1A_0008=Accumulated transitions to standby_z
+SC1A_0009=Accumulated transitions to standby_y
+SC37_0000=Blocks sent to initiator
+SC37_0001=Blocks received from initiator
+SC37_0002=Blocks read from cache and sent to initiator
+SC37_0003=I/O commands with size smaller than segment size
+SC37_0004=I/O commands with size larger than segment size
+SC3E_0000=Power on time
+SC3E_8000=Power on time
+SC3E_0008=Remaining minutes until next internal test

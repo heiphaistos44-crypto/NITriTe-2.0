@@ -1,0 +1,99 @@
+use serde::Serialize;
+use std::process::Command;
+
+use crate::error::NiTriTeError;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EventLogEntry {
+    pub id: u64,
+    pub level: String,
+    pub source: String,
+    pub timestamp: String,
+    pub message: String,
+}
+
+/// Recupere les logs Windows Event Viewer via wevtutil
+pub fn get_event_logs(log_name: &str, count: u32) -> Result<Vec<EventLogEntry>, NiTriTeError> {
+    // Valider le nom du log (securite)
+    let valid_logs = ["System", "Application", "Security", "Setup"];
+    if !valid_logs.contains(&log_name) {
+        return Err(NiTriTeError::System(format!("Log invalide: {}. Valides: {:?}", log_name, valid_logs)));
+    }
+
+    let count = count.min(200); // Limiter a 200 max
+
+    let output = Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-Command",
+            &format!(
+                "Get-WinEvent -LogName '{}' -MaxEvents {} -ErrorAction SilentlyContinue | Select-Object Id, LevelDisplayName, ProviderName, TimeCreated, Message | ConvertTo-Json -Depth 2",
+                log_name, count
+            ),
+        ])
+        .output()
+        .map_err(|e| NiTriTeError::System(format!("Erreur wevtutil: {}", e)))?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    if stdout.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+
+    // Parser le JSON PowerShell
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim())
+        .unwrap_or_else(|_| serde_json::Value::Array(Vec::new()));
+
+    let entries = match parsed {
+        serde_json::Value::Array(arr) => arr,
+        obj @ serde_json::Value::Object(_) => vec![obj], // Un seul resultat
+        _ => Vec::new(),
+    };
+
+    let result: Vec<EventLogEntry> = entries
+        .iter()
+        .filter_map(|e| {
+            Some(EventLogEntry {
+                id: e.get("Id")?.as_u64().unwrap_or(0),
+                level: e.get("LevelDisplayName")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Information")
+                    .to_string(),
+                source: e.get("ProviderName")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Unknown")
+                    .to_string(),
+                timestamp: extract_timestamp(e.get("TimeCreated")?),
+                message: e.get("Message")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .chars()
+                    .take(500) // Tronquer les messages trop longs
+                    .collect(),
+            })
+        })
+        .collect();
+
+    Ok(result)
+}
+
+/// Extrait le timestamp d'un objet PowerShell DateTime serialise
+fn extract_timestamp(val: &serde_json::Value) -> String {
+    // PowerShell serialise DateTime comme "/Date(timestamp)/" ou comme string
+    if let Some(s) = val.as_str() {
+        return s.to_string();
+    }
+    if let Some(obj) = val.as_object() {
+        if let Some(date_str) = obj.get("DateTime").and_then(|v| v.as_str()) {
+            return date_str.to_string();
+        }
+        if let Some(ticks) = obj.get("Ticks").and_then(|v| v.as_i64()) {
+            // Convertir les ticks .NET en timestamp lisible
+            let secs = (ticks / 10_000_000) - 62_135_596_800; // Epoch .NET -> Unix
+            if let Some(dt) = chrono::DateTime::from_timestamp(secs, 0) {
+                return dt.format("%Y-%m-%d %H:%M:%S").to_string();
+            }
+        }
+    }
+    "Unknown".to_string()
+}

@@ -1,0 +1,353 @@
+[
+  {
+    "id": "vcredist-2015-2022",
+    "name": "Visual C++ Redistributable 2015-2022",
+    "description": "Runtime requis par la plupart des applications et jeux modernes",
+    "category": "Runtime",
+    "url": "https://aka.ms/vs/17/release/vc_redist.x64.exe",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2015-2022"
+  },
+  {
+    "id": "vcredist-2013",
+    "name": "Visual C++ Redistributable 2013",
+    "description": "Runtime pour applications compilees avec VS 2013",
+    "category": "Runtime",
+    "url": "https://aka.ms/highdpimfc2013x64enu",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\12.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2013"
+  },
+  {
+    "id": "vcredist-2012",
+    "name": "Visual C++ Redistributable 2012",
+    "description": "Runtime pour applications compilees avec VS 2012",
+    "category": "Runtime",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=30679",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\11.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2012"
+  },
+  {
+    "id": "vcredist-2010",
+    "name": "Visual C++ Redistributable 2010",
+    "description": "Runtime pour applications compilees avec VS 2010",
+    "category": "Runtime",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=26999",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\10.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2010"
+  },
+  {
+    "id": "dotnet-8",
+    "name": ".NET 8 Runtime",
+    "description": "Runtime .NET 8 LTS pour applications modernes",
+    "category": "Runtime",
+    "url": "https://dotnet.microsoft.com/fr-fr/download/dotnet/8.0",
+    "check_registry": null,
+    "check_name": ".NET Runtime 8"
+  },
+  {
+    "id": "dotnet-framework-48",
+    "name": ".NET Framework 4.8",
+    "description": "Framework .NET classique requis par de nombreuses applications",
+    "category": "Runtime",
+    "url": "https://dotnet.microsoft.com/fr-fr/download/dotnet-framework/net48",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full",
+    "check_name": ".NET Framework 4.8"
+  },
+  {
+    "id": "directx-runtime",
+    "name": "DirectX End-User Runtime",
+    "description": "Composants DirectX supplementaires pour jeux et multimedia",
+    "category": "Graphique",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=35",
+    "check_registry": null,
+    "check_name": "DirectX"
+  },
+  {
+    "id": "nvidia-drivers",
+    "name": "NVIDIA GeForce Drivers",
+    "description": "Pilotes officiels pour cartes graphiques NVIDIA",
+    "category": "GPU",
+    "url": "https://www.nvidia.fr/Download/index.aspx",
+    "check_registry": null,
+    "check_name": "NVIDIA Graphics Driver"
+  },
+  {
+    "id": "amd-drivers",
+    "name": "AMD Radeon Software",
+    "description": "Pilotes et utilitaire Adrenalin pour GPU AMD",
+    "category": "GPU",
+    "url": "https://www.amd.com/fr/support",
+    "check_registry": null,
+    "check_name": "AMD Software"
+  },
+  {
+    "id": "intel-graphics",
+    "name": "Intel Graphics Driver",
+    "description": "Pilotes graphiques Intel integres",
+    "category": "GPU",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/detect.html",
+    "check_registry": null,
+    "check_name": "Intel Graphics"
+  },
+  {
+    "id": "realtek-audio",
+    "name": "Realtek HD Audio Driver",
+    "description": "Pilotes audio haute definition Realtek",
+    "category": "Audio",
+    "url": "https://www.realtek.com/en/component/zoo/category/pc-audio-codecs-high-definition-audio-codecs-software",
+    "check_registry": null,
+    "check_name": "Realtek High Definition Audio"
+  },
+  {
+    "id": "realtek-ethernet",
+    "name": "Realtek Ethernet Driver",
+    "description": "Pilotes reseau Ethernet Realtek",
+    "category": "Réseau",
+    "url": "https://www.realtek.com/en/component/zoo/category/network-interface-controllers-10-100-1000m-gigabit-ethernet-pci-express-software",
+    "check_registry": null,
+    "check_name": "Realtek Ethernet"
+  },
+  {
+    "id": "intel-chipset",
+    "name": "Intel Chipset INF",
+    "description": "Pilotes chipset Intel pour carte mere",
+    "category": "Chipset",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/detect.html",
+    "check_registry": null,
+    "check_name": "Intel Chipset"
+  },
+  {
+    "id": "amd-chipset",
+    "name": "AMD Chipset Driver",
+    "description": "Pilotes chipset AMD pour carte mere",
+    "category": "Chipset",
+    "url": "https://www.amd.com/fr/support",
+    "check_registry": null,
+    "check_name": "AMD Chipset"
+  },
+  {
+    "id": "snappy-driver",
+    "name": "Snappy Driver Installer",
+    "description": "Installateur automatique de pilotes (portable, gratuit)",
+    "category": "Utilitaire",
+    "url": "https://sdi-tool.org/",
+    "check_registry": null,
+    "check_name": null
+  },
+  {
+    "id": "driver-booster",
+    "name": "IObit Driver Booster",
+    "description": "Mise a jour automatique des pilotes",
+    "category": "Utilitaire",
+    "url": "https://www.iobit.com/en/driver-booster.php",
+    "check_registry": null,
+    "check_name": "Driver Booster"
+  },
+  {
+    "id": "java-runtime",
+    "name": "Java Runtime Environment",
+    "description": "Runtime Java pour applications necessitant la JVM",
+    "category": "Runtime",
+    "url": "https://www.java.com/fr/download/",
+    "check_registry": "HKLM\\SOFTWARE\\JavaSoft\\Java Runtime Environment",
+    "check_name": "Java"
+  },
+  {
+    "id": "vulkan-runtime",
+    "name": "Vulkan Runtime",
+    "description": "Runtime Vulkan pour jeux et applications graphiques modernes",
+    "category": "Graphique",
+    "url": "https://vulkan.lunarg.com/sdk/home",
+    "check_registry": null,
+    "check_name": "Vulkan Runtime"
+  },
+  {
+    "id": "openal",
+    "name": "OpenAL",
+    "description": "Bibliotheque audio 3D utilisee par de nombreux jeux",
+    "category": "Audio",
+    "url": "https://www.openal.org/downloads/",
+    "check_registry": null,
+    "check_name": "OpenAL"
+  },
+  {
+    "id": "xna-framework",
+    "name": "XNA Framework 4.0",
+    "description": "Framework requis par certains jeux independants",
+    "category": "Runtime",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=20914",
+    "check_registry": null,
+    "check_name": "Microsoft XNA Framework"
+  },
+  {
+    "id": "vcredist-2008",
+    "name": "Visual C++ Redistributable 2008",
+    "description": "Runtime pour applications compilees avec VS 2008",
+    "category": "Runtime",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=26368",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\9.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2008"
+  },
+  {
+    "id": "vcredist-2005",
+    "name": "Visual C++ Redistributable 2005",
+    "description": "Runtime pour applications compilees avec VS 2005",
+    "category": "Runtime",
+    "url": "https://www.microsoft.com/fr-fr/download/details.aspx?id=26347",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\8.0\\VC\\Runtimes\\X64",
+    "check_name": "Microsoft Visual C++ 2005"
+  },
+  {
+    "id": "dotnet-35",
+    "name": ".NET Framework 3.5",
+    "description": "Framework legacy requis par certains logiciels anciens",
+    "category": "Runtime",
+    "url": "https://dotnet.microsoft.com/fr-fr/download/dotnet-framework/net35",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5",
+    "check_name": ".NET Framework 3.5"
+  },
+  {
+    "id": "dotnet-6",
+    "name": ".NET 6 Runtime",
+    "description": "Runtime .NET 6 LTS (maintenance jusqu'en 2024)",
+    "category": "Runtime",
+    "url": "https://dotnet.microsoft.com/fr-fr/download/dotnet/6.0",
+    "check_registry": null,
+    "check_name": ".NET Runtime 6"
+  },
+  {
+    "id": "intel-rst",
+    "name": "Intel RST (Rapid Storage Technology)",
+    "description": "Pilote gestion RAID et stockage NVMe/SATA Intel",
+    "category": "Chipset",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/detect.html",
+    "check_registry": null,
+    "check_name": "Intel Rapid Storage Technology"
+  },
+  {
+    "id": "realtek-usb-audio",
+    "name": "Realtek USB Audio Driver",
+    "description": "Pilotes pour interfaces audio USB Realtek",
+    "category": "Audio",
+    "url": "https://www.realtek.com/en/component/zoo/category/usb-audio-ic-software",
+    "check_registry": null,
+    "check_name": "Realtek USB Audio"
+  },
+  {
+    "id": "windows-bluetooth",
+    "name": "Bluetooth Generic Driver",
+    "description": "Pilote Bluetooth Windows generique — active dans Gestionnaire de peripheriques",
+    "category": "Réseau",
+    "url": "ms-settings:bluetooth",
+    "check_registry": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\BthServ",
+    "check_name": null
+  },
+  {
+    "id": "usb3-xhci",
+    "name": "USB 3.0/3.1 xHCI Driver",
+    "description": "Pilote controleur USB 3.x eXtensible Host Controller",
+    "category": "USB",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/detect.html",
+    "check_registry": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\xhci",
+    "check_name": null
+  },
+  {
+    "id": "asmedia-usb3",
+    "name": "ASMedia USB 3.x Controller",
+    "description": "Pilote controleur USB 3.x ASMedia (ASM1042/1074/2142)",
+    "category": "USB",
+    "url": "https://www.asmedia.com.tw/product/USBcontroller",
+    "check_registry": null,
+    "check_name": "ASMedia USB"
+  },
+  {
+    "id": "renesas-usb3",
+    "name": "Renesas USB 3.0 Controller",
+    "description": "Pilote controleur USB 3.0 Renesas/NEC (anciennes cartes mere)",
+    "category": "USB",
+    "url": "https://www.driverscloud.com/fr/services/GetInformations/73840-1096895/usb-30-driver-renesas-electronics",
+    "check_registry": null,
+    "check_name": "Renesas USB"
+  },
+  {
+    "id": "via-usb",
+    "name": "VIA USB Controller Driver",
+    "description": "Pilote controleur USB VIA Technologies",
+    "category": "USB",
+    "url": "https://www.via-labs.com/product_list.php?mfm=2",
+    "check_registry": null,
+    "check_name": "VIA USB"
+  },
+  {
+    "id": "webview2",
+    "name": "Microsoft Edge WebView2 Runtime",
+    "description": "Runtime WebView2 requis par de nombreuses apps modernes (Edge, Teams, Office...)",
+    "category": "Runtime",
+    "url": "https://developer.microsoft.com/fr-fr/microsoft-edge/webview2/",
+    "check_registry": "HKLM\\SOFTWARE\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+    "check_name": "Microsoft Edge WebView2 Runtime"
+  },
+  {
+    "id": "dotnet-9",
+    "name": ".NET 9 Runtime",
+    "description": "Runtime .NET 9 (derniere version stable)",
+    "category": "Runtime",
+    "url": "https://dotnet.microsoft.com/fr-fr/download/dotnet/9.0",
+    "check_registry": null,
+    "check_name": ".NET Runtime 9"
+  },
+  {
+    "id": "windows-app-runtime",
+    "name": "Windows App Runtime (WinUI 3)",
+    "description": "Runtime WinUI 3 / Project Reunion requis par apps MSIX modernes",
+    "category": "Runtime",
+    "url": "https://learn.microsoft.com/fr-fr/windows/apps/windows-app-sdk/downloads",
+    "check_registry": null,
+    "check_name": "Windows App Runtime"
+  },
+  {
+    "id": "directplay",
+    "name": "DirectPlay (legacy)",
+    "description": "Composant DirectPlay requis par certains vieux jeux multijoueur",
+    "category": "Runtime",
+    "url": "https://learn.microsoft.com/fr-fr/windows/win32/directplay/directplay",
+    "check_registry": null,
+    "check_name": "DirectPlay"
+  },
+  {
+    "id": "intel-network",
+    "name": "Intel Network Adapter Driver",
+    "description": "Pilotes officiels Intel pour cartes reseau Ethernet et WiFi",
+    "category": "Réseau",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/products/36773/ethernet-products.html",
+    "check_registry": null,
+    "check_name": "Intel Network"
+  },
+  {
+    "id": "wifi-intel-ax",
+    "name": "Intel Wi-Fi 6/7 Driver (AX series)",
+    "description": "Pilotes WiFi Intel AX200/AX201/AX210/AX211 (Wi-Fi 6/6E/7)",
+    "category": "WiFi",
+    "url": "https://www.intel.fr/content/www/fr/fr/support/articles/000005634/wireless/legacy-intel-wireless-products.html",
+    "check_registry": null,
+    "check_name": "Intel Wi-Fi"
+  },
+  {
+    "id": "mediatek-wifi",
+    "name": "MediaTek / Ralink WiFi Driver",
+    "description": "Pilotes WiFi MediaTek/Ralink (nombreux portables et dongles USB)",
+    "category": "WiFi",
+    "url": "https://www.mediatek.com/products/broadbandWifi",
+    "check_registry": null,
+    "check_name": "MediaTek Wi-Fi"
+  },
+  {
+    "id": "tp-link-usb-wifi",
+    "name": "TP-Link USB WiFi Adapter Driver",
+    "description": "Pilotes pour adaptateurs WiFi USB TP-Link",
+    "category": "USB",
+    "url": "https://www.tp-link.com/fr/support/download/",
+    "check_registry": null,
+    "check_name": "TP-Link Wireless"
+  }
+]

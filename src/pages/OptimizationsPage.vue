@@ -1,0 +1,776 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import NCard from "@/components/ui/NCard.vue";
+import NButton from "@/components/ui/NButton.vue";
+import NSpinner from "@/components/ui/NSpinner.vue";
+import NBadge from "@/components/ui/NBadge.vue";
+import { useNotificationStore } from "@/stores/notifications";
+import {
+  Trash2, FileX, HardDrive, RefreshCw,
+  Rocket, CheckCircle, Play, XCircle,
+  Globe, CheckSquare, Square,
+  Shield, Wifi, Zap, AlertCircle, Settings,
+} from "lucide-vue-next";
+
+const notify = useNotificationStore();
+
+// --- Quick actions ---
+interface ActionResult {
+  loading: boolean;
+  done: boolean;
+  message: string;
+}
+
+const recycleBin = ref<ActionResult>({ loading: false, done: false, message: "" });
+const tempFiles = ref<ActionResult>({ loading: false, done: false, message: "" });
+const diskCleanup = ref<ActionResult>({ loading: false, done: false, message: "" });
+
+async function emptyRecycleBin() {
+  recycleBin.value = { loading: true, done: false, message: "" };
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const result = await invoke<{ message: string }>("empty_recycle_bin");
+    recycleBin.value = { loading: false, done: true, message: result.message };
+    notify.success("Corbeille videe", result.message);
+  } catch (e: any) {
+    recycleBin.value = { loading: false, done: true, message: "Corbeille videe (demo)" };
+    notify.info("Mode dev", "Simulation : corbeille videe");
+  }
+}
+
+async function cleanTempFiles() {
+  tempFiles.value = { loading: true, done: false, message: "" };
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const result = await invoke<{ files_deleted: number; space_freed: string; message: string }>("clean_temp_files");
+    tempFiles.value = { loading: false, done: true, message: result.message };
+    notify.success("Nettoyage termine", result.message);
+  } catch {
+    tempFiles.value = { loading: false, done: true, message: "247 fichiers supprimes, 1.2 GB liberes (demo)" };
+    notify.info("Mode dev", "Simulation : fichiers temp nettoyes");
+  }
+}
+
+async function runDiskCleanup() {
+  diskCleanup.value = { loading: true, done: false, message: "" };
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const result = await invoke<{ message: string }>("run_disk_cleanup");
+    diskCleanup.value = { loading: false, done: true, message: result.message };
+    notify.success("Nettoyage disque", result.message);
+  } catch {
+    diskCleanup.value = { loading: false, done: true, message: "Nettoyage de disque termine (demo)" };
+    notify.info("Mode dev", "Simulation : nettoyage disque effectue");
+  }
+}
+
+// --- Startup programs ---
+interface StartupProgram {
+  name: string;
+  command: string;
+  location: string;
+  user: string;
+}
+
+const startupPrograms = ref<StartupProgram[]>([]);
+const startupLoading = ref(true);
+
+async function loadStartupPrograms() {
+  startupLoading.value = true;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    startupPrograms.value = await invoke<StartupProgram[]>("get_startup_programs");
+  } catch {
+    startupPrograms.value = [
+      { name: "Discord", command: "C:\\Users\\User\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
+      { name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" /silentlaunch", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
+      { name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
+      { name: "SecurityHealth", command: "C:\\Windows\\System32\\SecurityHealthSystray.exe", location: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Systeme" },
+      { name: "RealTek Audio", command: "C:\\Program Files\\Realtek\\Audio\\HDA\\RtkNGUI64.exe -s", location: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Systeme" },
+    ];
+  } finally {
+    startupLoading.value = false;
+  }
+}
+
+async function disableProgram(prog: StartupProgram) {
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("disable_startup_program", { name: prog.name, location: prog.location });
+    notify.success(`${prog.name} desactive du demarrage`);
+    await loadStartupPrograms();
+  } catch (e: any) {
+    notify.error(e?.toString() || `Impossible de desactiver ${prog.name}`);
+  }
+}
+
+// --- Browser Cleanup ---
+interface BrowserCache {
+  id: string;
+  name: string;
+  detected: boolean;
+  cache_size_mb: number;
+  selected: boolean;
+}
+
+const browsers = ref<BrowserCache[]>([]);
+const browsersLoading = ref(false);
+const cleaningBrowsers = ref(false);
+const cleanResult = ref<{ freed: number; deleted: number } | null>(null);
+
+async function loadBrowserCaches() {
+  browsersLoading.value = true;
+  cleanResult.value = null;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const data = await invoke<any[]>("get_browser_cache_sizes");
+    browsers.value = data
+      .filter((b: any) => b.detected)
+      .map((b: any) => ({ ...b, selected: true }));
+  } catch {
+    browsers.value = [
+      { id: "chrome", name: "Google Chrome", detected: true, cache_size_mb: 245.3, selected: true },
+      { id: "edge", name: "Microsoft Edge", detected: true, cache_size_mb: 128.7, selected: true },
+      { id: "firefox", name: "Mozilla Firefox", detected: true, cache_size_mb: 89.2, selected: true },
+    ];
+  } finally {
+    browsersLoading.value = false;
+  }
+}
+
+async function cleanSelectedBrowsers() {
+  const selected = browsers.value.filter(b => b.selected).map(b => b.id);
+  if (selected.length === 0) {
+    notify.warning("Selectionnez au moins un navigateur");
+    return;
+  }
+  cleaningBrowsers.value = true;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const results = await invoke<any[]>("clean_browser_cache", { browserIds: selected });
+    const totalFreed = results.reduce((sum: number, r: any) => sum + r.freed_mb, 0);
+    const totalDeleted = results.reduce((sum: number, r: any) => sum + r.files_deleted, 0);
+    cleanResult.value = { freed: totalFreed, deleted: totalDeleted };
+    notify.success("Nettoyage termine", `${totalFreed.toFixed(1)} MB liberes, ${totalDeleted} fichiers supprimes`);
+    await loadBrowserCaches();
+  } catch (e: any) {
+    notify.error(e?.toString() || "Erreur nettoyage navigateurs");
+  } finally {
+    cleaningBrowsers.value = false;
+  }
+}
+
+const totalBrowserCache = computed(() =>
+  browsers.value.reduce((sum, b) => sum + b.cache_size_mb, 0)
+);
+
+// === Debloat ===
+interface DebloatResult { action: string; success: boolean; message: string; }
+interface DebloatBtn {
+  id: string; label: string; icon: any;
+  cmd: string; param?: string;
+  loading: boolean; result: DebloatResult | null;
+}
+
+function db(id: string, label: string, icon: any, cmd = "debloat_run_extra"): DebloatBtn {
+  return { id, label, icon, cmd, param: cmd === "debloat_run_extra" ? id : undefined, loading: false, result: null };
+}
+
+const debloatBtns = ref<DebloatBtn[]>([
+  db("telemetry", "Désactiver Télémétrie", Shield, "debloat_disable_telemetry"),
+  db("cortana", "Désactiver Cortana", Shield, "debloat_disable_cortana"),
+  db("xbox", "Services Xbox", Shield, "debloat_disable_xbox"),
+  db("superfetch", "Désactiver SysMain", Zap, "debloat_disable_superfetch"),
+  db("tips", "Conseils Windows", Shield, "debloat_disable_tips"),
+  db("bloatware", "Supprimer Bloatware UWP", Trash2, "debloat_remove_bloatware"),
+  db("disable_gamebar", "Game Bar & DVR", Shield),
+  db("disable_bing_search", "Désactiver Bing Start", Shield),
+  db("disable_widgets", "Désactiver Widgets", Shield),
+  db("disable_ads", "Publicités Windows", Shield),
+  db("disable_activity_history", "Historique Activité", Shield),
+  db("disable_remote_assistance", "Assistance à Distance", Shield),
+  db("disable_startup_sound", "Son Démarrage", Shield),
+  db("clear_prefetch", "Vider Prefetch", Trash2),
+  db("remove_teams", "Supprimer Teams", Trash2),
+  db("disable_recall", "Désactiver Recall/IA", Shield),
+  db("disable_ink_workspace", "Windows Ink Workspace", Shield),
+  db("disable_location", "Service Localisation", Shield),
+  db("disable_feedback", "Retours Expérience", Shield),
+  db("disable_consumer_features", "Promos Windows", Shield),
+]);
+
+const networkBtns = ref<DebloatBtn[]>([
+  db("dns", "Flush DNS", Wifi, "debloat_flush_dns"),
+  db("winsock", "Reset Winsock + TCP/IP", Wifi, "debloat_reset_network"),
+  db("renew_ip", "Renouveler IP (release/renew)", Wifi),
+  db("register_dns", "Réenregistrer DNS", Wifi),
+  db("disable_ipv6", "Désactiver IPv6", Wifi),
+  db("disable_teredo", "Désactiver Teredo", Wifi),
+  db("disable_llmnr", "Désactiver LLMNR", Shield),
+  db("disable_netbios", "Désactiver NetBIOS TCP", Shield),
+  db("reset_firewall", "Reset Pare-feu", Shield),
+  db("disable_wifi_sense", "Désactiver Wi-Fi Sense", Wifi),
+  db("disable_nagle", "Désactiver Nagle (gaming)", Zap),
+  db("purge_arp", "Purger Cache ARP", Wifi),
+  db("set_dns_google", "DNS Google (8.8.8.8)", Wifi),
+  db("set_dns_cloudflare", "DNS Cloudflare (1.1.1.1)", Wifi),
+  db("optimize_mtu", "Optimiser MTU (1500)", Wifi),
+  db("show_net_stats", "Statistiques Réseau", Wifi),
+  db("reset_winsock_only", "Reset Winsock seul", Wifi),
+  db("reset_tcpip_only", "Reset TCP/IP seul", Wifi),
+  db("disable_rdp", "Désactiver Bureau à Distance", Shield),
+  db("disable_wifi_sense", "Désactiver mDNS local", Shield),
+]);
+
+const perfBtns = ref<DebloatBtn[]>([
+  db("power", "Plan Haute Performance", Zap, "debloat_optimize_power"),
+  db("visual", "Réduire Effets Visuels", Zap, "debloat_disable_visual_effects"),
+  db("trim", "Activer TRIM SSD", HardDrive, "debloat_enable_trim"),
+  db("wucache", "Vider Cache Windows Update", Trash2, "debloat_clear_wu_cache"),
+  db("evtlogs", "Vider Journaux Événements", FileX, "debloat_clear_event_logs"),
+  db("empty_standby", "Vider RAM Standby", Zap),
+  db("disable_search_index", "Désactiver Indexation", HardDrive),
+  db("disable_error_reporting", "Désactiver Rapport Erreurs", Shield),
+  db("boost_foreground", "Priorité Apps Foreground", Zap),
+  db("disable_auto_maintenance", "Désactiver Maintenance Auto", RefreshCw),
+  db("disable_bg_apps", "Apps Arrière-Plan OFF", Shield),
+  db("disable_start_animations", "Animations Menu OFF", Zap),
+  db("optimize_pagefile", "Fichier Échange Auto", HardDrive),
+  db("disable_hpet", "Optimiser Timer (Gaming)", Zap),
+  db("clean_old_shadows", "Supprimer Vieux Shadows", Trash2),
+  db("set_power_min_processor", "CPU Min 5% (anti-throttle)", Zap),
+  db("clear_prefetch", "Vider Prefetch", Trash2),
+  db("disable_feedback", "Arrêter Télémétrie CEIP", Shield),
+  db("disable_activity_history", "Désactiver Timeline", Shield),
+  db("disable_gamebar", "Overlay Gaming OFF", Shield),
+]);
+
+async function runDebloat(btn: DebloatBtn) {
+  btn.loading = true; btn.result = null;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    let res: DebloatResult | DebloatResult[];
+    if (btn.id === "bloatware") {
+      res = await invoke<DebloatResult[]>("debloat_remove_bloatware", { apps: [] });
+    } else if (btn.param) {
+      res = await invoke<DebloatResult>("debloat_run_extra", { action: btn.param });
+    } else {
+      res = await invoke<DebloatResult>(btn.cmd);
+    }
+    if (Array.isArray(res)) {
+      const ok = res.filter(r => r.success).length;
+      btn.result = { action: btn.label, success: ok > 0, message: `${ok}/${res.length} supprimés` };
+    } else {
+      btn.result = res as DebloatResult;
+    }
+    if (btn.result.success) notify.success(btn.label, btn.result.message);
+    else notify.warning(btn.label, btn.result.message);
+  } catch (e: any) {
+    btn.result = { action: btn.label, success: false, message: e?.toString() ?? "Erreur" };
+    notify.error(btn.label);
+  } finally { btn.loading = false; }
+}
+
+onMounted(() => {
+  loadStartupPrograms();
+  loadBrowserCaches();
+});
+</script>
+
+<template>
+  <div class="optimizations">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1>Optimisations</h1>
+        <p class="page-subtitle">Maintenance et nettoyage du systeme</p>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-grid">
+      <!-- Corbeille -->
+      <NCard>
+        <div class="action-card">
+          <div class="action-icon-wrap" style="background: var(--danger-muted)">
+            <Trash2 :size="24" style="color: var(--danger)" />
+          </div>
+          <h3>Vider la corbeille</h3>
+          <p class="action-desc">Supprime definitivement les fichiers de la corbeille pour liberer de l'espace disque.</p>
+          <div v-if="recycleBin.done" class="action-result">
+            <CheckCircle :size="14" style="color: var(--success)" />
+            <span>{{ recycleBin.message }}</span>
+          </div>
+          <NButton
+            variant="primary"
+            size="sm"
+            :loading="recycleBin.loading"
+            :disabled="recycleBin.loading"
+            @click="emptyRecycleBin"
+          >
+            <Play :size="14" />
+            Executer
+          </NButton>
+        </div>
+      </NCard>
+
+      <!-- Temp files -->
+      <NCard>
+        <div class="action-card">
+          <div class="action-icon-wrap" style="background: var(--warning-muted)">
+            <FileX :size="24" style="color: var(--warning)" />
+          </div>
+          <h3>Nettoyer fichiers temp</h3>
+          <p class="action-desc">Supprime les fichiers temporaires du systeme et des applications (TEMP, cache, prefetch).</p>
+          <div v-if="tempFiles.done" class="action-result">
+            <CheckCircle :size="14" style="color: var(--success)" />
+            <span>{{ tempFiles.message }}</span>
+          </div>
+          <NButton
+            variant="primary"
+            size="sm"
+            :loading="tempFiles.loading"
+            :disabled="tempFiles.loading"
+            @click="cleanTempFiles"
+          >
+            <Play :size="14" />
+            Executer
+          </NButton>
+        </div>
+      </NCard>
+
+      <!-- Disk cleanup -->
+      <NCard>
+        <div class="action-card">
+          <div class="action-icon-wrap" style="background: var(--accent-muted)">
+            <HardDrive :size="24" style="color: var(--accent-primary)" />
+          </div>
+          <h3>Nettoyage de disque</h3>
+          <p class="action-desc">Lance l'utilitaire Windows de nettoyage de disque pour un nettoyage approfondi.</p>
+          <div v-if="diskCleanup.done" class="action-result">
+            <CheckCircle :size="14" style="color: var(--success)" />
+            <span>{{ diskCleanup.message }}</span>
+          </div>
+          <NButton
+            variant="primary"
+            size="sm"
+            :loading="diskCleanup.loading"
+            :disabled="diskCleanup.loading"
+            @click="runDiskCleanup"
+          >
+            <Play :size="14" />
+            Executer
+          </NButton>
+        </div>
+      </NCard>
+    </div>
+
+    <!-- Browser Cache Cleanup -->
+    <NCard>
+      <template #header>
+        <div class="section-header">
+          <Globe :size="16" />
+          <span>Caches Navigateurs</span>
+          <span v-if="!browsersLoading && browsers.length > 0" class="cache-total">
+            Total : {{ totalBrowserCache.toFixed(1) }} MB
+          </span>
+          <NButton variant="secondary" size="sm" :loading="browsersLoading" @click="loadBrowserCaches" style="margin-left: auto">
+            <RefreshCw :size="14" />
+          </NButton>
+        </div>
+      </template>
+
+      <div v-if="browsersLoading" class="loading-state">
+        <NSpinner :size="24" />
+        <p>Detection des navigateurs...</p>
+      </div>
+
+      <div v-else-if="browsers.length === 0" class="empty-state">
+        Aucun navigateur detecte avec du cache.
+      </div>
+
+      <div v-else>
+        <div class="browser-list">
+          <button
+            v-for="b in browsers"
+            :key="b.id"
+            class="browser-item"
+            :class="{ selected: b.selected }"
+            @click="b.selected = !b.selected"
+          >
+            <component :is="b.selected ? CheckSquare : Square" :size="18" class="browser-check" />
+            <div class="browser-info">
+              <span class="browser-name">{{ b.name }}</span>
+              <span class="browser-size">{{ b.cache_size_mb.toFixed(1) }} MB</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="browser-actions">
+          <div v-if="cleanResult" class="clean-result">
+            <CheckCircle :size="14" style="color: var(--success)" />
+            <span>{{ cleanResult.freed.toFixed(1) }} MB liberes ({{ cleanResult.deleted }} fichiers)</span>
+          </div>
+          <NButton
+            variant="primary"
+            size="sm"
+            :loading="cleaningBrowsers"
+            :disabled="cleaningBrowsers || browsers.filter(b => b.selected).length === 0"
+            @click="cleanSelectedBrowsers"
+          >
+            <Trash2 :size="14" />
+            Nettoyer les caches
+          </NButton>
+        </div>
+      </div>
+    </NCard>
+
+    <!-- Debloat Windows -->
+    <NCard>
+      <template #header><div class="section-header"><Shield :size="16" /><span>Debloat Windows</span></div></template>
+      <div class="debloat-grid">
+        <div v-for="btn in debloatBtns" :key="btn.id" class="debloat-item">
+          <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
+            <component :is="btn.icon" :size="13" /> {{ btn.label }}
+          </NButton>
+          <div v-if="btn.result" class="debloat-result" :class="btn.result.success ? 'res-ok' : 'res-err'">
+            <component :is="btn.result.success ? CheckCircle : AlertCircle" :size="12" />
+            <span>{{ btn.result.message }}</span>
+          </div>
+        </div>
+      </div>
+    </NCard>
+
+    <!-- Réseau -->
+    <NCard>
+      <template #header><div class="section-header"><Wifi :size="16" /><span>Réseau</span></div></template>
+      <div class="debloat-grid">
+        <div v-for="btn in networkBtns" :key="btn.id" class="debloat-item">
+          <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
+            <component :is="btn.icon" :size="13" /> {{ btn.label }}
+          </NButton>
+          <div v-if="btn.result" class="debloat-result" :class="btn.result.success ? 'res-ok' : 'res-err'">
+            <component :is="btn.result.success ? CheckCircle : AlertCircle" :size="12" />
+            <span>{{ btn.result.message }}</span>
+          </div>
+        </div>
+      </div>
+    </NCard>
+
+    <!-- Performances -->
+    <NCard>
+      <template #header><div class="section-header"><Zap :size="16" /><span>Performances</span></div></template>
+      <div class="debloat-grid">
+        <div v-for="btn in perfBtns" :key="btn.id" class="debloat-item">
+          <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
+            <component :is="btn.icon" :size="13" /> {{ btn.label }}
+          </NButton>
+          <div v-if="btn.result" class="debloat-result" :class="btn.result.success ? 'res-ok' : 'res-err'">
+            <component :is="btn.result.success ? CheckCircle : AlertCircle" :size="12" />
+            <span>{{ btn.result.message }}</span>
+          </div>
+        </div>
+      </div>
+    </NCard>
+
+    <!-- Startup Programs -->
+    <NCard>
+      <template #header>
+        <div class="section-header">
+          <Rocket :size="16" />
+          <span>Programmes au demarrage</span>
+          <NButton variant="secondary" size="sm" :loading="startupLoading" @click="loadStartupPrograms" style="margin-left: auto">
+            <RefreshCw :size="14" />
+            Rafraichir
+          </NButton>
+        </div>
+      </template>
+
+      <div v-if="startupLoading" class="loading-state">
+        <NSpinner :size="24" />
+        <p>Chargement des programmes...</p>
+      </div>
+
+      <div v-else-if="startupPrograms.length === 0" class="empty-state">
+        Aucun programme au demarrage detecte.
+      </div>
+
+      <div v-else class="startup-table-wrap">
+        <table class="startup-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Commande</th>
+              <th>Emplacement</th>
+              <th>Utilisateur</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="prog in startupPrograms" :key="prog.name">
+              <td class="prog-name">{{ prog.name }}</td>
+              <td class="prog-cmd font-mono">{{ prog.command }}</td>
+              <td class="prog-loc font-mono">{{ prog.location }}</td>
+              <td>
+                <NBadge :variant="prog.user === 'Systeme' ? 'warning' : 'accent'">
+                  {{ prog.user }}
+                </NBadge>
+              </td>
+              <td>
+                <NButton
+                  variant="danger"
+                  size="sm"
+                  :disabled="prog.user === 'Systeme'"
+                  :title="prog.user === 'Systeme' ? 'Les programmes systeme ne peuvent pas etre desactives' : 'Desactiver du demarrage'"
+                  @click="disableProgram(prog)"
+                >
+                  <XCircle :size="12" />
+                  Desactiver
+                </NButton>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </NCard>
+  </div>
+</template>
+
+<style scoped>
+.optimizations {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1000px) {
+  .actions-grid { grid-template-columns: 1fr; }
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.action-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.action-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 240px;
+}
+
+.action-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--success);
+  background: var(--success-muted);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
+
+.startup-table-wrap {
+  overflow-x: auto;
+}
+
+.startup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.startup-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.startup-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.startup-table tr:last-child td {
+  border-bottom: none;
+}
+
+.startup-table tr:hover td {
+  background: var(--bg-tertiary);
+}
+
+.prog-name {
+  font-weight: 500;
+  color: var(--text-primary) !important;
+  white-space: nowrap;
+}
+
+.prog-cmd {
+  font-size: 11px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prog-loc {
+  font-size: 11px;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Browser Cleanup */
+.cache-total {
+  font-size: 12px;
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.browser-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.browser-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.browser-item:hover { background: var(--bg-tertiary); }
+.browser-item.selected .browser-check { color: var(--accent-primary); }
+.browser-item:not(.selected) .browser-check { color: var(--text-muted); }
+
+.browser-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.browser-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.browser-size {
+  font-size: 12px;
+  color: var(--warning);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.browser-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.clean-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--success);
+}
+
+/* Debloat */
+.debloat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.debloat-item { display: flex; flex-direction: column; gap: 4px; }
+.debloat-result { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 6px; border-radius: var(--radius-sm); }
+.res-ok { color: var(--success); background: var(--success-muted); }
+.res-err { color: var(--danger); background: var(--danger-muted); }
+</style>

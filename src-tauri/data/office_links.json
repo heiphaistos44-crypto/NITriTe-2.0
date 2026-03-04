@@ -1,0 +1,59 @@
+{
+  "office_downloads": {
+    "note": "Liens de téléchargement Office depuis https://gravesoft.dev/office_c2r_links#french-fr-fr",
+    "french_editions": {
+      "2007": {
+        "name": "Office 2007 Professional Plus (FR)",
+        "note": "Office 2007 n'est plus disponible en téléchargement direct C2R",
+        "alternative": "Utiliser les ISO officielles ou les archives"
+      },
+      "2010": {
+        "name": "Office 2010 Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2019Retail&platform=x64&language=fr-fr&version=O16GA",
+        "config_xml": "Configuration.xml requis pour version 2010"
+      },
+      "2013": {
+        "name": "Office 2013 Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2019Retail&platform=x64&language=fr-fr&version=O15GA",
+        "note": "Nécessite une configuration XML personnalisée"
+      },
+      "2016": {
+        "name": "Office 2016 Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2019Retail&platform=x64&language=fr-fr&version=O16GA",
+        "config": "ProPlus2019Volume"
+      },
+      "2019": {
+        "name": "Office 2019 Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2019Retail&platform=x64&language=fr-fr",
+        "product_id": "ProPlus2019Retail",
+        "language": "fr-fr"
+      },
+      "2021": {
+        "name": "Office 2021 Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2021Retail&platform=x64&language=fr-fr",
+        "product_id": "ProPlus2021Retail",
+        "language": "fr-fr"
+      },
+      "2024": {
+        "name": "Office 2024 LTSC Professional Plus (FR)",
+        "setup_url": "https://c2rsetup.officeapps.live.com/c2r/download.aspx?ProductreleaseID=ProPlus2024Volume&platform=x64&language=fr-fr",
+        "product_id": "ProPlus2024Volume",
+        "language": "fr-fr",
+        "note": "Version LTSC 2024 - Dernière version disponible"
+      }
+    },
+    "installation_notes": {
+      "method": "Click-to-Run (C2R)",
+      "requirements": [
+        "Connexion Internet requise",
+        "Espace disque : ~4-5 GB par installation",
+        "Windows 10/11 64-bit recommandé"
+      ],
+      "activation": {
+        "method_1": "Bouton 'MAS (Activation)' dans NiTrite",
+        "method_2": "Bouton 'Activer Windows' dans NiTrite",
+        "url": "https://massgrave.dev/"
+      }
+    }
+  }
+}

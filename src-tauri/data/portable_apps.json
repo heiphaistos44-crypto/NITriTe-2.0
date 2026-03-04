@@ -1,0 +1,1451 @@
+[
+  {
+    "id": "7-zip-portable",
+    "name": "7-Zip Portable",
+    "description": "Archiveur de fichiers puissant et gratuit supportant de nombreux formats",
+    "category": "Outils Système",
+    "size": "2 MB",
+    "url": "https://portableapps.com/apps/utilities/7-zip_portable",
+    "exe_name": "7zFM.exe"
+  },
+  {
+    "id": "notepad-plus-plus-portable",
+    "name": "Notepad++ Portable",
+    "description": "Éditeur de texte avancé avec coloration syntaxique et plugins",
+    "category": "Outils Système",
+    "size": "5 MB",
+    "url": "https://portableapps.com/redirect/?a=Notepad++Portable&s=s&d=pa&f=Notepad++Portable_8.6.paf.exe",
+    "exe_name": "notepad++.exe"
+  },
+  {
+    "id": "everything-portable",
+    "name": "Everything Portable",
+    "description": "Moteur de recherche de fichiers ultra-rapide pour Windows",
+    "category": "Outils Système",
+    "size": "2 MB",
+    "url": "https://www.voidtools.com/Everything-1.4.1.1024.x64.zip",
+    "exe_name": "Everything.exe"
+  },
+  {
+    "id": "total-commander",
+    "name": "Total Commander",
+    "description": "Gestionnaire de fichiers à double panneau avec fonctions avancées",
+    "category": "Outils Système",
+    "size": "7 MB",
+    "url": "https://totalcmd.net/1105/tcmd1105x64.exe",
+    "exe_name": "TOTALCMD64.EXE"
+  },
+  {
+    "id": "q-dir-portable",
+    "name": "Q-Dir Portable",
+    "description": "Explorateur de fichiers à quatre panneaux simultanés",
+    "category": "Outils Système",
+    "size": "3 MB",
+    "url": "https://www.softwareok.com/Download/Q-Dir_Portable_x64.zip",
+    "exe_name": "Q-Dir_x64.exe"
+  },
+  {
+    "id": "freecommander",
+    "name": "FreeCommander",
+    "description": "Gestionnaire de fichiers alternatif avec double panneau",
+    "category": "Outils Système",
+    "size": "15 MB",
+    "url": "https://freecommander.com/en/downloads/",
+    "exe_name": "FreeCommander.exe"
+  },
+  {
+    "id": "double-commander",
+    "name": "Double Commander",
+    "description": "Gestionnaire de fichiers open source à double panneau",
+    "category": "Outils Système",
+    "size": "20 MB",
+    "url": "https://sourceforge.net/projects/doublecmd/files/latest/download",
+    "exe_name": "doublecmd.exe"
+  },
+  {
+    "id": "peazip-portable",
+    "name": "PeaZip Portable",
+    "description": "Archiveur de fichiers open source supportant 200+ formats",
+    "category": "Outils Système",
+    "size": "15 MB",
+    "url": "https://github.com/peazip/PeaZip/releases/download/9.5.0/peazip_portable-9.5.0.WIN64.zip",
+    "exe_name": "peazip.exe"
+  },
+  {
+    "id": "bandizip-portable",
+    "name": "Bandizip Portable",
+    "description": "Archiveur rapide avec compression et décompression performantes",
+    "category": "Outils Système",
+    "size": "7 MB",
+    "url": "https://www.bandisoft.com/bandizip/dl.php?portable",
+    "exe_name": "Bandizip.exe"
+  },
+  {
+    "id": "winrar-portable",
+    "name": "WinRAR Portable",
+    "description": "Utilitaire de compression et décompression d'archives RAR et ZIP",
+    "category": "Outils Système",
+    "size": "3 MB",
+    "url": "https://www.rarlab.com/rar/winrar-x64-623.exe",
+    "exe_name": "WinRAR.exe"
+  },
+  {
+    "id": "recuva-portable",
+    "name": "Recuva Portable",
+    "description": "Outil de récupération de fichiers supprimés accidentellement",
+    "category": "Outils Système",
+    "size": "4 MB",
+    "url": "https://portableapps.com/apps/utilities/recuva_portable",
+    "exe_name": "Recuva64.exe"
+  },
+  {
+    "id": "treesize-portable",
+    "name": "TreeSize Portable",
+    "description": "Analyseur d'espace disque avec visualisation arborescente",
+    "category": "Outils Système",
+    "size": "8 MB",
+    "url": "https://downloads.jam-software.de/treesize_free/TreeSizeFree-Portable.zip",
+    "exe_name": "TreeSizeFree.exe"
+  },
+  {
+    "id": "wiztree-portable",
+    "name": "WizTree Portable",
+    "description": "Analyseur d'espace disque ultra-rapide utilisant le MFT",
+    "category": "Outils Système",
+    "size": "6 MB",
+    "url": "https://diskanalyzer.com/files/wiztree_4_15_portable.zip",
+    "exe_name": "WizTree64.exe"
+  },
+  {
+    "id": "spacesniffer-portable",
+    "name": "SpaceSniffer Portable",
+    "description": "Visualiseur d'espace disque avec carte graphique interactive",
+    "category": "Outils Système",
+    "size": "2 MB",
+    "url": "http://www.uderzo.it/main_products/space_sniffer/download.html",
+    "exe_name": "SpaceSniffer.exe"
+  },
+  {
+    "id": "glary-utilities-portable",
+    "name": "Glary Utilities Portable",
+    "description": "Suite d'outils d'optimisation et de maintenance système",
+    "category": "Outils Système",
+    "size": "18 MB",
+    "url": "https://download.glarysoft.com/guportable.zip",
+    "exe_name": "Integrator.exe"
+  },
+  {
+    "id": "sysinternals-suite",
+    "name": "Sysinternals Suite",
+    "description": "Suite complète d'outils de diagnostic système Microsoft",
+    "category": "Outils Système",
+    "size": "35 MB",
+    "url": "https://download.sysinternals.com/files/SysinternalsSuite.zip",
+    "exe_name": "procexp64.exe"
+  },
+  {
+    "id": "process-explorer",
+    "name": "Process Explorer",
+    "description": "Gestionnaire de processus avancé de Microsoft Sysinternals",
+    "category": "Outils Système",
+    "size": "2 MB",
+    "url": "https://download.sysinternals.com/files/ProcessExplorer.zip",
+    "exe_name": "procexp64.exe"
+  },
+  {
+    "id": "autoruns-portable",
+    "name": "Autoruns Portable",
+    "description": "Gestionnaire complet des programmes au démarrage de Windows",
+    "category": "Outils Système",
+    "size": "1 MB",
+    "url": "https://download.sysinternals.com/files/Autoruns.zip",
+    "exe_name": "Autoruns64.exe"
+  },
+  {
+    "id": "process-monitor",
+    "name": "Process Monitor",
+    "description": "Moniteur en temps réel de l'activité fichiers, registre et processus",
+    "category": "Outils Système",
+    "size": "2 MB",
+    "url": "https://download.sysinternals.com/files/ProcessMonitor.zip",
+    "exe_name": "Procmon64.exe"
+  },
+  {
+    "id": "tcpview-portable",
+    "name": "TCPView Portable",
+    "description": "Visualiseur des connexions réseau TCP/UDP en temps réel",
+    "category": "Outils Système",
+    "size": "500 KB",
+    "url": "https://download.sysinternals.com/files/TCPView.zip",
+    "exe_name": "tcpview64.exe"
+  },
+  {
+    "id": "windirstat-portable",
+    "name": "WinDirStat Portable",
+    "description": "Statistiques d'utilisation du disque avec treemap visuelle",
+    "category": "Outils Système",
+    "size": "1 MB",
+    "url": "https://sourceforge.net/projects/windirstat/files/latest/download",
+    "exe_name": "windirstat.exe"
+  },
+  {
+    "id": "rufus-portable",
+    "name": "Rufus Portable",
+    "description": "Créateur de clés USB bootables rapide et fiable",
+    "category": "Outils Système",
+    "size": "1.4 MB",
+    "url": "https://github.com/pbatard/rufus/releases/download/v4.3/rufus-4.3p.exe",
+    "exe_name": "rufus-4.3p.exe"
+  },
+  {
+    "id": "ventoy",
+    "name": "Ventoy",
+    "description": "Outil de création de clé USB multiboot sans formatage",
+    "category": "Outils Système",
+    "size": "15 MB",
+    "url": "https://github.com/ventoy/Ventoy/releases/download/v1.0.96/ventoy-1.0.96-windows.zip",
+    "exe_name": "Ventoy2Disk.exe"
+  },
+  {
+    "id": "imdisk-toolkit",
+    "name": "ImDisk Toolkit",
+    "description": "Outil de montage d'images disque et création de disques RAM",
+    "category": "Outils Système",
+    "size": "3 MB",
+    "url": "https://sourceforge.net/projects/imdisk-toolkit/files/latest/download",
+    "exe_name": "imdisk-toolkit.exe"
+  },
+  {
+    "id": "vlc-portable",
+    "name": "VLC Portable",
+    "description": "Lecteur multimédia universel supportant tous les formats audio et vidéo",
+    "category": "Multimédia",
+    "size": "40 MB",
+    "url": "https://portableapps.com/apps/music_video/vlc_portable",
+    "exe_name": "vlc.exe"
+  },
+  {
+    "id": "irfanview-portable",
+    "name": "IrfanView Portable",
+    "description": "Visionneuse d'images rapide et légère avec fonctions d'édition",
+    "category": "Multimédia",
+    "size": "3 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/irfanview_portable",
+    "exe_name": "i_view64.exe"
+  },
+  {
+    "id": "gimp-portable",
+    "name": "GIMP Portable",
+    "description": "Éditeur d'images professionnel open source alternatif à Photoshop",
+    "category": "Multimédia",
+    "size": "200 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/gimp_portable",
+    "exe_name": "gimp-2.10.exe"
+  },
+  {
+    "id": "inkscape-portable",
+    "name": "Inkscape Portable",
+    "description": "Éditeur de graphiques vectoriels SVG professionnel",
+    "category": "Multimédia",
+    "size": "150 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/inkscape_portable",
+    "exe_name": "inkscape.exe"
+  },
+  {
+    "id": "paint-net-portable",
+    "name": "Paint.NET Portable",
+    "description": "Éditeur d'images intuitif avec calques et effets",
+    "category": "Multimédia",
+    "size": "40 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/paint.net_portable",
+    "exe_name": "PaintDotNet.exe"
+  },
+  {
+    "id": "audacity-portable",
+    "name": "Audacity Portable",
+    "description": "Éditeur audio multipiste open source pour enregistrement et montage",
+    "category": "Multimédia",
+    "size": "30 MB",
+    "url": "https://portableapps.com/apps/music_video/audacity_portable",
+    "exe_name": "audacity.exe"
+  },
+  {
+    "id": "mpc-hc-portable",
+    "name": "MPC-HC Portable",
+    "description": "Lecteur vidéo léger et performant avec support des sous-titres",
+    "category": "Multimédia",
+    "size": "25 MB",
+    "url": "https://github.com/clsid2/mpc-hc/releases",
+    "exe_name": "mpc-hc64.exe"
+  },
+  {
+    "id": "k-lite-codec-pack",
+    "name": "K-Lite Codec Pack",
+    "description": "Pack de codecs audio et vidéo complet pour Windows",
+    "category": "Multimédia",
+    "size": "50 MB",
+    "url": "https://codecguide.com/download_kl.htm",
+    "exe_name": "K-Lite_Codec_Pack.exe"
+  },
+  {
+    "id": "xnview-portable",
+    "name": "XnView Portable",
+    "description": "Visionneuse et convertisseur d'images multi-format",
+    "category": "Multimédia",
+    "size": "25 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/xnview_portable",
+    "exe_name": "xnview.exe"
+  },
+  {
+    "id": "faststone-image-viewer",
+    "name": "FastStone Image Viewer",
+    "description": "Visionneuse d'images rapide avec outils de retouche intégrés",
+    "category": "Multimédia",
+    "size": "8 MB",
+    "url": "https://www.faststone.org/FSIVDownload.htm",
+    "exe_name": "FSViewer.exe"
+  },
+  {
+    "id": "krita-portable",
+    "name": "Krita Portable",
+    "description": "Logiciel de peinture numérique professionnel pour artistes",
+    "category": "Multimédia",
+    "size": "180 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/krita_portable",
+    "exe_name": "krita.exe"
+  },
+  {
+    "id": "blender-portable",
+    "name": "Blender Portable",
+    "description": "Suite de création 3D complète : modélisation, animation, rendu",
+    "category": "Multimédia",
+    "size": "300 MB",
+    "url": "https://www.blender.org/download/",
+    "exe_name": "blender.exe"
+  },
+  {
+    "id": "obs-studio-portable",
+    "name": "OBS Studio Portable",
+    "description": "Logiciel de streaming et d'enregistrement vidéo open source",
+    "category": "Multimédia",
+    "size": "120 MB",
+    "url": "https://obsproject.com/download",
+    "exe_name": "obs64.exe"
+  },
+  {
+    "id": "handbrake-portable",
+    "name": "HandBrake Portable",
+    "description": "Convertisseur vidéo open source multi-format",
+    "category": "Multimédia",
+    "size": "20 MB",
+    "url": "https://portableapps.com/apps/music_video/handbrake-portable",
+    "exe_name": "HandBrake.exe"
+  },
+  {
+    "id": "avidemux-portable",
+    "name": "Avidemux Portable",
+    "description": "Éditeur vidéo simple pour couper, filtrer et encoder",
+    "category": "Multimédia",
+    "size": "40 MB",
+    "url": "https://portableapps.com/apps/music_video/avidemux-portable",
+    "exe_name": "avidemux.exe"
+  },
+  {
+    "id": "shotcut-portable",
+    "name": "Shotcut Portable",
+    "description": "Éditeur vidéo open source multipiste avec effets",
+    "category": "Multimédia",
+    "size": "180 MB",
+    "url": "https://www.shotcut.org/download/",
+    "exe_name": "shotcut.exe"
+  },
+  {
+    "id": "foobar2000-portable",
+    "name": "foobar2000 Portable",
+    "description": "Lecteur audio léger et hautement personnalisable",
+    "category": "Multimédia",
+    "size": "5 MB",
+    "url": "https://portableapps.com/apps/music_video/foobar2000_portable",
+    "exe_name": "foobar2000.exe"
+  },
+  {
+    "id": "aimp-portable",
+    "name": "AIMP Portable",
+    "description": "Lecteur audio complet avec égaliseur et gestion de bibliothèque",
+    "category": "Multimédia",
+    "size": "15 MB",
+    "url": "https://www.aimp.ru/index.php?do=download",
+    "exe_name": "AIMP.exe"
+  },
+  {
+    "id": "mp3tag-portable",
+    "name": "Mp3tag Portable",
+    "description": "Éditeur de tags et métadonnées pour fichiers audio",
+    "category": "Multimédia",
+    "size": "5 MB",
+    "url": "https://portableapps.com/apps/music_video/mp3tag-portable",
+    "exe_name": "Mp3tag.exe"
+  },
+  {
+    "id": "mediainfo-portable",
+    "name": "MediaInfo Portable",
+    "description": "Analyseur d'informations techniques de fichiers multimédia",
+    "category": "Multimédia",
+    "size": "8 MB",
+    "url": "https://portableapps.com/apps/music_video/mediainfo-portable",
+    "exe_name": "MediaInfo.exe"
+  },
+  {
+    "id": "ffmpeg",
+    "name": "FFmpeg",
+    "description": "Framework en ligne de commande pour conversion audio/vidéo",
+    "category": "Multimédia",
+    "size": "100 MB",
+    "url": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+    "exe_name": "ffmpeg.exe"
+  },
+  {
+    "id": "imagemagick-portable",
+    "name": "ImageMagick Portable",
+    "description": "Suite en ligne de commande pour manipulation d'images par lot",
+    "category": "Multimédia",
+    "size": "50 MB",
+    "url": "https://imagemagick.org/archive/binaries/",
+    "exe_name": "magick.exe"
+  },
+  {
+    "id": "sharex-portable",
+    "name": "ShareX Portable",
+    "description": "Outil de capture d'écran avancé avec annotation et partage",
+    "category": "Multimédia",
+    "size": "10 MB",
+    "url": "https://getsharex.com/downloads",
+    "exe_name": "ShareX.exe"
+  },
+  {
+    "id": "greenshot-portable",
+    "name": "Greenshot Portable",
+    "description": "Outil de capture d'écran léger avec éditeur intégré",
+    "category": "Multimédia",
+    "size": "3 MB",
+    "url": "https://portableapps.com/apps/graphics_pictures/greenshot-portable",
+    "exe_name": "Greenshot.exe"
+  },
+  {
+    "id": "putty-portable",
+    "name": "PuTTY Portable",
+    "description": "Client SSH et Telnet léger pour connexions distantes",
+    "category": "Réseau",
+    "size": "3 MB",
+    "url": "https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe",
+    "exe_name": "putty.exe"
+  },
+  {
+    "id": "winscp-portable",
+    "name": "WinSCP Portable",
+    "description": "Client SFTP/SCP/FTP pour transfert de fichiers sécurisé",
+    "category": "Réseau",
+    "size": "10 MB",
+    "url": "https://winscp.net/eng/downloads.php",
+    "exe_name": "WinSCP.exe"
+  },
+  {
+    "id": "wireshark-portable",
+    "name": "Wireshark Portable",
+    "description": "Analyseur de paquets réseau professionnel",
+    "category": "Réseau",
+    "size": "70 MB",
+    "url": "https://portableapps.com/apps/internet/wireshark_portable",
+    "exe_name": "Wireshark.exe"
+  },
+  {
+    "id": "filezilla-portable",
+    "name": "FileZilla Portable",
+    "description": "Client FTP/SFTP rapide et fiable",
+    "category": "Réseau",
+    "size": "15 MB",
+    "url": "https://portableapps.com/apps/internet/filezilla_portable",
+    "exe_name": "filezilla.exe"
+  },
+  {
+    "id": "teamviewer-portable",
+    "name": "TeamViewer Portable",
+    "description": "Logiciel de contrôle à distance et assistance technique",
+    "category": "Réseau",
+    "size": "25 MB",
+    "url": "https://www.teamviewer.com/en/download/windows/",
+    "exe_name": "TeamViewer.exe"
+  },
+  {
+    "id": "anydesk-portable",
+    "name": "AnyDesk Portable",
+    "description": "Bureau à distance rapide et léger",
+    "category": "Réseau",
+    "size": "4 MB",
+    "url": "https://download.anydesk.com/AnyDesk.exe",
+    "exe_name": "AnyDesk.exe"
+  },
+  {
+    "id": "ultravnc-portable",
+    "name": "UltraVNC Portable",
+    "description": "Client et serveur VNC pour contrôle à distance",
+    "category": "Réseau",
+    "size": "3 MB",
+    "url": "https://uvnc.com/downloads/ultravnc.html",
+    "exe_name": "vncviewer.exe"
+  },
+  {
+    "id": "advanced-ip-scanner",
+    "name": "Advanced IP Scanner",
+    "description": "Scanner réseau rapide pour détecter les appareils connectés",
+    "category": "Réseau",
+    "size": "12 MB",
+    "url": "https://www.advanced-ip-scanner.com/download/",
+    "exe_name": "advanced_ip_scanner.exe"
+  },
+  {
+    "id": "angry-ip-scanner",
+    "name": "Angry IP Scanner",
+    "description": "Scanner de ports et d'adresses IP open source",
+    "category": "Réseau",
+    "size": "3 MB",
+    "url": "https://angryip.org/download/",
+    "exe_name": "ipscan.exe"
+  },
+  {
+    "id": "netspeedmonitor",
+    "name": "NetSpeedMonitor",
+    "description": "Moniteur de bande passante réseau dans la barre des tâches",
+    "category": "Réseau",
+    "size": "500 KB",
+    "url": "https://www.softpedia.com/get/Network-Tools/Bandwidth-Tools/Net-Speed-Monitor.shtml",
+    "exe_name": "NetSpeedMonitor.exe"
+  },
+  {
+    "id": "netlimiter-portable",
+    "name": "NetLimiter Portable",
+    "description": "Contrôle et limitation de la bande passante par application",
+    "category": "Réseau",
+    "size": "15 MB",
+    "url": "https://www.netlimiter.com/download",
+    "exe_name": "NetLimiter.exe"
+  },
+  {
+    "id": "nmap-portable",
+    "name": "Nmap Portable",
+    "description": "Scanner de réseau et d'audit de sécurité en ligne de commande",
+    "category": "Réseau",
+    "size": "25 MB",
+    "url": "https://nmap.org/download.html",
+    "exe_name": "nmap.exe"
+  },
+  {
+    "id": "zenmap-portable",
+    "name": "Zenmap Portable",
+    "description": "Interface graphique pour Nmap avec visualisation réseau",
+    "category": "Réseau",
+    "size": "25 MB",
+    "url": "https://nmap.org/download.html",
+    "exe_name": "zenmap.exe"
+  },
+  {
+    "id": "fiddler-portable",
+    "name": "Fiddler Portable",
+    "description": "Débogueur de trafic HTTP/HTTPS pour développeurs web",
+    "category": "Réseau",
+    "size": "5 MB",
+    "url": "https://www.telerik.com/download/fiddler",
+    "exe_name": "Fiddler.exe"
+  },
+  {
+    "id": "charles-proxy",
+    "name": "Charles Proxy",
+    "description": "Proxy de débogage HTTP pour inspecter le trafic réseau",
+    "category": "Réseau",
+    "size": "60 MB",
+    "url": "https://www.charlesproxy.com/download/",
+    "exe_name": "Charles.exe"
+  },
+  {
+    "id": "postman-portable",
+    "name": "Postman Portable",
+    "description": "Outil de test et documentation d'APIs REST",
+    "category": "Réseau",
+    "size": "150 MB",
+    "url": "https://www.postman.com/downloads/",
+    "exe_name": "Postman.exe"
+  },
+  {
+    "id": "insomnia-portable",
+    "name": "Insomnia Portable",
+    "description": "Client HTTP élégant pour tester et déboguer les APIs",
+    "category": "Réseau",
+    "size": "120 MB",
+    "url": "https://insomnia.rest/download",
+    "exe_name": "Insomnia.exe"
+  },
+  {
+    "id": "httpie-desktop",
+    "name": "HTTPie Desktop",
+    "description": "Client HTTP moderne avec interface intuitive pour APIs",
+    "category": "Réseau",
+    "size": "80 MB",
+    "url": "https://httpie.io/desktop",
+    "exe_name": "HTTPie.exe"
+  },
+  {
+    "id": "winmtr-portable",
+    "name": "WinMTR Portable",
+    "description": "Outil de diagnostic réseau combinant ping et traceroute",
+    "category": "Réseau",
+    "size": "500 KB",
+    "url": "https://sourceforge.net/projects/winmtr/files/latest/download",
+    "exe_name": "WinMTR.exe"
+  },
+  {
+    "id": "pingplotter",
+    "name": "PingPlotter",
+    "description": "Outil de diagnostic réseau avec graphiques de latence",
+    "category": "Réseau",
+    "size": "40 MB",
+    "url": "https://www.pingplotter.com/download",
+    "exe_name": "PingPlotter.exe"
+  },
+  {
+    "id": "tightvnc-portable",
+    "name": "TightVNC Portable",
+    "description": "Client VNC léger pour contrôle de bureau à distance",
+    "category": "Réseau",
+    "size": "2 MB",
+    "url": "https://www.tightvnc.com/download/2.8.75/tightvnc-2.8.75-gpl-setup-64bit.msi",
+    "exe_name": "tvnviewer.exe"
+  },
+  {
+    "id": "winbox",
+    "name": "WinBox",
+    "description": "Utilitaire de configuration pour routeurs MikroTik",
+    "category": "Réseau",
+    "size": "800 KB",
+    "url": "https://mt.lv/winbox64",
+    "exe_name": "winbox64.exe"
+  },
+  {
+    "id": "mremoteng-portable",
+    "name": "mRemoteNG Portable",
+    "description": "Gestionnaire de connexions distantes multi-protocoles",
+    "category": "Réseau",
+    "size": "25 MB",
+    "url": "https://mremoteng.org/download",
+    "exe_name": "mRemoteNG.exe"
+  },
+  {
+    "id": "remote-desktop-manager",
+    "name": "Remote Desktop Manager",
+    "description": "Gestionnaire centralisé de connexions à distance professionnelles",
+    "category": "Réseau",
+    "size": "120 MB",
+    "url": "https://devolutions.net/remote-desktop-manager/download",
+    "exe_name": "RemoteDesktopManager64.exe"
+  },
+  {
+    "id": "cpu-z-portable",
+    "name": "CPU-Z Portable",
+    "description": "Outil d'information détaillée sur le processeur et la mémoire",
+    "category": "Utilitaires",
+    "size": "2 MB",
+    "url": "https://download.cpuid.com/cpu-z/cpu-z_2.07-en.zip",
+    "exe_name": "cpuz_x64.exe"
+  },
+  {
+    "id": "gpu-z-portable",
+    "name": "GPU-Z Portable",
+    "description": "Outil d'information détaillée sur la carte graphique",
+    "category": "Utilitaires",
+    "size": "8 MB",
+    "url": "https://www.techpowerup.com/download/techpowerup-gpu-z/",
+    "exe_name": "GPU-Z.exe"
+  },
+  {
+    "id": "crystaldiskinfo",
+    "name": "CrystalDiskInfo",
+    "description": "Moniteur de santé des disques durs et SSD via S.M.A.R.T.",
+    "category": "Utilitaires",
+    "size": "5 MB",
+    "url": "https://crystalmark.info/en/download/",
+    "exe_name": "DiskInfo64.exe"
+  },
+  {
+    "id": "crystaldiskmark",
+    "name": "CrystalDiskMark",
+    "description": "Benchmark de performances pour disques durs et SSD",
+    "category": "Utilitaires",
+    "size": "4 MB",
+    "url": "https://crystalmark.info/en/download/",
+    "exe_name": "DiskMark64.exe"
+  },
+  {
+    "id": "hwinfo-portable",
+    "name": "HWiNFO Portable",
+    "description": "Diagnostic matériel complet avec monitoring en temps réel",
+    "category": "Utilitaires",
+    "size": "6 MB",
+    "url": "https://www.hwinfo.com/download/",
+    "exe_name": "HWiNFO64.exe"
+  },
+  {
+    "id": "speccy-portable",
+    "name": "Speccy Portable",
+    "description": "Informations détaillées sur les composants matériels du PC",
+    "category": "Utilitaires",
+    "size": "6 MB",
+    "url": "https://portableapps.com/apps/utilities/speccy-portable",
+    "exe_name": "Speccy64.exe"
+  },
+  {
+    "id": "aida64-portable",
+    "name": "AIDA64 Portable",
+    "description": "Diagnostic système avancé avec benchmarks et monitoring",
+    "category": "Utilitaires",
+    "size": "50 MB",
+    "url": "https://download.aida64.com/aida64extreme650.zip",
+    "exe_name": "aida64.exe"
+  },
+  {
+    "id": "batteryinfoview",
+    "name": "BatteryInfoView",
+    "description": "Informations détaillées sur la batterie du PC portable",
+    "category": "Utilitaires",
+    "size": "200 KB",
+    "url": "https://www.nirsoft.net/utils/batteryinfoview.zip",
+    "exe_name": "BatteryInfoView.exe"
+  },
+  {
+    "id": "bulk-rename-utility",
+    "name": "Bulk Rename Utility",
+    "description": "Outil de renommage de fichiers en masse avec règles avancées",
+    "category": "Utilitaires",
+    "size": "3 MB",
+    "url": "https://www.bulkrenameutility.co.uk/Download.php",
+    "exe_name": "Bulk_Rename_Utility.exe"
+  },
+  {
+    "id": "ant-renamer",
+    "name": "Ant Renamer",
+    "description": "Renommeur de fichiers par lot simple et efficace",
+    "category": "Utilitaires",
+    "size": "2 MB",
+    "url": "https://www.antp.be/software/renamer/download",
+    "exe_name": "Renamer.exe"
+  },
+  {
+    "id": "duplicate-cleaner",
+    "name": "Duplicate Cleaner",
+    "description": "Détecteur et supprimeur de fichiers en double",
+    "category": "Utilitaires",
+    "size": "25 MB",
+    "url": "https://www.digitalvolcano.co.uk/dcdownload.html",
+    "exe_name": "DuplicateCleaner.exe"
+  },
+  {
+    "id": "alldup-portable",
+    "name": "AllDup Portable",
+    "description": "Recherche et suppression de fichiers dupliqués",
+    "category": "Utilitaires",
+    "size": "2 MB",
+    "url": "https://www.alldup.de/en_download_alldup.php",
+    "exe_name": "AllDup.exe"
+  },
+  {
+    "id": "hashtab",
+    "name": "HashTab",
+    "description": "Extension Windows pour vérifier les hash de fichiers",
+    "category": "Utilitaires",
+    "size": "3 MB",
+    "url": "https://hashtab.en.softonic.com/",
+    "exe_name": "hashtab.exe"
+  },
+  {
+    "id": "hashmyfiles",
+    "name": "HashMyFiles",
+    "description": "Calculateur de hash MD5/SHA pour vérification d'intégrité",
+    "category": "Utilitaires",
+    "size": "100 KB",
+    "url": "https://www.nirsoft.net/utils/hashmyfiles.zip",
+    "exe_name": "HashMyFiles.exe"
+  },
+  {
+    "id": "quicklook",
+    "name": "QuickLook",
+    "description": "Aperçu rapide des fichiers avec la barre espace comme sur macOS",
+    "category": "Utilitaires",
+    "size": "20 MB",
+    "url": "https://github.com/QL-Win/QuickLook/releases",
+    "exe_name": "QuickLook.exe"
+  },
+  {
+    "id": "seer-portable",
+    "name": "Seer Portable",
+    "description": "Prévisualisation rapide de fichiers avec la barre espace",
+    "category": "Utilitaires",
+    "size": "15 MB",
+    "url": "https://1218.io/",
+    "exe_name": "Seer.exe"
+  },
+  {
+    "id": "pdf24-creator",
+    "name": "PDF24 Creator",
+    "description": "Suite complète de création et manipulation de fichiers PDF",
+    "category": "Utilitaires",
+    "size": "180 MB",
+    "url": "https://www.pdf24.org/en/download/",
+    "exe_name": "pdf24-Creator.exe"
+  },
+  {
+    "id": "pdftk-portable",
+    "name": "PDFtk Portable",
+    "description": "Outil en ligne de commande pour manipuler les fichiers PDF",
+    "category": "Utilitaires",
+    "size": "25 MB",
+    "url": "https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/",
+    "exe_name": "pdftk.exe"
+  },
+  {
+    "id": "sumatra-pdf-portable",
+    "name": "Sumatra PDF Portable",
+    "description": "Lecteur PDF ultra-léger et rapide",
+    "category": "Utilitaires",
+    "size": "12 MB",
+    "url": "https://www.sumatrapdfreader.org/dl/rel/3.5.2/SumatraPDF-3.5.2-64.zip",
+    "exe_name": "SumatraPDF.exe"
+  },
+  {
+    "id": "calibre-portable",
+    "name": "Calibre Portable",
+    "description": "Gestionnaire de bibliothèque d'ebooks avec conversion de formats",
+    "category": "Utilitaires",
+    "size": "110 MB",
+    "url": "https://portableapps.com/apps/office/calibre_portable",
+    "exe_name": "calibre.exe"
+  },
+  {
+    "id": "balena-etcher",
+    "name": "Balena Etcher",
+    "description": "Outil de flashage d'images sur clés USB et cartes SD",
+    "category": "Utilitaires",
+    "size": "140 MB",
+    "url": "https://etcher.balena.io/",
+    "exe_name": "balenaEtcher.exe"
+  },
+  {
+    "id": "unetbootin",
+    "name": "UNetbootin",
+    "description": "Créateur de clés USB bootables Linux",
+    "category": "Utilitaires",
+    "size": "5 MB",
+    "url": "https://unetbootin.github.io/",
+    "exe_name": "unetbootin.exe"
+  },
+  {
+    "id": "git-portable",
+    "name": "Git Portable",
+    "description": "Système de contrôle de version distribué",
+    "category": "Développement",
+    "size": "50 MB",
+    "url": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/PortableGit-2.43.0-64-bit.7z.exe",
+    "exe_name": "git.exe"
+  },
+  {
+    "id": "python-portable",
+    "name": "Python Portable",
+    "description": "Interpréteur Python embarqué pour développement et scripts",
+    "category": "Développement",
+    "size": "10 MB",
+    "url": "https://www.python.org/ftp/python/3.12.0/python-3.12.0-embed-amd64.zip",
+    "exe_name": "python.exe"
+  },
+  {
+    "id": "vs-code-portable",
+    "name": "VS Code Portable",
+    "description": "Éditeur de code source léger et extensible de Microsoft",
+    "category": "Développement",
+    "size": "100 MB",
+    "url": "https://code.visualstudio.com/docs/editor/portable",
+    "exe_name": "Code.exe"
+  },
+  {
+    "id": "sublime-text-portable",
+    "name": "Sublime Text Portable",
+    "description": "Éditeur de texte rapide et sophistiqué pour le code",
+    "category": "Développement",
+    "size": "22 MB",
+    "url": "https://www.sublimetext.com/download",
+    "exe_name": "sublime_text.exe"
+  },
+  {
+    "id": "atom-portable",
+    "name": "Atom Portable",
+    "description": "Éditeur de texte hackable par GitHub",
+    "category": "Développement",
+    "size": "250 MB",
+    "url": "https://atom.io/",
+    "exe_name": "atom.exe"
+  },
+  {
+    "id": "brackets-portable",
+    "name": "Brackets Portable",
+    "description": "Éditeur de code orienté web design avec aperçu en direct",
+    "category": "Développement",
+    "size": "80 MB",
+    "url": "https://brackets.io/",
+    "exe_name": "Brackets.exe"
+  },
+  {
+    "id": "vim-portable",
+    "name": "Vim Portable",
+    "description": "Éditeur de texte modal puissant pour développeurs",
+    "category": "Développement",
+    "size": "18 MB",
+    "url": "https://portableapps.com/apps/development/gvim_portable",
+    "exe_name": "gvim.exe"
+  },
+  {
+    "id": "emacs-portable",
+    "name": "Emacs Portable",
+    "description": "Éditeur de texte extensible et programmable",
+    "category": "Développement",
+    "size": "85 MB",
+    "url": "https://portableapps.com/apps/development/emacs-portable",
+    "exe_name": "emacs.exe"
+  },
+  {
+    "id": "nodejs-portable",
+    "name": "NodeJS Portable",
+    "description": "Environnement d'exécution JavaScript côté serveur",
+    "category": "Développement",
+    "size": "35 MB",
+    "url": "https://nodejs.org/dist/v20.10.0/node-v20.10.0-win-x64.zip",
+    "exe_name": "node.exe"
+  },
+  {
+    "id": "deno-portable",
+    "name": "Deno Portable",
+    "description": "Runtime JavaScript/TypeScript sécurisé et moderne",
+    "category": "Développement",
+    "size": "40 MB",
+    "url": "https://deno.land/x/install",
+    "exe_name": "deno.exe"
+  },
+  {
+    "id": "php-portable",
+    "name": "PHP Portable",
+    "description": "Interpréteur PHP pour développement web",
+    "category": "Développement",
+    "size": "35 MB",
+    "url": "https://windows.php.net/downloads/releases/",
+    "exe_name": "php.exe"
+  },
+  {
+    "id": "ruby-portable",
+    "name": "Ruby Portable",
+    "description": "Interpréteur Ruby pour développement et scripts",
+    "category": "Développement",
+    "size": "25 MB",
+    "url": "https://rubyinstaller.org/downloads/",
+    "exe_name": "ruby.exe"
+  },
+  {
+    "id": "go-portable",
+    "name": "Go Portable",
+    "description": "Langage de programmation compilé par Google",
+    "category": "Développement",
+    "size": "150 MB",
+    "url": "https://go.dev/dl/go1.21.5.windows-amd64.zip",
+    "exe_name": "go.exe"
+  },
+  {
+    "id": "rust-portable",
+    "name": "Rust Portable",
+    "description": "Langage de programmation système performant et sûr",
+    "category": "Développement",
+    "size": "380 MB",
+    "url": "https://www.rust-lang.org/tools/install",
+    "exe_name": "rustc.exe"
+  },
+  {
+    "id": "postgresql-portable",
+    "name": "PostgreSQL Portable",
+    "description": "Base de données relationnelle open source avancée",
+    "category": "Développement",
+    "size": "240 MB",
+    "url": "https://www.postgresql.org/download/windows/",
+    "exe_name": "psql.exe"
+  },
+  {
+    "id": "mysql-portable",
+    "name": "MySQL Portable",
+    "description": "Système de gestion de bases de données relationnelles populaire",
+    "category": "Développement",
+    "size": "340 MB",
+    "url": "https://dev.mysql.com/downloads/mysql/",
+    "exe_name": "mysql.exe"
+  },
+  {
+    "id": "sqlite-portable",
+    "name": "SQLite Portable",
+    "description": "Base de données légère embarquée en fichier unique",
+    "category": "Développement",
+    "size": "2 MB",
+    "url": "https://www.sqlite.org/download.html",
+    "exe_name": "sqlite3.exe"
+  },
+  {
+    "id": "mongodb-portable",
+    "name": "MongoDB Portable",
+    "description": "Base de données NoSQL orientée documents",
+    "category": "Développement",
+    "size": "350 MB",
+    "url": "https://www.mongodb.com/try/download/community",
+    "exe_name": "mongod.exe"
+  },
+  {
+    "id": "redis-portable",
+    "name": "Redis Portable",
+    "description": "Base de données en mémoire clé-valeur ultra-rapide",
+    "category": "Développement",
+    "size": "5 MB",
+    "url": "https://www.memurai.com/get-memurai",
+    "exe_name": "memurai.exe"
+  },
+  {
+    "id": "xampp-portable",
+    "name": "XAMPP Portable",
+    "description": "Stack Apache + MySQL + PHP pour développement web local",
+    "category": "Développement",
+    "size": "150 MB",
+    "url": "https://www.apachefriends.org/download.html",
+    "exe_name": "xampp-control.exe"
+  },
+  {
+    "id": "laragon-portable",
+    "name": "Laragon Portable",
+    "description": "Environnement de développement web local rapide et léger",
+    "category": "Développement",
+    "size": "180 MB",
+    "url": "https://laragon.org/download/",
+    "exe_name": "laragon.exe"
+  },
+  {
+    "id": "docker-desktop",
+    "name": "Docker Desktop",
+    "description": "Plateforme de conteneurisation pour développement et déploiement",
+    "category": "Développement",
+    "size": "550 MB",
+    "url": "https://www.docker.com/products/docker-desktop/",
+    "exe_name": "Docker Desktop.exe"
+  },
+  {
+    "id": "heidisql-portable",
+    "name": "HeidiSQL Portable",
+    "description": "Client graphique pour bases de données MySQL, PostgreSQL, SQLite",
+    "category": "Développement",
+    "size": "20 MB",
+    "url": "https://www.heidisql.com/download.php",
+    "exe_name": "heidisql.exe"
+  },
+  {
+    "id": "dbeaver-portable",
+    "name": "DBeaver Portable",
+    "description": "Client de bases de données universel multi-plateforme",
+    "category": "Développement",
+    "size": "100 MB",
+    "url": "https://dbeaver.io/download/",
+    "exe_name": "dbeaver.exe"
+  },
+  {
+    "id": "keepass-portable",
+    "name": "KeePass Portable",
+    "description": "Gestionnaire de mots de passe sécurisé avec base chiffrée",
+    "category": "Sécurité",
+    "size": "5 MB",
+    "url": "https://portableapps.com/apps/utilities/keepass_portable",
+    "exe_name": "KeePass.exe"
+  },
+  {
+    "id": "veracrypt-portable",
+    "name": "VeraCrypt Portable",
+    "description": "Chiffrement de disques et volumes pour protection des données",
+    "category": "Sécurité",
+    "size": "30 MB",
+    "url": "https://launchpad.net/veracrypt/trunk/1.26.7/+download/VeraCrypt%20Portable%201.26.7.exe",
+    "exe_name": "VeraCrypt.exe"
+  },
+  {
+    "id": "bitwarden-portable",
+    "name": "Bitwarden Portable",
+    "description": "Gestionnaire de mots de passe open source multi-plateforme",
+    "category": "Sécurité",
+    "size": "95 MB",
+    "url": "https://bitwarden.com/download/",
+    "exe_name": "Bitwarden.exe"
+  },
+  {
+    "id": "keepassxc-portable",
+    "name": "KeePassXC Portable",
+    "description": "Gestionnaire de mots de passe moderne compatible KeePass",
+    "category": "Sécurité",
+    "size": "35 MB",
+    "url": "https://keepassxc.org/download/",
+    "exe_name": "KeePassXC.exe"
+  },
+  {
+    "id": "lastpass-portable",
+    "name": "LastPass Portable",
+    "description": "Gestionnaire de mots de passe cloud avec synchronisation",
+    "category": "Sécurité",
+    "size": "50 MB",
+    "url": "https://www.lastpass.com/download",
+    "exe_name": "LastPass.exe"
+  },
+  {
+    "id": "1password-portable",
+    "name": "1Password Portable",
+    "description": "Gestionnaire de mots de passe premium avec coffre-fort sécurisé",
+    "category": "Sécurité",
+    "size": "120 MB",
+    "url": "https://1password.com/downloads",
+    "exe_name": "1Password.exe"
+  },
+  {
+    "id": "cryptomator-portable",
+    "name": "Cryptomator Portable",
+    "description": "Chiffrement transparent de fichiers pour le cloud",
+    "category": "Sécurité",
+    "size": "50 MB",
+    "url": "https://cryptomator.org/downloads/",
+    "exe_name": "Cryptomator.exe"
+  },
+  {
+    "id": "axcrypt-portable",
+    "name": "AxCrypt Portable",
+    "description": "Chiffrement de fichiers simple avec intégration Windows",
+    "category": "Sécurité",
+    "size": "25 MB",
+    "url": "https://www.axcrypt.net/download",
+    "exe_name": "AxCrypt.exe"
+  },
+  {
+    "id": "gnupg-portable",
+    "name": "GnuPG Portable",
+    "description": "Chiffrement et signature de données avec clés PGP",
+    "category": "Sécurité",
+    "size": "30 MB",
+    "url": "https://portableapps.com/apps/security/gpg4usb-portable",
+    "exe_name": "gpg.exe"
+  },
+  {
+    "id": "kleopatra-portable",
+    "name": "Kleopatra Portable",
+    "description": "Interface graphique pour gestion de certificats et clés GPG",
+    "category": "Sécurité",
+    "size": "30 MB",
+    "url": "https://www.gpg4win.org/download.html",
+    "exe_name": "kleopatra.exe"
+  },
+  {
+    "id": "clamwin-portable",
+    "name": "ClamWin Portable",
+    "description": "Antivirus open source avec scan à la demande",
+    "category": "Sécurité",
+    "size": "70 MB",
+    "url": "https://portableapps.com/apps/security/clamwin_portable",
+    "exe_name": "ClamWin.exe"
+  },
+  {
+    "id": "malwarebytes-portable",
+    "name": "Malwarebytes Portable",
+    "description": "Anti-malware puissant pour détecter et supprimer les menaces",
+    "category": "Sécurité",
+    "size": "2 MB",
+    "url": "https://downloads.malwarebytes.com/file/mb-windows",
+    "exe_name": "mbam.exe"
+  },
+  {
+    "id": "adwcleaner-portable",
+    "name": "AdwCleaner Portable",
+    "description": "Nettoyeur de logiciels publicitaires et programmes indésirables",
+    "category": "Sécurité",
+    "size": "8 MB",
+    "url": "https://downloads.malwarebytes.com/file/adwcleaner",
+    "exe_name": "adwcleaner.exe"
+  },
+  {
+    "id": "hitmanpro",
+    "name": "HitmanPro",
+    "description": "Scanner anti-malware cloud complémentaire",
+    "category": "Sécurité",
+    "size": "12 MB",
+    "url": "https://dl.surfright.nl/HitmanPro_x64.exe",
+    "exe_name": "HitmanPro_x64.exe"
+  },
+  {
+    "id": "sandboxie-portable",
+    "name": "Sandboxie Portable",
+    "description": "Exécution d'applications dans un environnement isolé sécurisé",
+    "category": "Sécurité",
+    "size": "10 MB",
+    "url": "https://sandboxie-plus.com/downloads/",
+    "exe_name": "SandMan.exe"
+  },
+  {
+    "id": "winmd5-portable",
+    "name": "WinMD5 Portable",
+    "description": "Vérificateur de somme de contrôle MD5 pour fichiers",
+    "category": "Sécurité",
+    "size": "500 KB",
+    "url": "https://www.winmd5.com/download/winmd5free.zip",
+    "exe_name": "winmd5.exe"
+  },
+  {
+    "id": "hashcheck",
+    "name": "HashCheck",
+    "description": "Extension shell Windows pour vérifier les hash de fichiers",
+    "category": "Sécurité",
+    "size": "300 KB",
+    "url": "https://github.com/gurnec/HashCheck/releases",
+    "exe_name": "HashCheck.exe"
+  },
+  {
+    "id": "eraser-portable",
+    "name": "Eraser Portable",
+    "description": "Suppression sécurisée de fichiers avec écrasement multiple",
+    "category": "Sécurité",
+    "size": "10 MB",
+    "url": "https://eraser.heidi.ie/download/",
+    "exe_name": "Eraser.exe"
+  },
+  {
+    "id": "truecrypt",
+    "name": "TrueCrypt",
+    "description": "Chiffrement de volumes et partitions de disque",
+    "category": "Sécurité",
+    "size": "3 MB",
+    "url": "https://www.truecrypt71a.com/downloads/",
+    "exe_name": "TrueCrypt.exe"
+  },
+  {
+    "id": "spybot-portable",
+    "name": "SpyBot Portable",
+    "description": "Anti-spyware avec protection en temps réel et immunisation",
+    "category": "Sécurité",
+    "size": "60 MB",
+    "url": "https://www.safer-networking.org/download/",
+    "exe_name": "SDMain.exe"
+  },
+  {
+    "id": "superantispyware",
+    "name": "SUPERAntiSpyware",
+    "description": "Détection et suppression de spywares et logiciels malveillants",
+    "category": "Sécurité",
+    "size": "25 MB",
+    "url": "https://www.superantispyware.com/download.html",
+    "exe_name": "SUPERAntiSpyware.exe"
+  },
+  {
+    "id": "comodo-firewall",
+    "name": "Comodo Firewall",
+    "description": "Pare-feu personnel avec protection réseau avancée",
+    "category": "Sécurité",
+    "size": "5 MB",
+    "url": "https://www.comodo.com/home/internet-security/firewall.php",
+    "exe_name": "cfp.exe"
+  },
+  {
+    "id": "glasswire-portable",
+    "name": "GlassWire Portable",
+    "description": "Moniteur réseau avec pare-feu et alertes visuelles",
+    "category": "Sécurité",
+    "size": "35 MB",
+    "url": "https://www.glasswire.com/download/",
+    "exe_name": "GlassWire.exe"
+  },
+  {
+    "id": "ccleaner-portable",
+    "name": "CCleaner Portable",
+    "description": "Nettoyeur système pour fichiers temporaires, cache et registre",
+    "category": "Nettoyage",
+    "size": "25 MB",
+    "url": "https://portableapps.com/apps/utilities/ccleaner_portable",
+    "exe_name": "CCleaner64.exe"
+  },
+  {
+    "id": "bleachbit-portable",
+    "name": "BleachBit Portable",
+    "description": "Nettoyeur open source de fichiers inutiles et traces de navigation",
+    "category": "Nettoyage",
+    "size": "15 MB",
+    "url": "https://www.bleachbit.org/download/windows",
+    "exe_name": "bleachbit.exe"
+  },
+  {
+    "id": "wise-disk-cleaner",
+    "name": "Wise Disk Cleaner",
+    "description": "Nettoyeur de disque avec suppression de fichiers temporaires",
+    "category": "Nettoyage",
+    "size": "6 MB",
+    "url": "https://downloads.wisecleaner.com/soft/WDCFree.exe",
+    "exe_name": "WiseDiskCleaner.exe"
+  },
+  {
+    "id": "wise-registry-cleaner",
+    "name": "Wise Registry Cleaner",
+    "description": "Nettoyeur et optimiseur du registre Windows",
+    "category": "Nettoyage",
+    "size": "3 MB",
+    "url": "https://downloads.wisecleaner.com/soft/WRCFree.exe",
+    "exe_name": "WiseRegCleaner.exe"
+  },
+  {
+    "id": "wise-care-365",
+    "name": "Wise Care 365",
+    "description": "Suite de nettoyage et d'optimisation système tout-en-un",
+    "category": "Nettoyage",
+    "size": "12 MB",
+    "url": "https://downloads.wisecleaner.com/soft/WiseCare365.exe",
+    "exe_name": "WiseCare365.exe"
+  },
+  {
+    "id": "advanced-systemcare",
+    "name": "Advanced SystemCare",
+    "description": "Suite d'optimisation et de nettoyage système avancée",
+    "category": "Nettoyage",
+    "size": "55 MB",
+    "url": "https://www.iobit.com/en/advancedsystemcarefree.php",
+    "exe_name": "ASC.exe"
+  },
+  {
+    "id": "iobit-uninstaller",
+    "name": "IObit Uninstaller",
+    "description": "Désinstalleur avancé avec nettoyage des résidus",
+    "category": "Nettoyage",
+    "size": "25 MB",
+    "url": "https://www.iobit.com/en/advanceduninstaller.php",
+    "exe_name": "IObitUninstaler.exe"
+  },
+  {
+    "id": "revo-uninstaller",
+    "name": "Revo Uninstaller",
+    "description": "Désinstalleur puissant avec suppression complète des traces",
+    "category": "Nettoyage",
+    "size": "15 MB",
+    "url": "https://www.revouninstaller.com/revo-uninstaller-free-download/",
+    "exe_name": "RevoUnin.exe"
+  },
+  {
+    "id": "geek-uninstaller",
+    "name": "Geek Uninstaller",
+    "description": "Désinstalleur portable léger avec suppression forcée",
+    "category": "Nettoyage",
+    "size": "6 MB",
+    "url": "https://geekuninstaller.com/download",
+    "exe_name": "geek.exe"
+  },
+  {
+    "id": "bulk-crap-uninstaller",
+    "name": "Bulk Crap Uninstaller",
+    "description": "Désinstalleur en masse pour supprimer plusieurs programmes",
+    "category": "Nettoyage",
+    "size": "8 MB",
+    "url": "https://github.com/Klocman/Bulk-Crap-Uninstaller/releases/download/v5.7/BCUninstaller_5.7_setup.exe",
+    "exe_name": "BCUninstaller.exe"
+  },
+  {
+    "id": "pc-decrapifier",
+    "name": "PC Decrapifier",
+    "description": "Suppression des logiciels préinstallés indésirables",
+    "category": "Nettoyage",
+    "size": "2 MB",
+    "url": "https://www.pcdecrapifier.com/download",
+    "exe_name": "PC_Decrapifier.exe"
+  },
+  {
+    "id": "oo-shutup10",
+    "name": "O&O ShutUp10",
+    "description": "Outil de configuration de la vie privée Windows 10/11",
+    "category": "Nettoyage",
+    "size": "1 MB",
+    "url": "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe",
+    "exe_name": "OOSU10.exe"
+  },
+  {
+    "id": "windows10-debloater",
+    "name": "Windows10Debloater",
+    "description": "Script de suppression des applications Windows 10 préinstallées",
+    "category": "Nettoyage",
+    "size": "100 KB",
+    "url": "https://github.com/Sycnex/Windows10Debloater/archive/master.zip",
+    "exe_name": "Windows10DebloaterGUI.ps1"
+  },
+  {
+    "id": "privazer-portable",
+    "name": "PrivaZer Portable",
+    "description": "Nettoyeur de traces d'activité et de données sensibles",
+    "category": "Nettoyage",
+    "size": "15 MB",
+    "url": "https://privazer.com/PrivaZer_free.exe",
+    "exe_name": "PrivaZer.exe"
+  },
+  {
+    "id": "cleanafterme",
+    "name": "CleanAfterMe",
+    "description": "Nettoyeur de traces système et fichiers temporaires NirSoft",
+    "category": "Nettoyage",
+    "size": "150 KB",
+    "url": "https://www.nirsoft.net/utils/cleanaftme.zip",
+    "exe_name": "CleanAfterMe.exe"
+  },
+  {
+    "id": "temp-file-cleaner",
+    "name": "Temp File Cleaner",
+    "description": "Suppression rapide de tous les fichiers temporaires Windows",
+    "category": "Nettoyage",
+    "size": "500 KB",
+    "url": "https://www.yourwindow.to/",
+    "exe_name": "TFC.exe"
+  },
+  {
+    "id": "disk-cleanup",
+    "name": "Disk Cleanup",
+    "description": "Utilitaire Windows intégré de nettoyage de disque",
+    "category": "Nettoyage",
+    "size": "0 KB",
+    "url": "Built-in",
+    "exe_name": "cleanmgr.exe"
+  },
+  {
+    "id": "duplicate-files-finder",
+    "name": "Duplicate Files Finder",
+    "description": "Recherche et suppression de fichiers en double sur le disque",
+    "category": "Nettoyage",
+    "size": "25 MB",
+    "url": "https://www.duplicatefilesfinder.com/",
+    "exe_name": "DuplicateFilesFinder.exe"
+  },
+  {
+    "id": "auslogics-disk-defrag",
+    "name": "Auslogics Disk Defrag",
+    "description": "Défragmenteur de disque rapide avec optimisation de placement",
+    "category": "Nettoyage",
+    "size": "10 MB",
+    "url": "https://www.auslogics.com/en/software/disk-defrag/",
+    "exe_name": "DiskDefrag.exe"
+  },
+  {
+    "id": "ultradefrag-portable",
+    "name": "UltraDefrag Portable",
+    "description": "Défragmenteur open source avec visualisation graphique",
+    "category": "Nettoyage",
+    "size": "2 MB",
+    "url": "https://ultradefrag.net/download.html",
+    "exe_name": "udefrag.exe"
+  }
+]

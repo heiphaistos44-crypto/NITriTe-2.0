@@ -1,0 +1,267 @@
+HWiNFO(R) END-USER LICENSE AGREEMENT (EULA) 
+
+IMPORTANT - PLEASE READ CAREFULLY 
+
+This End-User License Agreement is a legal agreement between you (either an individual or a single entity) and REALiX, s.r.o. (further also referred as the "Licensor")
+[Martin Malik, REALiX, s.r.o., B. Nemcovej 2291/28, 90101 Malacky, SLOVAKIA]
+for the software product identified above (further also referred to as "Software"), which includes computer software and associated media and printed materials and may include online or electronic documentation.
+By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this agreement. 
+
+1. PRODUCT LICENSE
+
+This Software is supplied under license terms specified in this document, which defines criteria for using the software legally. No ownership rights for the software are transmitted.
+
+HWiNFO(R) as a shortcut covers different products to which different licensing terms apply. This includes: HWiNFO(R) 64, HWiNFO(R) 64 Pro, HWiNFO(R) ARM64, HWiNFO(R) ARM64 Pro, HWiNFO(R) 32, HWiNFO(R) for DOS.
+HWiNFO(R) 32, HWiNFO for DOS are freeware. These products are allowed to be used free in both non-commercial and commercial environments.
+HWiNFO(R) 64 and HWiNFO(R) ARM64 is freeware for non-commercial use only. Use in a commercial environment or for commercial purposes is allowed for a 14-day evaluation only.
+HWiNFO(R) 64 Pro and HWiNFO(R) ARM64 Pro is an individually licensed copy of HWiNFO(R) 64 (HWiNFO(R) 64 + valid license key) that when used with a valid commercial type of license is allowed to be used in commercial environment.
+
+This Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties.
+Modification, reverse engineering or disassembling of the Software is strictly prohibited.
+Embedding or bundling HWiNFO(R) in 3rd party software is allowed only with explicit approval of the Licensor.
+Tampering with features limited in the unlicensed version (e.g. Shared Memory Limit), or automation of actions that would circumvent such limits is strictly prohibited.
+
+1.1  LICENSE TYPES AND RESTRICTIONS
+
+A license grants the user (or company) additional usage rights and may offer additional features. Different types of licenses and volume discounts are offered:
+- Personal License: Allows non-commercial use only. One license permits 1 user to use the licensed product on 5 computers.
+- Engineer License: Allows non-commercial and commercial use. One license permits 1 user to use the licensed product on an unlimited number of computers.
+- Corporate License: Allows non-commercial and commercial use. One license permits using the licensed product on 1 computer within the licensed company/organization by an unlimited number of users.
+
+HWiNFO(R) 64 or HWiNFO(R) ARM64 can be upgraded to HWiNFO(R) 64 Pro or HWiNFO(R) ARM64 Pro respectively by purchasing a license. More details about licenses and purchase options can be found at: https://www.hwinfo.com/licenses/
+Upon a successful purchase, the user will receive an individually generated license key file via e-mail. This key file contains encrypted information about the license and together with a copy of HWiNFO(R) 64/ARM64 forms HWiNFO(R) 64/ARM64 Pro.
+The license key file must remain within the licensed subject only and must not be installed on computers not covered by the license or provided to other persons or subjects to which the license was not issued.
+
+1.2. PAYMENTS
+
+All payments are processed via a licensed partner and payment processor - 2Checkout.
+After successful completion of license purchase the customer will be billed by 2Checkout and receive the license key via e-mail.
+Refunds are accepted up to 14 days from the date of placing the order and are subject to individual review.
+
+1.2. LICENSE RENEWAL
+
+A license is issued with a limited Maintenance Period during which the licensed subject is entitled to use the license key on all updates of the Software at no additional cost.
+After expiry of the Maintenance Period, versions issued before the expiry date will continue to work as licensed copies, but all versions released after that date will require a new license.
+A license can be extended by issuing a renewal request and purchasing a license extension which is available at a reduced cost.
+Upon expiry of Maintenance Period the payment processor may contact the customer with an offer for license extension.
+During the purchase process the customer can request the payment processor to activate automatic renewal of the license. In such case the payment processor will automatically bill the customer upon expiry of the Maintenance Period until cancelled by customer.
+
+1.4. COPYRIGHT 
+
+The Licensor is the sole developer and owner of the Software. You, as user of the Software, acknowledge and agree that the Software is a proprietary product under the Slovak and European Union copyright laws and prevailing copyright laws throughout the world.
+You further acknowledge and agree that all right, title, and interest in and to the Software, including associated intellectual property rights, are and shall remain with the Licensor, and you agree not to contest Licensor's ownership or the validity of Licensor's rights.
+This License Agreement does not convey to you an interest in or to the Software, but only a limited right to use the work, which is revocable in accordance with the terms of this License Agreement.
+You assume responsibility for the selection of this program to achieve your intended results, and for its installation and subsequent use.
+
+1.5. SOFTWARE DEFECT REPORTING 
+
+If you find software defects in the Software, you can report them to the Licensor. Licensor will evaluate them and, at its sole discretion, may address them in a future revision of the software.
+
+1.6. UPDATES 
+
+Updates to the Software (including, but not limited to bug fixes, upgrades, hot fixes, enhancements, modifications, new releases) are provided at the sole discretion of the Licensor.
+If Licensor does provide you with any updates, such updates shall be subject to the terms and conditions of this Agreement (including the License) or such agreement, if any, which accompanies such updates.
+
+2. RIGHTS OF THE LICENSOR
+
+You acknowledge and agree that the Software contains proprietary material of Licensor protected under Slovak and International copyright, trademark, and trade secret laws and conventions. All right, title, and interest in the Software are, and shall remain, with the Licensor.
+This Agreement does not convey to you any title or interest in and to the Software only the limited right of use which may be terminated as provided for herein.
+Modifying, reverse engineering or disassembling the Software or the License Key File is strictly forbidden. Tampering with the License Key File may result in invalidation of the license.
+
+3. DISCLAIMER OF WARRANTY 
+
+THIS SOFTWARE AND THE ACCOMPANYING FILES ARE PROVIDED "AS IS." THE LICENSOR AND ITS SUPPLIERS DO NOT AND CANNOT WARRANT THE PERFORMANCE OR RESULTS YOU MAY OBTAIN BY USING THIS SOFWARE OR SUCH FILES. LICENSOR MAKES NO WARRANTIES, EXPRESS OR IMPLIED, AS TO TITLE OR INFRINGEMENT OF THIRD-PARTY RIGHTS, MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE.
+THE PERSON USING THE SOFTWARE BEARS ALL RISKS AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE.
+Should the Software prove defective, you (and not the Licensor) assume the entire cost of all necessary servicing, repair, or correction. Some jurisdictions do not allow the exclusion of implied warranties, so the above exclusion may not apply to you. The foregoing does not affect or prejudice your statutory rights.
+Good data processing procedure dictates that any program be thoroughly tested with non-critical data before relying on it. 
+
+4. PRIVACY STATEMENT
+
+The Software collects system-related information (hardware/software inventory, system health status), which is its main role.
+This information is made available only to the current user and the Software does not submit this information to other parties without user's consent.
+No personally identifiable information is collected by the Software and no information is transmitted to other remote servers.
+The Software might require an internet connection, which is used only to receive the latest version information from a remote server.
+The Remote Sensor Monitoring feature can transmit sensor information to remote systems, but it does so only when explicitly configured by the user to create such connections.
+
+
+5. LIMITATION OF LIABILITY 
+
+IN NO EVENT WILL THE LICENSOR BE LIABLE FOR ANY DAMAGES, INCLUDING ANY LOST PROFITS, LOST SAVINGS, OR OTHER INDIRECT, SPECIAL, EXEMPLARY, INCIDENTAL OR CONSEQUENTIAL DAMAGES, CLAIMS OR ACTIONS, ARISING OUT OF THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, CLAIMS OR ACTIONS.
+FURTHER, IN NO EVENT WILL THE LICENSOR BE LIABLE FOR ANY CLAIMS BY ANY OTHER PARTY ARISING OUT OF YOUR USE OF THE SOFTWARE.
+SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THE ABOVE LIMITATION OR EXCLUSION MAY NOT APPLY TO YOU.
+
+Nothing contained in this Agreement shall prejudice the statutory rights of any party dealing as a consumer. 
+
+6. INDEMNIFICATION 
+
+You agree to indemnify, defend, and hold the Licensor harmless from and against any claims or lawsuits, including costs and attorney's fees, that arise or result from the use of the Software, provided the Licensor gives you prompt written notice of any such claim, tenders to you the defense or settlement of such a claim at your expense and cooperates with you at your expense in defending or settling such claim.
+
+7. GOVERNING LAW 
+
+This Agreement shall be governed by and construed in accordance with the laws of Slovakia. Any legal proceedings arising under this Agreement shall be instituted only in the courts of Slovakia.
+The parties opt out of the United Nations Convention on the Sale of Goods and choose the laws of the Slovakia to apply to the Agreement and performance hereunder. 
+
+8. SEVERABILITY 
+
+Should any term of this Agreement be declared invalid, illegal, void, or not enforceable by any court of competent jurisdiction, such provision shall be severed from this Agreement, and the remaining terms shall remain in full force and effect.
+
+9. WAIVER 
+
+The waiver or failure of either party to exercise or enforce in any respect any of its rights provided for in this Agreement or take action against the other party in the event of a breach of this Agreement shall not be deemed a waiver of any further right under this Agreement by such party or the right to subsequent enforcement of its rights or actions in the event of subsequent or the same breaches by the other party.
+
+10. TRADEMARKS 
+
+HWiNFO is a Registered Trademark of REALiX s.r.o. in the European Union and other countries.
+The names of companies and products mentioned in the Software or in the materials may be the trademarks of their respective owners. 
+
+11. COMPLETE AGREEMENT 
+
+BY USING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+YOU FURTHER AGREE THAT THIS AGREEMENT IS THE COMPLETE AND EXCLUSIVE STATEMENT OF THE AGREEMENT BETWEEN YOU AND THE LICENSOR REGARDING THE SUBJECT MATTER HEREOF AND SUPERSEDES ANY PROPOSAL OR PRIOR AGREEMENT, ORAL OR WRITTEN, AND ANY OTHER COMMUNICATIONS BETWEEN YOU AND THE LICENSOR RELATING TO THE SUBJECT MATTER OF THIS AGREEMENT.
+
+12. OPTIONAL SUPPORT SERVICES 
+
+At your option and expense, and under a separate agreement, the Licensor may provide you with support services related to your use of the Software.
+Any supplemental software code provided to you as part of the support services shall be considered part of the Software and subject to the terms and conditions of this License Agreement.
+
+----------------------------------------------------------------------
+3-rd party Licenses
+----------------------------------------------------------------------
+
+====================================================================
+Copyright (c) 1998-2019 The OpenSSL Project.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in
+   the documentation and/or other materials provided with the
+   distribution.
+
+3. All advertising materials mentioning features or use of this
+   software must display the following acknowledgment:
+   "This product includes software developed by the OpenSSL Project
+   for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+
+4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+   endorse or promote products derived from this software without
+   prior written permission. For written permission, please contact
+   openssl-core@openssl.org.
+
+5. Products derived from this software may not be called "OpenSSL"
+   nor may "OpenSSL" appear in their names without prior written
+   permission of the OpenSSL Project.
+
+6. Redistributions of any form whatsoever must retain the following
+   acknowledgment:
+   "This product includes software developed by the OpenSSL Project
+   for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+
+THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+====================================================================
+
+This product includes cryptographic software written by Eric Young
+(eay@cryptsoft.com).  This product includes software written by Tim
+Hudson (tjh@cryptsoft.com).
+
+Original SSLeay License
+-----------------------
+
+Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+All rights reserved.
+
+This package is an SSL implementation written
+by Eric Young (eay@cryptsoft.com).
+The implementation was written so as to conform with Netscapes SSL.
+
+This library is free for commercial and non-commercial use as long as
+the following conditions are aheared to.  The following conditions
+apply to all code found in this distribution, be it the RC4, RSA,
+lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+included with this distribution is covered by the same copyright terms
+except that the holder is Tim Hudson (tjh@cryptsoft.com).
+
+Copyright remains Eric Young's, and as such any Copyright notices in
+the code are not to be removed.
+If this package is used in a product, Eric Young should be given attribution
+as the author of the parts of the library used.
+This can be in the form of a textual message at program startup or
+in documentation (online or textual) provided with the package.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. All advertising materials mentioning features or use of this software
+   must display the following acknowledgement:
+   "This product includes cryptographic software written by
+    Eric Young (eay@cryptsoft.com)"
+   The word 'cryptographic' can be left out if the rouines from the library
+   being used are not cryptographic related :-).
+4. If you include any Windows specific code (or a derivative thereof) from
+   the apps directory (application code) you must include an acknowledgement:
+   "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+
+THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+The licence and distribution terms for any publically available version or
+derivative of this code cannot be changed.  i.e. this code cannot simply be
+copied and put under another distribution licence
+[including the GNU Public Licence.]
+
+----------------------------------------------------------------------
+
+LZMA SDK is written and placed in the public domain by Igor Pavlov.
+
+Some code in LZMA SDK is based on public domain code from another developers:
+  1) PPMd var.H (2001): Dmitry Shkarin
+  2) SHA-256: Wei Dai (Crypto++ library)
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute the 
+original LZMA SDK code, either in source code form or as a compiled binary, for 
+any purpose, commercial or non-commercial, and by any means.
+
+LZMA SDK code is compatible with open source licenses, for example, you can 
+include it to GNU GPL or GNU LGPL code.
+
+----------------------------------------------------------------------
+
+PresentMon
+
+Copyright (C) 2017-2023 Intel Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
