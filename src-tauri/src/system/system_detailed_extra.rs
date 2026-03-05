@@ -62,38 +62,107 @@ fn wmi_con() -> Result<WMIConnection, String> {
 #[tauri::command]
 pub async fn get_storage_physical_info() -> Result<Vec<StoragePhysical>, String> {
     tokio::task::spawn_blocking(|| {
-        let wmi = wmi_con()?;
-        let r: Vec<WmiDiskDrive> = wmi.raw_query("SELECT * FROM Win32_DiskDrive").map_err(|e| e.to_string())?;
-        Ok(r.into_iter().map(|d| {
-            let size = d.Size.unwrap_or(0);
-            let pnp = d.PNPDeviceID.unwrap_or_default();
-            let raw_iface = d.InterfaceType.unwrap_or_default();
-            let interface_type = if pnp.to_uppercase().contains("NVME") {
-                "NVMe PCIe".to_string()
-            } else { raw_iface };
-            let model = d.Model.unwrap_or_default().trim().to_string();
-            let raw_media = d.MediaType.unwrap_or_default();
-            let media_type = if raw_media.to_lowercase().contains("fixed") {
-                let ml = model.to_lowercase();
-                if ml.contains("ssd") || ml.contains("nvme") || interface_type == "NVMe PCIe" {
-                    "SSD".to_string()
-                } else { "HDD".to_string() }
-            } else if raw_media.is_empty() {
-                let ml = model.to_lowercase();
-                if ml.contains("ssd") || ml.contains("nvme") { "SSD".to_string() } else { "HDD".to_string() }
-            } else { raw_media };
-            StoragePhysical {
-                serial_number: d.SerialNumber.unwrap_or_default().trim().to_string(),
-                firmware_revision: d.FirmwareRevision.unwrap_or_default().trim().to_string(),
-                size_bytes: size,
-                size_gb: size as f64 / 1_000_000_000.0,
-                interface_type, media_type,
-                status: d.Status.unwrap_or_default(),
-                pnp_device_id: pnp,
-                partitions: d.Partitions.unwrap_or(0),
-                model,
+        // PowerShell + timeout 15s — évite le blocage WMI Win32_DiskDrive
+        #[cfg(target_os = "windows")]
+        {
+            use std::io::Read;
+            let ps = r#"
+try {
+    $disks = Get-PhysicalDisk -ErrorAction SilentlyContinue
+    if (-not $disks) { Write-Output '[]'; exit }
+    $result = foreach ($d in $disks) {
+        $partCount = 0
+        try {
+            $diskNum = $d.DeviceId
+            $partCount = (Get-Partition -DiskNumber $diskNum -ErrorAction SilentlyContinue | Measure-Object).Count
+        } catch {}
+        $bus = [string]$d.BusType
+        $iface = switch ($bus) {
+            "NVMe"  { "NVMe PCIe" }
+            "SATA"  { "SATA" }
+            "SAS"   { "SAS" }
+            "USB"   { "USB" }
+            "RAID"  { "RAID" }
+            default { $bus }
+        }
+        $mtype = [string]$d.MediaType
+        if ($mtype -eq "Unspecified" -or $mtype -eq "") {
+            $n = ([string]$d.FriendlyName).ToLower()
+            $mtype = if ($n -match "nvme|ssd") { "SSD" } elseif ($n -match "hdd|hd") { "HDD" } else { "Inconnu" }
+        }
+        [PSCustomObject]@{
+            model    = [string]$d.FriendlyName
+            serial   = [string]$d.SerialNumber
+            firmware = [string]$d.FirmwareVersion
+            size     = [long]$d.Size
+            iface    = $iface
+            mtype    = $mtype
+            health   = [string]$d.HealthStatus
+            pnp      = [string]$d.DeviceId
+            parts    = [int]$partCount
+        }
+    }
+    $result | ConvertTo-Json -Compress
+} catch { Write-Output '[]' }
+"#;
+            let mut child = match std::process::Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+                .creation_flags(0x08000000)
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::null())
+                .spawn() {
+                    Ok(c) => c,
+                    Err(e) => return Err(e.to_string()),
+                };
+            let timeout = std::time::Duration::from_secs(15);
+            let start = std::time::Instant::now();
+            loop {
+                match child.try_wait() {
+                    Ok(Some(_)) => {
+                        let mut buf = Vec::new();
+                        if let Some(mut out) = child.stdout.take() { let _ = out.read_to_end(&mut buf); }
+                        let text = String::from_utf8_lossy(&buf);
+                        let t = text.trim();
+                        if t.is_empty() || t == "[]" { return Ok(vec![]); }
+                        let jt = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
+                        let items: Vec<serde_json::Value> = serde_json::from_str(&jt).unwrap_or_default();
+                        return Ok(items.into_iter().map(|v| {
+                            let model = v["model"].as_str().unwrap_or("").trim().to_string();
+                            let mtype_raw = v["mtype"].as_str().unwrap_or("").trim().to_string();
+                            let iface = v["iface"].as_str().unwrap_or("").trim().to_string();
+                            let ml = model.to_lowercase();
+                            let media_type = if mtype_raw == "Inconnu" || mtype_raw.is_empty() {
+                                if ml.contains("nvme") || iface.contains("NVMe") { "NVMe".to_string() }
+                                else if ml.contains("ssd") { "SSD".to_string() }
+                                else { "HDD".to_string() }
+                            } else if mtype_raw.to_lowercase().contains("hdd") || mtype_raw.to_lowercase().contains("hard") {
+                                "HDD".to_string()
+                            } else { mtype_raw };
+                            let size = v["size"].as_u64().unwrap_or(0);
+                            StoragePhysical {
+                                model,
+                                serial_number: v["serial"].as_str().unwrap_or("").trim().to_string(),
+                                firmware_revision: v["firmware"].as_str().unwrap_or("").trim().to_string(),
+                                size_bytes: size,
+                                size_gb: size as f64 / 1_000_000_000.0,
+                                interface_type: iface,
+                                media_type,
+                                status: v["health"].as_str().unwrap_or("Unknown").to_string(),
+                                pnp_device_id: v["pnp"].as_str().unwrap_or("").to_string(),
+                                partitions: v["parts"].as_u64().unwrap_or(0) as u32,
+                            }
+                        }).collect());
+                    }
+                    Ok(None) => {
+                        if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); return Ok(vec![]); }
+                        std::thread::sleep(std::time::Duration::from_millis(200));
+                    }
+                    Err(e) => { let _ = child.kill(); return Err(e.to_string()); }
+                }
             }
-        }).collect())
+        }
+        #[cfg(not(target_os = "windows"))]
+        Ok(vec![])
     }).await.map_err(|e| e.to_string())?
 }
 

@@ -46,6 +46,13 @@ desktop.ini
 *.suo
 *.user
 
+# --- Drivers & Scripts binaires (trop volumineux / exécutables) ---
+Drivers/
+Script Windows/
+*.exe
+*.dll
+*.msi
+
 # --- Logs ---
 *.log
 npm-debug.log*

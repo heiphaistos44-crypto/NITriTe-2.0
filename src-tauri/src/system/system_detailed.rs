@@ -70,8 +70,10 @@ pub struct EnvVar { pub name: String, pub value: String, pub var_type: String }
 #[derive(Debug, Serialize, Clone)]
 pub struct WindowsLicense {
     pub product_name: String, pub activation_status: String,
-    pub partial_product_key: String, pub license_status: String, pub license_family: String,
+    pub partial_product_key: String, pub full_product_key: String,
+    pub license_status: String, pub license_family: String,
     pub office_name: String, pub office_status: String, pub office_key: String,
+    pub office_full_key: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -504,18 +506,100 @@ $licStatus = { param($code) switch ($code) {
 $allProducts = Get-WmiObject -Query "SELECT Name,LicenseStatus,PartialProductKey,LicenseFamily,Description FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL" -ErrorAction SilentlyContinue
 $win = $allProducts | Where-Object { $_.Name -like "*Windows*" } | Sort-Object LicenseStatus | Select-Object -First 1
 $office = $allProducts | Where-Object { $_.Name -like "*Office*" -or $_.Name -like "*Microsoft 365*" -or $_.Name -like "*Visio*" -or $_.Name -like "*Project*" } | Sort-Object LicenseStatus | Select-Object -First 1
-$winKey = if ($win) { $win.PartialProductKey } else {
-    try { (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "DigitalProductId" -ErrorAction SilentlyContinue) | Out-Null; "" } catch { "" }
+
+# Décodage clé complète : OA3 (OEM UEFI) en priorité, sinon DigitalProductId
+function Get-FullKey {
+    # 1. Clé OEM dans le firmware UEFI/BIOS
+    try {
+        $sls = Get-WmiObject -Class SoftwareLicensingService -ErrorAction SilentlyContinue
+        if ($sls -and $sls.OA3xOriginalProductKey) { return $sls.OA3xOriginalProductKey }
+    } catch {}
+    # 2. Décodage depuis le registre DigitalProductId
+    try {
+        $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        $raw = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).DigitalProductId
+        if ($null -eq $raw -or $raw.Length -lt 67) { return "" }
+        $offset = 52
+        $isWin8 = [int][math]::Floor($raw[66] / 6) -band 1
+        $raw[66] = ($raw[66] -band 0xF7) -bor (($isWin8 -band 2) * 4)
+        $maps = "BCDFGHJKMPQRTVWXY2346789"
+        $result = ""; $n = 0
+        for ($i = 24; $i -ge 0; $i--) {
+            $n = 0
+            for ($j = 14; $j -ge 0; $j--) {
+                $n = ($n * 256) -bxor [int]$raw[$j + $offset]
+                $raw[$j + $offset] = [int][math]::Floor($n / 24)
+                $n = $n % 24
+            }
+            $result = $maps[$n] + $result
+            if ($i % 5 -eq 0 -and $i -ne 0) { $result = "-" + $result }
+        }
+        return $result
+    } catch { return "" }
 }
+$fullKey = Get-FullKey
+
+function Get-OfficeKey {
+    $maps = "BCDFGHJKMPQRTVWXY2346789"
+    $isCTR = Test-Path 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' -ErrorAction SilentlyContinue
+    $bases = @(
+        'HKLM:\SOFTWARE\Microsoft\Office\16.0\Registration',
+        'HKLM:\SOFTWARE\Microsoft\Office\15.0\Registration',
+        'HKLM:\SOFTWARE\Microsoft\Office\14.0\Registration',
+        'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Office\16.0\Registration',
+        'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Office\15.0\Registration',
+        'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Office\14.0\Registration'
+    )
+    foreach ($b in $bases) {
+        if (-not (Test-Path $b -ErrorAction SilentlyContinue)) { continue }
+        foreach ($sk in (Get-ChildItem $b -ErrorAction SilentlyContinue)) {
+            try {
+                $raw = (Get-ItemProperty $sk.PSPath -ErrorAction SilentlyContinue).DigitalProductId
+                if ($null -eq $raw -or $raw.Length -lt 67) { continue }
+                # Clone obligatoire — l'algo modifie le tableau en place
+                $rc = [byte[]]$raw.Clone()
+                $offset = 52; $result = ""
+                for ($i = 24; $i -ge 0; $i--) {
+                    $n = 0
+                    for ($j = 14; $j -ge 0; $j--) {
+                        $n = ($n * 256) -bxor [int]$rc[$j + $offset]
+                        $rc[$j + $offset] = [int][math]::Floor($n / 24)
+                        $n = $n % 24
+                    }
+                    $result = $maps[$n] + $result
+                    if ($i % 5 -eq 0 -and $i -ne 0) { $result = "-" + $result }
+                }
+                # Valider strictement le format XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
+                if ($result -match '^[BCDFGHJKMPQRTVWXY2346789]{5}-[BCDFGHJKMPQRTVWXY2346789]{5}-[BCDFGHJKMPQRTVWXY2346789]{5}-[BCDFGHJKMPQRTVWXY2346789]{5}-[BCDFGHJKMPQRTVWXY2346789]{5}$') {
+                    return $result
+                }
+            } catch {}
+        }
+    }
+    # Fallback : clé partielle + type (C2R/365 ne stocke pas la clé complète)
+    try {
+        $lp = Get-WmiObject -Query "SELECT Name,PartialProductKey FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL AND (Name LIKE '%Office%' OR Name LIKE '%Microsoft 365%')" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($lp -and $lp.PartialProductKey) {
+            $t = if ($isCTR) { "C2R/365 — clé non stockée" } else { "MSI" }
+            return "XXXXX-XXXXX-XXXXX-XXXXX-$($lp.PartialProductKey) ($t)"
+        }
+    } catch {}
+    if ($isCTR) { return "Office 365/C2R — clé non récupérable (abonnement)" }
+    return ""
+}
+$officeFullKey = Get-OfficeKey
+
 [PSCustomObject]@{
     ProductName = if ($win) { $win.Name } else { "Windows" }
     ActivationStatus = if ($win) { & $licStatus $win.LicenseStatus } else { "Inconnu" }
-    PartialKey = if ($winKey) { $winKey } else { "N/A" }
+    PartialKey = if ($win -and $win.PartialProductKey) { $win.PartialProductKey } else { "N/A" }
+    FullKey = if ($fullKey) { $fullKey } else { "" }
     LicenseFamily = if ($win) { $win.LicenseFamily } else { "" }
     Description = if ($win) { $win.Description } else { "" }
     OfficeName = if ($office) { $office.Name } else { "" }
     OfficeStatus = if ($office) { & $licStatus $office.LicenseStatus } else { "" }
     OfficeKey = if ($office) { $office.PartialProductKey } else { "" }
+    OfficeFullKey = $officeFullKey
 } | ConvertTo-Json -Compress
 "#;
             let out = std::process::Command::new("powershell")
@@ -531,11 +615,13 @@ $winKey = if ($win) { $win.PartialProductKey } else {
                 product_name: v["ProductName"].as_str().unwrap_or("Windows").to_string(),
                 activation_status: v["ActivationStatus"].as_str().unwrap_or("Inconnu").to_string(),
                 partial_product_key: v["PartialKey"].as_str().unwrap_or("N/A").to_string(),
+                full_product_key: v["FullKey"].as_str().unwrap_or("").to_string(),
                 license_status: v["Description"].as_str().unwrap_or("").to_string(),
                 license_family: v["LicenseFamily"].as_str().unwrap_or("").to_string(),
                 office_name: v["OfficeName"].as_str().unwrap_or("").to_string(),
                 office_status: v["OfficeStatus"].as_str().unwrap_or("").to_string(),
                 office_key: v["OfficeKey"].as_str().unwrap_or("").to_string(),
+                office_full_key: v["OfficeFullKey"].as_str().unwrap_or("").to_string(),
             })
         }
         #[cfg(not(target_os = "windows"))]

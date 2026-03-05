@@ -174,7 +174,15 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
             {{ licenseInfo.activation_status }}
           </NBadge>
         </div>
-        <div class="info-row"><span>Clé partielle</span><code>XXXXX-XXXXX-XXXXX-XXXXX-{{ licenseInfo.partial_product_key }}</code></div>
+        <div class="info-row info-full">
+          <span>Clé produit</span>
+          <code style="font-size:12px;letter-spacing:1px;color:var(--accent)">
+            {{ licenseInfo.full_product_key || ('XXXXX-XXXXX-XXXXX-XXXXX-' + licenseInfo.partial_product_key) }}
+          </code>
+        </div>
+        <div v-if="!licenseInfo.full_product_key" class="info-row info-full">
+          <span></span><span class="muted" style="font-size:11px">⚠ Clé complète non disponible — licence numérique ou droits insuffisants</span>
+        </div>
         <div class="info-row"><span>Statut de licence</span><span>{{ licenseInfo.license_status }}</span></div>
         <div class="info-row"><span>Famille de licence</span><span>{{ licenseInfo.license_family || "N/A" }}</span></div>
       </div>

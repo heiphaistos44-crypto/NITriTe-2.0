@@ -11,6 +11,7 @@ pub mod scripts;
 use std::sync::atomic::Ordering;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+use tauri::Emitter;
 use crate::error::NiTriTeError;
 use crate::state::AppState;
 use crate::system::info::{self, SystemInfo};
@@ -909,6 +910,280 @@ async fn check_windows_updates() -> Result<Vec<WinUpdate>, NiTriTeError> {
     .map_err(|e| NiTriTeError::System(e.to_string()))?
 }
 
+// === Windows Updates Pending ===
+
+#[derive(serde::Serialize, Clone)]
+pub struct PendingUpdate {
+    pub title: String,
+    pub kb_ids: String,
+    pub severity: String,
+    pub size_mb: f64,
+    pub is_downloaded: bool,
+}
+
+#[tauri::command]
+async fn scan_pending_windows_updates() -> Vec<PendingUpdate> {
+    tokio::task::spawn_blocking(|| {
+        let ps = r#"
+try {
+    $session = New-Object -ComObject Microsoft.Update.Session -ErrorAction Stop
+    $searcher = $session.CreateUpdateSearcher()
+    $searcher.Online = $true
+    $res = $searcher.Search("IsInstalled=0 and Type='Software'")
+    $out = @()
+    for ($i = 0; $i -lt $res.Updates.Count; $i++) {
+        $u = $res.Updates.Item($i)
+        $kbs = @(); for ($k=0;$k -lt $u.KBArticleIDs.Count;$k++) { $kbs += "KB$($u.KBArticleIDs.Item($k))" }
+        $out += [PSCustomObject]@{
+            title    = [string]$u.Title
+            kb_ids   = $kbs -join ","
+            severity = if ($u.MsrcSeverity) { [string]$u.MsrcSeverity } else { "Normal" }
+            size_mb  = [math]::Round($u.MaxDownloadSize / 1MB, 1)
+            dl       = [bool]$u.IsDownloaded
+        }
+    }
+    $out | ConvertTo-Json -Compress -Depth 2
+} catch { Write-Output '[]' }
+"#;
+        use std::io::Read;
+        let mut child = match std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+            .creation_flags(0x08000000)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn() {
+                Ok(c) => c,
+                Err(_) => return vec![],
+            };
+        let timeout = std::time::Duration::from_secs(60);
+        let start = std::time::Instant::now();
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    let mut buf = Vec::new();
+                    if let Some(mut out) = child.stdout.take() { let _ = out.read_to_end(&mut buf); }
+                    let text = String::from_utf8_lossy(&buf);
+                    let t = text.trim();
+                    if t.is_empty() || t == "[]" { return vec![]; }
+                    let json_text = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
+                    return serde_json::from_str::<Vec<serde_json::Value>>(&json_text)
+                        .unwrap_or_default()
+                        .iter()
+                        .map(|v| PendingUpdate {
+                            title: v["title"].as_str().unwrap_or("").to_string(),
+                            kb_ids: v["kb_ids"].as_str().unwrap_or("").to_string(),
+                            severity: v["severity"].as_str().unwrap_or("Normal").to_string(),
+                            size_mb: v["size_mb"].as_f64().unwrap_or(0.0),
+                            is_downloaded: v["dl"].as_bool().unwrap_or(false),
+                        })
+                        .collect();
+                }
+                Ok(None) => {
+                    if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); return vec![]; }
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                }
+                Err(_) => { let _ = child.kill(); return vec![]; }
+            }
+        }
+    }).await.unwrap_or_default()
+}
+
+#[tauri::command]
+async fn trigger_windows_update() -> String {
+    tokio::task::spawn_blocking(|| {
+        // Déclenche le scan et l'install via UsoClient (Windows 10/11)
+        let r1 = std::process::Command::new("UsoClient.exe")
+            .arg("StartInteractiveScan")
+            .creation_flags(0x08000000)
+            .output();
+        if r1.is_ok() { return "Scan Windows Update déclenché".to_string(); }
+        // Fallback: ouvre les paramètres Windows Update
+        let _ = std::process::Command::new("cmd")
+            .args(["/C", "start ms-settings:windowsupdate"])
+            .creation_flags(0x08000000)
+            .spawn();
+        "Paramètres Windows Update ouverts".to_string()
+    }).await.unwrap_or_else(|_| "Erreur".to_string())
+}
+
+// === MAS Activation ===
+
+#[tauri::command]
+async fn open_mas_window() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("powershell")
+            .args(["-NoProfile", "-Command",
+                "Start-Process powershell -ArgumentList '-NoExit','-Command','irm https://get.activated.win | iex' -Verb RunAs"])
+            .creation_flags(0x08000000)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    #[cfg(not(target_os = "windows"))]
+    Err("Non supporté".to_string())
+}
+
+// === Network Extended ===
+
+#[tauri::command]
+async fn get_network_extended() -> serde_json::Value {
+    tokio::task::spawn_blocking(|| {
+        let ps = r#"
+$result = @{}
+function Do-Ping { param($h)
+    try {
+        $r = Test-Connection $h -Count 2 -ErrorAction SilentlyContinue
+        if ($r) { $times = @($r | Select-Object -ExpandProperty ResponseTime); @{success=$true;avg=[math]::Round(($times|Measure-Object -Average).Average,1);host=$h} }
+        else { @{success=$false;avg=0;host=$h} }
+    } catch { @{success=$false;avg=0;host=$h} }
+}
+$gw = (Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction SilentlyContinue | Sort-Object RouteMetric | Select-Object -First 1).NextHop
+if ($gw) { $result.ping_gateway = Do-Ping $gw } else { $result.ping_gateway = $null }
+$result.ping_google = Do-Ping '8.8.8.8'
+$result.ping_cloudflare = Do-Ping '1.1.1.1'
+try { $result.public_ip = (Invoke-RestMethod -Uri 'https://api.ipify.org' -TimeoutSec 6 -ErrorAction SilentlyContinue) } catch { $result.public_ip = "" }
+try {
+    $entries = @()
+    arp -a 2>$null | ForEach-Object { if ($_ -match '^\s+(\d+\.\d+\.\d+\.\d+)\s+([\w-]+)\s+(\w+)') { $entries += @{ip=$matches[1];mac=$matches[2];type=$matches[3]} } }
+    $result.arp_table = $entries
+} catch { $result.arp_table = @() }
+try {
+    $result.routes = @(Get-NetRoute -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.NextHop -ne '0.0.0.0' } | Sort-Object RouteMetric | Select-Object -First 40 |
+        ForEach-Object { @{prefix=$_.DestinationPrefix;next_hop=$_.NextHop;metric=[int]$_.RouteMetric;iface=$_.InterfaceAlias} })
+} catch { $result.routes = @() }
+try {
+    $prx = Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -ErrorAction SilentlyContinue
+    $result.proxy = @{enabled=[bool]$prx.ProxyEnable;server=[string]$prx.ProxyServer;bypass=[string]$prx.ProxyOverride}
+} catch { $result.proxy = @{enabled=$false;server="";bypass=""} }
+try {
+    $fw = Get-NetFirewallProfile -ErrorAction SilentlyContinue
+    $result.firewall = @{
+        domain=[bool]($fw | Where-Object Name -eq 'Domain' | Select-Object -ExpandProperty Enabled -ErrorAction SilentlyContinue)
+        private=[bool]($fw | Where-Object Name -eq 'Private' | Select-Object -ExpandProperty Enabled -ErrorAction SilentlyContinue)
+        public=[bool]($fw | Where-Object Name -eq 'Public' | Select-Object -ExpandProperty Enabled -ErrorAction SilentlyContinue)
+    }
+} catch { $result.firewall = @{domain=$false;private=$false;public=$false} }
+try {
+    $result.shares = @(Get-SmbShare -ErrorAction SilentlyContinue |
+        ForEach-Object { @{name=$_.Name;path=[string]$_.Path;desc=[string]$_.Description} })
+} catch { $result.shares = @() }
+try {
+    $result.stats = @(Get-NetAdapterStatistics -ErrorAction SilentlyContinue |
+        ForEach-Object { @{name=$_.Name;recv_bytes=[long]$_.ReceivedBytes;sent_bytes=[long]$_.SentBytes} })
+} catch { $result.stats = @() }
+try {
+    $he = @()
+    Get-Content 'C:\Windows\System32\drivers\etc\hosts' -ErrorAction SilentlyContinue | ForEach-Object {
+        if ($_ -notmatch '^\s*#' -and $_.Trim() -ne '') {
+            $p = $_.Trim() -split '\s+'; if ($p.Count -ge 2) { $he += @{ip=$p[0];host=$p[1]} }
+        }
+    }
+    $result.hosts_entries = $he
+} catch { $result.hosts_entries = @() }
+try {
+    $result.dns_test = @(Resolve-DnsName 'google.com' -ErrorAction SilentlyContinue | Select-Object -First 5 |
+        ForEach-Object { @{name=[string]$_.Name;ip=if($_.IPAddress){[string]$_.IPAddress}else{""};type=[string]$_.Type} })
+} catch { $result.dns_test = @() }
+try {
+    $wf = @(); netsh wlan show networks 2>$null | ForEach-Object { if ($_ -match 'SSID\s+\d+\s*:\s*(.+)') { $wf += $matches[1].Trim() } }
+    $result.wifi_networks = $wf
+} catch { $result.wifi_networks = @() }
+$result | ConvertTo-Json -Depth 4 -Compress
+"#;
+        use std::io::Read;
+        let mut child = match std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+            .creation_flags(0x08000000)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn() {
+                Ok(c) => c,
+                Err(_) => return serde_json::Value::Object(serde_json::Map::new()),
+            };
+        let timeout = std::time::Duration::from_secs(35);
+        let start = std::time::Instant::now();
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    let mut buf = Vec::new();
+                    if let Some(mut out) = child.stdout.take() { let _ = out.read_to_end(&mut buf); }
+                    return serde_json::from_str(String::from_utf8_lossy(&buf).trim())
+                        .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+                }
+                Ok(None) => {
+                    if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); break; }
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                }
+                Err(_) => { let _ = child.kill(); break; }
+            }
+        }
+        serde_json::Value::Object(serde_json::Map::new())
+    }).await.unwrap_or(serde_json::Value::Object(serde_json::Map::new()))
+}
+
+// === Scoop ===
+
+#[tauri::command]
+async fn check_scoop() -> bool {
+    tokio::task::spawn_blocking(|| {
+        std::process::Command::new("scoop")
+            .arg("--version")
+            .creation_flags(0x08000000)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }).await.unwrap_or(false)
+}
+
+#[derive(serde::Serialize, Clone)]
+pub struct ScoopPackage { pub name: String, pub installed: String, pub available: String }
+
+#[tauri::command]
+async fn list_scoop_upgrades() -> Vec<ScoopPackage> {
+    tokio::task::spawn_blocking(|| {
+        let out = std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command",
+                "scoop status 2>$null | Select-Object -Skip 2 | ConvertFrom-String -PropertyNames Name,Installed,Available | Select-Object Name,Installed,Available | ConvertTo-Json -Compress"])
+            .creation_flags(0x08000000)
+            .output();
+        if let Ok(o) = out {
+            let text = String::from_utf8_lossy(&o.stdout);
+            let t = text.trim();
+            if !t.is_empty() && t != "[]" {
+                let json_text = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
+                if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&json_text) {
+                    return arr.iter().filter_map(|v| {
+                        let name = v["Name"].as_str()?.to_string();
+                        if name.is_empty() { return None; }
+                        Some(ScoopPackage {
+                            name,
+                            installed: v["Installed"].as_str().unwrap_or("").to_string(),
+                            available: v["Available"].as_str().unwrap_or("").to_string(),
+                        })
+                    }).collect();
+                }
+            }
+        }
+        vec![]
+    }).await.unwrap_or_default()
+}
+
+#[tauri::command]
+async fn upgrade_scoop_all(window: tauri::Window) -> Result<(), NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        let out = std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", "scoop update *; scoop cleanup *"])
+            .creation_flags(0x08000000)
+            .output()
+            .map_err(|e| NiTriTeError::System(e.to_string()))?;
+        let text = String::from_utf8_lossy(&out.stdout).to_string();
+        let _ = window.emit("scoop-upgrade-done", &text);
+        Ok(())
+    }).await.map_err(|e| NiTriTeError::System(e.to_string()))?
+}
+
 // === Setup Tauri ===
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -1027,6 +1302,13 @@ pub fn run() {
             check_windows_updates,
             installer::windows_update::search_pending_updates,
             installer::windows_update::install_windows_updates,
+            scan_pending_windows_updates,
+            trigger_windows_update,
+            open_mas_window,
+            get_network_extended,
+            check_scoop,
+            list_scoop_upgrades,
+            upgrade_scoop_all,
             // Detailed Diagnostics
             system::system_detailed::get_motherboard_detailed,
             system::system_detailed::get_gpu_detailed,
@@ -1057,6 +1339,35 @@ pub fn run() {
             get_folder_sizes_detailed,
             get_startup_programs_detailed,
             get_smart_info,
+            // Nouveaux onglets diagnostics
+            system::accounts::get_user_accounts,
+            system::firewall_rules::get_firewall_rules,
+            system::shares::get_network_shares,
+            system::registry_persist::get_registry_persistence,
+            system::sys_history::get_system_history,
+            // Nouveaux modules 10x
+            system::sys_drivers::get_sys_drivers_list,
+            system::certificates::get_certificates,
+            system::perf_snapshot::get_perf_snapshot,
+            system::net_tools::run_ping,
+            system::net_tools::run_traceroute,
+            system::net_tools::run_nslookup,
+            system::net_tools::get_ip_config,
+            system::net_tools::get_arp_table,
+            system::net_tools::get_route_table,
+            system::net_tools::scan_ports,
+            system::net_tools::get_wifi_networks,
+            system::net_tools::get_local_open_ports,
+            system::net_tools::check_http,
+            system::net_tools::get_net_shares,
+            system::net_tools::test_bandwidth,
+            system::repair::check_system_health,
+            system::repair::run_repair_command,
+            system::driver_updater::get_hardware_devices,
+            system::driver_updater::scan_driver_folder,
+            system::driver_updater::install_driver,
+            system::driver_updater::check_driver_updates_winupdate,
+            system::driver_updater::get_all_hardware_ids,
         ])
         .run(tauri::generate_context!())
         .expect("Erreur lors du lancement de NiTriTe");

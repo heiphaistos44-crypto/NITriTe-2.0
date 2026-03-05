@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicegui/nicegui/refs/heads/main/.schema/tauri.schema.json",
   "productName": "NiTriTe",
-  "version": "26.1.0",
+  "version": "26.3.0",
   "identifier": "com.nitrite.app",
   "build": {
     "frontendDist": "../dist",

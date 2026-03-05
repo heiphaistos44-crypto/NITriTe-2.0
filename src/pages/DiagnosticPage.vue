@@ -15,7 +15,20 @@ import DiagTabDevices from "@/components/diagnostic/DiagTabDevices.vue";
 import DiagTabSoftware from "@/components/diagnostic/DiagTabSoftware.vue";
 import DiagTabProcesses from "@/components/diagnostic/DiagTabProcesses.vue";
 import DiagTabSecurity from "@/components/diagnostic/DiagTabSecurity.vue";
+import DiagTabUpdates from "@/components/diagnostic/DiagTabUpdates.vue";
+import DiagTabActivation from "@/components/diagnostic/DiagTabActivation.vue";
 import DiagTabFolders from "@/components/diagnostic/DiagTabFolders.vue";
+import DiagTabAccounts from "@/components/diagnostic/DiagTabAccounts.vue";
+import DiagTabFirewall from "@/components/diagnostic/DiagTabFirewall.vue";
+import DiagTabShares from "@/components/diagnostic/DiagTabShares.vue";
+import DiagTabRegistry from "@/components/diagnostic/DiagTabRegistry.vue";
+import DiagTabHistory from "@/components/diagnostic/DiagTabHistory.vue";
+import DiagTabSysDrivers from "@/components/diagnostic/DiagTabSysDrivers.vue";
+import DiagTabDriverUpdater from "@/components/diagnostic/DiagTabDriverUpdater.vue";
+import DiagTabCertificates from "@/components/diagnostic/DiagTabCertificates.vue";
+import DiagTabPerf from "@/components/diagnostic/DiagTabPerf.vue";
+import DiagTabNetTools from "@/components/diagnostic/DiagTabNetTools.vue";
+import DiagTabRepair from "@/components/diagnostic/DiagTabRepair.vue";
 import DiagTabScan from "@/components/diagnostic/DiagTabScan.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
@@ -23,6 +36,7 @@ import {
   Usb, Battery, Package, Play, Zap, Printer, Key,
   RefreshCw, ScanLine, FileJson, FileText, FileCode, FolderOpen,
   CircuitBoard, Wifi, Server, Shield, Activity, FolderTree, Layers,
+  Users, Clock, FileDown, History, Lock, Wrench,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -46,7 +60,7 @@ interface StartupProgram { name: string; command: string; location: string; user
 interface PowerPlan { name: string; is_active: boolean; guid: string; }
 interface PrinterDetail { name: string; driver_name: string; port_name: string; is_default: boolean; is_network: boolean; status: string; shared: boolean; }
 interface EnvVar { name: string; value: string; var_type: string; }
-interface WinLicense { product_name: string; activation_status: string; partial_product_key: string; license_status: string; license_family: string; office_name: string; office_status: string; office_key: string; }
+interface WinLicense { product_name: string; activation_status: string; partial_product_key: string; full_product_key: string; license_status: string; license_family: string; office_name: string; office_status: string; office_key: string; office_full_key: string; }
 interface InstalledUpdate { title: string; hotfix_id: string; description: string; installed_on: string; installed_by: string; }
 interface ScanResult {
   bios_ok: boolean; bios_info: string | null;
@@ -67,6 +81,28 @@ interface ScanResult {
   suspicious_services: { name: string; display_name: string; state: string; path: string }[];
   autorun_entries: { name: string; path: string; location: string }[];
   virtual_memory_total_mb: number; virtual_memory_available_mb: number;
+  gpu_name: string; gpu_vram_mb: number; screen_resolution: string;
+  power_plan: string; installed_software_count: number;
+  services_running: number; services_stopped: number;
+  network_adapters_summary: string; cpu_temperature: string;
+  // Supplément
+  windows_product_key: string; office_product_key: string; office_name: string;
+  bitlocker_volumes: { drive: string; protection_status: string; encryption_percent: number; recovery_password: string; protectors: string[] }[];
+  motherboard: string; ram_detail: string; cpu_threads: number; cpu_frequency_ghz: number;
+  storage_items: { model: string; size_gb: number; media_type: string; interface_type: string; health: string }[];
+  monitors_detail: string;
+  // Extra
+  tpm_present: boolean; tpm_enabled: boolean; tpm_version: string;
+  secure_boot: boolean; uac_level: string; rdp_enabled: boolean;
+  smbv1_enabled: boolean; wmi_subscriptions: number;
+  local_admins: string[]; guest_enabled: boolean;
+  system_manufacturer: string; system_model: string; system_serial: string;
+  bios_manufacturer: string; bios_version: string; bios_date: string;
+  license_type: string; last_restore_point: string; pending_updates_cached: number;
+  top_cpu: { name: string; pid: number; value: number }[];
+  top_ram: { name: string; pid: number; value: number }[];
+  susp_tasks_count: number;
+  susp_tasks: { name: string; path: string; exec: string }[];
 }
 
 // ============= Tabs =============
@@ -97,6 +133,18 @@ const TABS = [
   { id: "license",     label: "Licence",      icon: Key },
   { id: "updates",     label: "MAJ Windows",  icon: RefreshCw },
   { id: "folders",     label: "Dossiers",     icon: FolderTree },
+  { id: "activation",  label: "Activation",   icon: Key },
+  { id: "comptes",     label: "Comptes",      icon: Users },
+  { id: "parefeu",     label: "Pare-feu",     icon: Shield },
+  { id: "partages",    label: "Partages",     icon: FolderOpen },
+  { id: "registre",    label: "Registre",     icon: Key },
+  { id: "historique",  label: "Historique",   icon: History },
+  { id: "pilotes",     label: "Pilotes",      icon: HardDrive },
+  { id: "driver-update", label: "MAJ Pilotes",  icon: HardDrive },
+  { id: "certificats", label: "Certificats",  icon: Lock },
+  { id: "performances",label: "Performances", icon: Activity },
+  { id: "outils-reseau",label: "Outils Réseau",icon: Wifi },
+  { id: "reparation",  label: "Réparation",   icon: Wrench },
   { id: "tools",       label: "Outils",       icon: Globe },
   { id: "scan",        label: "Scan Total",   icon: ScanLine },
 ];
@@ -167,10 +215,10 @@ async function loadTab(tab: string, force = false) {
       case "gpu":         gpuList.value = await invoke("get_gpu_detailed"); break;
       case "ram":         ramData.value = await invoke("get_ram_detailed"); break;
       case "disks":
-        [storageList.value, smartData.value] = await Promise.all([
-          invoke("get_storage_physical_info"),
-          invoke("get_smart_info"),
-        ]); break;
+        // Chargement séquentiel : disques d'abord (affichage rapide), puis SMART
+        storageList.value = await invoke<any[]>("get_storage_physical_info").catch(() => []);
+        invoke<any[]>("get_smart_info").then(v => { smartData.value = v; }).catch(() => {});
+        break;
       case "volumes":     volumes.value = await invoke("get_logical_volumes"); break;
       case "network":     networkAdapters.value = await invoke("get_network_adapters_detailed"); break;
       case "connections":
@@ -192,8 +240,20 @@ async function loadTab(tab: string, force = false) {
       case "tasks":     scheduledTasks.value = await invoke("get_scheduled_tasks"); break;
       case "security":  securityInfo.value = await invoke("get_security_status").catch(() => null); break;
       case "license":   licenseInfo.value = await invoke("get_windows_license"); break;
-      case "updates":   updatesHistory.value = await invoke("get_installed_updates"); break;
-      case "folders":   folders.value = await invoke("get_folder_sizes_detailed"); break;
+      case "updates":    updatesHistory.value = await invoke("get_installed_updates"); break;
+      case "activation":  break; // auto-chargé dans DiagTabActivation
+      case "comptes":     break; // auto-chargé dans DiagTabAccounts
+      case "parefeu":     break; // auto-chargé dans DiagTabFirewall
+      case "partages":    break; // auto-chargé dans DiagTabShares
+      case "registre":    break; // auto-chargé dans DiagTabRegistry
+      case "historique":    break; // auto-chargé dans DiagTabHistory
+      case "pilotes":       break; // auto-chargé dans DiagTabSysDrivers
+      case "driver-update": break; // auto-chargé dans DiagTabDriverUpdater
+      case "certificats":   break; // auto-chargé dans DiagTabCertificates
+      case "performances":  break; // auto-chargé dans DiagTabPerf
+      case "outils-reseau": break; // auto-chargé dans DiagTabNetTools
+      case "reparation":    break; // auto-chargé dans DiagTabRepair
+      case "folders":     folders.value = await invoke("get_folder_sizes_detailed"); break;
     }
   } catch (e: any) {
     tabError.value[tab] = e?.toString() ?? "Erreur inconnue";
@@ -499,6 +559,250 @@ function buildTxtReport(): string {
 
 async function exportTxt() { await writeExport("diagnostic.txt", buildTxtReport()); }
 
+function badge(v: boolean, ok = "Activé", ko = "DÉSACTIVÉ") { return v ? ok : ko; }
+function cls(v: boolean, good = true) { return (v === good) ? 'ok' : 'warn'; }
+
+async function exportHtml() {
+  const si = sysInfo.value;
+  const sr = scanResult.value;
+  const CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;background:#0d0d1a;color:#c9d1e0;padding:24px;line-height:1.5}h1{color:#7c9af5;font-size:22px;margin-bottom:4px}h2{color:#a78bfa;font-size:15px;margin:18px 0 8px;border-bottom:1px solid #2a2a3e;padding-bottom:6px}h3{color:#94a3b8;font-size:12px;font-weight:600;margin:12px 0 5px}.header{text-align:center;background:#161625;padding:20px;border-radius:10px;margin-bottom:20px}.header p{color:#64748b;font-size:12px;margin-top:5px}.section{background:#161625;border-radius:8px;padding:16px;margin-bottom:12px;border:1px solid #1e1e35}table{width:100%;border-collapse:collapse;margin-top:6px}th{background:#1a1a2e;color:#7c9af5;padding:6px 10px;text-align:left;font-size:11px;font-weight:600}td{padding:5px 10px;border-bottom:1px solid #1e1e35;font-size:12px}tr:last-child td{border-bottom:none}.ok{background:#052e16;color:#4ade80;padding:1px 7px;border-radius:4px;font-size:11px;display:inline-block}.warn{background:#3b1f00;color:#fb923c;padding:1px 7px;border-radius:4px;font-size:11px;display:inline-block}.danger{background:#3b0000;color:#f87171;padding:1px 7px;border-radius:4px;font-size:11px;display:inline-block}.info{background:#0c1f3b;color:#60a5fa;padding:1px 7px;border-radius:4px;font-size:11px;display:inline-block}.neutral{background:#1e1e35;color:#94a3b8;padding:1px 7px;border-radius:4px;font-size:11px;display:inline-block}code{font-family:Consolas,monospace;background:#1a1a2e;padding:1px 5px;border-radius:3px;font-size:11px;color:#7c9af5}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.problems li{padding:5px 0;border-bottom:1px solid #1e1e35;font-size:12px}.no-prob{color:#4ade80;font-size:13px}.kv{display:flex;padding:4px 0;border-bottom:1px solid #1e1e35;font-size:12px}.kv .k{color:#94a3b8;min-width:200px;flex-shrink:0}.kv .v{word-break:break-all}`;
+
+  let h = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Rapport NiTriTe — ${new Date().toLocaleDateString()}</title><style>${CSS}</style></head><body>`;
+  h += `<div class="header"><h1>🖥 Rapport Diagnostic — NiTriTe</h1><p>Généré le ${new Date().toLocaleString()}</p></div>`;
+
+  // Problèmes
+  if (scanProblems.value.length) {
+    h += `<div class="section"><h2>⚠ Problèmes Détectés (${scanProblems.value.length})</h2><ul class="problems">${scanProblems.value.map(p => `<li>${p}</li>`).join('')}</ul></div>`;
+  } else if (sr) {
+    h += `<div class="section"><p class="no-prob">✅ Aucun problème critique détecté</p></div>`;
+  }
+
+  // Système
+  if (si) {
+    h += `<div class="section"><h2>Système</h2>
+<div class="kv"><span class="k">OS</span><span class="v">${si.os.name} ${si.os.version} (${si.os.architecture})</span></div>
+<div class="kv"><span class="k">Hostname</span><span class="v">${si.os.hostname}</span></div>
+<div class="kv"><span class="k">Build</span><span class="v">${si.os.build_number}</span></div>
+<h3>Processeur</h3>
+<div class="kv"><span class="k">Modèle</span><span class="v">${si.cpu.name}</span></div>
+<div class="kv"><span class="k">Cœurs / Threads</span><span class="v">${si.cpu.cores} / ${si.cpu.threads}</span></div>
+<div class="kv"><span class="k">Fréquence</span><span class="v">${(si.cpu.base_speed_mhz / 1000).toFixed(2)} GHz</span></div>
+<h3>RAM</h3>
+<div class="kv"><span class="k">Total</span><span class="v">${si.ram.total_gb.toFixed(1)} GB</span></div>
+<div class="kv"><span class="k">Utilisée</span><span class="v">${si.ram.used_gb.toFixed(1)} GB (${Math.round(si.ram.usage_percent)}%)</span></div></div>`;
+  }
+
+  // BIOS
+  if (biosInfo.value) {
+    const b = biosInfo.value;
+    h += `<div class="section"><h2>BIOS</h2>
+<div class="kv"><span class="k">Fabricant</span><span class="v">${b.manufacturer}</span></div>
+<div class="kv"><span class="k">Version</span><span class="v">${b.version}</span></div>
+<div class="kv"><span class="k">Date</span><span class="v">${b.release_date}</span></div>
+<div class="kv"><span class="k">SMBIOS</span><span class="v">${b.smbios_version}</span></div>
+<div class="kv"><span class="k">N° Série</span><span class="v">${b.serial_number || 'N/A'}</span></div></div>`;
+  }
+
+  // Carte mère
+  if (moboInfo.value) {
+    const m = moboInfo.value;
+    h += `<div class="section"><h2>Carte Mère</h2>
+<div class="kv"><span class="k">Fabricant</span><span class="v">${m.manufacturer}</span></div>
+<div class="kv"><span class="k">Modèle</span><span class="v">${m.product}</span></div>
+<div class="kv"><span class="k">N° Série</span><span class="v">${m.serial_number || 'N/A'}</span></div></div>`;
+  }
+
+  // GPU
+  if (gpuList.value.length) {
+    h += `<div class="section"><h2>GPU (${gpuList.value.length})</h2><table><tr><th>Modèle</th><th>VRAM</th><th>Driver</th><th>Date driver</th><th>Résolution</th></tr>`;
+    for (const g of gpuList.value) {
+      h += `<tr><td>${g.name}</td><td>${g.adapter_ram_mb >= 1024 ? (g.adapter_ram_mb/1024).toFixed(0)+'GB' : g.adapter_ram_mb+'MB'}</td><td>${g.driver_version}</td><td>${g.driver_date}</td><td>${g.current_resolution} @${g.current_refresh_rate}Hz</td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+
+  // RAM slots
+  if (ramData.value) {
+    h += `<div class="section"><h2>RAM — ${ramData.value.used_slots}/${ramData.value.total_slots} slots — ${ramData.value.total_capacity_gb.toFixed(0)} GB</h2><table><tr><th>Slot</th><th>Capacité</th><th>Type</th><th>Vitesse</th><th>Fabricant</th><th>P/N</th></tr>`;
+    for (const s of ramData.value.slots) {
+      h += `<tr><td>${s.device_locator}</td><td>${s.capacity_gb.toFixed(0)} GB</td><td>${s.memory_type}</td><td>${s.speed_mhz} MHz</td><td>${s.manufacturer}</td><td>${s.part_number || '—'}</td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+
+  // Stockage
+  if (storageList.value.length) {
+    h += `<div class="section"><h2>Stockage Physique</h2><table><tr><th>Modèle</th><th>Taille</th><th>Interface</th><th>Type</th><th>Serial</th><th>Statut</th></tr>`;
+    for (const d of storageList.value) {
+      h += `<tr><td>${d.model}</td><td>${d.size_gb.toFixed(0)} GB</td><td>${d.interface_type}</td><td>${d.media_type}</td><td><code>${d.serial_number || '—'}</code></td><td>${d.status}</td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+
+  // Réseau
+  if (networkAdapters.value.length) {
+    h += `<div class="section"><h2>Adaptateurs Réseau</h2><table><tr><th>Nom</th><th>MAC</th><th>IP</th><th>Vitesse</th><th>DNS</th></tr>`;
+    for (const a of networkAdapters.value.slice(0, 10)) {
+      h += `<tr><td>${a.name}</td><td><code>${a.mac_address}</code></td><td>${a.ip_addresses.join(', ')}</td><td>${a.speed_mbps} Mbps</td><td>${a.dns_servers.slice(0,2).join(', ')}</td></tr>`;
+    }
+    h += `</table></div>`;
+  }
+
+  // Batterie
+  if (batteries.value.length) {
+    h += `<div class="section"><h2>Batterie</h2>`;
+    for (const b of batteries.value) {
+      h += `<div class="kv"><span class="k">${b.name}</span><span class="v"><span class="${b.battery_health_percent > 80 ? 'ok' : b.battery_health_percent > 50 ? 'warn' : 'danger'}">${b.battery_health_percent.toFixed(0)}% santé</span> — ${b.estimated_charge_remaining}% charge — ${b.cycle_count} cycles — ${b.chemistry}</span></div>`;
+    }
+    h += `</div>`;
+  }
+
+  // Licence
+  if (licenseInfo.value) {
+    const l = licenseInfo.value;
+    h += `<div class="section"><h2>Licence Windows</h2>
+<div class="kv"><span class="k">Produit</span><span class="v">${l.product_name}</span></div>
+<div class="kv"><span class="k">Statut activation</span><span class="v"><span class="${l.activation_status === 'Activé' ? 'ok' : 'danger'}">${l.activation_status}</span></span></div>
+<div class="kv"><span class="k">Clé partielle</span><span class="v"><code>XXXXX-XXXXX-XXXXX-XXXXX-${l.partial_product_key}</code></span></div>
+${l.office_name ? `<div class="kv"><span class="k">${l.office_name}</span><span class="v"><span class="${l.office_status === 'Activé' ? 'ok' : 'warn'}">${l.office_status}</span></span></div>` : ''}</div>`;
+  }
+
+  // Scan Total
+  if (sr) {
+    h += `<div class="section"><h2>Scan Total — Résultats</h2><div class="grid2">`;
+
+    // Sécurité de base
+    h += `<div><h3>Sécurité</h3>
+<div class="kv"><span class="k">Activation</span><span class="v"><span class="${cls(sr.windows_activation === 'Activé')}">${sr.windows_activation || 'Inconnu'}</span></span></div>
+<div class="kv"><span class="k">Pare-feu</span><span class="v"><span class="${cls(sr.firewall_enabled)}">${badge(sr.firewall_enabled)}</span></span></div>
+<div class="kv"><span class="k">Defender</span><span class="v"><span class="${cls(sr.defender_enabled)}">${badge(sr.defender_enabled, 'Actif', 'INACTIF')}</span></span></div>
+<div class="kv"><span class="k">BSOD récent</span><span class="v">${sr.last_bsod || 'Aucun'}</span></div>
+<div class="kv"><span class="k">DISM</span><span class="v">${sr.dism_status}</span></div>
+<div class="kv"><span class="k">SFC</span><span class="v">${sr.sfc_status}</span></div>
+<div class="kv"><span class="k">Connectivité</span><span class="v"><span class="${cls(sr.network_ok)}">${sr.network_ok ? 'OK' : 'Hors ligne'}</span></span></div>
+<div class="kv"><span class="k">Redémarrage requis</span><span class="v"><span class="${sr.pending_reboot ? 'warn' : 'ok'}">${sr.pending_reboot ? 'Oui' : 'Non'}</span></span></div></div>`;
+
+    // Sécurité avancée (scan_extra)
+    h += `<div><h3>Sécurité Avancée</h3>
+<div class="kv"><span class="k">TPM</span><span class="v"><span class="${cls(sr.tpm_present)}">${sr.tpm_present ? (sr.tpm_enabled ? 'Présent & Activé' : 'Présent (désactivé)') : 'Absent'}</span> ${sr.tpm_version || ''}</span></div>
+<div class="kv"><span class="k">Secure Boot</span><span class="v"><span class="${cls(sr.secure_boot)}">${badge(sr.secure_boot, 'Activé', 'Désactivé')}</span></span></div>
+<div class="kv"><span class="k">UAC</span><span class="v">${sr.uac_level || 'Inconnu'}</span></div>
+<div class="kv"><span class="k">RDP</span><span class="v"><span class="${sr.rdp_enabled ? 'warn' : 'ok'}">${badge(sr.rdp_enabled)}</span></span></div>
+<div class="kv"><span class="k">SMBv1</span><span class="v"><span class="${sr.smbv1_enabled ? 'danger' : 'ok'}">${sr.smbv1_enabled ? 'Activé ⚠' : 'Désactivé'}</span></span></div>
+<div class="kv"><span class="k">WMI Abonnements</span><span class="v"><span class="${sr.wmi_subscriptions > 0 ? 'danger' : 'ok'}">${sr.wmi_subscriptions ?? 0}</span></span></div>
+<div class="kv"><span class="k">Compte Invité</span><span class="v"><span class="${sr.guest_enabled ? 'warn' : 'ok'}">${sr.guest_enabled ? 'Activé ⚠' : 'Désactivé'}</span></span></div>
+<div class="kv"><span class="k">MAJ en attente</span><span class="v">${sr.pending_updates_cached >= 0 ? sr.pending_updates_cached : 'N/A'}</span></div></div>`;
+    h += `</div>`;
+
+    // Identité système
+    if (sr.system_manufacturer || sr.bios_manufacturer) {
+      h += `<h3>Identité Système & BIOS</h3><div class="grid2">`;
+      h += `<div>
+<div class="kv"><span class="k">Fabricant</span><span class="v">${sr.system_manufacturer || '—'}</span></div>
+<div class="kv"><span class="k">Modèle</span><span class="v">${sr.system_model || '—'}</span></div>
+<div class="kv"><span class="k">N° Série</span><span class="v"><code>${sr.system_serial || 'N/A'}</code></span></div></div>`;
+      h += `<div>
+<div class="kv"><span class="k">BIOS Fabricant</span><span class="v">${sr.bios_manufacturer || '—'}</span></div>
+<div class="kv"><span class="k">BIOS Version</span><span class="v"><code>${sr.bios_version || '—'}</code></span></div>
+<div class="kv"><span class="k">BIOS Date</span><span class="v">${sr.bios_date || '—'}</span></div>
+<div class="kv"><span class="k">Type de licence</span><span class="v">${sr.license_type || '—'}</span></div></div>`;
+      h += `</div>`;
+    }
+
+    // Clés
+    h += `<h3>Licences</h3>
+<div class="kv"><span class="k">Clé Windows</span><span class="v"><code>${sr.windows_product_key || 'N/A'}</code></span></div>`;
+    if (sr.office_product_key) h += `<div class="kv"><span class="k">${sr.office_name || 'Office'}</span><span class="v"><code>${sr.office_product_key}</code></span></div>`;
+    h += `<div class="kv"><span class="k">Point de restauration</span><span class="v">${sr.last_restore_point || '—'}</span></div>`;
+
+    // BitLocker
+    if (sr.bitlocker_volumes?.length) {
+      h += `<h3>BitLocker</h3><table><tr><th>Volume</th><th>Statut</th><th>Clé de récupération</th></tr>`;
+      for (const bv of sr.bitlocker_volumes) {
+        const on = bv.protection_status === 'On' || bv.protection_status === '1';
+        h += `<tr><td><code>${bv.drive}</code></td><td><span class="${on ? 'ok' : 'warn'}">${on ? 'Protégé' : 'Non protégé'}</span></td><td><code style="font-size:10px;color:#fb923c">${bv.recovery_password || 'N/A'}</code></td></tr>`;
+      }
+      h += `</table>`;
+    }
+
+    // Disques
+    if (sr.disk_usage?.length) {
+      h += `<h3>Espace Disque</h3><table><tr><th>Volume</th><th>Utilisé %</th><th>Libre</th><th>Total</th></tr>`;
+      for (const d of sr.disk_usage) {
+        h += `<tr><td><code>${d.drive}</code></td><td><span class="${d.used_percent > 90 ? 'danger' : d.used_percent > 80 ? 'warn' : 'ok'}">${d.used_percent.toFixed(0)}%</span></td><td>${d.free_gb.toFixed(0)} GB</td><td>${d.total_gb.toFixed(0)} GB</td></tr>`;
+      }
+      h += `</table>`;
+    }
+
+    // Top processus
+    if (sr.top_cpu?.length || sr.top_ram?.length) {
+      h += `<h3>Top Processus</h3><div class="grid2">`;
+      if (sr.top_cpu?.length) {
+        h += `<div><table><tr><th>PID</th><th>CPU Top 5</th><th>Sec.</th></tr>${sr.top_cpu.map(p => `<tr><td>${p.pid}</td><td>${p.name}</td><td>${p.value}s</td></tr>`).join('')}</table></div>`;
+      }
+      if (sr.top_ram?.length) {
+        h += `<div><table><tr><th>PID</th><th>RAM Top 5</th><th>MB</th></tr>${sr.top_ram.map(p => `<tr><td>${p.pid}</td><td>${p.name}</td><td>${p.value}</td></tr>`).join('')}</table></div>`;
+      }
+      h += `</div>`;
+    }
+
+    // Admins locaux
+    if (sr.local_admins?.length) {
+      h += `<h3>Administrateurs locaux</h3><p style="font-size:12px">${sr.local_admins.map(a => `<code>${a}</code>`).join(' ')}</p>`;
+    }
+
+    // Processus suspects
+    if (sr.suspicious_processes?.length) {
+      h += `<h3>Processus Suspects (${sr.suspicious_processes.length})</h3><table><tr><th>PID</th><th>Nom</th><th>Raison</th><th>Chemin</th></tr>`;
+      for (const p of sr.suspicious_processes.slice(0, 20)) {
+        h += `<tr><td>${p.pid}</td><td>${p.name}</td><td><span class="warn">${p.reason}</span></td><td style="font-size:10px">${p.path}</td></tr>`;
+      }
+      h += `</table>`;
+    }
+
+    // Tâches suspectes
+    if (sr.susp_tasks?.length) {
+      h += `<h3>Tâches Planifiées Suspectes (${sr.susp_tasks_count})</h3><table><tr><th>Nom</th><th>Chemin</th><th>Exécutable</th></tr>`;
+      for (const t of sr.susp_tasks) {
+        h += `<tr><td>${t.name}</td><td>${t.path}</td><td style="font-size:10px">${t.exec}</td></tr>`;
+      }
+      h += `</table>`;
+    }
+
+    // Antivirus
+    h += `<h3>Antivirus & Protection</h3>
+<div class="kv"><span class="k">Antivirus tiers</span><span class="v">${sr.antivirus_installed || 'Aucun (Defender)'}</span></div>
+<div class="kv"><span class="k">Defs Defender</span><span class="v">${sr.defender_definition_age_days >= 0 ? sr.defender_definition_age_days + ' jours' : 'N/A'}</span></div>
+<div class="kv"><span class="k">Dernier KB</span><span class="v">il y a ${sr.last_update_days >= 0 ? sr.last_update_days : '?'} jours</span></div>`;
+
+    // Ports
+    if (sr.open_ports?.length) {
+      h += `<h3>Ports en écoute globale</h3><p style="font-size:12px">${sr.open_ports.map(p => `<code>${p}</code>`).join(' ')}</p>`;
+    }
+
+    h += `</div>`;
+  }
+
+  // Logiciels (top 50)
+  if (softwareList.value.length) {
+    const sorted = [...softwareList.value].sort((a, b) => (b.install_date || '').localeCompare(a.install_date || '')).slice(0, 50);
+    h += `<div class="section"><h2>Logiciels installés (${softwareList.value.length} total — 50 récents)</h2><table><tr><th>Nom</th><th>Version</th><th>Éditeur</th><th>Date</th></tr>`;
+    for (const s of sorted) h += `<tr><td>${s.name}</td><td>${s.version || '—'}</td><td>${s.publisher || '—'}</td><td>${s.install_date || '—'}</td></tr>`;
+    h += `</table></div>`;
+  }
+
+  // Mises à jour
+  if (updatesHistory.value.length) {
+    h += `<div class="section"><h2>Mises à jour Windows (${updatesHistory.value.length})</h2><table><tr><th>KB</th><th>Description</th><th>Installé le</th><th>Par</th></tr>`;
+    for (const u of updatesHistory.value.slice(0, 30)) h += `<tr><td><code>${u.hotfix_id}</code></td><td>${u.description || '—'}</td><td>${u.installed_on || '—'}</td><td>${u.installed_by || '—'}</td></tr>`;
+    h += `</table></div>`;
+  }
+
+  h += `<div style="text-align:center;margin-top:20px;color:#475569;font-size:11px">Rapport généré par NiTriTe — ${new Date().toLocaleString()}</div></body></html>`;
+
+  await writeExport("diagnostic.html", h);
+}
+
 async function exportMd() {
   const si = sysInfo.value;
   const lines = ["# Rapport Diagnostic — NiTriTe", `> ${new Date().toLocaleString()}`, ""];
@@ -571,6 +875,7 @@ loadTab("os");
         <NButton variant="ghost" size="sm" @click="exportJson"><FileJson :size="13" /> JSON</NButton>
         <NButton variant="ghost" size="sm" @click="exportTxt"><FileText :size="13" /> TXT</NButton>
         <NButton variant="ghost" size="sm" @click="exportMd"><FileCode :size="13" /> MD</NButton>
+        <NButton variant="ghost" size="sm" @click="exportHtml"><FileDown :size="13" /> HTML</NButton>
         <NButton variant="ghost" size="sm" @click="openExportFolder"><FolderOpen :size="13" /> Exports</NButton>
       </div>
     </div>
@@ -633,10 +938,28 @@ loadTab("os");
           :onRefresh="refreshTab"
         />
         <DiagTabSecurity
-          v-else-if="activeTab === 'security' || activeTab === 'license' || activeTab === 'updates'"
+          v-else-if="activeTab === 'security' || activeTab === 'license'"
           :tab="activeTab" :securityInfo="securityInfo"
           :licenseInfo="licenseInfo" :updatesHistory="updatesHistory"
         />
+        <DiagTabUpdates
+          v-else-if="activeTab === 'updates'"
+          :updatesHistory="updatesHistory"
+        />
+        <DiagTabActivation
+          v-else-if="activeTab === 'activation'"
+        />
+        <DiagTabAccounts   v-else-if="activeTab === 'comptes'" />
+        <DiagTabFirewall   v-else-if="activeTab === 'parefeu'" />
+        <DiagTabShares     v-else-if="activeTab === 'partages'" />
+        <DiagTabRegistry   v-else-if="activeTab === 'registre'" />
+        <DiagTabHistory      v-else-if="activeTab === 'historique'" />
+        <DiagTabSysDrivers     v-else-if="activeTab === 'pilotes'" />
+        <DiagTabDriverUpdater  v-else-if="activeTab === 'driver-update'" />
+        <DiagTabCertificates v-else-if="activeTab === 'certificats'" />
+        <DiagTabPerf         v-else-if="activeTab === 'performances'" />
+        <DiagTabNetTools     v-else-if="activeTab === 'outils-reseau'" />
+        <DiagTabRepair       v-else-if="activeTab === 'reparation'" />
         <DiagTabFolders
           v-else-if="activeTab === 'folders'"
           :folders="folders"

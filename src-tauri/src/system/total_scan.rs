@@ -6,6 +6,8 @@ use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 use super::extended_info::{get_bios_info, get_battery_extended};
+use super::scan_supplement::{BitlockerVolume, StorageItem, collect_scan_supplement};
+use super::scan_extra::{TopProcess, SuspTask, collect_scan_extra};
 
 // === Types ===
 
@@ -39,7 +41,7 @@ pub struct ScanResult {
     pub recent_errors: Vec<EventEntry>,
     pub network_ok: bool,
     pub open_ports: Vec<u16>,
-    // Nouveaux champs enrichis
+    // Enrichis sécurité
     pub antivirus_installed: String,
     pub defender_definition_age_days: i64,
     pub last_bsod: String,
@@ -49,6 +51,51 @@ pub struct ScanResult {
     pub autorun_entries: Vec<AutorunEntry>,
     pub virtual_memory_total_mb: u64,
     pub virtual_memory_available_mb: u64,
+    // Enrichis matériel & logiciels
+    pub gpu_name: String,
+    pub gpu_vram_mb: u64,
+    pub screen_resolution: String,
+    pub power_plan: String,
+    pub installed_software_count: u32,
+    pub services_running: u32,
+    pub services_stopped: u32,
+    pub network_adapters_summary: String,
+    pub cpu_temperature: String,
+    // Supplément : licences, BitLocker, composants
+    pub windows_product_key: String,
+    pub office_product_key: String,
+    pub office_name: String,
+    pub bitlocker_volumes: Vec<BitlockerVolume>,
+    pub motherboard: String,
+    pub ram_detail: String,
+    pub cpu_threads: u32,
+    pub cpu_frequency_ghz: f64,
+    pub storage_items: Vec<StorageItem>,
+    pub monitors_detail: String,
+    // Extra : sécurité avancée, BIOS, processus, tâches
+    pub tpm_present: bool,
+    pub tpm_enabled: bool,
+    pub tpm_version: String,
+    pub secure_boot: bool,
+    pub uac_level: String,
+    pub rdp_enabled: bool,
+    pub smbv1_enabled: bool,
+    pub wmi_subscriptions: u32,
+    pub local_admins: Vec<String>,
+    pub guest_enabled: bool,
+    pub system_manufacturer: String,
+    pub system_model: String,
+    pub system_serial: String,
+    pub bios_manufacturer: String,
+    pub bios_version: String,
+    pub bios_date: String,
+    pub license_type: String,
+    pub last_restore_point: String,
+    pub pending_updates_cached: i32,
+    pub top_cpu: Vec<TopProcess>,
+    pub top_ram: Vec<TopProcess>,
+    pub susp_tasks_count: u32,
+    pub susp_tasks: Vec<SuspTask>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -114,6 +161,23 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
         last_bsod: String::new(), last_update_days: -1, temp_folder_size_mb: 0.0,
         suspicious_services: vec![], autorun_entries: vec![],
         virtual_memory_total_mb: 0, virtual_memory_available_mb: 0,
+        gpu_name: String::new(), gpu_vram_mb: 0, screen_resolution: String::new(),
+        power_plan: String::new(), installed_software_count: 0,
+        services_running: 0, services_stopped: 0, network_adapters_summary: String::new(),
+        cpu_temperature: String::new(),
+        windows_product_key: String::new(), office_product_key: String::new(),
+        office_name: String::new(), bitlocker_volumes: vec![],
+        motherboard: String::new(), ram_detail: String::new(),
+        cpu_threads: 0, cpu_frequency_ghz: 0.0,
+        storage_items: vec![], monitors_detail: String::new(),
+        tpm_present: false, tpm_enabled: false, tpm_version: String::new(),
+        secure_boot: false, uac_level: String::new(),
+        rdp_enabled: false, smbv1_enabled: false, wmi_subscriptions: 0,
+        local_admins: vec![], guest_enabled: false,
+        system_manufacturer: String::new(), system_model: String::new(), system_serial: String::new(),
+        bios_manufacturer: String::new(), bios_version: String::new(), bios_date: String::new(),
+        license_type: String::new(), last_restore_point: String::new(), pending_updates_cached: -1,
+        top_cpu: vec![], top_ram: vec![], susp_tasks_count: 0, susp_tasks: vec![],
     };
 
     // 1. BIOS + Battery (0→10%)
@@ -213,10 +277,64 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
     result.virtual_memory_total_mb = adv.vmem_total_mb;
     result.virtual_memory_available_mb = adv.vmem_available_mb;
 
-    // 16. Services suspects + Autoruns (97→100%)
-    emit_progress(&window, "Services & autoruns suspects...", 97);
+    // 16. Services suspects + Autoruns (94→97%)
+    emit_progress(&window, "Services & autoruns suspects...", 94);
     result.suspicious_services = tokio::task::spawn_blocking(scan_suspicious_services).await.unwrap_or_default();
     result.autorun_entries = tokio::task::spawn_blocking(scan_autoruns).await.unwrap_or_default();
+
+    // 17. Matériel étendu : GPU, résolution, plan d'alim, logiciels, services (97→100%)
+    emit_progress(&window, "Matériel & logiciels...", 97);
+    let hw = tokio::task::spawn_blocking(collect_hw_extended).await.unwrap_or_default();
+    result.gpu_name = hw.gpu_name;
+    result.gpu_vram_mb = hw.gpu_vram_mb;
+    result.screen_resolution = hw.screen_resolution;
+    result.power_plan = hw.power_plan;
+    result.installed_software_count = hw.installed_software_count;
+    result.services_running = hw.services_running;
+    result.services_stopped = hw.services_stopped;
+    result.network_adapters_summary = hw.network_adapters_summary;
+    result.cpu_temperature = hw.cpu_temperature;
+
+    // 18. Licences (clés), BitLocker, composants complets (97→100%)
+    emit_progress(&window, "Licences, BitLocker & composants...", 97);
+    let sup = tokio::task::spawn_blocking(collect_scan_supplement).await.unwrap_or_default();
+    result.windows_product_key = sup.windows_product_key;
+    result.office_product_key = sup.office_product_key;
+    result.office_name = sup.office_name;
+    result.bitlocker_volumes = sup.bitlocker_volumes;
+    result.motherboard = sup.motherboard;
+    result.ram_detail = sup.ram_detail;
+    result.cpu_threads = sup.cpu_threads;
+    result.cpu_frequency_ghz = sup.cpu_frequency_ghz;
+    result.storage_items = sup.storage_items;
+    result.monitors_detail = sup.monitors_detail;
+
+    // 19. Extra : TPM, Secure Boot, UAC, RDP, SMBv1, admins, BIOS, processus top, tâches (97→100%)
+    emit_progress(&window, "Sécurité avancée & identité système...", 98);
+    let extra = tokio::task::spawn_blocking(collect_scan_extra).await.unwrap_or_default();
+    result.tpm_present = extra.tpm_present;
+    result.tpm_enabled = extra.tpm_enabled;
+    result.tpm_version = extra.tpm_version;
+    result.secure_boot = extra.secure_boot;
+    result.uac_level = extra.uac_level;
+    result.rdp_enabled = extra.rdp_enabled;
+    result.smbv1_enabled = extra.smbv1_enabled;
+    result.wmi_subscriptions = extra.wmi_subscriptions;
+    result.local_admins = extra.local_admins;
+    result.guest_enabled = extra.guest_enabled;
+    result.system_manufacturer = extra.system_manufacturer;
+    result.system_model = extra.system_model;
+    result.system_serial = extra.system_serial;
+    result.bios_manufacturer = extra.bios_manufacturer;
+    result.bios_version = extra.bios_version;
+    result.bios_date = extra.bios_date;
+    result.license_type = extra.license_type;
+    result.last_restore_point = extra.last_restore_point;
+    result.pending_updates_cached = extra.pending_updates_cached;
+    result.top_cpu = extra.top_cpu;
+    result.top_ram = extra.top_ram;
+    result.susp_tasks_count = extra.susp_tasks_count;
+    result.susp_tasks = extra.susp_tasks;
 
     emit_progress(&window, "Scan terminé ✓", 100);
     Ok(result)
@@ -607,4 +725,84 @@ $entries | Select-Object -First 25 | ConvertTo-Json -Compress -Depth 1
         path: v["Path"].as_str().unwrap_or("").to_string(),
         location: v["Location"].as_str().unwrap_or("").to_string(),
     }).collect()
+}
+
+// === Matériel étendu (GPU, résolution, plan, logiciels, services) ===
+
+#[derive(Default)]
+struct HwExtended {
+    gpu_name: String, gpu_vram_mb: u64, screen_resolution: String,
+    power_plan: String, installed_software_count: u32,
+    services_running: u32, services_stopped: u32,
+    network_adapters_summary: String, cpu_temperature: String,
+}
+
+fn collect_hw_extended() -> HwExtended {
+    let ps = r#"
+$out = @{}
+# GPU
+try {
+    $gpu = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -First 1
+    $out.GpuName = if ($gpu) { [string]$gpu.Name } else { "" }
+    $out.GpuVram = if ($gpu -and $gpu.AdapterRAM) { [long]$gpu.AdapterRAM } else { 0 }
+    $out.Resolution = if ($gpu) { "$($gpu.CurrentHorizontalResolution)x$($gpu.CurrentVerticalResolution) @ $($gpu.CurrentRefreshRate)Hz" } else { "" }
+} catch { $out.GpuName = ""; $out.GpuVram = 0; $out.Resolution = "" }
+# Plan d'alimentation
+try {
+    $plan = powercfg /getactivescheme 2>$null
+    if ($plan -match '\((.+)\)') { $out.PowerPlan = $matches[1] } else { $out.PowerPlan = $plan -replace '.*:\s*','' }
+} catch { $out.PowerPlan = "" }
+# Logiciels installés
+try {
+    $sw = (Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName -and $_.DisplayName -ne "" } | Measure-Object).Count
+    $sw += (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue |
+        Where-Object { $_.DisplayName -and $_.DisplayName -ne "" } | Measure-Object).Count
+    $out.SoftCount = $sw
+} catch { $out.SoftCount = 0 }
+# Services Running/Stopped
+try {
+    $svcs = Get-Service -ErrorAction SilentlyContinue
+    $out.SvcRunning = ($svcs | Where-Object {$_.Status -eq 'Running'} | Measure-Object).Count
+    $out.SvcStopped = ($svcs | Where-Object {$_.Status -eq 'Stopped'} | Measure-Object).Count
+} catch { $out.SvcRunning = 0; $out.SvcStopped = 0 }
+# Adaptateurs réseau actifs
+try {
+    $adapters = Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' }
+    $names = @()
+    foreach ($a in $adapters) {
+        $ip = (Get-NetIPAddress -InterfaceIndex $a.InterfaceIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue | Select-Object -First 1).IPAddress
+        $names += "$($a.Name) — $ip"
+    }
+    $out.NetSummary = $names -join " | "
+} catch { $out.NetSummary = "" }
+# Température CPU (via OpenHardwareMonitor WMI si dispo, sinon vide)
+try {
+    $temp = Get-WmiObject -Namespace "root\OpenHardwareMonitor" -Class Sensor -ErrorAction SilentlyContinue |
+            Where-Object { $_.SensorType -eq 'Temperature' -and $_.Name -like '*CPU*' } |
+            Select-Object -First 1
+    $out.CpuTemp = if ($temp) { "$($temp.Value)°C" } else { "N/A" }
+} catch { $out.CpuTemp = "N/A" }
+$out | ConvertTo-Json -Compress
+"#;
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+        .creation_flags(0x08000000)
+        .output();
+    if let Ok(o) = output {
+        let text = String::from_utf8_lossy(&o.stdout);
+        let v: serde_json::Value = serde_json::from_str(text.trim()).unwrap_or_default();
+        return HwExtended {
+            gpu_name: v["GpuName"].as_str().unwrap_or("").to_string(),
+            gpu_vram_mb: v["GpuVram"].as_u64().unwrap_or(0) / 1_048_576,
+            screen_resolution: v["Resolution"].as_str().unwrap_or("").to_string(),
+            power_plan: v["PowerPlan"].as_str().unwrap_or("").trim().to_string(),
+            installed_software_count: v["SoftCount"].as_u64().unwrap_or(0) as u32,
+            services_running: v["SvcRunning"].as_u64().unwrap_or(0) as u32,
+            services_stopped: v["SvcStopped"].as_u64().unwrap_or(0) as u32,
+            network_adapters_summary: v["NetSummary"].as_str().unwrap_or("").to_string(),
+            cpu_temperature: v["CpuTemp"].as_str().unwrap_or("N/A").to_string(),
+        };
+    }
+    HwExtended::default()
 }

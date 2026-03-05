@@ -329,72 +329,90 @@ pub struct FolderSizeInfo {
 }
 
 pub fn collect_folder_sizes() -> Vec<FolderSizeInfo> {
-    let entries = [
-        ("Bureau", r"%USERPROFILE%\Desktop"),
-        ("Documents", r"%USERPROFILE%\Documents"),
-        ("Téléchargements", r"%USERPROFILE%\Downloads"),
-        ("Images", r"%USERPROFILE%\Pictures"),
-        ("Vidéos", r"%USERPROFILE%\Videos"),
-        ("Musique", r"%USERPROFILE%\Music"),
-        ("AppData Roaming", r"%APPDATA%"),
-        ("AppData Local", r"%LOCALAPPDATA%"),
-        ("Temp (%TEMP%)", r"%TEMP%"),
-        ("Windows\\Temp", r"C:\Windows\Temp"),
-        ("Profil utilisateur", r"%USERPROFILE%"),
-        ("Program Files", r"C:\Program Files"),
-        ("Program Files (x86)", r"C:\Program Files (x86)"),
-        ("Windows", r"C:\Windows"),
-        ("ProgramData", r"C:\ProgramData"),
-    ];
-
-    entries.iter().map(|(label, path_env)| {
-        let expanded = expand_env(path_env);
-        let (size_mb, file_count) = measure_dir(&expanded);
-        FolderSizeInfo {
-            label: label.to_string(),
-            path: expanded,
-            size_mb,
-            size_gb: (size_mb / 1024.0 * 100.0).round() / 100.0,
-            file_count,
-        }
-    }).collect()
-}
-
-fn expand_env(path: &str) -> String {
     #[cfg(target_os = "windows")]
     {
-        let out = Command::new("cmd")
-            .args(["/C", &format!("echo {}", path)])
-            .creation_flags(0x08000000)
-            .output();
-        if let Ok(o) = out {
-            let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-            if !s.is_empty() { return s; }
-        }
+        // Script unique : tous les dossiers en jobs parallèles, timeout 45s global
+        let ps = r#"
+$items = @(
+    @{L='Bureau';          P=[Environment]::GetFolderPath('Desktop')},
+    @{L='Documents';       P=[Environment]::GetFolderPath('MyDocuments')},
+    @{L='Téléchargements'; P=[IO.Path]::Combine($env:USERPROFILE,'Downloads')},
+    @{L='Images';          P=[Environment]::GetFolderPath('MyPictures')},
+    @{L='Vidéos';          P=[Environment]::GetFolderPath('MyVideos')},
+    @{L='Musique';         P=[Environment]::GetFolderPath('MyMusic')},
+    @{L='AppData Roaming'; P=[Environment]::GetFolderPath('ApplicationData')},
+    @{L='AppData Local';   P=[Environment]::GetFolderPath('LocalApplicationData')},
+    @{L='Temp';            P=$env:TEMP},
+    @{L='Windows\Temp';    P='C:\Windows\Temp'},
+    @{L='Program Files';   P=[Environment]::GetFolderPath('ProgramFiles')},
+    @{L='Program Files x86'; P=[Environment]::GetFolderPath('ProgramFilesX86')},
+    @{L='ProgramData';     P=$env:ProgramData}
+)
+$global_sw = [System.Diagnostics.Stopwatch]::StartNew()
+$results = [System.Collections.Generic.List[object]]::new()
+foreach ($item in $items) {
+    $p = $item.P; $l = $item.L
+    if (-not $p -or -not (Test-Path $p -ErrorAction SilentlyContinue)) {
+        $results.Add([PSCustomObject]@{label=$l;path=$p;bytes=0.0;count=0})
+        continue
     }
-    path.to_string()
+    $fsw = [System.Diagnostics.Stopwatch]::StartNew()
+    $bytes = 0.0; $count = [long]0
+    try {
+        $di = [IO.DirectoryInfo]::new($p)
+        foreach ($f in $di.EnumerateFiles('*', [IO.SearchOption]::AllDirectories)) {
+            if ($fsw.Elapsed.TotalSeconds -gt 6) { break }
+            try { $bytes += $f.Length; $count++ } catch {}
+        }
+    } catch {}
+    $results.Add([PSCustomObject]@{label=$l;path=$p;bytes=$bytes;count=$count})
+    if ($global_sw.Elapsed.TotalSeconds -gt 40) { break }
 }
-
-fn measure_dir(path: &str) -> (f64, u64) {
-    #[cfg(target_os = "windows")]
-    {
-        let script = format!(
-            r#"try {{$f=Get-ChildItem -LiteralPath '{}' -Recurse -ErrorAction SilentlyContinue|Measure-Object -Property Length -Sum;Write-Output "$($f.Sum),$($f.Count)"}} catch {{Write-Output '0,0'}}"#,
-            path.replace('\'', "\\'")
-        );
-        let out = Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+if ($results.Count -gt 0) { $results | ConvertTo-Json -Compress } else { '[]' }
+"#;
+        use std::io::Read;
+        let mut child = match std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
             .creation_flags(0x08000000)
-            .output();
-        if let Ok(o) = out {
-            let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-            let parts: Vec<&str> = s.splitn(2, ',').collect();
-            let bytes: f64 = parts.first().and_then(|v| v.parse().ok()).unwrap_or(0.0);
-            let count: u64 = parts.get(1).and_then(|v| v.parse().ok()).unwrap_or(0);
-            return ((bytes / 1_048_576.0 * 100.0).round() / 100.0, count);
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn() {
+                Ok(c) => c,
+                Err(_) => return vec![],
+            };
+        let timeout = std::time::Duration::from_secs(55);
+        let start = std::time::Instant::now();
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    let mut buf = Vec::new();
+                    if let Some(mut stdout) = child.stdout.take() {
+                        let _ = stdout.read_to_end(&mut buf);
+                    }
+                    let text = String::from_utf8_lossy(&buf);
+                    let trimmed = text.trim();
+                    if trimmed.is_empty() || trimmed == "[]" { return vec![]; }
+                    let json_text = if trimmed.starts_with('{') { format!("[{}]", trimmed) } else { trimmed.to_string() };
+                    let items: Vec<serde_json::Value> = serde_json::from_str(&json_text).unwrap_or_default();
+                    return items.into_iter().filter_map(|v| {
+                        let label = v["label"].as_str()?.to_string();
+                        let path = v["path"].as_str().unwrap_or("").to_string();
+                        let bytes = v["bytes"].as_f64().unwrap_or(0.0);
+                        let count = v["count"].as_u64().unwrap_or(0);
+                        let size_mb = (bytes / 1_048_576.0 * 100.0).round() / 100.0;
+                        Some(FolderSizeInfo { label, path, size_mb, size_gb: (size_mb / 1024.0 * 100.0).round() / 100.0, file_count: count })
+                    }).collect();
+                }
+                Ok(None) => {
+                    if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); return vec![]; }
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                }
+                Err(_) => { let _ = child.kill(); return vec![]; }
+            }
         }
     }
-    (0.0, 0)
+    #[cfg(not(target_os = "windows"))]
+    vec![]
 }
 
 // ============================================================================
@@ -514,13 +532,23 @@ pub struct SmartDiskInfo {
 pub fn collect_smart_info() -> Vec<SmartDiskInfo> {
     #[cfg(target_os = "windows")]
     {
+        // Chaque Get-StorageReliabilityCounter est wrappé dans un job avec timeout 6s
+        // pour éviter de bloquer indéfiniment sur des contrôleurs RAID/USB
         let ps = r#"
 try {
-    $disks = Get-PhysicalDisk
+    $disks = Get-PhysicalDisk -ErrorAction SilentlyContinue
+    if (-not $disks) { Write-Output '[]'; exit }
     $result = @()
     foreach ($disk in $disks) {
         $rc = $null
-        try { $rc = Get-StorageReliabilityCounter -PhysicalDisk $disk -ErrorAction SilentlyContinue } catch {}
+        try {
+            $job = Start-Job -ScriptBlock {
+                param($d) Get-StorageReliabilityCounter -PhysicalDisk $d -ErrorAction SilentlyContinue
+            } -ArgumentList $disk
+            $done = $job | Wait-Job -Timeout 6
+            if ($done) { $rc = Receive-Job $job -ErrorAction SilentlyContinue }
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
+        } catch {}
         $result += [PSCustomObject]@{
             id      = [string]$disk.DeviceId
             name    = [string]$disk.FriendlyName
@@ -528,47 +556,70 @@ try {
             health  = [string]$disk.HealthStatus
             opstat  = [string]$disk.OperationalStatus
             size    = [long]$disk.Size
-            temp    = if ($rc -and $rc.Temperature)    { [int]$rc.Temperature }           else { -1 }
-            wear    = if ($rc -and $null -ne $rc.Wear) { [int]$rc.Wear }                  else { -1 }
-            rderr   = if ($rc -and $rc.ReadErrorsUncorrected)  { [long]$rc.ReadErrorsUncorrected }  else { 0 }
-            wrerr   = if ($rc -and $rc.WriteErrorsUncorrected) { [long]$rc.WriteErrorsUncorrected } else { 0 }
-            poh     = if ($rc -and $rc.PowerOnHours)   { [long]$rc.PowerOnHours }         else { 0 }
-            ssc     = if ($rc -and $rc.StartStopCycleCount) { [long]$rc.StartStopCycleCount } else { 0 }
-            realloc = if ($rc -and $rc.ReallocatedSectors) { [long]$rc.ReallocatedSectors } else { 0 }
+            temp    = if ($rc -and $rc.Temperature)              { [int]$rc.Temperature }                  else { -1 }
+            wear    = if ($rc -and $null -ne $rc.Wear)           { [int]$rc.Wear }                         else { -1 }
+            rderr   = if ($rc -and $rc.ReadErrorsUncorrected)   { [long]$rc.ReadErrorsUncorrected }        else { 0 }
+            wrerr   = if ($rc -and $rc.WriteErrorsUncorrected)  { [long]$rc.WriteErrorsUncorrected }       else { 0 }
+            poh     = if ($rc -and $rc.PowerOnHours)            { [long]$rc.PowerOnHours }                else { 0 }
+            ssc     = if ($rc -and $rc.StartStopCycleCount)     { [long]$rc.StartStopCycleCount }         else { 0 }
+            realloc = if ($rc -and $rc.ReallocatedSectors)      { [long]$rc.ReallocatedSectors }          else { 0 }
         }
     }
     $result | ConvertTo-Json -Compress
 } catch { Write-Output '[]' }
 "#;
-        let out = Command::new("powershell")
+        use std::io::Read;
+        let mut child = match std::process::Command::new("powershell")
             .args(["-NoProfile", "-NonInteractive", "-Command", ps])
             .creation_flags(0x08000000)
-            .output();
-        if let Ok(o) = out {
-            let text = String::from_utf8_lossy(&o.stdout);
-            let trimmed = text.trim();
-            if !trimmed.is_empty() && trimmed != "[]" {
-                let json_text = if trimmed.starts_with('{') { format!("[{}]", trimmed) } else { trimmed.to_string() };
-                if let Ok(items) = serde_json::from_str::<Vec<serde_json::Value>>(&json_text) {
-                    return items.into_iter().map(|v| SmartDiskInfo {
-                        device_id: v["id"].as_str().unwrap_or("").to_string(),
-                        name: v["name"].as_str().unwrap_or("").to_string(),
-                        media_type: v["mtype"].as_str().unwrap_or("").to_string(),
-                        health_status: v["health"].as_str().unwrap_or("Unknown").to_string(),
-                        operational_status: v["opstat"].as_str().unwrap_or("").to_string(),
-                        size_gb: (v["size"].as_f64().unwrap_or(0.0) / 1_073_741_824.0 * 10.0).round() / 10.0,
-                        temperature: v["temp"].as_i64().unwrap_or(-1) as i32,
-                        wear_level: v["wear"].as_i64().unwrap_or(-1) as i32,
-                        read_errors_uncorrected: v["rderr"].as_u64().unwrap_or(0),
-                        write_errors_uncorrected: v["wrerr"].as_u64().unwrap_or(0),
-                        power_on_hours: v["poh"].as_u64().unwrap_or(0),
-                        start_stop_cycles: v["ssc"].as_u64().unwrap_or(0),
-                        reallocated_sectors: v["realloc"].as_u64().unwrap_or(0),
-                    }).collect();
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .spawn() {
+                Ok(c) => c,
+                Err(_) => return vec![],
+            };
+        // Timeout global 30s (nb_disks * 6s + overhead)
+        let timeout = std::time::Duration::from_secs(30);
+        let start = std::time::Instant::now();
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    let mut buf = Vec::new();
+                    if let Some(mut stdout) = child.stdout.take() {
+                        let _ = stdout.read_to_end(&mut buf);
+                    }
+                    let text = String::from_utf8_lossy(&buf);
+                    let trimmed = text.trim();
+                    if trimmed.is_empty() || trimmed == "[]" { return vec![]; }
+                    let json_text = if trimmed.starts_with('{') { format!("[{}]", trimmed) } else { trimmed.to_string() };
+                    if let Ok(items) = serde_json::from_str::<Vec<serde_json::Value>>(&json_text) {
+                        return items.into_iter().map(|v| SmartDiskInfo {
+                            device_id: v["id"].as_str().unwrap_or("").to_string(),
+                            name: v["name"].as_str().unwrap_or("").to_string(),
+                            media_type: v["mtype"].as_str().unwrap_or("").to_string(),
+                            health_status: v["health"].as_str().unwrap_or("Unknown").to_string(),
+                            operational_status: v["opstat"].as_str().unwrap_or("").to_string(),
+                            size_gb: (v["size"].as_f64().unwrap_or(0.0) / 1_073_741_824.0 * 10.0).round() / 10.0,
+                            temperature: v["temp"].as_i64().unwrap_or(-1) as i32,
+                            wear_level: v["wear"].as_i64().unwrap_or(-1) as i32,
+                            read_errors_uncorrected: v["rderr"].as_u64().unwrap_or(0),
+                            write_errors_uncorrected: v["wrerr"].as_u64().unwrap_or(0),
+                            power_on_hours: v["poh"].as_u64().unwrap_or(0),
+                            start_stop_cycles: v["ssc"].as_u64().unwrap_or(0),
+                            reallocated_sectors: v["realloc"].as_u64().unwrap_or(0),
+                        }).collect();
+                    }
+                    return vec![];
                 }
+                Ok(None) => {
+                    if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); return vec![]; }
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                }
+                Err(_) => { let _ = child.kill(); return vec![]; }
             }
         }
     }
+    #[cfg(not(target_os = "windows"))]
     vec![]
 }
 
