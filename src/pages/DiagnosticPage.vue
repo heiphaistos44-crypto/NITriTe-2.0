@@ -24,7 +24,6 @@ import DiagTabShares from "@/components/diagnostic/DiagTabShares.vue";
 import DiagTabRegistry from "@/components/diagnostic/DiagTabRegistry.vue";
 import DiagTabHistory from "@/components/diagnostic/DiagTabHistory.vue";
 import DiagTabSysDrivers from "@/components/diagnostic/DiagTabSysDrivers.vue";
-import DiagTabDriverUpdater from "@/components/diagnostic/DiagTabDriverUpdater.vue";
 import DiagTabCertificates from "@/components/diagnostic/DiagTabCertificates.vue";
 import DiagTabPerf from "@/components/diagnostic/DiagTabPerf.vue";
 import DiagTabNetTools from "@/components/diagnostic/DiagTabNetTools.vue";
@@ -148,8 +147,7 @@ const TABS = [
   { id: "partages",    label: "Partages",     icon: FolderOpen },
   { id: "registre",    label: "Registre",     icon: Key },
   { id: "historique",  label: "Historique",   icon: History },
-  { id: "pilotes",     label: "Pilotes",      icon: HardDrive },
-  { id: "driver-update", label: "MAJ Pilotes",  icon: HardDrive },
+  { id: "pilotes",     label: "Scanner Pilotes", icon: HardDrive },
   { id: "certificats", label: "Certificats",  icon: Lock },
   { id: "performances",label: "Performances", icon: Activity },
   { id: "outils-reseau",label: "Outils Réseau",icon: Wifi },
@@ -265,7 +263,6 @@ async function loadTab(tab: string, force = false) {
       case "registre":    break; // auto-chargé dans DiagTabRegistry
       case "historique":    break; // auto-chargé dans DiagTabHistory
       case "pilotes":       break; // auto-chargé dans DiagTabSysDrivers
-      case "driver-update": break; // auto-chargé dans DiagTabDriverUpdater
       case "certificats":   break; // auto-chargé dans DiagTabCertificates
       case "performances":  break; // auto-chargé dans DiagTabPerf
       case "outils-reseau": break; // auto-chargé dans DiagTabNetTools
@@ -980,7 +977,6 @@ loadTab("os");
         <DiagTabRegistry   v-else-if="activeTab === 'registre'" />
         <DiagTabHistory      v-else-if="activeTab === 'historique'" />
         <DiagTabSysDrivers     v-else-if="activeTab === 'pilotes'" />
-        <DiagTabDriverUpdater  v-else-if="activeTab === 'driver-update'" />
         <DiagTabCertificates v-else-if="activeTab === 'certificats'" />
         <DiagTabPerf         v-else-if="activeTab === 'performances'" />
         <DiagTabNetTools     v-else-if="activeTab === 'outils-reseau'" />

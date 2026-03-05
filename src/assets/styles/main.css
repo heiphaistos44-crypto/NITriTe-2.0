@@ -23,6 +23,10 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
+  user-select: text;
+}
+
+button, .nav-item, .collapse-btn, .section-header {
   user-select: none;
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, provide, onMounted } from "vue";
+import logoUrl from "@/assets/nitrite-logo.jpg";
 import AppSidebar from "@/components/layout/AppSidebar.vue";
 import AppHeader from "@/components/layout/AppHeader.vue";
 import AppStatusBar from "@/components/layout/AppStatusBar.vue";
@@ -61,7 +62,7 @@ onMounted(async () => {
   <Transition name="splash">
     <div v-if="!appReady" class="splash-screen">
       <div class="splash-content">
-        <div class="splash-logo">N</div>
+        <img :src="logoUrl" class="splash-logo" alt="NiTriTe" />
         <div class="splash-title">NiTriTe</div>
         <div class="splash-version">v26.0</div>
         <div class="splash-loader">
@@ -111,18 +112,18 @@ onMounted(async () => {
 }
 
 .splash-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f97316, #fb923c);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 36px;
-  font-family: "Inter", sans-serif;
-  box-shadow: 0 0 40px rgba(249, 115, 22, 0.3);
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 0 40px rgba(249, 115, 22, 0.4);
+  animation: splash-bounce 600ms ease forwards;
+}
+
+@keyframes splash-bounce {
+  0% { transform: scale(0.7); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .splash-title {

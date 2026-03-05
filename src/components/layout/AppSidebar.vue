@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { navigationSections } from "@/data/navigation";
+import logoUrl from "@/assets/nitrite-logo.jpg";
 import {
   LayoutDashboard, Stethoscope, Activity, Zap, LayoutGrid, Wrench,
   Download, Package, HardDrive, RefreshCw, Cpu, Scan, Save, Shield,
   Wifi, Terminal, FileCode, Bot, BookOpen, FileText, ScrollText,
-  BarChart3, Settings, ChevronLeft, ChevronRight, ChevronDown,
+  BarChart3, Settings, ChevronLeft, ChevronRight, ChevronDown, Search,
 } from "lucide-vue-next";
 
 const props = defineProps<{ collapsed: boolean }>();
@@ -99,6 +100,16 @@ function sectionHasActive(section: typeof navigationSections[0]) {
 function navigate(itemRoute: string) {
   router.push(itemRoute);
 }
+
+const searchQuery = ref("");
+
+const filteredSections = computed(() => {
+  if (!searchQuery.value.trim()) return navigationSections;
+  const q = searchQuery.value.toLowerCase();
+  return navigationSections
+    .map(s => ({ ...s, items: s.items.filter(i => i.label.toLowerCase().includes(q)) }))
+    .filter(s => s.items.length > 0);
+});
 </script>
 
 <template>
@@ -106,7 +117,7 @@ function navigate(itemRoute: string) {
     <!-- Header -->
     <div class="sidebar-header">
       <div class="logo-area">
-        <div class="logo-icon">N</div>
+        <img :src="logoUrl" class="logo-img" alt="NiTriTe" />
         <transition name="fade">
           <div v-if="!collapsed" class="logo-text">
             <span class="logo-title">NiTriTe</span>
@@ -120,9 +131,21 @@ function navigate(itemRoute: string) {
       </button>
     </div>
 
+    <!-- Search -->
+    <div v-if="!collapsed" class="sidebar-search-wrap">
+      <div class="sidebar-search-box">
+        <Search :size="13" class="sidebar-search-icon" />
+        <input v-model="searchQuery" class="sidebar-search-input" placeholder="Rechercher..." />
+        <button v-if="searchQuery" class="sidebar-search-clear" @click="searchQuery = ''">✕</button>
+      </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="sidebar-nav">
-      <div v-for="section in navigationSections" :key="section.title" class="nav-section">
+      <div v-if="filteredSections.length === 0" class="sidebar-no-results">
+        Aucun résultat pour "{{ searchQuery }}"
+      </div>
+      <div v-for="section in filteredSections" :key="section.title" class="nav-section">
         <!-- Section header cliquable (retractable) -->
         <button
           v-if="!collapsed"
@@ -218,18 +241,13 @@ function navigate(itemRoute: string) {
   overflow: hidden;
 }
 
-.logo-icon {
+.logo-img {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--accent-primary);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 18px;
+  object-fit: cover;
   flex-shrink: 0;
+  display: block;
 }
 
 .logo-text {
@@ -268,6 +286,52 @@ function navigate(itemRoute: string) {
 .collapse-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+/* Search */
+.sidebar-search-wrap {
+  padding: 8px 10px 4px;
+}
+.sidebar-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 5px 8px;
+  transition: border-color var(--transition-fast);
+}
+.sidebar-search-box:focus-within {
+  border-color: var(--accent-primary);
+}
+.sidebar-search-icon { color: var(--text-muted); flex-shrink: 0; }
+.sidebar-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--text-primary);
+  min-width: 0;
+}
+.sidebar-search-input::placeholder { color: var(--text-muted); }
+.sidebar-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.sidebar-search-clear:hover { color: var(--text-primary); }
+.sidebar-no-results {
+  padding: 16px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  opacity: .7;
 }
 
 /* Navigation */
