@@ -64,12 +64,12 @@ onMounted(async () => {
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead>
             <tr style="background:var(--bg-secondary)">
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Compte</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Nom complet</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Type</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Statut</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Admin</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Dernière connexion</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Compte</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Nom complet</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Type</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Statut</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Admin</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Dernière connexion</th>
             </tr>
           </thead>
           <tbody>
@@ -96,7 +96,7 @@ onMounted(async () => {
                 <NBadge v-if="u.is_admin" variant="warning"><Shield :size="10" /> Admin</NBadge>
                 <span v-else class="muted">—</span>
               </td>
-              <td style="padding:6px 10px;color:var(--text-muted);font-size:11px">{{ u.last_logon }}</td>
+              <td style="padding:6px 10px;color:var(--text-secondary);font-size:11px">{{ u.last_logon }}</td>
             </tr>
           </tbody>
         </table>

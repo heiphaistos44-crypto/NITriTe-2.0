@@ -68,7 +68,7 @@ onMounted(async () => {
           <code style="font-size:12px">{{ s.name }}</code>
           <div class="muted" style="font-size:11px">{{ s.description }}</div>
         </div>
-        <code style="font-size:11px;color:var(--text-secondary);flex:1;min-width:160px">{{ s.path }}</code>
+        <code style="font-size:12px;color:var(--text-secondary);flex:1;min-width:160px">{{ s.path }}</code>
         <NBadge variant="neutral">{{ s.share_type }}</NBadge>
         <NBadge :variant="s.current_uses > 0 ? 'warning' : 'neutral'" style="font-size:10px">
           {{ s.current_uses }} connexion(s)

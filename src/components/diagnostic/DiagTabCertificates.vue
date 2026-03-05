@@ -57,26 +57,26 @@ const filtered = computed(() => {
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
       <div class="diag-section" style="text-align:center">
         <div style="font-size:22px;font-weight:700;color:var(--accent)">{{ data.total }}</div>
-        <div style="font-size:11px;color:var(--text-muted)">Total</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Total</div>
       </div>
       <div class="diag-section" style="text-align:center">
         <div style="font-size:22px;font-weight:700" :style="{color:data.expired_count>0?'var(--error)':'var(--success)'}">{{ data.expired_count }}</div>
-        <div style="font-size:11px;color:var(--text-muted)">Expirés</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Expirés</div>
       </div>
       <div class="diag-section" style="text-align:center">
         <div style="font-size:22px;font-weight:700" :style="{color:data.expiring_soon_count>0?'var(--warning)':'var(--success)'}">{{ data.expiring_soon_count }}</div>
-        <div style="font-size:11px;color:var(--text-muted)">Expirent bientôt</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Expirent bientôt</div>
       </div>
       <div class="diag-section" style="text-align:center">
         <div style="font-size:22px;font-weight:700;color:var(--accent)">{{ data.certs.filter(c=>c.has_private_key).length }}</div>
-        <div style="font-size:11px;color:var(--text-muted)">Avec clé privée</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Avec clé privée</div>
       </div>
     </div>
 
     <!-- Filtres + Recherche -->
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div style="position:relative;flex:1;min-width:200px">
-        <Search :size="12" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted)" />
+        <Search :size="12" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-secondary)" />
         <input v-model="search" placeholder="Sujet, émetteur, store..." style="width:100%;padding:5px 8px 5px 26px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px" />
       </div>
       <button v-for="f in [{k:'all',l:'Tous'},{k:'expired',l:'Expirés'},{k:'expiring',l:'30 jours'},{k:'pk',l:'Clé privée'}]" :key="f.k"
@@ -96,12 +96,12 @@ const filtered = computed(() => {
       <table style="width:100%;border-collapse:collapse;font-size:11px">
         <thead>
           <tr style="background:var(--bg-secondary)">
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Sujet (CN)</th>
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Émetteur</th>
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Store</th>
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Début</th>
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Fin</th>
-            <th style="padding:6px 8px;text-align:left;color:var(--text-muted)">Statut</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Sujet (CN)</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Émetteur</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Store</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Début</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Fin</th>
+            <th style="padding:6px 8px;text-align:left;color:var(--text-secondary)">Statut</th>
           </tr>
         </thead>
         <tbody>
@@ -111,9 +111,9 @@ const filtered = computed(() => {
               <Lock v-if="c.has_private_key" :size="10" style="color:var(--accent);margin-right:3px;vertical-align:middle" />
               {{ cn(c.subject) }}
             </td>
-            <td style="padding:5px 8px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cn(c.issuer) }}</td>
+            <td style="padding:5px 8px;color:var(--text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cn(c.issuer) }}</td>
             <td style="padding:5px 8px"><code style="font-size:10px">{{ c.store }}</code></td>
-            <td style="padding:5px 8px;color:var(--text-muted)">{{ c.not_before }}</td>
+            <td style="padding:5px 8px;color:var(--text-secondary)">{{ c.not_before }}</td>
             <td style="padding:5px 8px" :style="{color:c.is_expired?'var(--error)':''}">{{ c.not_after }}</td>
             <td style="padding:5px 8px">
               <NBadge :variant="c.is_expired?'danger':'success'" style="font-size:9px">
@@ -123,7 +123,7 @@ const filtered = computed(() => {
           </tr>
         </tbody>
       </table>
-      <p v-if="filtered.length > 150" style="font-size:11px;color:var(--text-muted);margin-top:6px">{{ filtered.length - 150 }} certificats supplémentaires — affinez la recherche.</p>
+      <p v-if="filtered.length > 150" style="font-size:12px;color:var(--text-secondary);margin-top:6px">{{ filtered.length - 150 }} certificats supplémentaires — affinez la recherche.</p>
     </div>
   </div>
 </template>

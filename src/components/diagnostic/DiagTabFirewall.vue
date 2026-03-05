@@ -60,7 +60,7 @@ function filteredRules(rules: FirewallRule[]) {
           <NBadge :variant="p.enabled ? 'success' : 'danger'" style="margin-bottom:6px">
             {{ p.enabled ? 'Activé' : 'DÉSACTIVÉ' }}
           </NBadge>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">
             Entrant: {{ p.default_inbound }} | Sortant: {{ p.default_outbound }}
           </div>
         </div>
@@ -113,13 +113,13 @@ function filteredRules(rules: FirewallRule[]) {
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead>
             <tr style="background:var(--bg-secondary)">
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500;min-width:160px">Nom</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500">Direction</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500">Action</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500">Profil</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500">Proto</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500">Port</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-weight:500;min-width:140px">Programme</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:160px">Nom</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Direction</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Action</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Profil</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Proto</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Port</th>
+              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:140px">Programme</th>
             </tr>
           </thead>
           <tbody>
@@ -132,10 +132,10 @@ function filteredRules(rules: FirewallRule[]) {
               <td style="padding:5px 8px">
                 <NBadge :variant="r.action === 'Allow' ? 'success' : 'danger'" style="font-size:9px">{{ r.action }}</NBadge>
               </td>
-              <td style="padding:5px 8px;color:var(--text-muted)">{{ r.profile }}</td>
-              <td style="padding:5px 8px;color:var(--text-muted)">{{ r.protocol || 'Any' }}</td>
-              <td style="padding:5px 8px;color:var(--text-muted)">{{ r.local_port || 'Any' }}</td>
-              <td style="padding:5px 8px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">
+              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.profile }}</td>
+              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.protocol || 'Any' }}</td>
+              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.local_port || 'Any' }}</td>
+              <td style="padding:5px 8px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">
                 {{ r.program && r.program !== '%SystemRoot%\\system32\\svchost.exe' ? r.program : '—' }}
               </td>
             </tr>

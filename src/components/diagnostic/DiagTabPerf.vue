@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
-import { RefreshCw, Cpu, HardDrive, Wifi } from "lucide-vue-next";
+import { RefreshCw, Cpu, HardDrive, Wifi, Activity } from "lucide-vue-next";
 
 interface DiskPerf { name: string; read_mb: number; write_mb: number; queue_length: number; }
 interface NetPerf { name: string; recv_mb: number; sent_mb: number; }
@@ -30,24 +30,15 @@ async function load() {
 
 function toggleAuto() {
   autoRefresh.value = !autoRefresh.value;
-  if (autoRefresh.value) {
-    timer = setInterval(load, 3000);
-  } else {
-    if (timer) { clearInterval(timer); timer = null; }
-  }
+  if (autoRefresh.value) { timer = setInterval(load, 3000); }
+  else { if (timer) { clearInterval(timer); timer = null; } }
 }
 
-function pct(used: number, total: number) {
-  if (total === 0) return 0;
-  return Math.round(used / total * 100);
+function pctColor(p: number) {
+  if (p >= 90) return "#ef4444";
+  if (p >= 70) return "#f59e0b";
+  return "#22c55e";
 }
-
-function barColor(p: number) {
-  if (p >= 90) return 'var(--error)';
-  if (p >= 70) return 'var(--warning)';
-  return 'var(--success)';
-}
-
 function uptimeStr(h: number) {
   if (h >= 24) return `${(h / 24).toFixed(1)} jours`;
   return `${h.toFixed(1)} h`;
@@ -58,82 +49,96 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
 
 <template>
-  <div v-if="loading && !data" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary)">
-    <NSpinner :size="16" /><span>Collecte des métriques...</span>
+  <!-- Loading initial -->
+  <div v-if="loading && !data" class="perf-loading">
+    <NSpinner :size="16" /><span>Collecte des métriques système...</span>
   </div>
-  <div v-else-if="error && !data" style="color:var(--error)">⚠ {{ error }}</div>
-  <div v-else-if="data" style="display:flex;flex-direction:column;gap:14px">
+  <div v-else-if="error && !data" class="perf-error">⚠ {{ error }}</div>
 
-    <!-- Actions -->
-    <div style="display:flex;gap:8px;align-items:center">
-      <button @click="load" :disabled="loading"
-        style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);font-size:12px;cursor:pointer">
-        <RefreshCw :size="13" :style="{animation:loading?'spin 1s linear infinite':''}" />Actualiser
-      </button>
-      <button @click="toggleAuto"
-        :style="{display:'flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',border:'1px solid var(--border)',fontSize:'12px',cursor:'pointer',
-                 background:autoRefresh?'var(--accent)':'var(--bg-secondary)',color:autoRefresh?'white':'var(--text-secondary)'}">
-        {{ autoRefresh ? '⏹ Stop auto (3s)' : '▶ Auto-refresh 3s' }}
-      </button>
-      <span v-if="loading && data" style="font-size:11px;color:var(--text-muted)">Mise à jour...</span>
-    </div>
+  <div v-else-if="data" class="perf-root">
 
-    <!-- CPU + RAM -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="diag-section">
-        <p class="diag-section-label" style="margin:0 0 8px 0"><Cpu :size="13" style="display:inline;margin-right:4px" />CPU</p>
-        <div style="font-size:28px;font-weight:700" :style="{color:barColor(data.cpu_percent)}">{{ data.cpu_percent.toFixed(1) }}%</div>
-        <div style="background:var(--bg-secondary);border-radius:4px;height:8px;margin-top:8px;overflow:hidden">
-          <div :style="{width:data.cpu_percent+'%',height:'100%',background:barColor(data.cpu_percent),borderRadius:'4px',transition:'width 0.5s'}"></div>
-        </div>
+    <!-- Banner -->
+    <div class="perf-banner">
+      <div class="perf-banner-icon"><Activity :size="22" /></div>
+      <div class="perf-banner-body">
+        <div class="perf-banner-title">Performances en temps réel</div>
+        <div class="perf-banner-desc">CPU · RAM · I/O Disques · Réseau</div>
       </div>
-      <div class="diag-section">
-        <p class="diag-section-label" style="margin:0 0 8px 0">RAM</p>
-        <div style="font-size:28px;font-weight:700" :style="{color:barColor(data.ram_percent)}">{{ data.ram_percent.toFixed(1) }}%</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">{{ data.ram_used_gb.toFixed(1) }} / {{ data.ram_total_gb.toFixed(1) }} GB</div>
-        <div style="background:var(--bg-secondary);border-radius:4px;height:8px;margin-top:8px;overflow:hidden">
-          <div :style="{width:data.ram_percent+'%',height:'100%',background:barColor(data.ram_percent),borderRadius:'4px',transition:'width 0.5s'}"></div>
-        </div>
+      <div class="perf-actions">
+        <button class="diag-btn diag-btn-primary" @click="load" :disabled="loading">
+          <RefreshCw :size="13" :class="loading ? 'spin' : ''" /> Actualiser
+        </button>
+        <button class="diag-btn" :class="autoRefresh ? 'btn-auto-on' : ''" @click="toggleAuto">
+          {{ autoRefresh ? '⏹ Stop auto' : '▶ Auto 3s' }}
+        </button>
+        <span v-if="loading && data" class="perf-updating">Mise à jour...</span>
       </div>
     </div>
 
-    <!-- Stats système -->
-    <div class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0">Informations Système</p>
+    <!-- CPU + RAM big cards -->
+    <div class="perf-duo">
+      <div class="perf-metric-card">
+        <div class="pmc-header">
+          <Cpu :size="15" class="pmc-icon" />
+          <span class="pmc-title">Processeur</span>
+        </div>
+        <div class="pmc-val" :style="{ color: pctColor(data.cpu_percent) }">
+          {{ data.cpu_percent.toFixed(1) }}<span class="pmc-unit">%</span>
+        </div>
+        <div class="pmc-bar-track">
+          <div class="pmc-bar-fill" :style="{ width: data.cpu_percent + '%', background: pctColor(data.cpu_percent) }" />
+        </div>
+      </div>
+      <div class="perf-metric-card">
+        <div class="pmc-header">
+          <HardDrive :size="15" class="pmc-icon" />
+          <span class="pmc-title">Mémoire RAM</span>
+          <span class="pmc-sub">{{ data.ram_used_gb.toFixed(1) }} / {{ data.ram_total_gb.toFixed(1) }} GB</span>
+        </div>
+        <div class="pmc-val" :style="{ color: pctColor(data.ram_percent) }">
+          {{ data.ram_percent.toFixed(1) }}<span class="pmc-unit">%</span>
+        </div>
+        <div class="pmc-bar-track">
+          <div class="pmc-bar-fill" :style="{ width: data.ram_percent + '%', background: pctColor(data.ram_percent) }" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Sys stats -->
+    <div class="card-block">
+      <p class="diag-section-label" style="margin:0 0 12px 0">Informations système</p>
       <div class="info-grid">
         <div class="info-row"><span>Uptime</span><span>{{ uptimeStr(data.uptime_hours) }}</span></div>
-        <div class="info-row"><span>Processus</span><span>{{ data.process_count }}</span></div>
+        <div class="info-row"><span>Processus actifs</span><span>{{ data.process_count }}</span></div>
         <div class="info-row"><span>Threads</span><span>{{ data.thread_count.toLocaleString() }}</span></div>
-        <div class="info-row"><span>Handles</span><span>{{ data.handle_count.toLocaleString() }}</span></div>
-        <div class="info-row"><span>Page file</span><span>{{ data.page_file_used_gb.toFixed(1) }} / {{ data.page_file_total_gb.toFixed(1) }} GB</span></div>
-      </div>
-    </div>
-
-    <!-- Disques IO -->
-    <div v-if="data.disks.length" class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0"><HardDrive :size="13" style="display:inline;margin-right:4px" />I/O Disques (actuels)</p>
-      <div v-for="(d, i) in data.disks" :key="i" style="padding:6px 0;border-bottom:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:12px">{{ d.name }}</span>
-          <div style="display:flex;gap:12px;font-size:11px;color:var(--text-muted)">
-            <span>↓ {{ d.read_mb.toFixed(2) }} MB/s</span>
-            <span>↑ {{ d.write_mb.toFixed(2) }} MB/s</span>
-            <span>Queue: {{ d.queue_length.toFixed(1) }}</span>
-          </div>
+        <div class="info-row"><span>Handles ouverts</span><span>{{ data.handle_count.toLocaleString() }}</span></div>
+        <div class="info-row"><span>Fichier page (swap)</span>
+          <span>{{ data.page_file_used_gb.toFixed(1) }} / {{ data.page_file_total_gb.toFixed(1) }} GB</span>
         </div>
       </div>
     </div>
 
-    <!-- Réseau IO -->
-    <div v-if="data.network.length" class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0"><Wifi :size="13" style="display:inline;margin-right:4px" />I/O Réseau (actuels)</p>
-      <div v-for="(n, i) in data.network" :key="i" style="padding:6px 0;border-bottom:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:11px;color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.name }}</span>
-          <div style="display:flex;gap:12px;font-size:11px;color:var(--text-muted)">
-            <span>↓ {{ (n.recv_mb * 1000).toFixed(1) }} KB/s</span>
-            <span>↑ {{ (n.sent_mb * 1000).toFixed(1) }} KB/s</span>
-          </div>
+    <!-- Disques I/O -->
+    <div v-if="data.disks.length" class="card-block">
+      <p class="diag-section-label" style="margin:0 0 12px 0"><HardDrive :size="13" /> I/O Disques</p>
+      <div v-for="(d, i) in data.disks" :key="i" class="perf-io-row">
+        <span class="perf-io-name">{{ d.name }}</span>
+        <div class="perf-io-metrics">
+          <span class="perf-io-chip io-read">↓ {{ d.read_mb.toFixed(2) }} MB/s</span>
+          <span class="perf-io-chip io-write">↑ {{ d.write_mb.toFixed(2) }} MB/s</span>
+          <span class="perf-io-chip io-queue">Q: {{ d.queue_length.toFixed(1) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Réseau I/O -->
+    <div v-if="data.network.length" class="card-block">
+      <p class="diag-section-label" style="margin:0 0 12px 0"><Wifi :size="13" /> I/O Réseau</p>
+      <div v-for="(n, i) in data.network" :key="i" class="perf-io-row">
+        <span class="perf-io-name perf-net-name">{{ n.name }}</span>
+        <div class="perf-io-metrics">
+          <span class="perf-io-chip io-read">↓ {{ (n.recv_mb * 1000).toFixed(1) }} KB/s</span>
+          <span class="perf-io-chip io-write">↑ {{ (n.sent_mb * 1000).toFixed(1) }} KB/s</span>
         </div>
       </div>
     </div>
@@ -141,5 +146,47 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
 </template>
 
 <style scoped>
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.perf-root { display: flex; flex-direction: column; gap: 14px; }
+
+.perf-loading { display: flex; align-items: center; gap: 10px; padding: 20px; font-size: 13px; color: var(--text-secondary); }
+.perf-error { padding: 16px; color: var(--danger); background: var(--danger-muted); border-radius: 10px; border: 1px solid rgba(239,68,68,.3); }
+
+/* Banner */
+.perf-banner { display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(249,115,22,.12), rgba(234,88,12,.06));
+  border: 1px solid rgba(249,115,22,.25); border-radius: 14px; }
+.perf-banner-icon { width: 44px; height: 44px; border-radius: 11px; background: linear-gradient(135deg,var(--accent-primary),#ea580c);
+  display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,115,22,.35); }
+.perf-banner-body { flex: 1; }
+.perf-banner-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.perf-banner-desc { font-size: 12px; color: var(--text-secondary); }
+.perf-actions { display: flex; align-items: center; gap: 8px; }
+.perf-updating { font-size: 11px; color: var(--text-muted); }
+.btn-auto-on { background: rgba(249,115,22,.2) !important; color: var(--accent-primary) !important; border-color: rgba(249,115,22,.4) !important; }
+
+/* CPU / RAM big cards */
+.perf-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.perf-metric-card { background: var(--bg-secondary); border: 1px solid var(--border-hover); border-radius: 14px; padding: 18px 20px; }
+.pmc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.pmc-icon { color: var(--text-secondary); }
+.pmc-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.pmc-sub { font-size: 11px; color: var(--text-secondary); margin-left: auto; }
+.pmc-val { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 12px; }
+.pmc-unit { font-size: 20px; font-weight: 600; opacity: .7; }
+.pmc-bar-track { height: 8px; background: var(--bg-elevated); border-radius: 99px; overflow: hidden; border: 1px solid var(--border-hover); }
+.pmc-bar-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+
+/* I/O rows */
+.perf-io-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.perf-io-row:last-child { border-bottom: none; }
+.perf-io-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; min-width: 80px; }
+.perf-net-name { font-size: 11px; color: var(--text-secondary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.perf-io-metrics { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.perf-io-chip { font-size: 11px; font-family: "JetBrains Mono", monospace; padding: 3px 9px; border-radius: 6px; font-weight: 500; }
+.io-read  { background: rgba(34,197,94,.1);  color: #22c55e; border: 1px solid rgba(34,197,94,.2); }
+.io-write { background: rgba(59,130,246,.1); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
+.io-queue { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-hover); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
 </style>

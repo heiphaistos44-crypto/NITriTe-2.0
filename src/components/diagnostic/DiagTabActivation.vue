@@ -94,7 +94,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
   <div class="card-block" style="border:1px solid var(--warning);margin-bottom:12px">
     <div style="display:flex;gap:8px;align-items:flex-start">
       <AlertTriangle :size="15" style="color:var(--warning);flex-shrink:0;margin-top:2px" />
-      <div style="font-size:12px;line-height:1.6;color:var(--text-muted)">
+      <div style="font-size:12px;line-height:1.6;color:var(--text-secondary)">
         <strong style="color:var(--text)">MAS</strong> (massgravel) est un projet open-source qui utilise des méthodes
         légitimes reconnues par Microsoft (HWID, KMS38) pour activer Windows et Office.
         L'activation s'effectue dans une <strong>fenêtre PowerShell élevée</strong> séparée — vous verrez exactement
@@ -108,7 +108,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
 
   <!-- Méthodes -->
   <div class="card-block" style="margin-bottom:12px">
-    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">
       Cliquer sur un bouton ouvre une fenêtre PowerShell en mode administrateur avec le menu MAS interactif.
       Sélectionnez la méthode souhaitée dans le menu affiché.
     </p>
@@ -121,7 +121,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
           <strong style="font-size:13px">HWID — Windows</strong>
           <NBadge variant="success" style="font-size:10px">Permanent</NBadge>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
           Licence numérique permanente liée au matériel. Windows 10/11. Nécessite internet.
         </p>
       </div>
@@ -133,7 +133,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
           <strong style="font-size:13px">KMS38 — Windows</strong>
           <NBadge variant="info" style="font-size:10px">Jusqu'en 2038</NBadge>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
           Activation KMS valide jusqu'en 2038. Windows 10/11. Sans internet.
         </p>
       </div>
@@ -145,7 +145,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
           <strong style="font-size:13px">KMS Online — W+Office</strong>
           <NBadge variant="warning" style="font-size:10px">180 jours</NBadge>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
           Active Windows ET Office via KMS. Renouvellement auto tous les 180 jours.
         </p>
       </div>
@@ -157,7 +157,7 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
           <strong style="font-size:13px">Ohook — Office</strong>
           <NBadge variant="success" style="font-size:10px">Permanent</NBadge>
         </div>
-        <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
           Activation permanente d'Office (toutes versions). Sans internet.
         </p>
       </div>

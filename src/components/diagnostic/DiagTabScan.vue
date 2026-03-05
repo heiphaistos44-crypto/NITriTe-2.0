@@ -306,7 +306,7 @@ async function exportScanJson() {
 
       <!-- BitLocker -->
       <div v-if="scanResult.bitlocker_volumes?.length" style="margin-top:10px">
-        <p style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text-muted)">BitLocker</p>
+        <p style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--text-secondary)">BitLocker</p>
         <div v-for="(bv, i) in scanResult.bitlocker_volumes" :key="i"
           style="border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -324,7 +324,7 @@ async function exportScanJson() {
             </div>
           </div>
           <div v-if="bv.recovery_password" class="info-row" style="background:var(--bg-secondary);padding:6px 8px;border-radius:4px">
-            <span style="font-size:11px;color:var(--text-muted)">Clé de récupération</span>
+            <span style="font-size:12px;color:var(--text-secondary)">Clé de récupération</span>
             <code style="font-size:11px;color:var(--warning);word-break:break-all">{{ bv.recovery_password }}</code>
           </div>
           <div v-else class="muted" style="font-size:11px">Aucune clé de récupération disponible</div>
@@ -529,7 +529,7 @@ async function exportScanJson() {
         </div>
       </div>
       <div v-if="scanResult.local_admins?.length" style="margin-top:8px">
-        <p style="font-size:11px;color:var(--text-muted);margin:0 0 4px 0">Administrateurs locaux ({{ scanResult.local_admins.length }})</p>
+        <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px 0">Administrateurs locaux ({{ scanResult.local_admins.length }})</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <code v-for="(a, i) in scanResult.local_admins" :key="i"
             style="font-size:11px;background:var(--bg-secondary);padding:2px 6px;border-radius:4px">{{ a }}</code>
@@ -562,7 +562,7 @@ async function exportScanJson() {
       <p class="diag-section-label" style="margin:0 0 8px 0">Top 5 Processus (snapshot)</p>
       <div style="display:flex;gap:16px;flex-wrap:wrap">
         <div v-if="scanResult.top_cpu?.length" style="flex:1;min-width:200px">
-          <p style="font-size:11px;font-weight:600;color:var(--text-muted);margin:0 0 6px 0"><Cpu :size="11" style="display:inline;margin-right:4px" />CPU — temps cumulé (sec.)</p>
+          <p style="font-size:11px;font-weight:600;color:var(--text-secondary);margin:0 0 6px 0"><Cpu :size="11" style="display:inline;margin-right:4px" />CPU — temps cumulé (sec.)</p>
           <div v-for="(p, i) in scanResult.top_cpu" :key="i"
             style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
             <code class="muted" style="min-width:34px;font-size:10px">{{ p.pid }}</code>
@@ -571,7 +571,7 @@ async function exportScanJson() {
           </div>
         </div>
         <div v-if="scanResult.top_ram?.length" style="flex:1;min-width:200px">
-          <p style="font-size:11px;font-weight:600;color:var(--text-muted);margin:0 0 6px 0"><MemoryStick :size="11" style="display:inline;margin-right:4px" />RAM (MB)</p>
+          <p style="font-size:11px;font-weight:600;color:var(--text-secondary);margin:0 0 6px 0"><MemoryStick :size="11" style="display:inline;margin-right:4px" />RAM (MB)</p>
           <div v-for="(p, i) in scanResult.top_ram" :key="i"
             style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px">
             <code class="muted" style="min-width:34px;font-size:10px">{{ p.pid }}</code>

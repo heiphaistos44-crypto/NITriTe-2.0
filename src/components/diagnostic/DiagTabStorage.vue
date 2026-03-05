@@ -155,7 +155,7 @@ function healthVariant(h: string) {
             :variant="v.used_percent > 90 ? 'danger' : v.used_percent > 80 ? 'warning' : 'default'"
             size="sm" showLabel
           />
-          <span style="min-width:160px;text-align:right;font-size:11px;color:var(--text-muted)">
+          <span style="min-width:160px;text-align:right;font-size:12px;color:var(--text-secondary)">
             {{ v.free_gb.toFixed(1) }} GB libres / {{ v.total_gb.toFixed(1) }} GB
           </span>
         </div>

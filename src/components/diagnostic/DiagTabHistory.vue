@@ -99,7 +99,7 @@ function uptimeStr(h: number) {
         </div>
       </div>
       <div v-if="data.bsod_list.length" style="margin-top:10px">
-        <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Dates des BSODs :</p>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">Dates des BSODs :</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <code v-for="(b, i) in data.bsod_list" :key="i"
             style="font-size:11px;background:var(--bg-secondary);padding:2px 8px;border-radius:4px;color:var(--error)">{{ b }}</code>
@@ -133,18 +133,18 @@ function uptimeStr(h: number) {
         <table style="width:100%;border-collapse:collapse;font-size:12px">
           <thead>
             <tr style="background:var(--bg-secondary)">
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Nom</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Version</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Éditeur</th>
-              <th style="padding:6px 10px;text-align:left;color:var(--text-muted);font-weight:500">Date</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Nom</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Version</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Éditeur</th>
+              <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Date</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(s, i) in data.recent_installs" :key="i"
               style="border-bottom:1px solid var(--border)">
               <td style="padding:6px 10px">{{ s.name }}</td>
-              <td style="padding:6px 10px;color:var(--text-muted)">{{ s.version || '—' }}</td>
-              <td style="padding:6px 10px;color:var(--text-muted)">{{ s.publisher || '—' }}</td>
+              <td style="padding:6px 10px;color:var(--text-secondary)">{{ s.version || '—' }}</td>
+              <td style="padding:6px 10px;color:var(--text-secondary)">{{ s.publisher || '—' }}</td>
               <td style="padding:6px 10px"><code style="font-size:11px">{{ s.install_date }}</code></td>
             </tr>
           </tbody>

@@ -69,7 +69,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
     <!-- IP Config -->
     <div class="diag-section">
       <p class="diag-section-label" style="margin:0 0 8px 0"><Wifi :size="13" style="display:inline;margin-right:4px" />Configuration IP</p>
-      <div v-if="ipLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-muted)"><NSpinner :size="14" /> Chargement...</div>
+      <div v-if="ipLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-secondary)"><NSpinner :size="14" /> Chargement...</div>
       <div v-for="(a, i) in ipConfig" :key="i" style="padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="font-weight:600;font-size:12px;margin-bottom:4px">{{ a.name }}</div>
         <div class="info-grid">
@@ -91,18 +91,18 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           <NSpinner v-if="wifiLoading" :size="11" />Actualiser
         </button>
       </div>
-      <div v-if="wifiLoading" style="color:var(--text-muted);font-size:12px;display:flex;gap:6px;align-items:center"><NSpinner :size="13" />Scan WiFi...</div>
+      <div v-if="wifiLoading" style="color:var(--text-secondary);font-size:12px;display:flex;gap:6px;align-items:center"><NSpinner :size="13" />Scan WiFi...</div>
       <div v-else-if="wifiNetworks.length">
         <div v-for="(n, i) in wifiNetworks" :key="i" style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">
           <div style="width:38px;text-align:center;font-size:10px;font-weight:700" :style="{color:sigColor(n.signal_percent)}">{{ n.signal_percent }}%</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.ssid||'(caché)' }}</div>
-            <div style="font-size:10px;color:var(--text-muted)">{{ n.bssid }} — Ch.{{ n.channel }} — {{ n.band }}</div>
+            <div style="font-size:10px;color:var(--text-secondary)">{{ n.bssid }} — Ch.{{ n.channel }} — {{ n.band }}</div>
           </div>
           <NBadge variant="neutral" style="font-size:9px">{{ n.auth }}</NBadge>
         </div>
       </div>
-      <p v-else style="font-size:11px;color:var(--text-muted)">Cliquez Actualiser pour scanner les réseaux.</p>
+      <p v-else style="font-size:12px;color:var(--text-secondary)">Cliquez Actualiser pour scanner les réseaux.</p>
     </div>
 
     <!-- Ping -->
@@ -139,15 +139,15 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           <NSpinner v-if="tracertLoading" :size="11" />Tracer
         </button>
       </div>
-      <div v-if="tracertLoading" style="color:var(--text-muted);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Traceroute... (30-60s)</div>
+      <div v-if="tracertLoading" style="color:var(--text-secondary);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Traceroute... (30-60s)</div>
       <div v-else-if="tracertHops.length" style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr style="background:var(--bg-secondary)"><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">#</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Adresse</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">ms</th></tr></thead>
+          <thead><tr style="background:var(--bg-secondary)"><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">#</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Adresse</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">ms</th></tr></thead>
           <tbody>
             <tr v-for="h in tracertHops" :key="h.hop" style="border-bottom:1px solid var(--border)">
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ h.hop }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ h.hop }}</td>
               <td style="padding:3px 8px"><code>{{ h.address||'*' }}</code></td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ h.ms||'—' }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ h.ms||'—' }}</td>
             </tr>
           </tbody>
         </table>
@@ -164,7 +164,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           <NSpinner v-if="scanLoading" :size="11" />Scanner
         </button>
       </div>
-      <div v-if="scanLoading" style="color:var(--text-muted);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Scan en cours...</div>
+      <div v-if="scanLoading" style="color:var(--text-secondary);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Scan en cours...</div>
       <div v-else-if="scanResults.length" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
         <div v-for="r in scanResults" :key="r.port" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px" :style="{background:r.open?'rgba(74,222,128,0.1)':'rgba(100,116,139,0.1)',border:r.open?'1px solid rgba(74,222,128,0.3)':'1px solid var(--border)'}">
           <span :style="{color:r.open?'var(--success)':'var(--text-muted)'}">{{ r.open?'●':'○' }}</span>
@@ -183,26 +183,26 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
         </button>
       </div>
       <input v-if="openPorts.length" v-model="openPortFilter" placeholder="Filtrer port/process..." style="width:100%;margin-bottom:6px;padding:4px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px" />
-      <div v-if="openPortsLoading" style="color:var(--text-muted);font-size:12px"><NSpinner :size="13" /></div>
+      <div v-if="openPortsLoading" style="color:var(--text-secondary);font-size:12px"><NSpinner :size="13" /></div>
       <div v-else-if="openPorts.length" style="overflow-x:auto;max-height:200px;overflow-y:auto">
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead><tr style="background:var(--bg-secondary);position:sticky;top:0">
-            <th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Port</th>
-            <th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Adresse</th>
-            <th style="padding:4px 8px;text-align:left;color:var(--text-muted)">PID</th>
-            <th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Processus</th>
+            <th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Port</th>
+            <th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Adresse</th>
+            <th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">PID</th>
+            <th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Processus</th>
           </tr></thead>
           <tbody>
             <tr v-for="(p, i) in filteredOpenPorts()" :key="i" style="border-bottom:1px solid var(--border)">
               <td style="padding:3px 8px"><code style="color:var(--accent)">{{ p.local_port }}</code></td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ p.local_address }}</td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ p.pid }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ p.local_address }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ p.pid }}</td>
               <td style="padding:3px 8px">{{ p.process }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p v-else style="font-size:11px;color:var(--text-muted)">Cliquez Actualiser pour charger.</p>
+      <p v-else style="font-size:12px;color:var(--text-secondary)">Cliquez Actualiser pour charger.</p>
     </div>
 
     <!-- Table ARP -->
@@ -215,13 +215,13 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
       </div>
       <div v-if="arpTable.length" style="overflow-x:auto;max-height:180px;overflow-y:auto">
         <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:var(--bg-secondary)"><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">IP</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">MAC</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Type</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Interface</th></tr></thead>
+          <thead><tr style="background:var(--bg-secondary)"><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">IP</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">MAC</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Type</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Interface</th></tr></thead>
           <tbody>
             <tr v-for="(e, i) in arpTable" :key="i" style="border-bottom:1px solid var(--border)">
               <td style="padding:3px 8px"><code>{{ e.ip }}</code></td>
-              <td style="padding:3px 8px;color:var(--text-muted)"><code>{{ e.mac }}</code></td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ e.entry_type }}</td>
-              <td style="padding:3px 8px;font-size:10px;color:var(--text-muted)">{{ e.interface }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)"><code>{{ e.mac }}</code></td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ e.entry_type }}</td>
+              <td style="padding:3px 8px;font-size:10px;color:var(--text-secondary)">{{ e.interface }}</td>
             </tr>
           </tbody>
         </table>
@@ -239,14 +239,14 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
       <input v-if="routeTable.length" v-model="routeFilter" placeholder="Filtrer réseau/gateway/interface..." style="width:100%;margin-bottom:6px;padding:4px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px" />
       <div v-if="routeTable.length" style="overflow-x:auto;max-height:200px;overflow-y:auto">
         <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:var(--bg-secondary);position:sticky;top:0"><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Réseau</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Masque</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Passerelle</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Interface</th><th style="padding:4px 8px;text-align:left;color:var(--text-muted)">Métrique</th></tr></thead>
+          <thead><tr style="background:var(--bg-secondary);position:sticky;top:0"><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Réseau</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Masque</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Passerelle</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Interface</th><th style="padding:4px 8px;text-align:left;color:var(--text-secondary)">Métrique</th></tr></thead>
           <tbody>
             <tr v-for="(r, i) in filteredRoute()" :key="i" style="border-bottom:1px solid var(--border)">
               <td style="padding:3px 8px"><code style="font-size:10px">{{ r.network }}</code></td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ r.netmask }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ r.netmask }}</td>
               <td style="padding:3px 8px"><code style="font-size:10px">{{ r.gateway||'—' }}</code></td>
-              <td style="padding:3px 8px;font-size:10px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.interface }}</td>
-              <td style="padding:3px 8px;color:var(--text-muted)">{{ r.metric }}</td>
+              <td style="padding:3px 8px;font-size:10px;color:var(--text-secondary);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.interface }}</td>
+              <td style="padding:3px 8px;color:var(--text-secondary)">{{ r.metric }}</td>
             </tr>
           </tbody>
         </table>
@@ -272,7 +272,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           <NBadge variant="neutral" style="font-size:9px">{{ nsResult.query_type }}</NBadge>
         </div>
         <div v-for="(r, i) in nsResult.records" :key="i" style="padding:2px 0"><code style="font-size:12px;color:var(--accent)">{{ r }}</code></div>
-        <p v-if="!nsResult.records.length&&nsResult.success" style="font-size:11px;color:var(--text-muted)">Aucun enregistrement.</p>
+        <p v-if="!nsResult.records.length&&nsResult.success" style="font-size:12px;color:var(--text-secondary)">Aucun enregistrement.</p>
       </div>
     </div>
 
@@ -288,10 +288,10 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
       <div v-if="httpResult" style="padding:8px;background:var(--bg-secondary);border-radius:6px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <NBadge :variant="httpResult.success?'success':'danger'">{{ httpResult.status_code||0 }} {{ httpResult.status_text }}</NBadge>
-          <span style="font-size:11px;color:var(--text-muted)">{{ httpResult.time_ms }} ms</span>
+          <span style="font-size:12px;color:var(--text-secondary)">{{ httpResult.time_ms }} ms</span>
         </div>
         <div v-if="httpResult.headers.length" style="max-height:120px;overflow-y:auto">
-          <div v-for="(h, i) in httpResult.headers" :key="i" style="font-size:10px;color:var(--text-muted);padding:1px 0;font-family:monospace">{{ h }}</div>
+          <div v-for="(h, i) in httpResult.headers" :key="i" style="font-size:10px;color:var(--text-secondary);padding:1px 0;font-family:monospace">{{ h }}</div>
         </div>
       </div>
     </div>
@@ -308,8 +308,8 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
       <div v-if="shares.length">
         <div v-for="(s, i) in shares" :key="i" style="display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
           <code style="color:var(--accent);min-width:100px">{{ s.name }}</code>
-          <span style="color:var(--text-muted)">{{ s.path }}</span>
-          <span v-if="s.comment" style="color:var(--text-muted);font-size:10px">{{ s.comment }}</span>
+          <span style="color:var(--text-secondary)">{{ s.path }}</span>
+          <span v-if="s.comment" style="color:var(--text-secondary);font-size:10px">{{ s.comment }}</span>
         </div>
       </div>
     </div>
@@ -322,17 +322,17 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           <NSpinner v-if="bwLoading" :size="11" />Tester (5MB)
         </button>
       </div>
-      <div v-if="bwLoading" style="color:var(--text-muted);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Téléchargement 5MB depuis Cloudflare...</div>
+      <div v-if="bwLoading" style="color:var(--text-secondary);font-size:12px;display:flex;gap:8px;align-items:center"><NSpinner :size="13" />Téléchargement 5MB depuis Cloudflare...</div>
       <div v-else-if="bandwidth" style="display:flex;gap:20px;align-items:center">
         <div style="text-align:center">
           <div style="font-size:28px;font-weight:700;color:var(--accent)">{{ bandwidth.download_mbps }}</div>
-          <div style="font-size:11px;color:var(--text-muted)">Mbps ↓</div>
+          <div style="font-size:12px;color:var(--text-secondary)">Mbps ↓</div>
         </div>
         <div style="text-align:center">
           <div style="font-size:22px;font-weight:600;color:var(--text-secondary)">{{ bandwidth.latency_ms }}</div>
-          <div style="font-size:11px;color:var(--text-muted)">ms latence</div>
+          <div style="font-size:12px;color:var(--text-secondary)">ms latence</div>
         </div>
-        <div style="font-size:10px;color:var(--text-muted)">via {{ bandwidth.test_host }}</div>
+        <div style="font-size:10px;color:var(--text-secondary)">via {{ bandwidth.test_host }}</div>
         <NBadge :variant="bandwidth.success?'success':'danger'" style="font-size:9px">{{ bandwidth.success?'OK':'Échec' }}</NBadge>
       </div>
     </div>

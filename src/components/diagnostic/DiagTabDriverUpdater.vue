@@ -162,7 +162,7 @@ function errLabel(code: number) {
       <p class="diag-section-label" style="margin:0 0 6px 0;font-size:13px">
         <HardDrive :size="13" style="display:inline;margin-right:4px" />Mise à jour des pilotes — Mode Offline
       </p>
-      <p style="font-size:11px;color:var(--text-muted);margin:0">
+      <p style="font-size:12px;color:var(--text-secondary);margin:0">
         Compatible avec les packs de drivers extraits (SDIO / DriverPack Solution / manuel).
         Scanne les fichiers <code>.inf</code> pour trouver les pilotes correspondants à votre matériel.
       </p>
@@ -183,7 +183,7 @@ function errLabel(code: number) {
         </button>
       </div>
 
-      <div v-if="devicesLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:12px">
+      <div v-if="devicesLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:12px">
         <NSpinner :size="14" />Enumération des périphériques PnP (peut prendre 10-20s)...
       </div>
 
@@ -192,26 +192,26 @@ function errLabel(code: number) {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
           <div class="diag-section" style="text-align:center;padding:8px">
             <div style="font-size:20px;font-weight:700;color:var(--accent)">{{ devices.length }}</div>
-            <div style="font-size:10px;color:var(--text-muted)">Périphériques</div>
+            <div style="font-size:10px;color:var(--text-secondary)">Périphériques</div>
           </div>
           <div class="diag-section" style="text-align:center;padding:8px">
             <div style="font-size:20px;font-weight:700" :style="{color:devices.filter(d=>d.has_driver_problem).length>0?'var(--error)':'var(--success)'}">{{ devices.filter(d=>d.has_driver_problem).length }}</div>
-            <div style="font-size:10px;color:var(--text-muted)">Problèmes</div>
+            <div style="font-size:10px;color:var(--text-secondary)">Problèmes</div>
           </div>
           <div class="diag-section" style="text-align:center;padding:8px">
             <div style="font-size:20px;font-weight:700;color:var(--success)">{{ scanResult?.devices_with_match ?? 0 }}</div>
-            <div style="font-size:10px;color:var(--text-muted)">Correspondances</div>
+            <div style="font-size:10px;color:var(--text-secondary)">Correspondances</div>
           </div>
           <div class="diag-section" style="text-align:center;padding:8px">
             <div style="font-size:20px;font-weight:700;color:var(--text-secondary)">{{ scanResult?.inf_count ?? 0 }}</div>
-            <div style="font-size:10px;color:var(--text-muted)">INF scannés</div>
+            <div style="font-size:10px;color:var(--text-secondary)">INF scannés</div>
           </div>
         </div>
 
         <!-- Filtres + Recherche -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
           <div style="position:relative;flex:1;min-width:150px">
-            <Search :size="11" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted)" />
+            <Search :size="11" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-secondary)" />
             <input v-model="searchQuery" placeholder="Filtrer..." style="width:100%;padding:4px 8px 4px 24px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px" />
           </div>
           <button v-for="f in [{k:'all',l:'Tous'},{k:'problems',l:'⚠ Problèmes'},{k:'matched',l:'✓ Trouvés'}]" :key="f.k"
@@ -231,16 +231,16 @@ function errLabel(code: number) {
             <div v-else style="width:11px;flex-shrink:0" />
             <div style="flex:1;min-width:0">
               <div style="font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name||d.device_id }}</div>
-              <div style="font-size:9px;color:var(--text-muted)">{{ d.class||'—' }} • {{ d.manufacturer||'—' }}</div>
+              <div style="font-size:9px;color:var(--text-secondary)">{{ d.class||'—' }} • {{ d.manufacturer||'—' }}</div>
             </div>
             <span v-if="d.has_driver_problem" style="font-size:9px;color:var(--error)">{{ errLabel(d.config_error) }}</span>
             <NBadge v-if="matchedByDevice[d.device_id]" variant="success" style="font-size:8px;flex-shrink:0">Driver trouvé</NBadge>
           </div>
         </div>
-        <p v-if="filteredDevices.length > 200" style="font-size:10px;color:var(--text-muted);margin-top:4px">{{ filteredDevices.length - 200 }} de plus — affinez la recherche.</p>
+        <p v-if="filteredDevices.length > 200" style="font-size:10px;color:var(--text-secondary);margin-top:4px">{{ filteredDevices.length - 200 }} de plus — affinez la recherche.</p>
       </div>
 
-      <div v-else style="font-size:12px;color:var(--text-muted)">Cliquez "Scanner les périphériques" pour commencer.</div>
+      <div v-else style="font-size:12px;color:var(--text-secondary)">Cliquez "Scanner les périphériques" pour commencer.</div>
     </div>
 
     <!-- Étape 2 : Sélectionner dossier drivers -->
@@ -249,7 +249,7 @@ function errLabel(code: number) {
         <span style="background:var(--accent);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;margin-right:6px;font-weight:700">2</span>
         Sélectionner le dossier de packs de drivers
       </p>
-      <p style="font-size:10px;color:var(--text-muted);margin:0 0 8px 0">
+      <p style="font-size:10px;color:var(--text-secondary);margin:0 0 8px 0">
         Extrayez les packs SDIO / DriverPack Solution et pointez vers le dossier racine contenant les fichiers .inf
       </p>
       <div style="display:flex;gap:8px;align-items:center">
@@ -274,11 +274,11 @@ function errLabel(code: number) {
           {{ scanLoading ? 'Analyse des INF...' : 'Analyser les drivers' }}
         </button>
       </div>
-      <div v-if="scanLoading" style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:8px">
+      <div v-if="scanLoading" style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:8px">
         <NSpinner :size="14" />Scan récursif des fichiers .inf (peut prendre 1-5 min selon la taille des packs)...
       </div>
       <div v-else-if="scanResult">
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">
           {{ scanResult.inf_count }} fichiers INF analysés en {{ (scanResult.scan_time_ms/1000).toFixed(1) }}s —
           <strong style="color:var(--success)">{{ scanResult.matches.length }} correspondance(s) trouvée(s)</strong>
         </div>
@@ -298,8 +298,8 @@ function errLabel(code: number) {
             <input type="checkbox" :checked="selectedMatches.has(m.device_id)" @change="toggleSelect(m.device_id)" style="cursor:pointer" />
             <div style="flex:1;min-width:0">
               <div style="font-size:11px;font-weight:600">{{ m.device_id.split('\\').slice(0,2).join('\\') }}</div>
-              <div style="font-size:10px;color:var(--text-muted)">{{ m.inf_name }} — {{ m.driver_provider||'?' }} {{ m.driver_version }}</div>
-              <div style="font-size:9px;color:var(--text-muted);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.inf_path }}</div>
+              <div style="font-size:10px;color:var(--text-secondary)">{{ m.inf_name }} — {{ m.driver_provider||'?' }} {{ m.driver_version }}</div>
+              <div style="font-size:9px;color:var(--text-secondary);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.inf_path }}</div>
             </div>
             <NBadge :variant="matchTypeColor(m.match_type)" style="font-size:8px;flex-shrink:0">{{ m.match_type }}</NBadge>
             <div style="flex-shrink:0">
@@ -328,11 +328,11 @@ function errLabel(code: number) {
           </div>
         </div>
 
-        <div v-else style="font-size:12px;color:var(--text-muted)">
+        <div v-else style="font-size:12px;color:var(--text-secondary)">
           Aucune correspondance trouvée dans ce dossier. Vérifiez que les fichiers .inf sont bien présents.
         </div>
       </div>
-      <div v-else style="font-size:11px;color:var(--text-muted)">
+      <div v-else style="font-size:12px;color:var(--text-secondary)">
         Renseignez le dossier et cliquez "Analyser" pour matcher votre matériel avec les drivers disponibles.
       </div>
     </div>
@@ -353,7 +353,7 @@ function errLabel(code: number) {
           <AlertTriangle :size="10" style="color:var(--warning);margin-right:4px" />{{ n }}
         </div>
       </div>
-      <p v-else-if="!problemsLoading" style="font-size:11px;color:var(--text-muted)">Cliquez Vérifier pour lister les pilotes en erreur.</p>
+      <p v-else-if="!problemsLoading" style="font-size:12px;color:var(--text-secondary)">Cliquez Vérifier pour lister les pilotes en erreur.</p>
     </div>
 
     <!-- Résultats d'installation -->
@@ -363,9 +363,9 @@ function errLabel(code: number) {
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <NBadge :variant="r.success?'success':'danger'" style="font-size:9px">{{ r.success?'Succès':'Échec' }}</NBadge>
           <code style="font-size:10px">{{ r.inf_path.split('\\').pop() }}</code>
-          <span style="font-size:10px;color:var(--text-muted)">{{ r.duration_secs }}s</span>
+          <span style="font-size:10px;color:var(--text-secondary)">{{ r.duration_secs }}s</span>
         </div>
-        <pre style="font-size:9px;color:var(--text-muted);background:var(--bg-secondary);padding:6px;border-radius:5px;overflow-x:auto;white-space:pre-wrap;max-height:100px;overflow-y:auto">{{ r.output||'(vide)' }}</pre>
+        <pre style="font-size:9px;color:var(--text-secondary);background:var(--bg-secondary);padding:6px;border-radius:5px;overflow-x:auto;white-space:pre-wrap;max-height:100px;overflow-y:auto">{{ r.output||'(vide)' }}</pre>
       </div>
     </div>
 

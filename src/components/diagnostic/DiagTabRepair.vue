@@ -129,7 +129,7 @@ function healthColor(s: string) {
       <p class="diag-section-label" style="margin:0 0 8px 0">
         <CheckCircle :size="13" style="display:inline;margin-right:4px" />État de santé système
       </p>
-      <div v-if="healthLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-muted)">
+      <div v-if="healthLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-secondary)">
         <NSpinner :size="14" /> Analyse en cours (DISM CheckHealth)...
       </div>
       <div v-else-if="health" class="info-grid">
@@ -151,7 +151,7 @@ function healthColor(s: string) {
           <AlertTriangle :size="11" style="display:inline;margin-right:4px" />Erreurs disque récentes (7j) :
         </p>
         <div v-for="(e, i) in health.disk_errors" :key="i"
-          style="font-size:10px;color:var(--text-muted);padding:2px 0;border-bottom:1px solid var(--border);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          style="font-size:10px;color:var(--text-secondary);padding:2px 0;border-bottom:1px solid var(--border);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
           {{ e }}
         </div>
       </div>
@@ -174,20 +174,20 @@ function healthColor(s: string) {
             <span style="font-size:11px;font-weight:600;color:var(--text-primary)">{{ action.label }}</span>
             <NBadge v-if="!action.fast" variant="warning" style="font-size:8px">Long</NBadge>
           </div>
-          <span style="font-size:9px;color:var(--text-muted)">{{ action.desc }}</span>
+          <span style="font-size:9px;color:var(--text-secondary)">{{ action.desc }}</span>
         </button>
       </div>
     </div>
 
     <!-- Résultat -->
-    <div v-if="repairLoading" class="diag-section" style="display:flex;align-items:center;gap:10px;color:var(--text-muted)">
+    <div v-if="repairLoading" class="diag-section" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary)">
       <NSpinner :size="16" /> Exécution en cours... (peut prendre plusieurs minutes)
     </div>
     <div v-else-if="repairResult" class="diag-section">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <NBadge :variant="repairResult.success?'success':'danger'">{{ repairResult.success ? 'Succès' : 'Erreur' }}</NBadge>
         <strong style="font-size:12px">{{ repairResult.command }}</strong>
-        <span style="font-size:11px;color:var(--text-muted)">{{ repairResult.duration_secs }}s</span>
+        <span style="font-size:12px;color:var(--text-secondary)">{{ repairResult.duration_secs }}s</span>
       </div>
       <pre style="font-size:10px;color:var(--text-secondary);background:var(--bg-secondary);padding:8px;border-radius:6px;overflow-x:auto;white-space:pre-wrap;max-height:240px;overflow-y:auto">{{ repairResult.output || '(Aucune sortie)' }}</pre>
     </div>

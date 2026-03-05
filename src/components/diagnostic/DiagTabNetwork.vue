@@ -100,7 +100,7 @@ function pingVariant(ok: boolean, ms: number): string {
           </div>
         </div>
       </template>
-      <div v-else class="card-block" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--text-muted)">
+      <div v-else class="card-block" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--text-secondary)">
         <WifiOff :size="14" /><span style="font-size:13px">Aucune connexion WiFi active</span>
       </div>
 
@@ -225,7 +225,7 @@ function pingVariant(ok: boolean, ms: number): string {
               <span>Serveur proxy</span><code>{{ extData.proxy.server || "—" }}</code>
             </div>
             <div v-if="extData.proxy.enabled && extData.proxy.bypass" class="info-row info-full">
-              <span>Exceptions</span><span style="font-size:11px;color:var(--text-muted)">{{ extData.proxy.bypass }}</span>
+              <span>Exceptions</span><span style="font-size:12px;color:var(--text-secondary)">{{ extData.proxy.bypass }}</span>
             </div>
           </div>
         </div>
@@ -276,7 +276,7 @@ function pingVariant(ok: boolean, ms: number): string {
               <tbody>
                 <tr v-for="(e, i) in extData.arp_table.slice(0, 80)" :key="i">
                   <td><code>{{ e.ip }}</code></td>
-                  <td><code style="color:var(--text-muted);font-size:11px">{{ e.mac }}</code></td>
+                  <td><code style="color:var(--text-secondary);font-size:11px">{{ e.mac }}</code></td>
                   <td><NBadge :variant="e.type === 'dynamic' ? 'info' : 'default'" style="font-size:10px">{{ e.type }}</NBadge></td>
                 </tr>
               </tbody>
@@ -294,7 +294,7 @@ function pingVariant(ok: boolean, ms: number): string {
               <tbody>
                 <tr v-for="(r, i) in extData.routes.slice(0, 50)" :key="i">
                   <td><code style="font-size:11px">{{ r.prefix }}</code></td>
-                  <td><code style="font-size:11px;color:var(--text-muted)">{{ r.next_hop }}</code></td>
+                  <td><code style="font-size:12px;color:var(--text-secondary)">{{ r.next_hop }}</code></td>
                   <td class="muted">{{ r.metric }}</td>
                   <td style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.iface }}</td>
                 </tr>
@@ -382,8 +382,8 @@ function pingVariant(ok: boolean, ms: number): string {
             <td style="font-weight:500;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.process_name || "—" }}</td>
             <td><code>{{ c.local_address || "*" }}</code></td>
             <td><code>{{ c.local_port }}</code></td>
-            <td><code style="color:var(--text-muted)">{{ c.remote_address || "*" }}</code></td>
-            <td><code style="color:var(--text-muted)">{{ c.remote_port || "*" }}</code></td>
+            <td><code style="color:var(--text-secondary)">{{ c.remote_address || "*" }}</code></td>
+            <td><code style="color:var(--text-secondary)">{{ c.remote_port || "*" }}</code></td>
             <td><NBadge :variant="stateVariant(c.state)" style="font-size:10px">{{ c.state }}</NBadge></td>
             <td class="muted">{{ c.pid }}</td>
           </tr>

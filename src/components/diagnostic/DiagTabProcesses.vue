@@ -80,7 +80,7 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
           :variant="procSort === k ? 'info' : 'default'" style="cursor:pointer" @click="procSort = k as any">{{ v }}</NBadge>
       </div>
       <button class="diag-search" style="padding:6px 10px;cursor:pointer;border:none" @click="onRefresh">
-        <RefreshCw :size="13" style="color:var(--text-muted)" />
+        <RefreshCw :size="13" style="color:var(--text-secondary)" />
       </button>
     </div>
 
@@ -122,7 +122,7 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
       </div>
       <div class="card-block" style="flex:1;min-width:120px;margin-bottom:0">
         <p class="diag-section-label" style="margin:0 0 4px 0">Arrêtés</p>
-        <span style="font-size:24px;font-weight:700;color:var(--text-muted)">{{ services.length - runningCount }}</span>
+        <span style="font-size:24px;font-weight:700;color:var(--text-secondary)">{{ services.length - runningCount }}</span>
       </div>
     </div>
 

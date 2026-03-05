@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(
-  defineProps<{ variant?: "accent" | "success" | "warning" | "danger" | "info" | "neutral" }>(),
-  { variant: "accent" }
+  defineProps<{ variant?: "accent" | "success" | "warning" | "danger" | "info" | "neutral" | "default" }>(),
+  { variant: "neutral" }
 );
 </script>
 
@@ -27,5 +27,6 @@ withDefaults(
 .n-badge--warning { background: var(--warning-muted); color: var(--warning); }
 .n-badge--danger { background: var(--danger-muted); color: var(--danger); }
 .n-badge--info { background: var(--info-muted); color: var(--info); }
-.n-badge--neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+.n-badge--neutral  { background: var(--bg-tertiary);  color: var(--text-secondary); }
+.n-badge--default  { background: var(--bg-elevated);  color: var(--text-secondary); border: 1px solid var(--border-hover); }
 </style>

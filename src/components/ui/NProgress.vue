@@ -48,13 +48,14 @@ const barColor = computed(() => {
 .n-progress__track {
   flex: 1;
   border-radius: 99px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   overflow: hidden;
+  border: 1px solid var(--border-hover);
 }
 
-.n-progress--sm .n-progress__track { height: 4px; }
-.n-progress--md .n-progress__track { height: 6px; }
-.n-progress--lg .n-progress__track { height: 10px; }
+.n-progress--sm .n-progress__track { height: 6px; }
+.n-progress--md .n-progress__track { height: 8px; }
+.n-progress--lg .n-progress__track { height: 12px; }
 
 .n-progress__bar {
   height: 100%;

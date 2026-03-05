@@ -122,7 +122,7 @@ const byPublisher = computed(() => {
         <tbody>
           <tr v-for="(e, i) in filteredEnv" :key="i">
             <td><code style="font-size:11px">{{ e.name }}</code></td>
-            <td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:11px;color:var(--text-secondary)">
+            <td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:12px;color:var(--text-secondary)">
               {{ e.value }}
             </td>
             <td><NBadge :variant="e.var_type === 'Système' ? 'info' : 'default'" style="font-size:10px">{{ e.var_type }}</NBadge></td>
