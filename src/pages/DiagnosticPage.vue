@@ -29,6 +29,14 @@ import DiagTabCertificates from "@/components/diagnostic/DiagTabCertificates.vue
 import DiagTabPerf from "@/components/diagnostic/DiagTabPerf.vue";
 import DiagTabNetTools from "@/components/diagnostic/DiagTabNetTools.vue";
 import DiagTabRepair from "@/components/diagnostic/DiagTabRepair.vue";
+import DiagTabBenchmark from "@/components/diagnostic/DiagTabBenchmark.vue";
+import DiagTabCleaner from "@/components/diagnostic/DiagTabCleaner.vue";
+import DiagTabBsod from "@/components/diagnostic/DiagTabBsod.vue";
+import DiagTabHosts from "@/components/diagnostic/DiagTabHosts.vue";
+import DiagTabBoot from "@/components/diagnostic/DiagTabBoot.vue";
+import DiagTabWsl from "@/components/diagnostic/DiagTabWsl.vue";
+import DiagTabBluetooth from "@/components/diagnostic/DiagTabBluetooth.vue";
+import DiagTabPerfHistory from "@/components/diagnostic/DiagTabPerfHistory.vue";
 import DiagTabScan from "@/components/diagnostic/DiagTabScan.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
@@ -37,6 +45,7 @@ import {
   RefreshCw, ScanLine, FileJson, FileText, FileCode, FolderOpen,
   CircuitBoard, Wifi, Server, Shield, Activity, FolderTree, Layers,
   Users, Clock, FileDown, History, Lock, Wrench,
+  Gauge, Trash2, AlertTriangle, Settings, Terminal, Bluetooth,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -145,6 +154,14 @@ const TABS = [
   { id: "performances",label: "Performances", icon: Activity },
   { id: "outils-reseau",label: "Outils Réseau",icon: Wifi },
   { id: "reparation",  label: "Réparation",   icon: Wrench },
+  { id: "benchmark",   label: "Benchmark",    icon: Gauge },
+  { id: "nettoyeur",   label: "Nettoyeur",    icon: Trash2 },
+  { id: "bsod",        label: "BSOD",         icon: AlertTriangle },
+  { id: "hosts",       label: "Hosts",        icon: FileText },
+  { id: "boot",        label: "Boot",         icon: Settings },
+  { id: "wsl",         label: "WSL",          icon: Terminal },
+  { id: "bluetooth",   label: "Bluetooth",    icon: Bluetooth },
+  { id: "perf-history",label: "Perf Historique", icon: Activity },
   { id: "tools",       label: "Outils",       icon: Globe },
   { id: "scan",        label: "Scan Total",   icon: ScanLine },
 ];
@@ -253,6 +270,14 @@ async function loadTab(tab: string, force = false) {
       case "performances":  break; // auto-chargé dans DiagTabPerf
       case "outils-reseau": break; // auto-chargé dans DiagTabNetTools
       case "reparation":    break; // auto-chargé dans DiagTabRepair
+      case "benchmark":    break; // auto-chargé dans DiagTabBenchmark
+      case "nettoyeur":    break; // auto-chargé dans DiagTabCleaner
+      case "bsod":         break; // auto-chargé dans DiagTabBsod
+      case "hosts":        break; // auto-chargé dans DiagTabHosts
+      case "boot":         break; // auto-chargé dans DiagTabBoot
+      case "wsl":          break; // auto-chargé dans DiagTabWsl
+      case "bluetooth":    break; // auto-chargé dans DiagTabBluetooth
+      case "perf-history": break; // auto-chargé dans DiagTabPerfHistory
       case "folders":     folders.value = await invoke("get_folder_sizes_detailed"); break;
     }
   } catch (e: any) {
@@ -960,6 +985,14 @@ loadTab("os");
         <DiagTabPerf         v-else-if="activeTab === 'performances'" />
         <DiagTabNetTools     v-else-if="activeTab === 'outils-reseau'" />
         <DiagTabRepair       v-else-if="activeTab === 'reparation'" />
+        <DiagTabBenchmark    v-else-if="activeTab === 'benchmark'" />
+        <DiagTabCleaner      v-else-if="activeTab === 'nettoyeur'" />
+        <DiagTabBsod         v-else-if="activeTab === 'bsod'" />
+        <DiagTabHosts        v-else-if="activeTab === 'hosts'" />
+        <DiagTabBoot         v-else-if="activeTab === 'boot'" />
+        <DiagTabWsl          v-else-if="activeTab === 'wsl'" />
+        <DiagTabBluetooth    v-else-if="activeTab === 'bluetooth'" />
+        <DiagTabPerfHistory  v-else-if="activeTab === 'perf-history'" />
         <DiagTabFolders
           v-else-if="activeTab === 'folders'"
           :folders="folders"

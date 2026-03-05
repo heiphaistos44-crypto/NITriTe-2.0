@@ -5,6 +5,29 @@ use std::collections::HashMap;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
+// ─── Windows Update driver status ─────────────────────────────────────────────
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct WuDriverUpdate {
+    pub title: String,
+    pub driver_class: String,
+    pub driver_manufacturer: String,
+    pub driver_model: String,
+    pub driver_version: String,
+    pub size_mb: f64,
+    pub update_id: String,
+    pub is_downloaded: bool,
+    pub is_mandatory: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct WuDriverSummary {
+    pub pending_count: u32,
+    pub total_size_mb: f64,
+    pub updates: Vec<WuDriverUpdate>,
+    pub wu_enabled: bool,
+    pub last_check: String,
+}
+
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct HardwareDevice {
     pub name: String,
@@ -359,31 +382,152 @@ pub fn install_driver(inf_path: String) -> DriverInstallResult {
     DriverInstallResult { inf_path: inf_clean, ..Default::default() }
 }
 
-// ─── Recherche de MAJ via Windows Update ──────────────────────────────────────
+// ─── Recherche de MAJ pilotes via Windows Update (WUA COM) ────────────────────
 #[tauri::command]
-pub fn check_driver_updates_winupdate() -> Vec<String> {
+pub fn check_driver_updates_winupdate() -> WuDriverSummary {
     let ps = r#"
 try {
-    $devs = @(Get-WmiObject Win32_PnPSignedDriver -EA SilentlyContinue |
-        Where-Object { $_.ConfigManagerErrorCode -ne 0 -or $_.IsSigned -eq $false } |
-        Select-Object -ExpandProperty DeviceName)
-    $devs | ConvertTo-Json -Compress
-} catch { '[]' }
+    $sess = New-Object -ComObject Microsoft.Update.Session -EA Stop
+    $searcher = $sess.CreateUpdateSearcher()
+    $results = $searcher.Search("IsInstalled=0 and Type='Driver' and IsHidden=0")
+    $updates = @($results.Updates | ForEach-Object {
+        $u = $_
+        $szMb = if($u.MaxDownloadSize -gt 0){[math]::Round($u.MaxDownloadSize/1MB,1)}else{0}
+        @{
+            title   = [string]$u.Title
+            class   = [string]$u.DriverClass
+            mfr     = [string]$u.DriverManufacturer
+            model   = [string]$u.DriverModel
+            ver     = [string]$u.DriverVersion
+            mb      = $szMb
+            id      = [string]$u.Identity.UpdateID
+            dl      = [bool]$u.IsDownloaded
+            mand    = [bool]$u.IsMandatory
+        }
+    })
+    $total_mb = [math]::Round(($updates | Measure-Object -Property mb -Sum).Sum, 1)
+    @{
+        ok      = $true
+        count   = [int]$updates.Count
+        mb      = $total_mb
+        updates = $updates
+        last    = (Get-Date).ToString('yyyy-MM-dd HH:mm')
+    } | ConvertTo-Json -Depth 4 -Compress
+} catch {
+    # Fallback: count devices with ConfigManagerErrorCode != 0
+    $problematic = @(Get-WmiObject Win32_PnPSignedDriver -EA SilentlyContinue |
+        Where-Object { $_.ConfigManagerErrorCode -ne 0 } |
+        ForEach-Object { @{ title=[string]$_.DeviceName; class=[string]$_.DeviceClass; mfr=[string]$_.Manufacturer; model=''; ver=[string]$_.DriverVersion; mb=0; id=''; dl=$false; mand=$false } })
+    @{ ok=$false; count=[int]$problematic.Count; mb=0; updates=$problematic; last='N/A' } | ConvertTo-Json -Depth 4 -Compress
+}
 "#;
     #[cfg(target_os = "windows")]
     {
         let o = Command::new("powershell").args(["-NoProfile","-NonInteractive","-Command",ps]).creation_flags(0x08000000).output();
         if let Ok(o) = o {
-            let t = String::from_utf8_lossy(&o.stdout); let t = t.trim();
-            let arr_t = if t.starts_with('"') || t.starts_with('[') {
-                if t.starts_with('"') { format!("[{}]",t) } else { t.to_string() }
-            } else { "[]".to_string() };
-            if let Ok(arr) = serde_json::from_str::<Vec<String>>(&arr_t) {
-                return arr;
+            let t = String::from_utf8_lossy(&o.stdout);
+            if let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim()) {
+                let updates = v["updates"].as_array().map(|arr| arr.iter().map(|u| WuDriverUpdate {
+                    title: u["title"].as_str().unwrap_or("").to_string(),
+                    driver_class: u["class"].as_str().unwrap_or("").to_string(),
+                    driver_manufacturer: u["mfr"].as_str().unwrap_or("").to_string(),
+                    driver_model: u["model"].as_str().unwrap_or("").to_string(),
+                    driver_version: u["ver"].as_str().unwrap_or("").to_string(),
+                    size_mb: u["mb"].as_f64().unwrap_or(0.0),
+                    update_id: u["id"].as_str().unwrap_or("").to_string(),
+                    is_downloaded: u["dl"].as_bool().unwrap_or(false),
+                    is_mandatory: u["mand"].as_bool().unwrap_or(false),
+                }).collect()).unwrap_or_default();
+                return WuDriverSummary {
+                    pending_count: v["count"].as_u64().unwrap_or(0) as u32,
+                    total_size_mb: v["mb"].as_f64().unwrap_or(0.0),
+                    updates,
+                    wu_enabled: v["ok"].as_bool().unwrap_or(false),
+                    last_check: v["last"].as_str().unwrap_or("").to_string(),
+                };
             }
         }
     }
-    vec![]
+    WuDriverSummary::default()
+}
+
+// ─── Installer une mise à jour pilote via Windows Update ───────────────────────
+#[tauri::command]
+pub fn install_driver_winupdate(update_id: String) -> DriverInstallResult {
+    // Uses Windows Update Agent COM to download + install specific update
+    let uid = update_id.replace('"', "").replace('\'', "");
+    let ps = format!(r#"
+try {{
+    $sess = New-Object -ComObject Microsoft.Update.Session
+    $searcher = $sess.CreateUpdateSearcher()
+    $results = $searcher.Search("IsInstalled=0 and Type='Driver'")
+    $target = $results.Updates | Where-Object {{ $_.Identity.UpdateID -eq '{uid}' }} | Select-Object -First 1
+    if (-not $target) {{ throw "Update $env:uid not found" }}
+    # Download
+    $downloader = $sess.CreateUpdateDownloader()
+    $coll = New-Object -ComObject Microsoft.Update.UpdateColl
+    $coll.Add($target) | Out-Null
+    $downloader.Updates = $coll
+    $dlResult = $downloader.Download()
+    # Install
+    $installer = $sess.CreateUpdateInstaller()
+    $installer.Updates = $coll
+    $instResult = $installer.Install()
+    "Installed: $($target.Title) — ResultCode: $($instResult.ResultCode)"
+}} catch {{
+    throw $_.Exception.Message
+}}"#, uid=uid);
+    let start = std::time::Instant::now();
+    #[cfg(target_os = "windows")]
+    {
+        let o = Command::new("powershell").args(["-NoProfile","-NonInteractive","-Command",&ps]).creation_flags(0x08000000).output();
+        let dur = start.elapsed().as_secs();
+        if let Ok(o) = o {
+            let stdout = String::from_utf8_lossy(&o.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&o.stderr).to_string();
+            let combined = if stderr.is_empty() { stdout } else { format!("{}\n{}", stdout, stderr) };
+            return DriverInstallResult { inf_path: uid, success: o.status.success(), output: combined.chars().take(2000).collect(), duration_secs: dur };
+        }
+    }
+    DriverInstallResult { inf_path: uid, ..Default::default() }
+}
+
+// ─── Installer TOUS les drivers en attente WU ─────────────────────────────────
+#[tauri::command]
+pub fn install_all_driver_updates() -> DriverInstallResult {
+    let ps = r#"
+try {
+    $sess = New-Object -ComObject Microsoft.Update.Session
+    $searcher = $sess.CreateUpdateSearcher()
+    $results = $searcher.Search("IsInstalled=0 and Type='Driver' and IsHidden=0")
+    if ($results.Updates.Count -eq 0) { "Aucune mise a jour de pilote en attente."; exit 0 }
+    $coll = New-Object -ComObject Microsoft.Update.UpdateColl
+    $results.Updates | ForEach-Object { $coll.Add($_) | Out-Null }
+    $downloader = $sess.CreateUpdateDownloader()
+    $downloader.Updates = $coll
+    Write-Host "Telechargement de $($coll.Count) mise(s) a jour..."
+    $downloader.Download() | Out-Null
+    $installer = $sess.CreateUpdateInstaller()
+    $installer.Updates = $coll
+    Write-Host "Installation en cours..."
+    $instResult = $installer.Install()
+    "Installe $($coll.Count) pilote(s). Code: $($instResult.ResultCode). Reboot requis: $($instResult.RebootRequired)"
+} catch {
+    throw $_.Exception.Message
+}"#;
+    let start = std::time::Instant::now();
+    #[cfg(target_os = "windows")]
+    {
+        let o = Command::new("powershell").args(["-NoProfile","-NonInteractive","-Command",ps]).creation_flags(0x08000000).output();
+        let dur = start.elapsed().as_secs();
+        if let Ok(o) = o {
+            let stdout = String::from_utf8_lossy(&o.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&o.stderr).to_string();
+            let combined = if stderr.is_empty() { stdout } else { format!("{}\n{}", stdout, stderr) };
+            return DriverInstallResult { inf_path: "Windows Update — All".to_string(), success: o.status.success(), output: combined.chars().take(3000).collect(), duration_secs: dur };
+        }
+    }
+    DriverInstallResult::default()
 }
 
 // ─── Export liste hardware IDs pour debug ─────────────────────────────────────

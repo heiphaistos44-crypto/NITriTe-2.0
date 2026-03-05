@@ -1367,7 +1367,41 @@ pub fn run() {
             system::driver_updater::scan_driver_folder,
             system::driver_updater::install_driver,
             system::driver_updater::check_driver_updates_winupdate,
+            system::driver_updater::install_driver_winupdate,
+            system::driver_updater::install_all_driver_updates,
             system::driver_updater::get_all_hardware_ids,
+            // Benchmark
+            system::benchmark::run_cpu_bench,
+            system::benchmark::run_ram_bench,
+            system::benchmark::run_disk_bench,
+            // Cleaner
+            system::cleaner::get_clean_targets,
+            system::cleaner::clean_target,
+            system::cleaner::get_large_files,
+            // BSOD Analyzer
+            system::bsod_analyzer::get_bsod_history,
+            system::bsod_analyzer::get_bugcheck_description,
+            // Hosts Editor
+            system::hosts_editor::get_hosts_entries,
+            system::hosts_editor::add_hosts_entry,
+            system::hosts_editor::delete_hosts_entry,
+            system::hosts_editor::toggle_hosts_entry,
+            system::hosts_editor::backup_hosts,
+            // Boot Manager
+            system::boot_manager::get_boot_config,
+            system::boot_manager::set_boot_timeout,
+            system::boot_manager::set_default_boot,
+            system::boot_manager::boot_to_recovery,
+            // WSL
+            system::wsl_info::get_wsl_info,
+            system::wsl_info::wsl_run_command,
+            system::wsl_info::wsl_set_default_version,
+            // Bluetooth
+            system::bluetooth::get_bluetooth_info,
+            system::bluetooth::toggle_bluetooth,
+            // Perf History
+            system::perf_history::get_perf_history,
+            system::perf_history::get_top_processes_by_cpu,
         ])
         .run(tauri::generate_context!())
         .expect("Erreur lors du lancement de NiTriTe");
