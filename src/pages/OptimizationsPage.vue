@@ -4,6 +4,7 @@ import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Trash2, FileX, HardDrive, RefreshCw,
@@ -279,20 +280,26 @@ onMounted(() => {
 
 <template>
   <div class="optimizations">
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h1>Optimisations</h1>
-        <p class="page-subtitle">Maintenance et nettoyage du systeme</p>
-      </div>
+    <!-- Banner -->
+    <DiagBanner
+      :icon="Rocket"
+      title="Optimisations Système"
+      desc="Nettoyage, débloatware, réseau et gestion des programmes au démarrage"
+      color="orange"
+    />
+
+    <!-- Section: Actions rapides -->
+    <div class="diag-section-label">
+      <Trash2 :size="13" />
+      Actions Rapides
     </div>
 
     <!-- Quick Actions -->
     <div class="actions-grid">
       <!-- Corbeille -->
-      <NCard>
+      <NCard class="action-ncard">
         <div class="action-card">
-          <div class="action-icon-wrap" style="background: var(--danger-muted)">
+          <div class="action-icon-wrap" style="background: linear-gradient(135deg, rgba(239,68,68,.18), rgba(185,28,28,.08)); border: 1px solid rgba(239,68,68,.25);">
             <Trash2 :size="24" style="color: var(--danger)" />
           </div>
           <h3>Vider la corbeille</h3>
@@ -315,9 +322,9 @@ onMounted(() => {
       </NCard>
 
       <!-- Temp files -->
-      <NCard>
+      <NCard class="action-ncard">
         <div class="action-card">
-          <div class="action-icon-wrap" style="background: var(--warning-muted)">
+          <div class="action-icon-wrap" style="background: linear-gradient(135deg, rgba(245,158,11,.18), rgba(180,83,9,.08)); border: 1px solid rgba(245,158,11,.25);">
             <FileX :size="24" style="color: var(--warning)" />
           </div>
           <h3>Nettoyer fichiers temp</h3>
@@ -340,9 +347,9 @@ onMounted(() => {
       </NCard>
 
       <!-- Disk cleanup -->
-      <NCard>
+      <NCard class="action-ncard">
         <div class="action-card">
-          <div class="action-icon-wrap" style="background: var(--accent-muted)">
+          <div class="action-icon-wrap" style="background: linear-gradient(135deg, rgba(249,115,22,.18), rgba(194,65,12,.08)); border: 1px solid rgba(249,115,22,.25);">
             <HardDrive :size="24" style="color: var(--accent-primary)" />
           </div>
           <h3>Nettoyage de disque</h3>
@@ -365,14 +372,20 @@ onMounted(() => {
       </NCard>
     </div>
 
+    <!-- Section: Navigateurs -->
+    <div class="diag-section-label">
+      <Globe :size="13" />
+      Caches Navigateurs
+    </div>
+
     <!-- Browser Cache Cleanup -->
     <NCard>
       <template #header>
         <div class="section-header">
-          <Globe :size="16" />
+          <Globe :size="16" style="color: var(--accent-primary)" />
           <span>Caches Navigateurs</span>
           <span v-if="!browsersLoading && browsers.length > 0" class="cache-total">
-            Total : {{ totalBrowserCache.toFixed(1) }} MB
+            {{ totalBrowserCache.toFixed(1) }} MB detectes
           </span>
           <NButton variant="secondary" size="sm" :loading="browsersLoading" @click="loadBrowserCaches" style="margin-left: auto">
             <RefreshCw :size="14" />
@@ -425,9 +438,22 @@ onMounted(() => {
       </div>
     </NCard>
 
+    <!-- Section: Debloat -->
+    <div class="diag-section-label">
+      <Shield :size="13" />
+      Debloat Windows
+    </div>
+
     <!-- Debloat Windows -->
     <NCard>
-      <template #header><div class="section-header"><Shield :size="16" /><span>Debloat Windows</span></div></template>
+      <template #header>
+        <div class="section-header">
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+            <Shield :size="14" style="color:#fff" />
+          </div>
+          <span>Debloat Windows</span>
+        </div>
+      </template>
       <div class="debloat-grid">
         <div v-for="btn in debloatBtns" :key="btn.id" class="debloat-item">
           <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
@@ -441,9 +467,22 @@ onMounted(() => {
       </div>
     </NCard>
 
+    <!-- Section: Réseau -->
+    <div class="diag-section-label">
+      <Wifi :size="13" />
+      Optimisations Réseau
+    </div>
+
     <!-- Réseau -->
     <NCard>
-      <template #header><div class="section-header"><Wifi :size="16" /><span>Réseau</span></div></template>
+      <template #header>
+        <div class="section-header">
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #06b6d4, #0e7490);">
+            <Wifi :size="14" style="color:#fff" />
+          </div>
+          <span>Réseau</span>
+        </div>
+      </template>
       <div class="debloat-grid">
         <div v-for="btn in networkBtns" :key="btn.id" class="debloat-item">
           <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
@@ -457,9 +496,22 @@ onMounted(() => {
       </div>
     </NCard>
 
+    <!-- Section: Performances -->
+    <div class="diag-section-label">
+      <Zap :size="13" />
+      Performances
+    </div>
+
     <!-- Performances -->
     <NCard>
-      <template #header><div class="section-header"><Zap :size="16" /><span>Performances</span></div></template>
+      <template #header>
+        <div class="section-header">
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #f59e0b, #b45309);">
+            <Zap :size="14" style="color:#fff" />
+          </div>
+          <span>Performances</span>
+        </div>
+      </template>
       <div class="debloat-grid">
         <div v-for="btn in perfBtns" :key="btn.id" class="debloat-item">
           <NButton variant="secondary" size="sm" :loading="btn.loading" @click="runDebloat(btn)">
@@ -473,11 +525,19 @@ onMounted(() => {
       </div>
     </NCard>
 
+    <!-- Section: Démarrage -->
+    <div class="diag-section-label">
+      <Rocket :size="13" />
+      Programmes au Démarrage
+    </div>
+
     <!-- Startup Programs -->
     <NCard>
       <template #header>
         <div class="section-header">
-          <Rocket :size="16" />
+          <div class="section-icon-badge" style="background: linear-gradient(135deg, #f97316, #c2410c);">
+            <Rocket :size="14" style="color:#fff" />
+          </div>
           <span>Programmes au demarrage</span>
           <NButton variant="secondary" size="sm" :loading="startupLoading" @click="loadStartupPrograms" style="margin-left: auto">
             <RefreshCw :size="14" />
@@ -543,23 +603,22 @@ onMounted(() => {
   gap: 16px;
 }
 
-.page-header {
+/* Section labels */
+.diag-section-label {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.page-header h1 {
-  font-size: 24px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 10px;
+  margin-top: 4px;
 }
 
-.page-subtitle {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-top: 2px;
-}
-
+/* Quick Actions */
 .actions-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -568,6 +627,11 @@ onMounted(() => {
 
 @media (max-width: 1000px) {
   .actions-grid { grid-template-columns: 1fr; }
+}
+
+.action-ncard {
+  border-radius: 12px !important;
+  border: 1px solid var(--border-hover) !important;
 }
 
 .action-card {
@@ -580,9 +644,9 @@ onMounted(() => {
 }
 
 .action-icon-wrap {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -596,7 +660,7 @@ onMounted(() => {
 
 .action-desc {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   line-height: 1.5;
   max-width: 240px;
 }
@@ -612,6 +676,7 @@ onMounted(() => {
   border-radius: var(--radius-md);
 }
 
+/* Section header */
 .section-header {
   display: flex;
   align-items: center;
@@ -619,6 +684,17 @@ onMounted(() => {
   width: 100%;
 }
 
+.section-icon-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Loading / empty */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -626,16 +702,17 @@ onMounted(() => {
   justify-content: center;
   gap: 12px;
   padding: 40px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .empty-state {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13px;
   text-align: center;
   padding: 24px;
 }
 
+/* Startup table */
 .startup-table-wrap {
   overflow-x: auto;
 }
@@ -649,11 +726,11 @@ onMounted(() => {
 .startup-table th {
   text-align: left;
   padding: 8px 12px;
-  color: var(--text-muted);
-  font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 600;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.07em;
   border-bottom: 1px solid var(--border);
 }
 
@@ -672,7 +749,7 @@ onMounted(() => {
 }
 
 .prog-name {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary) !important;
   white-space: nowrap;
 }
@@ -683,6 +760,7 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-secondary);
 }
 
 .prog-loc {
@@ -691,6 +769,7 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-secondary);
 }
 
 .font-mono {
@@ -701,22 +780,25 @@ onMounted(() => {
 .cache-total {
   font-size: 12px;
   color: var(--warning);
-  font-weight: 600;
+  font-weight: 700;
+  background: var(--warning-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
 }
 
 .browser-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .browser-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border: none;
-  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
@@ -726,9 +808,10 @@ onMounted(() => {
   color: var(--text-secondary);
 }
 
-.browser-item:hover { background: var(--bg-tertiary); }
+.browser-item:hover { background: var(--bg-tertiary); border-color: var(--border); }
+.browser-item.selected { background: color-mix(in srgb, var(--accent-primary) 6%, transparent); border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent); }
 .browser-item.selected .browser-check { color: var(--accent-primary); }
-.browser-item:not(.selected) .browser-check { color: var(--text-muted); }
+.browser-item:not(.selected) .browser-check { color: var(--text-secondary); }
 
 .browser-info {
   display: flex;
@@ -746,6 +829,7 @@ onMounted(() => {
 .browser-size {
   font-size: 12px;
   color: var(--warning);
+  font-weight: 600;
   font-family: "JetBrains Mono", monospace;
 }
 
@@ -770,7 +854,7 @@ onMounted(() => {
 /* Debloat */
 .debloat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
 .debloat-item { display: flex; flex-direction: column; gap: 4px; }
-.debloat-result { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 6px; border-radius: var(--radius-sm); }
+.debloat-result { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 8px; border-radius: var(--radius-sm); }
 .res-ok { color: var(--success); background: var(--success-muted); }
 .res-err { color: var(--danger); background: var(--danger-muted); }
 </style>

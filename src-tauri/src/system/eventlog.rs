@@ -1,5 +1,7 @@
 use serde::Serialize;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -31,6 +33,7 @@ pub fn get_event_logs(log_name: &str, count: u32) -> Result<Vec<EventLogEntry>, 
                 log_name, count
             ),
         ])
+        .creation_flags(0x08000000)
         .output()
         .map_err(|e| NiTriTeError::System(format!("Erreur wevtutil: {}", e)))?;
 

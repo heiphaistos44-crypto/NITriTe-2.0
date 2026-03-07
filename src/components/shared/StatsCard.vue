@@ -33,6 +33,28 @@ const colorMuted = computed(() => {
   return map[props.color ?? "accent"];
 });
 
+const colorGradient = computed(() => {
+  const map: Record<string, string> = {
+    accent:  "linear-gradient(135deg,rgba(249,115,22,.28),rgba(249,115,22,.08))",
+    success: "linear-gradient(135deg,rgba(34,197,94,.28),rgba(34,197,94,.08))",
+    warning: "linear-gradient(135deg,rgba(234,179,8,.28),rgba(234,179,8,.08))",
+    danger:  "linear-gradient(135deg,rgba(239,68,68,.28),rgba(239,68,68,.08))",
+    info:    "linear-gradient(135deg,rgba(59,130,246,.28),rgba(59,130,246,.08))",
+  };
+  return map[props.color ?? "accent"];
+});
+
+const colorGlow = computed(() => {
+  const map: Record<string, string> = {
+    accent:  "0 4px 16px rgba(249,115,22,.35)",
+    success: "0 4px 16px rgba(34,197,94,.35)",
+    warning: "0 4px 16px rgba(234,179,8,.35)",
+    danger:  "0 4px 16px rgba(239,68,68,.35)",
+    info:    "0 4px 16px rgba(59,130,246,.35)",
+  };
+  return map[props.color ?? "accent"];
+});
+
 const progressColor = computed(() => {
   if (props.progress === undefined) return "";
   if (props.progress > 90) return "var(--danger)";
@@ -42,9 +64,9 @@ const progressColor = computed(() => {
 </script>
 
 <template>
-  <div class="stats-card">
+  <div class="stats-card" :style="{ borderTop: `2px solid ${colorVar}` }">
     <div class="stats-header">
-      <div class="stats-icon-wrap" :style="{ background: colorMuted }">
+      <div class="stats-icon-wrap" :style="{ background: colorGradient, boxShadow: colorGlow }">
         <component :is="icon" :size="20" :style="{ color: colorVar }" />
       </div>
       <div class="stats-info">
@@ -69,28 +91,29 @@ const progressColor = computed(() => {
 .stats-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border-radius: var(--radius-xl);
+  padding: 18px;
   transition: all var(--transition-normal);
+  overflow: hidden;
 }
 
 .stats-card:hover {
   border-color: var(--border-hover);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .stats-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .stats-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,17 +124,18 @@ const progressColor = computed(() => {
 
 .stats-title {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 .stats-subtitle {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  margin-top: 1px;
 }
 
 .stats-value {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--text-primary);
   font-family: "JetBrains Mono", monospace;
@@ -119,13 +143,14 @@ const progressColor = computed(() => {
 }
 
 .stats-progress {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .stats-progress-track {
-  height: 4px;
+  height: 5px;
   border-radius: 99px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 

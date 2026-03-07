@@ -82,6 +82,24 @@ const router = createRouter({
       meta: { title: "Sauvegarde" },
     },
     {
+      path: "/uninstaller",
+      name: "uninstaller",
+      component: () => import("@/pages/UninstallerPage.vue"),
+      meta: { title: "Désinstallateur Propre" },
+    },
+    {
+      path: "/clone",
+      name: "clone",
+      component: () => import("@/pages/ClonePage.vue"),
+      meta: { title: "Clonage Système" },
+    },
+    {
+      path: "/data-recovery",
+      name: "data-recovery",
+      component: () => import("@/pages/DataRecoveryPage.vue"),
+      meta: { title: "Récupération de Données" },
+    },
+    {
       path: "/scanvirus",
       name: "scanvirus",
       component: () => import("@/pages/ScanVirusPage.vue"),

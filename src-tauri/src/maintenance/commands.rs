@@ -1,5 +1,7 @@
 use serde::Serialize;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -15,6 +17,7 @@ pub struct CommandResult {
 pub fn execute_system_command(cmd: &str, args: &[&str], _timeout_secs: u64) -> Result<CommandResult, NiTriTeError> {
     let output = Command::new(cmd)
         .args(args)
+        .creation_flags(0x08000000)
         .output()
         .map_err(|e| NiTriTeError::System(format!("Erreur execution {}: {}", cmd, e)))?;
 

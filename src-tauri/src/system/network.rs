@@ -1,11 +1,14 @@
 use serde::Serialize;
 use std::net::UdpSocket;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
 fn get_hostname() -> String {
     Command::new("hostname")
+        .creation_flags(0x08000000)
         .output()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
         .unwrap_or_else(|_| "unknown".to_string())
@@ -78,7 +81,7 @@ fn get_interfaces() -> Result<Vec<NetworkInterface>, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-NetAdapter | Select-Object Name, Status, MacAddress, LinkSpeed | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     let parsed: Result<Vec<serde_json::Value>, _> = serde_json::from_str(&text);
@@ -112,6 +115,7 @@ fn get_dns_servers() -> Vec<String> {
     Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "(Get-DnsClientServerAddress -AddressFamily IPv4).ServerAddresses | Select-Object -Unique"])
+        .creation_flags(0x08000000)
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout)
@@ -126,7 +130,7 @@ pub fn get_connections() -> Result<Vec<ConnectionInfo>, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-NetTCPConnection | Select-Object -First 100 LocalAddress, LocalPort, RemoteAddress, RemotePort, State, OwningProcess | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     let parsed: Vec<serde_json::Value> = serde_json::from_str(&text).unwrap_or_default();
@@ -154,7 +158,7 @@ pub fn get_connections() -> Result<Vec<ConnectionInfo>, NiTriTeError> {
 pub fn ping_host(host: &str) -> Result<PingResult, NiTriTeError> {
     let output = Command::new("ping")
         .args(["-n", "4", host])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout).to_string();
     let success = output.status.success();

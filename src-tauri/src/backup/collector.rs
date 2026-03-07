@@ -1,5 +1,7 @@
 use serde::Serialize;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 use crate::utils::paths;
@@ -9,6 +11,7 @@ pub struct BackupManifest {
     pub timestamp: String,
     pub items: Vec<BackupItem>,
     pub total_items: usize,
+    pub path: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -130,13 +133,23 @@ pub fn create_backup(selected_items: Vec<String>) -> Result<BackupManifest, NiTr
     }
 
     let total_items = items.len();
-    let manifest = BackupManifest { timestamp: timestamp.clone(), items, total_items };
-
-    // Sauvegarder sur disque
     let backup_dir = paths::backups_dir();
+    std::fs::create_dir_all(&backup_dir)
+        .map_err(|e| NiTriTeError::System(format!("Impossible de créer le dossier backups: {}", e)))?;
     let backup_file = backup_dir.join(format!("backup_{}.json", timestamp));
-    let json = serde_json::to_string_pretty(&manifest)?;
-    std::fs::write(&backup_file, &json)?;
+    let path_str = backup_file.to_string_lossy().to_string();
+
+    let manifest = BackupManifest {
+        timestamp: timestamp.clone(),
+        items,
+        total_items,
+        path: path_str.clone(),
+    };
+
+    let json = serde_json::to_string_pretty(&manifest)
+        .map_err(|e| NiTriTeError::System(format!("Sérialisation échouée: {}", e)))?;
+    std::fs::write(&backup_file, json.as_bytes())
+        .map_err(|e| NiTriTeError::System(format!("Écriture fichier échouée ({}): {}", path_str, e)))?;
 
     Ok(manifest)
 }
@@ -161,38 +174,38 @@ pub fn list_backups() -> Result<Vec<String>, NiTriTeError> {
 }
 
 fn collect_installed_apps() -> Result<String, NiTriTeError> {
-    let output = Command::new("winget").args(["list", "--accept-source-agreements"]).output()?;
+    let output = Command::new("winget").args(["list", "--accept-source-agreements"]).creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_drivers() -> Result<String, NiTriTeError> {
-    let output = Command::new("driverquery").args(["/v", "/fo", "csv"]).output()?;
+    let output = Command::new("driverquery").args(["/v", "/fo", "csv"]).creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_network_config() -> Result<String, NiTriTeError> {
-    let output = Command::new("ipconfig").arg("/all").output()?;
+    let output = Command::new("ipconfig").arg("/all").creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_startup() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "Get-CimInstance Win32_StartupCommand | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_env_vars() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "[Environment]::GetEnvironmentVariables('Machine') | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_firewall_rules() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "Get-NetFirewallRule | Select-Object -First 50 DisplayName, Direction, Action, Enabled | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -212,14 +225,14 @@ fn collect_browser_bookmarks(browser_subpath: &str) -> Result<String, NiTriTeErr
 fn collect_windows_license() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "(Get-WmiObject SoftwareLicensingProduct | Where-Object { $_.PartialProductKey } | Select-Object Name, Description, PartialProductKey) | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_bitlocker_keys() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "Get-BitLockerVolume -ErrorAction SilentlyContinue | Select-Object MountPoint, VolumeStatus, EncryptionPercentage, KeyProtector | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -227,7 +240,7 @@ fn collect_office_license() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Office\\*\\*\\Registration\\*' -ErrorAction SilentlyContinue | Select-Object ProductName, DigitalProductID | ConvertTo-Json; cscript //nologo 'C:\\Program Files\\Microsoft Office\\Office16\\OSPP.VBS' /dstatus 2>$null"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -235,7 +248,7 @@ fn collect_installed_fonts() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "(Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts' | Get-Member -MemberType NoteProperty | Select-Object Name).Name | Sort-Object | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -243,7 +256,7 @@ fn collect_scheduled_tasks() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Select-Object TaskName, TaskPath, State, Description | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -251,7 +264,7 @@ fn collect_windows_features() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-WindowsOptionalFeature -Online -ErrorAction SilentlyContinue | Where-Object {$_.State -eq 'Enabled'} | Select-Object FeatureName | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -259,7 +272,7 @@ fn collect_folder_sizes() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-ChildItem C:\\ -Directory -ErrorAction SilentlyContinue | ForEach-Object { $size = (Get-ChildItem $_.FullName -Recurse -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum; [PSCustomObject]@{Folder=$_.Name; SizeMB=[math]::Round($size/1MB,1)} } | Sort-Object SizeMB -Descending | Select-Object -First 30 | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -281,7 +294,7 @@ fn collect_wifi_passwords() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "(netsh wlan show profiles) | Select-String ':(.+)$' | ForEach-Object { $name = $_.Matches.Groups[1].Value.Trim(); $pass = (netsh wlan show profile name=\"$name\" key=clear 2>$null | Select-String 'Key Content\\s+:\\s+(.+)'); if($pass) { \"$name : $($pass.Matches.Groups[1].Value)\" } else { \"$name : (pas de mot de passe)\" } }"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -290,7 +303,7 @@ fn collect_registry_export() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -ErrorAction SilentlyContinue | ConvertTo-Json; Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders' -ErrorAction SilentlyContinue | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
@@ -298,7 +311,7 @@ fn collect_suspicious_processes() -> Result<String, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-Process | Where-Object { $_.Path -and $_.Path -notmatch 'Windows|Microsoft|System32|SysWOW64|Program Files' } | Select-Object ProcessName, Id, Path, @{N='MemMB';E={[math]::Round($_.WorkingSet64/1MB,1)}} | Sort-Object MemMB -Descending | Select-Object -First 30 | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 

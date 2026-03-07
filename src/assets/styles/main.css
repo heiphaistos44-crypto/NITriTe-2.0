@@ -2,6 +2,18 @@
 @import "./themes.css";
 @import "./animations.css";
 
+/* === Font size system === */
+[data-font-size="small"]  { font-size: 12px; }
+[data-font-size="normal"] { font-size: 14px; }
+[data-font-size="large"]  { font-size: 16px; }
+
+/* === Animations toggle === */
+html.no-animations,
+html.no-animations * {
+  transition: none !important;
+  animation: none !important;
+}
+
 /* === Reset & Base === */
 *,
 *::before,
@@ -74,6 +86,70 @@ button, .nav-item, .collapse-btn, .section-header {
 
 /* === Selection === */
 ::selection {
-  background: var(--accent-primary);
+  background: var(--accent-muted);
+  color: var(--accent-primary);
+}
+
+/* === Code elements === */
+code {
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
+  font-size: 0.875em;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent-primary);
+}
+
+/* === Global page header pattern === */
+.page-title {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--text-primary) 50%, var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* === Stat number pattern === */
+.stat-big {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+  line-height: 1;
   color: var(--text-primary);
 }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* === Section label (shared pattern) === */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary);
+  padding-left: 10px;
+  border-left: 3px solid var(--accent-primary);
+  margin-bottom: 10px;
+}
+
+/* === Muted text === */
+.text-muted { color: var(--text-secondary); }
+.text-accent { color: var(--accent-primary); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }

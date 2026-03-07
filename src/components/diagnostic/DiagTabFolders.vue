@@ -2,6 +2,8 @@
 import { computed } from "vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
+import { FolderOpen } from "lucide-vue-next";
 
 const props = defineProps<{
   folders: any[];
@@ -20,38 +22,42 @@ const totalFiles = computed(() => props.folders.reduce((a, f) => a + f.file_coun
 </script>
 
 <template>
-  <div v-if="!folders.length" class="diag-empty">Calcul des tailles en cours...</div>
-  <template v-else>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-      <div class="card-block" style="flex:1;min-width:160px;margin-bottom:0">
-        <p class="diag-section-label" style="margin:0 0 4px 0">Taille totale analysée</p>
-        <span style="font-size:24px;font-weight:700;color:var(--accent)">{{ sizeStr(totalMb) }}</span>
-      </div>
-      <div class="card-block" style="flex:1;min-width:160px;margin-bottom:0">
-        <p class="diag-section-label" style="margin:0 0 4px 0">Fichiers analysés</p>
-        <span style="font-size:24px;font-weight:700">{{ totalFiles.toLocaleString() }}</span>
-      </div>
-    </div>
+  <div class="diag-tab-content">
+    <DiagBanner :icon="FolderOpen" title="Dossiers Système" desc="Taille et occupation des dossiers Windows principaux" color="amber" />
 
-    <p class="diag-section-label">Tailles par dossier</p>
-    <div v-for="(f, i) in sorted" :key="i" class="card-block">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div>
-          <span style="font-weight:600">{{ f.label }}</span>
-          <span class="muted" style="font-size:11px;margin-left:8px">{{ f.path }}</span>
+    <div v-if="!folders.length" class="diag-empty">Calcul des tailles en cours...</div>
+    <template v-else>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+        <div class="card-block" style="flex:1;min-width:160px;margin-bottom:0">
+          <p class="diag-section-label" style="margin:0 0 4px 0">Taille totale analysée</p>
+          <span style="font-size:24px;font-weight:700;color:var(--accent)">{{ sizeStr(totalMb) }}</span>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <NBadge :variant="f.size_mb > 10240 ? 'danger' : f.size_mb > 1024 ? 'warning' : 'default'">
-            {{ sizeStr(f.size_mb) }}
-          </NBadge>
-          <span class="muted" style="font-size:11px">{{ f.file_count.toLocaleString() }} fichiers</span>
+        <div class="card-block" style="flex:1;min-width:160px;margin-bottom:0">
+          <p class="diag-section-label" style="margin:0 0 4px 0">Fichiers analysés</p>
+          <span style="font-size:24px;font-weight:700">{{ totalFiles.toLocaleString() }}</span>
         </div>
       </div>
-      <NProgress
-        :value="(f.size_mb / maxSize) * 100"
-        :variant="f.size_mb > 10240 ? 'danger' : f.size_mb > 1024 ? 'warning' : 'default'"
-        size="sm"
-      />
-    </div>
-  </template>
+
+      <p class="diag-section-label">Tailles par dossier</p>
+      <div v-for="(f, i) in sorted" :key="i" class="card-block">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div>
+            <span style="font-weight:600">{{ f.label }}</span>
+            <span class="muted" style="font-size:11px;margin-left:8px">{{ f.path }}</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <NBadge :variant="f.size_mb > 10240 ? 'danger' : f.size_mb > 1024 ? 'warning' : 'default'">
+              {{ sizeStr(f.size_mb) }}
+            </NBadge>
+            <span class="muted" style="font-size:11px">{{ f.file_count.toLocaleString() }} fichiers</span>
+          </div>
+        </div>
+        <NProgress
+          :value="(f.size_mb / maxSize) * 100"
+          :variant="f.size_mb > 10240 ? 'danger' : f.size_mb > 1024 ? 'warning' : 'default'"
+          size="sm"
+        />
+      </div>
+    </template>
+  </div>
 </template>

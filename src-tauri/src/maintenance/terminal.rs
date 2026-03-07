@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::path::PathBuf;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -71,6 +73,7 @@ pub fn run_in_shell(shell_id: &str, command: &str, _timeout_secs: u64) -> Result
 
     let output = Command::new(&program)
         .args(&args)
+        .creation_flags(0x08000000)
         .output()
         .map_err(|e| NiTriTeError::System(format!("Erreur lancement {}: {}", program, e)))?;
 
@@ -125,7 +128,7 @@ fn find_git_bash() -> Option<String> {
 }
 
 fn which_exe(name: &str) -> Option<String> {
-    let output = Command::new("where").arg(name).output().ok()?;
+    let output = Command::new("where").arg(name).creation_flags(0x08000000).output().ok()?;
     if output.status.success() {
         let path = String::from_utf8_lossy(&output.stdout);
         path.lines().next().map(|s| s.trim().to_string())

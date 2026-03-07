@@ -5,7 +5,7 @@
     <div class="drivers-subtabs">
       <button v-for="t in SUBTABS" :key="t.id"
         class="drivers-subtab" :class="{ active: subTab === t.id }"
-        @click="subTab = t.id">
+        @click="subTab = t.id as 'list' | 'wu' | 'packs'">
         <component :is="t.icon" :size="14" />
         {{ t.label }}
         <span v-if="t.badge" class="subtab-badge">{{ t.badge }}</span>
@@ -266,7 +266,7 @@ interface SysDriversData { drivers: PnpDriver[]; total: number; unsigned_count: 
 interface WuDriverUpdate { title: string; driver_class: string; driver_manufacturer: string; driver_model: string; driver_version: string; size_mb: number; update_id: string; is_downloaded: boolean; is_mandatory: boolean }
 interface WuDriverSummary { pending_count: number; total_size_mb: number; updates: WuDriverUpdate[]; wu_enabled: boolean; last_check: string }
 interface DriverMatch { device_name: string; hardware_id: string; inf_path: string; inf_file_name: string; provider: string; version: string; date: string; match_type: string }
-interface DriverScanResult { matches: DriverMatch[]; total_inf_scanned: number; total_devices_checked: number; scan_duration_ms: u64 }
+interface DriverScanResult { matches: DriverMatch[]; total_inf_scanned: number; total_devices_checked: number; scan_duration_ms: number }
 interface HardwareDevice { name: string; hardware_ids: string[]; compatible_ids: string[]; class: string; status: string; pnp_device_id: string }
 
 const SUBTABS = shallowRef([

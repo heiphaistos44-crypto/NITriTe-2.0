@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use std::sync::LazyLock;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -86,6 +88,7 @@ fn check_registry_key(key_path: &str) -> bool {
     // Verifier l'existence d'une cle registre via reg query
     let output = Command::new("reg")
         .args(["query", key_path])
+        .creation_flags(0x08000000)
         .output();
 
     match output {
@@ -98,6 +101,7 @@ fn get_installed_apps_list() -> String {
     // Utiliser wmic pour lister rapidement les programmes installes
     let output = Command::new("wmic")
         .args(["product", "get", "name", "/format:list"])
+        .creation_flags(0x08000000)
         .output();
 
     match output {

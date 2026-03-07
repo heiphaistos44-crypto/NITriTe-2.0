@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use tauri::Emitter;
 
 use crate::error::NiTriTeError;
@@ -24,13 +26,14 @@ pub struct InstallResult {
 pub fn check_winget() -> bool {
     Command::new("winget").arg("--version")
         .stdout(Stdio::null()).stderr(Stdio::null())
+        .creation_flags(0x08000000)
         .status().is_ok()
 }
 
 pub fn list_upgradable() -> Result<Vec<WingetPackage>, NiTriTeError> {
     let output = Command::new("winget")
         .args(["upgrade", "--accept-source-agreements"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     let mut packages = Vec::new();
@@ -70,6 +73,7 @@ pub fn install_package(
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .creation_flags(0x08000000)
         .spawn()?;
 
     if let Some(stdout) = child.stdout.take() {
@@ -99,6 +103,7 @@ pub fn upgrade_all(window: &tauri::Window) -> Result<(), NiTriTeError> {
         .args(["upgrade", "--all", "--silent", "--accept-source-agreements", "--accept-package-agreements"])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .creation_flags(0x08000000)
         .spawn()?;
 
     if let Some(stdout) = child.stdout.take() {
@@ -115,7 +120,7 @@ pub fn upgrade_all(window: &tauri::Window) -> Result<(), NiTriTeError> {
 pub fn search_packages(query: &str) -> Result<Vec<WingetPackage>, NiTriTeError> {
     let output = Command::new("winget")
         .args(["search", query, "--accept-source-agreements"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     let mut packages = Vec::new();

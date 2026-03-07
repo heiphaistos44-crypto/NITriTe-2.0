@@ -6,6 +6,7 @@ import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import {
   Cpu, MemoryStick, HardDrive, Wifi,
   Activity, AlertTriangle, RefreshCw,
@@ -218,6 +219,9 @@ onUnmounted(async () => {
 
 <template>
   <div class="monitoring">
+    <!-- Banner -->
+    <DiagBanner :icon="Activity" title="Monitoring Temps Réel" desc="CPU, RAM, GPU, réseau et processus en direct" color="blue" />
+
     <!-- Header -->
     <div class="page-header">
       <div>
@@ -537,7 +541,7 @@ onUnmounted(async () => {
 }
 
 .page-subtitle {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13px;
   margin-top: 2px;
 }
@@ -557,10 +561,10 @@ onUnmounted(async () => {
 /* Temperatures */
 .temps-grid { display: flex; flex-direction: column; gap: 10px; }
 .temp-item { display: flex; align-items: center; gap: 10px; }
-.temp-icon { color: var(--text-muted); flex-shrink: 0; }
-.temp-label { font-size: 12px; color: var(--text-muted); min-width: 48px; font-family: "JetBrains Mono", monospace; }
+.temp-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(239,68,68,.25), rgba(239,68,68,.08)); box-shadow: 0 4px 12px rgba(239,68,68,.3); color: var(--danger); flex-shrink: 0; }
+.temp-label { font-size: 12px; color: var(--text-secondary); min-width: 48px; font-family: "JetBrains Mono", monospace; }
 .temp-bar-wrap { flex: 1; }
-.temp-bar-track { height: 6px; border-radius: 99px; background: var(--bg-tertiary); overflow: hidden; }
+.temp-bar-track { height: 6px; border-radius: 99px; background: var(--bg-elevated); border: 1px solid var(--border); overflow: hidden; }
 .temp-bar-fill { height: 100%; border-radius: 99px; transition: width 400ms ease, background 400ms ease; }
 .temp-value { font-size: 13px; font-weight: 600; font-family: "JetBrains Mono", monospace; min-width: 44px; text-align: right; }
 
@@ -571,13 +575,17 @@ onUnmounted(async () => {
   justify-content: center;
   gap: 12px;
   padding: 60px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 8px;
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .monitor-grid {
@@ -611,7 +619,7 @@ onUnmounted(async () => {
 
 .gpu-stat-label {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   min-width: 90px;
 }
 
@@ -637,7 +645,7 @@ onUnmounted(async () => {
 
 .core-label {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   min-width: 50px;
   font-family: "JetBrains Mono", monospace;
 }
@@ -646,13 +654,15 @@ onUnmounted(async () => {
   flex: 1;
   height: 6px;
   border-radius: 99px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   overflow: hidden;
 }
 
 .core-bar-fill {
   height: 100%;
   border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
   transition: width 300ms ease;
 }
 
@@ -688,14 +698,14 @@ onUnmounted(async () => {
   flex-shrink: 0;
 }
 
-.net-download { background: var(--success-muted); color: var(--success); }
-.net-upload { background: var(--accent-muted); color: var(--accent-primary); }
+.net-download { background: linear-gradient(135deg, rgba(34,197,94,.25), rgba(34,197,94,.08)); color: var(--success); }
+.net-upload { background: linear-gradient(135deg, rgba(59,130,246,.25), rgba(59,130,246,.08)); color: var(--info); }
 .net-read { background: var(--info-muted); color: var(--info); }
 .net-write { background: var(--warning-muted); color: var(--warning); }
 
 .net-label {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .net-value {
@@ -725,10 +735,13 @@ onUnmounted(async () => {
 .data-table th {
   text-align: left;
   padding: 8px 12px;
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
   border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
 }
 
 .data-table td {
@@ -738,7 +751,7 @@ onUnmounted(async () => {
 }
 
 .data-table tbody tr:hover {
-  background: var(--bg-tertiary);
+  background: rgba(249,115,22,.06);
 }
 
 .process-name {
@@ -767,7 +780,7 @@ onUnmounted(async () => {
 
 .empty-row {
   text-align: center;
-  color: var(--text-muted) !important;
+  color: var(--text-secondary) !important;
   padding: 20px !important;
 }
 
@@ -792,11 +805,13 @@ onUnmounted(async () => {
 .alert-warning {
   background: var(--warning-muted);
   color: var(--warning);
+  border: 1px solid var(--warning-muted);
 }
 
 .alert-danger {
   background: var(--danger-muted);
   color: var(--danger);
+  border: 1px solid var(--danger-muted);
 }
 
 .alert-info {
@@ -817,7 +832,7 @@ onUnmounted(async () => {
 
 .empty-state {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 20px;
 }

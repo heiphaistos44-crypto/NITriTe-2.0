@@ -50,6 +50,7 @@ fn run_ps(script: &str) -> String {
 }
 
 #[cfg(target_os = "windows")]
+#[allow(dead_code)]
 fn reg_query(key: &str, name: &str) -> String {
     let out = Command::new("reg")
         .args(["query", key, "/v", name])

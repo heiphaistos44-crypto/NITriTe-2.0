@@ -44,30 +44,35 @@ const currentPage = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-primary);
-  min-height: 48px;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  min-height: 52px;
+  backdrop-filter: blur(12px);
 }
 
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
 }
 
 .breadcrumb-section {
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .breadcrumb-sep {
-  color: var(--text-muted);
+  color: var(--border-hover);
+  font-size: 16px;
+  line-height: 1;
 }
 
 .breadcrumb-page {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .header-actions {
@@ -80,20 +85,22 @@ const currentPage = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-muted);
+  padding: 7px 14px;
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-lg);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-family: inherit;
   transition: all var(--transition-fast);
 }
 
 .search-btn:hover {
-  border-color: var(--border-hover);
-  color: var(--text-secondary);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 0 2px var(--accent-muted);
 }
 
 .search-label {
@@ -103,11 +110,12 @@ const currentPage = computed(() => {
 
 .search-kbd {
   font-size: 10px;
-  padding: 2px 5px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
+  padding: 2px 6px;
+  border: 1px solid var(--border-hover);
+  border-radius: 5px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   font-family: inherit;
+  letter-spacing: 0.02em;
 }
 </style>

@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use tauri::Emitter;
 
 use crate::error::NiTriTeError;
@@ -36,6 +38,7 @@ pub fn execute_script(
         .args(&args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .creation_flags(0x08000000)
         .spawn()?;
 
     let mut output_text = String::new();

@@ -106,23 +106,11 @@ async function createBackup() {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    const result = await invoke<{ path: string; items: string[] }>("create_backup", { items: selected });
-    backupResult.value = result;
-    notify.success("Sauvegarde terminee", `Fichier : ${result.path}`);
-  } catch {
-    // Mode dev fallback
-    for (let i = 0; i < selected.length; i++) {
-      const label = backupItems.value.find((b) => b.id === selected[i])?.label ?? selected[i];
-      backupStatus.value = `Sauvegarde : ${label}...`;
-      backupProgress.value = Math.round(((i + 1) / selected.length) * 100);
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    const now = new Date().toISOString().slice(0, 10);
-    backupResult.value = {
-      path: `C:\\NiTriTe\\backups\\backup_${now}.zip`,
-      items: selected,
-    };
-    notify.info("Mode dev", "Simulation de sauvegarde terminee");
+    const result = await invoke<{ path: string; total_items: number }>("create_backup", { items: selected });
+    backupResult.value = { path: result.path, items: selected };
+    notify.success("Sauvegarde terminée", result.path);
+  } catch (e: any) {
+    notify.error("Sauvegarde échouée", String(e));
   } finally {
     backupInProgress.value = false;
     backupStatus.value = "";

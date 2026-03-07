@@ -115,7 +115,7 @@ struct WmiSoundDevice { Name: Option<String>, Manufacturer: Option<String>, Stat
 #[derive(serde::Deserialize)] #[allow(non_snake_case)]
 struct WmiPnPEntity { Name: Option<String>, DeviceID: Option<String>, Manufacturer: Option<String>, Status: Option<String>, PNPClass: Option<String> }
 
-#[derive(serde::Deserialize)] #[allow(non_snake_case)]
+#[derive(serde::Deserialize)] #[allow(non_snake_case, dead_code)]
 struct WmiDesktopMonitor { Name: Option<String>, ScreenWidth: Option<u32>, ScreenHeight: Option<u32>, PixelsPerXLogicalInch: Option<u32>, MonitorManufacturer: Option<String>, Availability: Option<u32> }
 
 #[derive(serde::Deserialize)] #[allow(non_snake_case)]

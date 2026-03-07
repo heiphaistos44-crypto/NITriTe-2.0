@@ -1,5 +1,7 @@
 use serde::Serialize;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -14,7 +16,7 @@ pub struct CleanupResult {
 pub fn empty_recycle_bin() -> Result<CleanupResult, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     Ok(CleanupResult {
         action: "Vider la corbeille".into(),
@@ -48,7 +50,7 @@ pub fn clean_temp_files() -> Result<CleanupResult, NiTriTeError> {
 }
 
 pub fn run_disk_cleanup() -> Result<CleanupResult, NiTriTeError> {
-    let status = Command::new("cleanmgr").arg("/d").arg("C").status()?;
+    let status = Command::new("cleanmgr").arg("/d").arg("C").creation_flags(0x08000000).status()?;
 
     Ok(CleanupResult {
         action: "Nettoyage disque Windows".into(),
@@ -62,7 +64,7 @@ pub fn get_startup_programs() -> Result<Vec<StartupEntry>, NiTriTeError> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command",
             "Get-CimInstance Win32_StartupCommand | Select-Object Name, Command, Location, User | ConvertTo-Json"])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     let text = String::from_utf8_lossy(&output.stdout);
     let entries: Vec<serde_json::Value> = serde_json::from_str(&text).unwrap_or_default();
@@ -103,7 +105,7 @@ pub fn disable_startup_program(name: &str, location: &str) -> Result<CleanupResu
 
     let output = Command::new("powershell")
         .args(["-NoProfile", "-Command", &ps_cmd])
-        .output()?;
+        .creation_flags(0x08000000).output()?;
 
     if output.status.success() {
         Ok(CleanupResult {

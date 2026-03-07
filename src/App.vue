@@ -64,7 +64,7 @@ onMounted(async () => {
       <div class="splash-content">
         <img :src="logoUrl" class="splash-logo" alt="NiTriTe" />
         <div class="splash-title">NiTriTe</div>
-        <div class="splash-version">v26.0</div>
+        <div class="splash-version">v26.7.0</div>
         <div class="splash-loader">
           <div class="splash-bar"></div>
         </div>
@@ -127,16 +127,21 @@ onMounted(async () => {
 }
 
 .splash-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #fafafa;
+  font-size: 30px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fafafa 40%, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: -0.5px;
 }
 
 .splash-version {
-  font-size: 13px;
-  color: #71717a;
+  font-size: 12px;
+  color: #a1a1aa;
   margin-top: -8px;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.05em;
 }
 
 .splash-loader {

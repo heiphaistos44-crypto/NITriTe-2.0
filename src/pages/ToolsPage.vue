@@ -5,6 +5,7 @@ import NSpinner from "@/components/ui/NSpinner.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import NTabs from "@/components/ui/NTabs.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import {
   Wrench, Play, ExternalLink,
   ShieldCheck, Stethoscope, Trash2,
@@ -180,6 +181,9 @@ onMounted(loadTools);
 
 <template>
   <div class="tools-page">
+    <!-- Banner -->
+    <DiagBanner :icon="Wrench" title="Boîte à Outils" desc="Outils Windows intégrés et utilitaires système" color="teal" />
+
     <!-- Header -->
     <div class="page-header">
       <div>
@@ -254,7 +258,7 @@ onMounted(loadTools);
 }
 
 .page-subtitle {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13px;
   margin-top: 2px;
 }
@@ -266,7 +270,7 @@ onMounted(loadTools);
   justify-content: center;
   gap: 12px;
   padding: 60px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .toolbar {
@@ -287,20 +291,22 @@ onMounted(loadTools);
   padding: 12px 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
   transition: all var(--transition-normal);
 }
 
 .tool-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 20px rgba(249,115,22,.15);
+  transform: translateY(-2px);
 }
 
 .tool-icon-wrap {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
+  background: linear-gradient(135deg, var(--accent-muted), transparent);
+  box-shadow: 0 3px 10px rgba(249,115,22,.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,7 +343,7 @@ onMounted(loadTools);
 
 .empty-state {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 40px;
 }

@@ -36,7 +36,7 @@ pub struct InstalledSoftware {
 // WMI typed structs
 // ============================================================================
 
-#[derive(serde::Deserialize)] #[allow(non_snake_case)]
+#[derive(serde::Deserialize)] #[allow(non_snake_case, dead_code)]
 struct WmiDiskDrive {
     Model: Option<String>, SerialNumber: Option<String>, FirmwareRevision: Option<String>,
     Size: Option<u64>, InterfaceType: Option<String>, MediaType: Option<String>,

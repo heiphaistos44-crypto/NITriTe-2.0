@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { Wrench, AlertTriangle, CheckCircle, RefreshCw } from "lucide-vue-next";
 
 interface SystemHealthStatus {
@@ -122,76 +123,78 @@ function healthColor(s: string) {
 </script>
 
 <template>
-  <div style="display:flex;flex-direction:column;gap:14px">
+  <div class="diag-tab-content">
+    <DiagBanner :icon="Wrench" title="Outils de Réparation" desc="DISM, SFC, réinitialisation composants et diagnostics" color="orange" />
 
-    <!-- État santé système -->
-    <div class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0">
-        <CheckCircle :size="13" style="display:inline;margin-right:4px" />État de santé système
-      </p>
-      <div v-if="healthLoading" style="display:flex;align-items:center;gap:8px;color:var(--text-secondary)">
-        <NSpinner :size="14" /> Analyse en cours (DISM CheckHealth)...
-      </div>
-      <div v-else-if="health" class="info-grid">
-        <div class="info-row"><span>Windows</span><code style="font-size:11px">{{ health.windows_version || 'Inconnu' }}</code></div>
-        <div class="info-row"><span>DISM CheckHealth</span>
-          <NBadge :variant="healthColor(health.dism_health)" style="font-size:10px">{{ health.dism_health || 'Inconnu' }}</NBadge>
-        </div>
-        <div class="info-row"><span>Dernier SFC</span><code style="font-size:11px">{{ health.sfc_last_run || 'N/A' }}</code></div>
-        <div class="info-row"><span>Résultat SFC</span>
-          <NBadge :variant="healthColor(health.sfc_result)" style="font-size:10px">{{ health.sfc_result || 'N/A' }}</NBadge>
-        </div>
-        <div class="info-row"><span>Redémarrage requis</span>
-          <NBadge :variant="health.pending_reboot?'warning':'success'" style="font-size:10px">{{ health.pending_reboot ? 'Oui' : 'Non' }}</NBadge>
-        </div>
-        <div class="info-row"><span>Taille CBS.log</span><span>{{ (health.cbs_log_size_kb / 1024).toFixed(1) }} MB</span></div>
-      </div>
-      <div v-if="health?.disk_errors?.length" style="margin-top:10px">
-        <p style="font-size:11px;color:var(--error);margin-bottom:6px">
-          <AlertTriangle :size="11" style="display:inline;margin-right:4px" />Erreurs disque récentes (7j) :
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- État santé système -->
+      <div class="diag-section">
+        <p class="diag-section-label" style="margin:0 0 8px 0">
+          <CheckCircle :size="13" style="display:inline;margin-right:4px" />État de santé système
         </p>
-        <div v-for="(e, i) in health.disk_errors" :key="i"
-          style="font-size:10px;color:var(--text-secondary);padding:2px 0;border-bottom:1px solid var(--border);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-          {{ e }}
+        <div v-if="healthLoading" class="diag-loading"><div class="diag-spinner"></div> Analyse en cours (DISM CheckHealth)...</div>
+        <div v-else-if="health" class="info-grid">
+          <div class="info-row"><span>Windows</span><code style="font-size:11px">{{ health.windows_version || 'Inconnu' }}</code></div>
+          <div class="info-row"><span>DISM CheckHealth</span>
+            <NBadge :variant="healthColor(health.dism_health)" style="font-size:10px">{{ health.dism_health || 'Inconnu' }}</NBadge>
+          </div>
+          <div class="info-row"><span>Dernier SFC</span><code style="font-size:11px">{{ health.sfc_last_run || 'N/A' }}</code></div>
+          <div class="info-row"><span>Résultat SFC</span>
+            <NBadge :variant="healthColor(health.sfc_result)" style="font-size:10px">{{ health.sfc_result || 'N/A' }}</NBadge>
+          </div>
+          <div class="info-row"><span>Redémarrage requis</span>
+            <NBadge :variant="health.pending_reboot?'warning':'success'" style="font-size:10px">{{ health.pending_reboot ? 'Oui' : 'Non' }}</NBadge>
+          </div>
+          <div class="info-row"><span>Taille CBS.log</span><span>{{ (health.cbs_log_size_kb / 1024).toFixed(1) }} MB</span></div>
+        </div>
+        <div v-if="health?.disk_errors?.length" style="margin-top:10px">
+          <p style="font-size:11px;color:var(--error);margin-bottom:6px">
+            <AlertTriangle :size="11" style="display:inline;margin-right:4px" />Erreurs disque récentes (7j) :
+          </p>
+          <div v-for="(e, i) in health.disk_errors" :key="i"
+            style="font-size:10px;color:var(--text-secondary);padding:2px 0;border-bottom:1px solid var(--border);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            {{ e }}
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Actions de réparation — groupées -->
-    <div v-for="group in REPAIR_GROUPS" :key="group.label" class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0">
-        <Wrench :size="12" style="display:inline;margin-right:4px" />{{ group.icon }} {{ group.label }}
-      </p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">
-        <button v-for="action in group.actions" :key="action.key"
-          @click="runRepair(action.key)"
-          :disabled="repairLoading !== null"
-          style="display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:7px;cursor:pointer;text-align:left;gap:3px;transition:border-color 0.15s"
-          :style="{borderColor:repairLoading===action.key?'var(--accent)':'',opacity:repairLoading!==null&&repairLoading!==action.key?'0.6':'1'}"
-        >
-          <div style="display:flex;align-items:center;gap:6px">
-            <NSpinner v-if="repairLoading===action.key" :size="11" />
-            <span style="font-size:11px;font-weight:600;color:var(--text-primary)">{{ action.label }}</span>
-            <NBadge v-if="!action.fast" variant="warning" style="font-size:8px">Long</NBadge>
-          </div>
-          <span style="font-size:9px;color:var(--text-secondary)">{{ action.desc }}</span>
-        </button>
+      <!-- Actions de réparation — groupées -->
+      <div v-for="group in REPAIR_GROUPS" :key="group.label" class="diag-section">
+        <p class="diag-section-label" style="margin:0 0 8px 0">
+          <Wrench :size="12" style="display:inline;margin-right:4px" />{{ group.icon }} {{ group.label }}
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">
+          <button v-for="action in group.actions" :key="action.key"
+            @click="runRepair(action.key)"
+            :disabled="repairLoading !== null"
+            style="display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:7px;cursor:pointer;text-align:left;gap:3px;transition:border-color 0.15s"
+            :style="{borderColor:repairLoading===action.key?'var(--accent)':'',opacity:repairLoading!==null&&repairLoading!==action.key?'0.6':'1'}"
+          >
+            <div style="display:flex;align-items:center;gap:6px">
+              <NSpinner v-if="repairLoading===action.key" :size="11" />
+              <span style="font-size:11px;font-weight:600;color:var(--text-primary)">{{ action.label }}</span>
+              <NBadge v-if="!action.fast" variant="warning" style="font-size:8px">Long</NBadge>
+            </div>
+            <span style="font-size:9px;color:var(--text-secondary)">{{ action.desc }}</span>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Résultat -->
-    <div v-if="repairLoading" class="diag-section" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary)">
-      <NSpinner :size="16" /> Exécution en cours... (peut prendre plusieurs minutes)
-    </div>
-    <div v-else-if="repairResult" class="diag-section">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <NBadge :variant="repairResult.success?'success':'danger'">{{ repairResult.success ? 'Succès' : 'Erreur' }}</NBadge>
-        <strong style="font-size:12px">{{ repairResult.command }}</strong>
-        <span style="font-size:12px;color:var(--text-secondary)">{{ repairResult.duration_secs }}s</span>
+      <!-- Résultat -->
+      <div v-if="repairLoading" class="diag-section diag-loading">
+        <div class="diag-spinner"></div> Exécution en cours... (peut prendre plusieurs minutes)
       </div>
-      <pre style="font-size:10px;color:var(--text-secondary);background:var(--bg-secondary);padding:8px;border-radius:6px;overflow-x:auto;white-space:pre-wrap;max-height:240px;overflow-y:auto">{{ repairResult.output || '(Aucune sortie)' }}</pre>
-    </div>
-    <div v-else-if="repairError" class="diag-section" style="color:var(--error)">⚠ {{ repairError }}</div>
+      <div v-else-if="repairResult" class="diag-section">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <NBadge :variant="repairResult.success?'success':'danger'">{{ repairResult.success ? 'Succès' : 'Erreur' }}</NBadge>
+          <strong style="font-size:12px">{{ repairResult.command }}</strong>
+          <span style="font-size:12px;color:var(--text-secondary)">{{ repairResult.duration_secs }}s</span>
+        </div>
+        <pre style="font-size:10px;color:var(--text-secondary);background:var(--bg-secondary);padding:8px;border-radius:6px;overflow-x:auto;white-space:pre-wrap;max-height:240px;overflow-y:auto">{{ repairResult.output || '(Aucune sortie)' }}</pre>
+      </div>
+      <div v-else-if="repairError" class="diag-section" style="color:var(--error)">⚠ {{ repairError }}</div>
 
+    </div>
   </div>
 </template>

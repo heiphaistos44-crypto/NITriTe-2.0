@@ -6,6 +6,7 @@ import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import { useNotificationStore } from "@/stores/notifications";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import {
   Scan, RefreshCw, ExternalLink, AlertTriangle,
   CheckCircle, Clock, Cpu, Download,
@@ -168,6 +169,8 @@ async function redirectDriverUpdate(driver: DriverInfo) {
 
 <template>
   <div class="driver-scanner-page">
+    <DiagBanner :icon="Scan" title="Scanner de Drivers" desc="Détection et mise à jour des pilotes Windows" color="amber" />
+
     <div class="page-header">
       <div>
         <h1>Scanner de Pilotes</h1>
@@ -308,7 +311,7 @@ async function redirectDriverUpdate(driver: DriverInfo) {
 }
 
 .page-header h1 { font-size: 24px; font-weight: 700; }
-.page-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+.page-subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
 .header-actions { display: flex; gap: 8px; }
 
 .section-header { display: flex; align-items: center; gap: 8px; }
@@ -319,7 +322,7 @@ async function redirectDriverUpdate(driver: DriverInfo) {
   align-items: center;
   gap: 12px;
   padding: 60px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .empty-state {
@@ -331,9 +334,9 @@ async function redirectDriverUpdate(driver: DriverInfo) {
   text-align: center;
 }
 
-.empty-icon { color: var(--text-muted); opacity: 0.4; }
+.empty-icon { color: var(--text-secondary); }
 .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
-.empty-state p { font-size: 13px; color: var(--text-muted); }
+.empty-state p { font-size: 13px; color: var(--text-secondary); }
 
 /* Summary */
 .summary-grid {
@@ -359,7 +362,7 @@ async function redirectDriverUpdate(driver: DriverInfo) {
 .summary-lbl {
   display: block;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* Driver list */
@@ -379,7 +382,7 @@ async function redirectDriverUpdate(driver: DriverInfo) {
   gap: 12px;
 }
 
-.driver-row:hover { background: var(--bg-tertiary); }
+.driver-row:hover { background: rgba(249,115,22,.05); border-color: var(--border-hover); }
 
 .driver-very-old { border-left: 3px solid var(--danger); }
 .driver-outdated { border-left: 3px solid var(--warning); }
@@ -401,7 +404,7 @@ async function redirectDriverUpdate(driver: DriverInfo) {
 
 .driver-name {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .driver-meta {
@@ -416,12 +419,12 @@ async function redirectDriverUpdate(driver: DriverInfo) {
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  border: 1px solid var(--accent-primary);
+  border: 1px solid rgba(249,115,22,.4);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  background: rgba(249,115,22,.2);
   color: var(--accent-primary);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: all var(--transition-fast);
@@ -431,13 +434,13 @@ async function redirectDriverUpdate(driver: DriverInfo) {
 
 .driver-date {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-family: "JetBrains Mono", monospace;
 }
 
 .empty-row {
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   padding: 24px;
   font-size: 13px;
 }
@@ -454,9 +457,9 @@ async function redirectDriverUpdate(driver: DriverInfo) {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
+  border: 1px solid rgba(249,115,22,.25);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(249,115,22,.12), rgba(249,115,22,.04));
   color: var(--text-primary);
   font-family: inherit;
   font-size: 13px;

@@ -68,12 +68,15 @@ const classes = computed(() => [
 
 /* Variants */
 .n-btn--primary {
-  background: var(--accent-primary);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
   color: white;
+  box-shadow: 0 2px 8px rgba(249,115,22,.25);
+  letter-spacing: 0.01em;
 }
 .n-btn--primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+  filter: brightness(1.1);
   box-shadow: var(--accent-glow);
+  transform: translateY(-1px);
 }
 
 .n-btn--secondary {
@@ -84,30 +87,37 @@ const classes = computed(() => [
 .n-btn--secondary:hover:not(:disabled) {
   background: var(--bg-elevated);
   border-color: var(--border-hover);
+  transform: translateY(-1px);
 }
 
 .n-btn--ghost {
   background: transparent;
   color: var(--text-secondary);
+  border: 1px solid transparent;
 }
 .n-btn--ghost:hover:not(:disabled) {
   background: var(--bg-tertiary);
+  border-color: var(--border);
   color: var(--text-primary);
 }
 
 .n-btn--danger {
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #dc2626);
   color: white;
+  box-shadow: 0 2px 8px rgba(239,68,68,.25);
 }
 .n-btn--danger:hover:not(:disabled) {
-  opacity: 0.9;
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
 .n-btn--success {
-  background: var(--success);
+  background: linear-gradient(135deg, var(--success), #16a34a);
   color: white;
+  box-shadow: 0 2px 8px rgba(34,197,94,.25);
 }
 .n-btn--success:hover:not(:disabled) {
-  opacity: 0.9;
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 </style>

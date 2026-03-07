@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { Shield, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-vue-next";
 
 interface FirewallRule {
@@ -40,107 +41,109 @@ function filteredRules(rules: FirewallRule[]) {
 </script>
 
 <template>
-  <div v-if="loading" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary)">
-    <NSpinner :size="16" /><span>Chargement règles pare-feu...</span>
-  </div>
-  <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>
-  <div v-else-if="data" style="display:flex;flex-direction:column;gap:14px">
+  <div class="diag-tab-content">
+    <DiagBanner :icon="Shield" title="Pare-feu Windows" desc="Règles de filtrage réseau et profils de sécurité" color="red" />
 
-    <!-- Profils -->
-    <div class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0">Profils Pare-feu Windows</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div v-for="p in data.profiles" :key="p.name"
-          style="flex:1;min-width:160px;background:var(--bg-secondary);border-radius:6px;padding:12px;border:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <component :is="p.enabled ? CheckCircle : AlertTriangle" :size="14"
-              :class="p.enabled ? 'ic-ok' : 'ic-warn'" />
-            <strong style="font-size:13px">{{ p.name }}</strong>
+    <div v-if="loading" class="diag-loading"><div class="diag-spinner"></div> Chargement règles pare-feu...</div>
+    <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>
+    <div v-else-if="data" style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Profils -->
+      <div class="diag-section">
+        <p class="diag-section-label" style="margin:0 0 8px 0">Profils Pare-feu Windows</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div v-for="p in data.profiles" :key="p.name"
+            style="flex:1;min-width:160px;background:var(--bg-secondary);border-radius:6px;padding:12px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <component :is="p.enabled ? CheckCircle : AlertTriangle" :size="14"
+                :class="p.enabled ? 'ic-ok' : 'ic-warn'" />
+              <strong style="font-size:13px">{{ p.name }}</strong>
+            </div>
+            <NBadge :variant="p.enabled ? 'success' : 'danger'" style="margin-bottom:6px">
+              {{ p.enabled ? 'Activé' : 'DÉSACTIVÉ' }}
+            </NBadge>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">
+              Entrant: {{ p.default_inbound }} | Sortant: {{ p.default_outbound }}
+            </div>
           </div>
-          <NBadge :variant="p.enabled ? 'success' : 'danger'" style="margin-bottom:6px">
-            {{ p.enabled ? 'Activé' : 'DÉSACTIVÉ' }}
-          </NBadge>
-          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">
-            Entrant: {{ p.default_inbound }} | Sortant: {{ p.default_outbound }}
+        </div>
+      </div>
+
+      <!-- Stats règles -->
+      <div class="diag-section">
+        <p class="diag-section-label" style="margin:0 0 8px 0">Statistiques</p>
+        <div class="info-grid">
+          <div class="info-row"><span>Règles personnalisées actives</span>
+            <NBadge variant="info">{{ data.total_custom }}</NBadge>
+          </div>
+          <div class="info-row">
+            <span style="display:flex;align-items:center;gap:4px"><ArrowLeft :size="11" /> Entrant Autorisé</span>
+            <NBadge variant="success">{{ data.inbound_allow }}</NBadge>
+          </div>
+          <div class="info-row">
+            <span style="display:flex;align-items:center;gap:4px"><ArrowLeft :size="11" /> Entrant Bloqué</span>
+            <NBadge :variant="data.inbound_block > 0 ? 'warning' : 'neutral'">{{ data.inbound_block }}</NBadge>
+          </div>
+          <div class="info-row">
+            <span style="display:flex;align-items:center;gap:4px"><ArrowRight :size="11" /> Sortant Autorisé</span>
+            <NBadge variant="success">{{ data.outbound_allow }}</NBadge>
+          </div>
+          <div class="info-row">
+            <span style="display:flex;align-items:center;gap:4px"><ArrowRight :size="11" /> Sortant Bloqué</span>
+            <NBadge :variant="data.outbound_block > 0 ? 'warning' : 'neutral'">{{ data.outbound_block }}</NBadge>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Stats règles -->
-    <div class="diag-section">
-      <p class="diag-section-label" style="margin:0 0 8px 0">Statistiques</p>
-      <div class="info-grid">
-        <div class="info-row"><span>Règles personnalisées actives</span>
-          <NBadge variant="info">{{ data.total_custom }}</NBadge>
+      <!-- Règles -->
+      <div class="diag-section">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <p class="diag-section-label" style="margin:0;flex:1">Règles personnalisées ({{ data.rules.length }})</p>
+          <div style="display:flex;gap:4px">
+            <button v-for="[k, l] in [['all','Tout'],['in','Entrant'],['out','Sortant'],['block','Bloqué']]" :key="k"
+              @click="filter = k as any"
+              :style="{
+                padding:'3px 10px', borderRadius:'4px', border:'1px solid var(--border)',
+                fontSize:'11px', cursor:'pointer',
+                background: filter === k ? 'var(--accent)' : 'var(--bg-secondary)',
+                color: filter === k ? 'white' : 'var(--text-secondary)'
+              }">{{ l }}</button>
+          </div>
         </div>
-        <div class="info-row">
-          <span style="display:flex;align-items:center;gap:4px"><ArrowLeft :size="11" /> Entrant Autorisé</span>
-          <NBadge variant="success">{{ data.inbound_allow }}</NBadge>
+        <div v-if="!data.rules.length" class="muted" style="font-size:13px">Aucune règle personnalisée trouvée.</div>
+        <div v-else style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <thead>
+              <tr style="background:var(--bg-secondary)">
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:160px">Nom</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Direction</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Action</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Profil</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Proto</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Port</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:140px">Programme</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(r, i) in filteredRules(data.rules)" :key="i"
+                style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px 8px;font-size:11px">{{ r.name }}</td>
+                <td style="padding:5px 8px">
+                  <NBadge :variant="r.direction === 'Inbound' ? 'info' : 'neutral'" style="font-size:9px">{{ r.direction }}</NBadge>
+                </td>
+                <td style="padding:5px 8px">
+                  <NBadge :variant="r.action === 'Allow' ? 'success' : 'danger'" style="font-size:9px">{{ r.action }}</NBadge>
+                </td>
+                <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.profile }}</td>
+                <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.protocol || 'Any' }}</td>
+                <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.local_port || 'Any' }}</td>
+                <td style="padding:5px 8px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">
+                  {{ r.program && r.program !== '%SystemRoot%\\system32\\svchost.exe' ? r.program : '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="info-row">
-          <span style="display:flex;align-items:center;gap:4px"><ArrowLeft :size="11" /> Entrant Bloqué</span>
-          <NBadge :variant="data.inbound_block > 0 ? 'warning' : 'neutral'">{{ data.inbound_block }}</NBadge>
-        </div>
-        <div class="info-row">
-          <span style="display:flex;align-items:center;gap:4px"><ArrowRight :size="11" /> Sortant Autorisé</span>
-          <NBadge variant="success">{{ data.outbound_allow }}</NBadge>
-        </div>
-        <div class="info-row">
-          <span style="display:flex;align-items:center;gap:4px"><ArrowRight :size="11" /> Sortant Bloqué</span>
-          <NBadge :variant="data.outbound_block > 0 ? 'warning' : 'neutral'">{{ data.outbound_block }}</NBadge>
-        </div>
-      </div>
-    </div>
-
-    <!-- Règles -->
-    <div class="diag-section">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <p class="diag-section-label" style="margin:0;flex:1">Règles personnalisées ({{ data.rules.length }})</p>
-        <div style="display:flex;gap:4px">
-          <button v-for="[k, l] in [['all','Tout'],['in','Entrant'],['out','Sortant'],['block','Bloqué']]" :key="k"
-            @click="filter = k as any"
-            :style="{
-              padding:'3px 10px', borderRadius:'4px', border:'1px solid var(--border)',
-              fontSize:'11px', cursor:'pointer',
-              background: filter === k ? 'var(--accent)' : 'var(--bg-secondary)',
-              color: filter === k ? 'white' : 'var(--text-secondary)'
-            }">{{ l }}</button>
-        </div>
-      </div>
-      <div v-if="!data.rules.length" class="muted" style="font-size:13px">Aucune règle personnalisée trouvée.</div>
-      <div v-else style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead>
-            <tr style="background:var(--bg-secondary)">
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:160px">Nom</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Direction</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Action</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Profil</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Proto</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500">Port</th>
-              <th style="padding:5px 8px;text-align:left;color:var(--text-secondary);font-weight:500;min-width:140px">Programme</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(r, i) in filteredRules(data.rules)" :key="i"
-              style="border-bottom:1px solid var(--border)">
-              <td style="padding:5px 8px;font-size:11px">{{ r.name }}</td>
-              <td style="padding:5px 8px">
-                <NBadge :variant="r.direction === 'Inbound' ? 'info' : 'neutral'" style="font-size:9px">{{ r.direction }}</NBadge>
-              </td>
-              <td style="padding:5px 8px">
-                <NBadge :variant="r.action === 'Allow' ? 'success' : 'danger'" style="font-size:9px">{{ r.action }}</NBadge>
-              </td>
-              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.profile }}</td>
-              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.protocol || 'Any' }}</td>
-              <td style="padding:5px 8px;color:var(--text-secondary)">{{ r.local_port || 'Any' }}</td>
-              <td style="padding:5px 8px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">
-                {{ r.program && r.program !== '%SystemRoot%\\system32\\svchost.exe' ? r.program : '—' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>

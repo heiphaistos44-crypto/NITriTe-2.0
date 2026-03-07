@@ -34,3 +34,5 @@ pub mod boot_manager;
 pub mod wsl_info;
 pub mod bluetooth;
 pub mod perf_history;
+pub mod clone;
+pub mod data_recovery;

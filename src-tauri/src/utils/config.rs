@@ -3,6 +3,11 @@ use std::path::PathBuf;
 
 use super::paths;
 
+fn default_true() -> bool { true }
+fn default_10() -> u64 { 10 }
+fn default_normal() -> String { "normal".to_string() }
+fn default_json() -> String { "json".to_string() }
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub theme: String,
@@ -11,6 +16,18 @@ pub struct AppConfig {
     pub ollama_url: String,
     pub ollama_model: String,
     pub monitor_interval_ms: u64,
+    #[serde(default = "default_true")]
+    pub show_animations: bool,
+    #[serde(default)]
+    pub compact_mode: bool,
+    #[serde(default = "default_true")]
+    pub notifications_enabled: bool,
+    #[serde(default = "default_10")]
+    pub process_count: u64,
+    #[serde(default = "default_normal")]
+    pub font_size: String,
+    #[serde(default = "default_json")]
+    pub export_format: String,
 }
 
 impl Default for AppConfig {
@@ -22,6 +39,12 @@ impl Default for AppConfig {
             ollama_url: "http://localhost:11434".to_string(),
             ollama_model: "llama3:8b".to_string(),
             monitor_interval_ms: 2000,
+            show_animations: true,
+            compact_mode: false,
+            notifications_enabled: true,
+            process_count: 10,
+            font_size: "normal".to_string(),
+            export_format: "json".to_string(),
         }
     }
 }

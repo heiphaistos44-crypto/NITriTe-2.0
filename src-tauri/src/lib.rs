@@ -581,6 +581,217 @@ async fn save_export_file(filename: String, content: String) -> Result<String, N
     Ok(file_path.to_string_lossy().to_string())
 }
 
+// === Clonage Système ===
+
+#[tauri::command]
+async fn get_disks_for_clone() -> Result<Vec<system::clone::DiskInfo>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::clone::get_disks)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn start_system_image(target_drive: String, window: tauri::Window) -> Result<system::clone::CloneResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::clone::create_system_image(target_drive, &window))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn start_robocopy_clone(source_drive: String, target_drive: String, window: tauri::Window) -> Result<system::clone::CloneResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::clone::clone_with_robocopy(source_drive, target_drive, &window))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Récupération de Données ===
+
+#[tauri::command]
+async fn list_shadow_copies() -> Result<Vec<system::data_recovery::ShadowCopy>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::list_shadow_copies)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn browse_shadow_copy(device_path: String, relative_path: String) -> Result<Vec<system::data_recovery::RecoveredFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::browse_shadow_copy(device_path, relative_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn restore_from_shadow(source_path: String, target_folder: String) -> Result<system::data_recovery::RestoreResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::restore_from_shadow(source_path, target_folder))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn scan_recycle_bin() -> Result<Vec<system::data_recovery::RecoveredFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::scan_recycle_bin)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn restore_recycle_bin_item(original_path: String) -> Result<system::data_recovery::RestoreResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::restore_recycle_bin_item(original_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn scan_deleted_files(drive: String) -> Result<Vec<system::data_recovery::RecoveredFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::scan_deleted_files(drive))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn search_shadow_copy(device_path: String, query: String, base_path: String) -> Result<Vec<system::data_recovery::RecoveredFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::search_shadow_copy(device_path, query, base_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn restore_files_batch(files: Vec<String>, target_folder: String) -> Result<system::data_recovery::BatchRestoreResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::restore_files_batch(files, target_folder))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn list_connected_disks() -> Result<Vec<system::data_recovery::DiskInfo>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::list_connected_disks)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn browse_disk_path(path: String) -> Result<Vec<system::data_recovery::DiskEntry>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::browse_disk_path(path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn recover_files_safe(
+    files: Vec<String>,
+    target_folder: String,
+    safe_mode: bool,
+    window: tauri::Window,
+) -> Result<system::data_recovery::BatchRestoreResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::recover_files_safe(files, target_folder, safe_mode, &window))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn get_user_profile_folders() -> Result<Vec<system::data_recovery::UserFolder>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::get_user_profile_folders)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn backup_user_folders(
+    folders: Vec<String>,
+    target: String,
+    window: tauri::Window,
+) -> Result<system::data_recovery::BackupResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::data_recovery::backup_user_folders(folders, target, &window)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Désinstallateur Propre ===
+
+#[tauri::command]
+async fn list_installed_apps_for_uninstall() -> Result<Vec<installer::uninstaller::InstalledApp>, NiTriTeError> {
+    tokio::task::spawn_blocking(installer::uninstaller::list_installed_apps)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn uninstall_app_clean(
+    app_name: String,
+    uninstall_string: String,
+    publisher: String,
+    window: tauri::Window,
+) -> Result<installer::uninstaller::UninstallResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        installer::uninstaller::uninstall_app_clean(app_name, uninstall_string, publisher, &window)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Preview résidus (avant désinstallation) ===
+
+#[tauri::command]
+async fn preview_residuals(
+    app_name: String,
+    publisher: String,
+) -> Result<Vec<String>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || installer::uninstaller::preview_residuals(app_name, publisher))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Suppression définitive des résidus ===
+
+#[tauri::command]
+async fn delete_residuals(paths: Vec<String>) -> Result<installer::uninstaller::ResidualCleanResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || installer::uninstaller::delete_residuals(paths))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Extraction + suppression des résidus ===
+
+#[tauri::command]
+async fn extract_residuals(paths: Vec<String>, target: String) -> Result<installer::uninstaller::ResidualCleanResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || installer::uninstaller::extract_residuals(paths, target))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Comparaison Shadow Copy vs Système Actuel ===
+
+#[tauri::command]
+async fn compare_shadow_with_current(
+    device_path: String,
+    sub_path: String,
+    live_path: String,
+) -> Result<Vec<system::data_recovery::ComparedFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::compare_shadow_with_current(device_path, sub_path, live_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Scan USN Journal tous lecteurs NTFS ===
+
+#[tauri::command]
+async fn scan_all_deleted_files() -> Result<Vec<system::data_recovery::RecoveredFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::scan_all_deleted_files)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Save content to arbitrary path (dialog-driven export) ===
+
+#[tauri::command]
+async fn save_content_to_path(path: String, content: String) -> Result<(), NiTriTeError> {
+    tokio::fs::write(&path, content.as_bytes())
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
 // === Config ===
 
 #[tauri::command]
@@ -1274,6 +1485,33 @@ pub fn run() {
             execute_tool,
             get_export_dir,
             save_export_file,
+            save_content_to_path,
+            // Désinstallateur
+            list_installed_apps_for_uninstall,
+            uninstall_app_clean,
+            preview_residuals,
+            delete_residuals,
+            extract_residuals,
+            // Clonage
+            get_disks_for_clone,
+            start_system_image,
+            start_robocopy_clone,
+            // Récupération données
+            list_shadow_copies,
+            browse_shadow_copy,
+            restore_from_shadow,
+            scan_recycle_bin,
+            restore_recycle_bin_item,
+            scan_deleted_files,
+            search_shadow_copy,
+            restore_files_batch,
+            list_connected_disks,
+            browse_disk_path,
+            recover_files_safe,
+            get_user_profile_folders,
+            backup_user_folders,
+            compare_shadow_with_current,
+            scan_all_deleted_files,
             // Extended Info
             get_bios_info,
             get_battery_extended,

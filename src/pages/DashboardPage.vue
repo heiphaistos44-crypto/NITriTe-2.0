@@ -58,12 +58,12 @@ const recentActivity = ref([
 ]);
 
 const quickActions = [
-  { label: "Diagnostic", icon: Stethoscope, route: "/diagnostic", color: "accent" as const },
-  { label: "Nettoyage", icon: Trash2, route: "/optimizations", color: "success" as const },
-  { label: "Mises à jour", icon: RefreshCw, route: "/updates", color: "info" as const },
-  { label: "Sauvegarde", icon: Save, route: "/backup", color: "warning" as const },
-  { label: "Scan Antivirus", icon: Shield, route: "/scanvirus", color: "danger" as const },
-  { label: "Monitoring", icon: Activity, route: "/monitoring", color: "accent" as const },
+  { label: "Diagnostic", icon: Stethoscope, route: "/diagnostic", color: "accent" as const, grad: "linear-gradient(135deg,#f97316,#fb923c)" },
+  { label: "Nettoyage", icon: Trash2, route: "/optimizations", color: "success" as const, grad: "linear-gradient(135deg,#22c55e,#16a34a)" },
+  { label: "Mises à jour", icon: RefreshCw, route: "/updates", color: "info" as const, grad: "linear-gradient(135deg,#3b82f6,#2563eb)" },
+  { label: "Sauvegarde", icon: Save, route: "/backup", color: "warning" as const, grad: "linear-gradient(135deg,#eab308,#ca8a04)" },
+  { label: "Scan Antivirus", icon: Shield, route: "/scanvirus", color: "danger" as const, grad: "linear-gradient(135deg,#ef4444,#dc2626)" },
+  { label: "Monitoring", icon: Activity, route: "/monitoring", color: "accent" as const, grad: "linear-gradient(135deg,#a855f7,#7c3aed)" },
 ];
 
 function computeHealthScore() {
@@ -226,7 +226,7 @@ onUnmounted(async () => {
     <!-- Welcome -->
     <div class="welcome">
       <div>
-        <h1>Tableau de bord</h1>
+        <h1 class="welcome-title">Tableau de bord</h1>
         <p class="welcome-date">{{ new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) }}</p>
       </div>
       <NBadge :variant="isLive ? 'success' : 'neutral'" class="live-badge">
@@ -317,8 +317,8 @@ onUnmounted(async () => {
             class="action-btn"
             @click="router.push(action.route)"
           >
-            <div class="action-icon" :style="{ background: `var(--${action.color}-muted, var(--accent-muted))` }">
-              <component :is="action.icon" :size="18" :style="{ color: `var(--${action.color}, var(--accent-primary))` }" />
+            <div class="action-icon" :style="{ background: action.grad }">
+              <component :is="action.icon" :size="16" style="color:white" />
             </div>
             <span>{{ action.label }}</span>
           </button>
@@ -393,8 +393,16 @@ onUnmounted(async () => {
   align-items: flex-start;
 }
 
-.welcome h1 { font-size: 24px; font-weight: 700; }
-.welcome-date { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+.welcome-title {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+.welcome-date { color: var(--text-secondary); font-size: 13px; margin-top: 3px; }
 
 .live-badge { display: flex; align-items: center; gap: 6px; }
 .live-dot {
@@ -462,15 +470,23 @@ onUnmounted(async () => {
 .health-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
 
 /* Quick Actions */
-.quick-actions { display: flex; flex-direction: column; gap: 4px; }
+.quick-actions { display: flex; flex-direction: column; gap: 6px; }
 .action-btn {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-  border: none; border-radius: var(--radius-md); background: transparent;
+  border: 1px solid transparent; border-radius: var(--radius-md); background: transparent;
   cursor: pointer; font-family: inherit; font-size: 13px; color: var(--text-primary);
-  transition: all var(--transition-fast); text-align: left; width: 100%;
+  transition: all var(--transition-fast); text-align: left; width: 100%; font-weight: 500;
 }
-.action-btn:hover { background: var(--bg-tertiary); }
-.action-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.action-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  transform: translateX(3px);
+}
+.action-icon {
+  width: 34px; height: 34px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
 
 /* Processes */
 .processes-table { display: flex; flex-direction: column; gap: 4px; }
@@ -492,9 +508,9 @@ onUnmounted(async () => {
 .proc-pid { color: var(--text-muted); font-size: 11px; }
 .proc-cpu, .proc-ram { display: flex; align-items: center; gap: 6px; }
 .proc-val { font-family: "JetBrains Mono", monospace; font-size: 11px; min-width: 42px; }
-.proc-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.proc-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-.proc-bar-cpu { background: var(--accent-primary); }
+.proc-bar { flex: 1; height: 5px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 99px; overflow: hidden; }
+.proc-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+.proc-bar-cpu { background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover)); }
 
 /* Activity */
 .activity-list { display: flex; flex-direction: column; gap: 8px; }

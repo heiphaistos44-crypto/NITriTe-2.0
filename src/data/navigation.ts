@@ -32,11 +32,19 @@ export const navigationSections: NavSection[] = [
     ],
   },
   {
+    title: "Avancé",
+    items: [
+      { id: "clone", label: "Clonage Système", icon: "copy", route: "/clone" },
+      { id: "data-recovery", label: "Récupération Données", icon: "database", route: "/data-recovery" },
+    ],
+  },
+  {
     title: "Maintenance",
     items: [
       { id: "updates", label: "Mises a jour", icon: "refresh-cw", route: "/updates" },
       { id: "drivers", label: "Drivers", icon: "cpu", route: "/drivers" },
       { id: "driver-scanner", label: "Scanner Pilotes", icon: "scan", route: "/driver-scanner" },
+      { id: "uninstaller", label: "Désinstallateur", icon: "trash-2", route: "/uninstaller" },
       { id: "backup", label: "Sauvegarde", icon: "save", route: "/backup" },
       { id: "scanvirus", label: "Scan Antivirus", icon: "shield", route: "/scanvirus" },
     ],

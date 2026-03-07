@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::collections::HashSet;
 use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::error::NiTriTeError;
 
@@ -59,6 +61,7 @@ pub fn execute_safe(command: &str) -> Result<SafeCommandResult, NiTriTeError> {
 
     let output = Command::new("cmd")
         .args(["/C", command])
+        .creation_flags(0x08000000)
         .output()
         .map_err(|e| NiTriTeError::System(e.to_string()))?;
 

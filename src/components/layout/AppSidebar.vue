@@ -121,7 +121,7 @@ const filteredSections = computed(() => {
         <transition name="fade">
           <div v-if="!collapsed" class="logo-text">
             <span class="logo-title">NiTriTe</span>
-            <span class="logo-version">v26.0</span>
+            <span class="logo-version">v26.7</span>
           </div>
         </transition>
       </div>
@@ -211,7 +211,7 @@ const filteredSections = computed(() => {
   top: 0;
   bottom: 0;
   width: 240px;
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -257,15 +257,19 @@ const filteredSections = computed(() => {
 }
 
 .logo-title {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 16px;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.2;
 }
 
 .logo-version {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-family: "JetBrains Mono", monospace;
 }
 
 .collapse-btn {
@@ -373,11 +377,11 @@ const filteredSections = computed(() => {
 }
 
 .section-title-text {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
   white-space: nowrap;
   transition: color var(--transition-fast);
 }
@@ -442,8 +446,9 @@ const filteredSections = computed(() => {
 }
 
 .nav-item.active {
-  background: var(--accent-muted);
+  background: linear-gradient(90deg, rgba(249,115,22,.18) 0%, rgba(249,115,22,.04) 100%);
   color: var(--accent-primary);
+  font-weight: 600;
 }
 
 .nav-item.active::before {
@@ -453,9 +458,10 @@ const filteredSections = computed(() => {
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 20px;
-  border-radius: 0 2px 2px 0;
-  background: var(--accent-primary);
+  height: 22px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--accent-primary), var(--accent-hover));
+  box-shadow: 0 0 8px var(--accent-primary);
 }
 
 .nav-icon {

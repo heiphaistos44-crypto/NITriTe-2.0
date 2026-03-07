@@ -1,4 +1,6 @@
 use serde::Serialize;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PlatformInfo {
@@ -63,6 +65,7 @@ fn check_command(cmd: &str, args: &[&str]) -> bool {
         .args(args)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
+        .creation_flags(0x08000000)
         .status()
         .is_ok()
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import NCard from "@/components/ui/NCard.vue";
 import NTabs from "@/components/ui/NTabs.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -115,54 +115,87 @@ interface ScanResult {
 
 // ============= Tabs =============
 const TABS = [
-  { id: "os",          label: "Système",      icon: Monitor },
-  { id: "bios",        label: "BIOS",         icon: CircuitBoard },
-  { id: "mobo",        label: "Carte Mère",   icon: CircuitBoard },
-  { id: "cpu",         label: "Processeur",   icon: Cpu },
-  { id: "gpu",         label: "GPU",          icon: Monitor },
-  { id: "ram",         label: "RAM",          icon: MemoryStick },
-  { id: "disks",       label: "Disques",      icon: HardDrive },
-  { id: "volumes",     label: "Volumes",      icon: Layers },
-  { id: "network",     label: "Réseau",       icon: Wifi },
-  { id: "connections", label: "Connexions",   icon: Activity },
-  { id: "monitors",    label: "Écrans",       icon: Monitor },
-  { id: "audio",       label: "Audio",        icon: Headphones },
-  { id: "usb",         label: "USB",          icon: Usb },
-  { id: "battery",     label: "Batterie",     icon: Battery },
-  { id: "power",       label: "Énergie",      icon: Zap },
-  { id: "printers",    label: "Imprimantes",  icon: Printer },
-  { id: "software",    label: "Logiciels",    icon: Package },
-  { id: "env",         label: "Variables",    icon: Server },
-  { id: "processes",   label: "Processus",    icon: Activity },
-  { id: "services",    label: "Services",     icon: Server },
-  { id: "startup",     label: "Démarrage",    icon: Play },
-  { id: "tasks",       label: "Tâches",       icon: RefreshCw },
-  { id: "security",    label: "Sécurité",     icon: Shield },
-  { id: "license",     label: "Licence",      icon: Key },
-  { id: "updates",     label: "MAJ Windows",  icon: RefreshCw },
-  { id: "folders",     label: "Dossiers",     icon: FolderTree },
-  { id: "activation",  label: "Activation",   icon: Key },
-  { id: "comptes",     label: "Comptes",      icon: Users },
-  { id: "parefeu",     label: "Pare-feu",     icon: Shield },
-  { id: "partages",    label: "Partages",     icon: FolderOpen },
-  { id: "registre",    label: "Registre",     icon: Key },
-  { id: "historique",  label: "Historique",   icon: History },
-  { id: "pilotes",     label: "Scanner Pilotes", icon: HardDrive },
-  { id: "certificats", label: "Certificats",  icon: Lock },
-  { id: "performances",label: "Performances", icon: Activity },
-  { id: "outils-reseau",label: "Outils Réseau",icon: Wifi },
-  { id: "reparation",  label: "Réparation",   icon: Wrench },
-  { id: "benchmark",   label: "Benchmark",    icon: Gauge },
-  { id: "nettoyeur",   label: "Nettoyeur",    icon: Trash2 },
-  { id: "bsod",        label: "BSOD",         icon: AlertTriangle },
-  { id: "hosts",       label: "Hosts",        icon: FileText },
-  { id: "boot",        label: "Boot",         icon: Settings },
-  { id: "wsl",         label: "WSL",          icon: Terminal },
-  { id: "bluetooth",   label: "Bluetooth",    icon: Bluetooth },
-  { id: "perf-history",label: "Perf Historique", icon: Activity },
-  { id: "tools",       label: "Outils",       icon: Globe },
-  { id: "scan",        label: "Scan Total",   icon: ScanLine },
+  // ── Matériel ──────────────────────────────────────
+  { id: "os",          label: "Système",         icon: Monitor,       groupId: "hardware" },
+  { id: "bios",        label: "BIOS",            icon: CircuitBoard,  groupId: "hardware" },
+  { id: "mobo",        label: "Carte Mère",      icon: CircuitBoard,  groupId: "hardware" },
+  { id: "cpu",         label: "Processeur",      icon: Cpu,           groupId: "hardware" },
+  { id: "gpu",         label: "GPU",             icon: Monitor,       groupId: "hardware" },
+  { id: "ram",         label: "RAM",             icon: MemoryStick,   groupId: "hardware" },
+  { id: "disks",       label: "Disques",         icon: HardDrive,     groupId: "hardware" },
+  { id: "volumes",     label: "Volumes",         icon: Layers,        groupId: "hardware" },
+  // ── Périphériques ─────────────────────────────────
+  { id: "monitors",    label: "Écrans",          icon: Monitor,       groupId: "devices" },
+  { id: "audio",       label: "Audio",           icon: Headphones,    groupId: "devices" },
+  { id: "usb",         label: "USB",             icon: Usb,           groupId: "devices" },
+  { id: "battery",     label: "Batterie",        icon: Battery,       groupId: "devices" },
+  { id: "power",       label: "Énergie",         icon: Zap,           groupId: "devices" },
+  { id: "printers",    label: "Imprimantes",     icon: Printer,       groupId: "devices" },
+  { id: "bluetooth",   label: "Bluetooth",       icon: Bluetooth,     groupId: "devices" },
+  // ── Réseau ────────────────────────────────────────
+  { id: "network",     label: "Adaptateurs",     icon: Wifi,          groupId: "network" },
+  { id: "connections", label: "Connexions",      icon: Activity,      groupId: "network" },
+  { id: "outils-reseau",label: "Outils Réseau",  icon: Wifi,          groupId: "network" },
+  { id: "hosts",       label: "Hosts",           icon: FileText,      groupId: "network" },
+  { id: "wsl",         label: "WSL",             icon: Terminal,      groupId: "network" },
+  // ── Logiciels ─────────────────────────────────────
+  { id: "software",    label: "Logiciels",       icon: Package,       groupId: "software" },
+  { id: "env",         label: "Variables",       icon: Server,        groupId: "software" },
+  { id: "startup",     label: "Démarrage",       icon: Play,          groupId: "software" },
+  { id: "processes",   label: "Processus",       icon: Activity,      groupId: "software" },
+  { id: "services",    label: "Services",        icon: Server,        groupId: "software" },
+  { id: "tasks",       label: "Tâches planif.",  icon: RefreshCw,     groupId: "software" },
+  { id: "updates",     label: "Mises à jour",    icon: RefreshCw,     groupId: "software" },
+  { id: "activation",  label: "Activation",      icon: Key,           groupId: "software" },
+  { id: "license",     label: "Licence",         icon: Key,           groupId: "software" },
+  { id: "folders",     label: "Dossiers",        icon: FolderTree,    groupId: "software" },
+  { id: "pilotes",     label: "Pilotes",         icon: HardDrive,     groupId: "software" },
+  { id: "nettoyeur",   label: "Nettoyeur",       icon: Trash2,        groupId: "software" },
+  { id: "benchmark",   label: "Benchmark",       icon: Gauge,         groupId: "software" },
+  { id: "boot",        label: "Boot",            icon: Settings,      groupId: "software" },
+  // ── Sécurité ──────────────────────────────────────
+  { id: "security",    label: "Sécurité",        icon: Shield,        groupId: "security" },
+  { id: "comptes",     label: "Comptes",         icon: Users,         groupId: "security" },
+  { id: "parefeu",     label: "Pare-feu",        icon: Shield,        groupId: "security" },
+  { id: "partages",    label: "Partages",        icon: FolderOpen,    groupId: "security" },
+  { id: "registre",    label: "Registre",        icon: Key,           groupId: "security" },
+  { id: "historique",  label: "Historique",      icon: History,       groupId: "security" },
+  { id: "certificats", label: "Certificats",     icon: Lock,          groupId: "security" },
+  // ── Performances & Outils ─────────────────────────
+  { id: "performances",label: "Performances",    icon: Activity,      groupId: "perf" },
+  { id: "perf-history",label: "Historique Perf", icon: Activity,      groupId: "perf" },
+  { id: "bsod",        label: "BSOD",            icon: AlertTriangle, groupId: "perf" },
+  { id: "reparation",  label: "Réparation",      icon: Wrench,        groupId: "perf" },
+  { id: "tools",       label: "Outils",          icon: Globe,         groupId: "perf" },
+  { id: "scan",        label: "Scan Total",      icon: ScanLine,      groupId: "perf" },
 ];
+
+const GROUPS = [
+  { id: "all",      label: "Tout",           icon: Globe    },
+  { id: "hardware", label: "Matériel",       icon: Cpu      },
+  { id: "devices",  label: "Périphériques",  icon: Usb      },
+  { id: "network",  label: "Réseau",         icon: Wifi     },
+  { id: "software", label: "Logiciels",      icon: Package  },
+  { id: "security", label: "Sécurité",       icon: Shield   },
+  { id: "perf",     label: "Perf & Outils",  icon: Gauge    },
+];
+
+const activeGroup = ref("all");
+
+const filteredTabs = computed(() =>
+  activeGroup.value === "all"
+    ? TABS
+    : TABS.filter(t => t.groupId === activeGroup.value)
+);
+
+function selectGroup(id: string) {
+  activeGroup.value = id;
+  const tabs = id === "all" ? TABS : TABS.filter(t => t.groupId === id);
+  if (!tabs.find(t => t.id === activeTab.value)) {
+    const first = tabs[0];
+    if (first) { activeTab.value = first.id; loadTab(first.id); }
+  }
+}
 
 const activeTab = ref("os");
 const loadedTabs = ref<Set<string>>(new Set());
@@ -224,8 +257,8 @@ async function loadTab(tab: string, force = false) {
       case "cpu":
         if (!sysInfo.value) sysInfo.value = await invoke("get_system_info");
         [cpuCache.value, cpuExtended.value] = await Promise.all([
-          invoke("get_cpu_cache_info"),
-          invoke("get_cpu_extended").catch(() => null),
+          invoke<CpuCache>("get_cpu_cache_info"),
+          invoke<any>("get_cpu_extended").catch(() => null),
         ]); break;
       case "gpu":         gpuList.value = await invoke("get_gpu_detailed"); break;
       case "ram":         ramData.value = await invoke("get_ram_detailed"); break;
@@ -238,8 +271,8 @@ async function loadTab(tab: string, force = false) {
       case "network":     networkAdapters.value = await invoke("get_network_adapters_detailed"); break;
       case "connections":
         [connections.value, wifiInfo.value] = await Promise.all([
-          invoke("get_active_connections"),
-          invoke("get_wifi_status").catch(() => null),
+          invoke<any[]>("get_active_connections"),
+          invoke<any>("get_wifi_status").catch(() => null),
         ]); break;
       case "monitors":  monitors.value = await invoke("get_monitor_info"); break;
       case "audio":     audioDevices.value = await invoke("get_audio_devices"); break;
@@ -378,10 +411,20 @@ async function runTotalScan() {
 function kbStr(v: number) { return v >= 1024 ? `${(v / 1024).toFixed(0)} MB` : `${v} KB`; }
 function mbStr(v: number) { return v >= 1024 ? `${(v / 1024).toFixed(1)} GB` : `${v.toFixed(0)} MB`; }
 
-async function writeExport(filename: string, content: string) {
-  const { invoke } = await import("@tauri-apps/api/core");
-  const path = await invoke<string>("save_export_file", { filename, content });
-  notify.success("Export sauvegardé", path);
+async function writeExport(defaultName: string, content: string, ext: string) {
+  try {
+    const { save } = await import("@tauri-apps/plugin-dialog");
+    const filePath = await save({
+      defaultPath: defaultName,
+      filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
+    });
+    if (!filePath) return;
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("save_content_to_path", { path: filePath, content });
+    notify.success("Export sauvegardé", filePath);
+  } catch (e: any) {
+    notify.error("Erreur export", String(e));
+  }
 }
 
 async function openExportFolder() {
@@ -404,7 +447,7 @@ async function exportJson() {
     license: licenseInfo.value, updates: updatesHistory.value, folders: folders.value,
     scan: scanResult.value, problems: scanProblems.value,
   };
-  await writeExport("diagnostic.json", JSON.stringify(payload, null, 2));
+  await writeExport("diagnostic.json", JSON.stringify(payload, null, 2), "json");
 }
 
 function buildTxtReport(): string {
@@ -579,7 +622,7 @@ function buildTxtReport(): string {
   return lines.join("\n");
 }
 
-async function exportTxt() { await writeExport("diagnostic.txt", buildTxtReport()); }
+async function exportTxt() { await writeExport("diagnostic.txt", buildTxtReport(), "txt"); }
 
 function badge(v: boolean, ok = "Activé", ko = "DÉSACTIVÉ") { return v ? ok : ko; }
 function cls(v: boolean, good = true) { return (v === good) ? 'ok' : 'warn'; }
@@ -822,7 +865,7 @@ ${l.office_name ? `<div class="kv"><span class="k">${l.office_name}</span><span 
 
   h += `<div style="text-align:center;margin-top:20px;color:#475569;font-size:11px">Rapport généré par NiTriTe — ${new Date().toLocaleString()}</div></body></html>`;
 
-  await writeExport("diagnostic.html", h);
+  await writeExport("diagnostic.html", h, "html");
 }
 
 async function exportMd() {
@@ -881,7 +924,7 @@ async function exportMd() {
   } else if (scanResult.value) {
     lines.push("## ✅ Aucun problème critique", "");
   }
-  await writeExport("diagnostic.md", lines.join("\n"));
+  await writeExport("diagnostic.md", lines.join("\n"), "md");
 }
 
 // Init
@@ -902,7 +945,21 @@ loadTab("os");
       </div>
     </div>
 
-    <NTabs :tabs="TABS" v-model="activeTab" wrap />
+    <!-- Filtres catégories -->
+    <div class="group-pills">
+      <button
+        v-for="g in GROUPS" :key="g.id"
+        class="group-pill"
+        :class="{ active: activeGroup === g.id }"
+        @click="selectGroup(g.id)"
+      >
+        <component :is="g.icon" :size="12" />
+        {{ g.label }}
+        <span class="pill-count">{{ g.id === 'all' ? TABS.length : TABS.filter(t => t.groupId === g.id).length }}</span>
+      </button>
+    </div>
+
+    <NTabs :tabs="filteredTabs" v-model="activeTab" wrap />
 
     <NCard style="margin-top:12px;padding:16px">
       <!-- Loading -->

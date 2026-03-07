@@ -140,7 +140,98 @@ html.theme-transitioning * {
   --accent-glow: 0 0 20px rgba(234, 179, 8, 0.3);
 }
 
-/* === Thème 8 : Custom (variables injectées via JS) === */
+/* === Thème 8 : Neon Synthwave === */
+[data-theme="neon-synthwave"] {
+  --bg-primary: #0d0015;
+  --bg-secondary: #160025;
+  --bg-tertiary: #22003a;
+  --bg-elevated: #350058;
+
+  --accent-primary: #f0abfc;
+  --accent-hover: #f5c6fe;
+  --accent-muted: rgba(240, 171, 252, 0.12);
+  --accent-glow: 0 0 20px rgba(240, 171, 252, 0.4);
+}
+
+/* === Thème 9 : Ocean Deep === */
+[data-theme="ocean-deep"] {
+  --bg-primary: #020f1a;
+  --bg-secondary: #041a2e;
+  --bg-tertiary: #062840;
+  --bg-elevated: #0a3d5e;
+
+  --accent-primary: #06b6d4;
+  --accent-hover: #22d3ee;
+  --accent-muted: rgba(6, 182, 212, 0.12);
+  --accent-glow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+/* === Thème 10 : Rose Quartz === */
+[data-theme="rose-quartz"] {
+  --bg-primary: #1a0a10;
+  --bg-secondary: #28101a;
+  --bg-tertiary: #381525;
+  --bg-elevated: #4d1d33;
+
+  --accent-primary: #f43f5e;
+  --accent-hover: #fb7185;
+  --accent-muted: rgba(244, 63, 94, 0.12);
+  --accent-glow: 0 0 20px rgba(244, 63, 94, 0.3);
+}
+
+/* === Thème 11 : Void Dark (AMOLED) === */
+[data-theme="void-dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #080808;
+  --bg-tertiary: #111111;
+  --bg-elevated: #1c1c1c;
+
+  --accent-primary: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-muted: rgba(99, 102, 241, 0.12);
+  --accent-glow: 0 0 20px rgba(99, 102, 241, 0.35);
+}
+
+/* === Thème 12 : Forest Green === */
+[data-theme="forest-green"] {
+  --bg-primary: #040f06;
+  --bg-secondary: #081a0c;
+  --bg-tertiary: #0f2614;
+  --bg-elevated: #183a1f;
+
+  --accent-primary: #16a34a;
+  --accent-hover: #22c55e;
+  --accent-muted: rgba(22, 163, 74, 0.12);
+  --accent-glow: 0 0 20px rgba(22, 163, 74, 0.3);
+}
+
+/* === Thème 13 : Copper Rust === */
+[data-theme="copper-rust"] {
+  --bg-primary: #120a05;
+  --bg-secondary: #1e1008;
+  --bg-tertiary: #2c180d;
+  --bg-elevated: #3d2314;
+
+  --accent-primary: #d97706;
+  --accent-hover: #f59e0b;
+  --accent-muted: rgba(217, 119, 6, 0.12);
+  --accent-glow: 0 0 20px rgba(217, 119, 6, 0.3);
+}
+
+/* === Thème 14 : Slate Steel === */
+[data-theme="slate-steel"] {
+  --bg-primary: #0a0e18;
+  --bg-secondary: #111622;
+  --bg-tertiary: #1a2030;
+  --bg-elevated: #252e42;
+
+  --accent-primary: #64748b;
+  --accent-hover: #94a3b8;
+  --accent-muted: rgba(100, 116, 139, 0.12);
+  --accent-glow: 0 0 20px rgba(100, 116, 139, 0.25);
+}
+
+/* === Thème 15 : Custom (variables injectées via JS) === */
 [data-theme="custom"] {
   /* Les variables sont injectées dynamiquement */
 }
