@@ -1,39 +1,22 @@
 # ===========================
-# NiTriTe 1.0 - .gitignore
+# Nitrite 1.0 - .gitignore
 # ===========================
 
-# --- Dossier logiciel : applications portables (trop volumineuses pour git) ---
-logiciel/AdwCleaner/
-logiciel/Autoruns/
-logiciel/BCUninstaller_5.9.0_net6.0-windows10.0.18362.0/
-logiciel/CPU-ZPortable/
-logiciel/CrystalDisk/
-logiciel/CrystalDiskMarkPortable/
-logiciel/Custom/
-logiciel/Executable/
-logiciel/GetDataBack Pro 5.55.Portable/
-logiciel/GoogleChromePortable/
-logiciel/HWMonitor/
-logiciel/HWMonitorPortable/
-logiciel/HWiNFOPortable/
-logiciel/Hard Disk Sentinel Pro Portable Version 4.60 Build 7377 FR/
-logiciel/Installateurs version portable/
-logiciel/Malwarebytes/
-logiciel/PortableApps/
-logiciel/ProcessExplorerPortable/
-logiciel/SpybotPortable/
-logiciel/Standalone Tools/
-logiciel/UserDiag/
-logiciel/WiseCare365/
-logiciel/WiseDiskCleanerPortable/
-logiciel/testdisk-7.0/
-logiciel/desktop.ini
+# --- Dossier logiciel : applications portables (trop volumineuses) ---
+logiciel/
 
 # --- Node / Rust build artifacts ---
 node_modules/
-target/
 dist/
-.next/
+src-tauri/target/
+
+# --- Drivers lourds (> 100 MB, limite GitHub) ---
+Drivers/Realtek High Definition Audio for Vista, Windows 7, Windows 8 and Windows 10 2.82/
+Drivers/Windows desktop runtime/
+
+# --- Scripts lourds (> 100 MB, limite GitHub) ---
+Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/KillerPerformanceSuite_40.25.614.1563_Win10-11x64.exe
+Script Windows/Tweaks Windows 11-10-8-7-Vista-XP/Win11_Tweaker_v2.0.1.Protable.win-x64.zip
 
 # --- OS ---
 Thumbs.db
@@ -45,16 +28,3 @@ desktop.ini
 .idea/
 *.suo
 *.user
-
-# --- Drivers & Scripts binaires (trop volumineux / exécutables) ---
-Drivers/
-Script Windows/
-*.exe
-*.dll
-*.msi
-
-# --- Logs ---
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
