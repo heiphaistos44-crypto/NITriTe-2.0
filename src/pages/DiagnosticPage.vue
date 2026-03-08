@@ -42,7 +42,7 @@ import {
   Monitor, Cpu, MemoryStick, HardDrive, Globe, Headphones,
   Usb, Battery, Package, Play, Zap, Printer, Key,
   RefreshCw, ScanLine, FileJson, FileText, FileCode, FolderOpen,
-  CircuitBoard, Wifi, Server, Shield, Activity, FolderTree, Layers,
+  CircuitBoard, Wifi, Server, Shield, Activity, FolderTree,
   Users, Clock, FileDown, History, Lock, Wrench,
   Gauge, Trash2, AlertTriangle, Settings, Terminal, Bluetooth,
 } from "lucide-vue-next";
@@ -122,8 +122,7 @@ const TABS = [
   { id: "cpu",         label: "Processeur",      icon: Cpu,           groupId: "hardware" },
   { id: "gpu",         label: "GPU",             icon: Monitor,       groupId: "hardware" },
   { id: "ram",         label: "RAM",             icon: MemoryStick,   groupId: "hardware" },
-  { id: "disks",       label: "Disques",         icon: HardDrive,     groupId: "hardware" },
-  { id: "volumes",     label: "Volumes",         icon: Layers,        groupId: "hardware" },
+  { id: "disks",       label: "Disques & Volumes", icon: HardDrive,     groupId: "hardware" },
   // ── Périphériques ─────────────────────────────────
   { id: "monitors",    label: "Écrans",          icon: Monitor,       groupId: "devices" },
   { id: "audio",       label: "Audio",           icon: Headphones,    groupId: "devices" },
@@ -205,7 +204,9 @@ const tabError = ref<Record<string, string>>({});
 // ============= Data refs =============
 const sysInfo = ref<SysInfo | null>(null);
 const biosInfo = ref<BiosInfo | null>(null);
+const biosExtended = ref<any>(null);
 const moboInfo = ref<MoboDetailed | null>(null);
+const moboExtended = ref<any>(null);
 const cpuCache = ref<CpuCache | null>(null);
 const cpuExtended = ref<any>(null);
 const osExtended = ref<any>(null);
@@ -252,8 +253,16 @@ async function loadTab(tab: string, force = false) {
         if (!sysInfo.value) sysInfo.value = await invoke("get_system_info");
         if (!osExtended.value) osExtended.value = await invoke("get_os_extended").catch(() => null);
         break;
-      case "bios":   biosInfo.value = await invoke("get_bios_info"); break;
-      case "mobo":   moboInfo.value = await invoke("get_motherboard_detailed"); break;
+      case "bios":
+        [biosInfo.value, biosExtended.value] = await Promise.all([
+          invoke<BiosInfo>("get_bios_info"),
+          invoke<any>("get_bios_extended").catch(() => null),
+        ]); break;
+      case "mobo":
+        [moboInfo.value, moboExtended.value] = await Promise.all([
+          invoke<MoboDetailed>("get_motherboard_detailed"),
+          invoke<any>("get_motherboard_extended").catch(() => null),
+        ]); break;
       case "cpu":
         if (!sysInfo.value) sysInfo.value = await invoke("get_system_info");
         [cpuCache.value, cpuExtended.value] = await Promise.all([
@@ -263,11 +272,11 @@ async function loadTab(tab: string, force = false) {
       case "gpu":         gpuList.value = await invoke("get_gpu_detailed"); break;
       case "ram":         ramData.value = await invoke("get_ram_detailed"); break;
       case "disks":
-        // Chargement séquentiel : disques d'abord (affichage rapide), puis SMART
+        // Chargement séquentiel : disques d'abord (affichage rapide), puis SMART + volumes
         storageList.value = await invoke<any[]>("get_storage_physical_info").catch(() => []);
         invoke<any[]>("get_smart_info").then(v => { smartData.value = v; }).catch(() => {});
+        invoke<any[]>("get_logical_volumes").then(v => { volumes.value = v; loadedTabs.value.add("volumes"); }).catch(() => {});
         break;
-      case "volumes":     volumes.value = await invoke("get_logical_volumes"); break;
       case "network":     networkAdapters.value = await invoke("get_network_adapters_detailed"); break;
       case "connections":
         [connections.value, wifiInfo.value] = await Promise.all([
@@ -978,6 +987,7 @@ loadTab("os");
           v-if="activeTab === 'os' || activeTab === 'bios' || activeTab === 'mobo'"
           :tab="activeTab" :sysInfo="sysInfo" :biosInfo="biosInfo"
           :moboInfo="moboInfo" :osExtended="osExtended"
+          :biosExtended="biosExtended" :moboExtended="moboExtended"
         />
         <DiagTabCPU
           v-else-if="activeTab === 'cpu'"
@@ -992,7 +1002,7 @@ loadTab("os");
           :ramData="ramData" :sysInfo="sysInfo"
         />
         <DiagTabStorage
-          v-else-if="activeTab === 'disks' || activeTab === 'volumes'"
+          v-else-if="activeTab === 'disks'"
           :tab="activeTab" :storageList="storageList" :volumes="volumes" :smartData="smartData"
         />
         <DiagTabNetwork
@@ -1009,6 +1019,7 @@ loadTab("os");
         <DiagTabSoftware
           v-else-if="activeTab === 'software' || activeTab === 'env'"
           :tab="activeTab" :softwareList="softwareList" :envVars="envVars"
+          @refresh="refreshTab"
         />
         <DiagTabProcesses
           v-else-if="activeTab === 'processes' || activeTab === 'services' || activeTab === 'startup' || activeTab === 'tasks'"

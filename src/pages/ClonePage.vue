@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NBadge from "@/components/ui/NBadge.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Copy, HardDrive, RefreshCw, Play, AlertTriangle,
-  CheckCircle, XCircle, Server, Cpu,
+  CheckCircle, XCircle, Server, Cpu, Shield,
+  Info, ChevronRight,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -23,7 +24,6 @@ interface DiskInfo {
 interface CloneProgress { step: string; percent: number; message: string; }
 interface CloneResult { success: boolean; method: string; message: string; duration_secs: number; }
 
-// ── État ─────────────────────────────────────────────────────
 type Tab = "image" | "robocopy";
 const activeTab = ref<Tab>("image");
 const disks = ref<DiskInfo[]>([]);
@@ -33,18 +33,18 @@ const targetDrive = ref("");
 const cloning = ref(false);
 const progress = ref(0);
 const progressMsg = ref("");
+const progressStep = ref(0); // 0=idle 1=prep 2=copy 3=verify 4=done
 const result = ref<CloneResult | null>(null);
 const confirmed = ref(false);
 
-// Reset confirmation quand on change de méthode
 watch(activeTab, () => {
   confirmed.value = false;
   targetDrive.value = "";
   result.value = null;
   progress.value = 0;
+  progressStep.value = 0;
 });
 
-// ── Disques disponibles ───────────────────────────────────────
 const drivesWithLetters = computed(() =>
   disks.value.flatMap(d =>
     d.partitions
@@ -74,24 +74,27 @@ async function loadDisks() {
   loadingDisks.value = false;
 }
 
-// ── Écoute des événements de progression ─────────────────────
 onMounted(async () => {
   const { listen } = await import("@tauri-apps/api/event");
   await listen<CloneProgress>("clone-progress", (ev) => {
     progress.value = ev.payload.percent;
     progressMsg.value = ev.payload.message;
+    if (ev.payload.percent < 20) progressStep.value = 1;
+    else if (ev.payload.percent < 85) progressStep.value = 2;
+    else if (ev.payload.percent < 100) progressStep.value = 3;
+    else progressStep.value = 4;
   });
   await loadDisks();
 });
 
-// ── Clonage Image Système (wbadmin) ─────────────────────────
 async function startSystemImage() {
   if (!targetDrive.value || !confirmed.value) return;
-  cloning.value = true; result.value = null; progress.value = 5;
+  cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
   progressMsg.value = "Lancement de Windows Backup (wbadmin)...";
   try {
     const { invoke } = await import("@tauri-apps/api/core");
     result.value = await invoke<CloneResult>("start_system_image", { targetDrive: targetDrive.value });
+    progressStep.value = 4;
     if (result.value.success) notify.success("Image système créée", result.value.message);
     else notify.error("Clonage échoué", result.value.message);
   } catch (e: any) {
@@ -100,10 +103,9 @@ async function startSystemImage() {
   cloning.value = false;
 }
 
-// ── Clonage Robocopy ─────────────────────────────────────────
 async function startRobocopy() {
   if (!sourceDrive.value || !targetDrive.value || !confirmed.value) return;
-  cloning.value = true; result.value = null; progress.value = 5;
+  cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
   progressMsg.value = "Démarrage Robocopy...";
   try {
     const { invoke } = await import("@tauri-apps/api/core");
@@ -111,6 +113,7 @@ async function startRobocopy() {
       sourceDrive: sourceDrive.value,
       targetDrive: targetDrive.value,
     });
+    progressStep.value = 4;
     if (result.value.success) notify.success("Clonage terminé", result.value.message);
     else notify.error("Erreur Robocopy", result.value.message);
   } catch (e: any) {
@@ -122,23 +125,57 @@ async function startRobocopy() {
 function formatSize(gb: number) {
   return gb >= 1000 ? `${(gb / 1000).toFixed(1)} To` : `${gb.toFixed(0)} Go`;
 }
+
+const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
 </script>
 
 <template>
   <div class="clone-page">
-    <DiagBanner :icon="Copy" title="Clonage Système" desc="Image système complète ou copie disque-à-disque pour migration Windows 10/11" color="blue" />
 
-    <!-- Sélecteur de méthode -->
-    <div class="method-tabs">
-      <button class="method-tab" :class="{ active: activeTab === 'image' }" @click="activeTab = 'image'">
-        <Server :size="15" /> Image Système Windows
-      </button>
-      <button class="method-tab" :class="{ active: activeTab === 'robocopy' }" @click="activeTab = 'robocopy'">
-        <Copy :size="15" /> Clone Disque-à-Disque
-      </button>
+    <!-- Header Premium -->
+    <div class="clone-hero">
+      <div class="hero-icon-wrap">
+        <div class="hero-icon"><Copy :size="28" /></div>
+      </div>
+      <div class="hero-text">
+        <h1 class="hero-title">Clonage &amp; Sauvegarde Système</h1>
+        <p class="hero-desc">Image système complète ou copie disque-à-disque — migration Windows 10/11 sécurisée</p>
+      </div>
+      <NBadge variant="info" style="flex-shrink:0">Admin requis</NBadge>
     </div>
 
-    <!-- Refresh disks -->
+    <!-- Carte prérequis -->
+    <div class="prereq-card">
+      <div class="prereq-title"><Shield :size="14" /> Prérequis</div>
+      <div class="prereq-list">
+        <div class="prereq-item"><CheckCircle :size="13" style="color:var(--success)" /> Droits administrateur Windows</div>
+        <div class="prereq-item"><CheckCircle :size="13" style="color:var(--success)" /> Disque cible en format NTFS</div>
+        <div class="prereq-item"><CheckCircle :size="13" style="color:var(--success)" /> Espace disque cible ≥ espace utilisé source</div>
+        <div class="prereq-item"><Info :size="13" style="color:var(--info)" /> Recommandé : fermer toutes les applications avant de lancer</div>
+      </div>
+    </div>
+
+    <!-- Méthodes recommandées -->
+    <div class="methods-row">
+      <div class="method-card" :class="{ selected: activeTab === 'image' }" @click="activeTab = 'image'">
+        <div class="method-icon method-icon-blue"><Server :size="20" /></div>
+        <div class="method-info">
+          <span class="method-name">Image Système <span class="method-badge">Recommandé</span></span>
+          <span class="method-desc">wbadmin — récupération complète OS depuis le démarrage</span>
+        </div>
+        <ChevronRight :size="14" class="method-arrow" :class="{ active: activeTab === 'image' }" />
+      </div>
+      <div class="method-card" :class="{ selected: activeTab === 'robocopy' }" @click="activeTab = 'robocopy'">
+        <div class="method-icon method-icon-orange"><Copy :size="20" /></div>
+        <div class="method-info">
+          <span class="method-name">Clone Robocopy</span>
+          <span class="method-desc">Migration rapide des fichiers et données vers un nouveau disque</span>
+        </div>
+        <ChevronRight :size="14" class="method-arrow" :class="{ active: activeTab === 'robocopy' }" />
+      </div>
+    </div>
+
+    <!-- Toolbar -->
     <div class="toolbar">
       <NButton variant="ghost" size="sm" :loading="loadingDisks" @click="loadDisks">
         <RefreshCw :size="13" /> Actualiser les disques
@@ -151,15 +188,15 @@ function formatSize(gb: number) {
 
     <template v-else>
 
-      <!-- ══ IMAGE SYSTÈME (wbadmin) ══ -->
+      <!-- ══ IMAGE SYSTÈME ══ -->
       <template v-if="activeTab === 'image'">
         <div class="info-banner warning">
           <AlertTriangle :size="14" />
-          <span><strong>Droits administrateur obligatoires.</strong> Si l'opération échoue, faites clic droit sur Nitrite → "Exécuter en tant qu'administrateur" et réessayez.</span>
+          <span><strong>Droits administrateur obligatoires.</strong> Clic droit → "Exécuter en tant qu'administrateur" si l'opération échoue.</span>
         </div>
         <div class="info-banner info">
-          <AlertTriangle :size="14" />
-          <span>wbadmin crée une Image Système Windows complète (OS + données) récupérable depuis le menu de démarrage. Le lecteur cible doit être en NTFS et avoir au moins autant d'espace libre que C:.</span>
+          <Info :size="14" />
+          <span>wbadmin crée une Image Système Windows complète (OS + données) récupérable depuis le menu de démarrage Windows.</span>
         </div>
 
         <div class="config-grid">
@@ -167,8 +204,10 @@ function formatSize(gb: number) {
             <p class="config-label"><Cpu :size="13" /> Système à capturer</p>
             <div class="drive-badge system">
               <HardDrive :size="14" />
-              <span>C:\ — Windows (système actuel)</span>
-              <span class="badge-sub">+ toutes les partitions critiques</span>
+              <div>
+                <span>C:\ — Windows (système actuel)</span>
+                <span class="badge-sub">Toutes les partitions critiques</span>
+              </div>
             </div>
           </div>
 
@@ -187,7 +226,7 @@ function formatSize(gb: number) {
         <div class="confirm-row">
           <label class="confirm-label">
             <input type="checkbox" v-model="confirmed" />
-            Je confirme que le lecteur cible peut être écrasé et que j'ai vérifié qu'il contient assez d'espace
+            Je confirme que le lecteur cible peut être écrasé et que j'ai vérifié l'espace disponible
           </label>
         </div>
 
@@ -196,11 +235,11 @@ function formatSize(gb: number) {
         </NButton>
       </template>
 
-      <!-- ══ CLONE DISQUE-À-DISQUE (Robocopy) ══ -->
+      <!-- ══ CLONE ROBOCOPY ══ -->
       <template v-if="activeTab === 'robocopy'">
         <div class="info-banner info">
-          <AlertTriangle :size="14" />
-          <span>Robocopy /MIR clone tous les fichiers et dossiers avec attributs et permissions. Idéal pour migrer des données vers un nouveau disque. Ne copie pas le secteur de démarrage (pour migration OS, préférez l'Image Système).</span>
+          <Info :size="14" />
+          <span>Robocopy /MIR clone tous les fichiers avec attributs et permissions. Idéal pour migrer des données. Ne copie pas le secteur de démarrage.</span>
         </div>
 
         <div class="config-grid">
@@ -233,7 +272,7 @@ function formatSize(gb: number) {
         <div class="confirm-row">
           <label class="confirm-label">
             <input type="checkbox" v-model="confirmed" />
-            Je confirme que la destination peut être écrasée (les fichiers existants seront supprimés si /MIR)
+            Je confirme que la destination peut être écrasée (les fichiers existants seront supprimés avec /MIR)
           </label>
         </div>
 
@@ -242,8 +281,15 @@ function formatSize(gb: number) {
         </NButton>
       </template>
 
-      <!-- Progression -->
+      <!-- Progression avec étapes visuelles -->
       <div v-if="cloning || progress > 0" class="progress-section">
+        <!-- Étapes -->
+        <div class="step-bar">
+          <div v-for="(label, i) in stepLabels" :key="i" class="step-item" :class="{ done: progressStep > i+1, active: progressStep === i+1 }">
+            <div class="step-dot">{{ progressStep > i+1 ? '✓' : i+1 }}</div>
+            <span class="step-label">{{ label }}</span>
+          </div>
+        </div>
         <div class="progress-header">
           <NSpinner v-if="cloning" :size="14" />
           <span>{{ progressMsg }}</span>
@@ -254,31 +300,53 @@ function formatSize(gb: number) {
 
       <!-- Résultat -->
       <div v-if="result" class="result-card" :class="result.success ? 'success' : 'error'">
-        <CheckCircle v-if="result.success" :size="20" />
-        <XCircle v-else :size="20" />
+        <CheckCircle v-if="result.success" :size="22" />
+        <XCircle v-else :size="22" />
         <div>
-          <p class="result-title">{{ result.success ? 'Opération réussie' : 'Opération échouée' }}</p>
+          <p class="result-title">{{ result.success ? '✓ Opération réussie' : '✕ Opération échouée' }}</p>
           <p class="result-method">Méthode : {{ result.method }}</p>
           <p class="result-msg">{{ result.message }}</p>
           <p class="result-duration">Durée : {{ Math.floor(result.duration_secs / 60) }}min {{ result.duration_secs % 60 }}s</p>
         </div>
       </div>
 
+      <!-- Avertissements & Bonnes Pratiques -->
+      <div class="checklist-card">
+        <p class="checklist-title">⚡ Bonnes Pratiques</p>
+        <div class="checklist">
+          <div class="checklist-item">☑ Fermez toutes les applications avant de lancer le clonage</div>
+          <div class="checklist-item">☑ Vérifiez que le disque cible est vide ou que les données peuvent être perdues</div>
+          <div class="checklist-item">☑ Pour une migration OS, préférez l'Image Système (wbadmin) à Robocopy</div>
+          <div class="checklist-item">☑ Conservez l'ancienne installation jusqu'à validation du nouveau disque</div>
+          <div class="checklist-item">☑ Pour un clonage secteur par secteur, envisagez Clonezilla ou Macrium Reflect</div>
+        </div>
+      </div>
+
       <!-- Disques détectés -->
-      <div v-if="disks.length > 0" class="disks-list">
-        <p class="section-title">Disques détectés</p>
+      <div v-if="disks.length > 0" class="disks-section">
+        <p class="section-label">Disques détectés</p>
         <div v-for="disk in disks" :key="disk.index" class="disk-card">
           <div class="disk-header">
-            <HardDrive :size="16" style="color:var(--accent-primary)" />
-            <span class="disk-name">Disque {{ disk.index }} — {{ disk.label }}</span>
-            <span class="disk-meta">{{ formatSize(disk.size_gb) }} · {{ disk.disk_type }} · {{ disk.bus_type }}</span>
+            <div class="disk-icon"><HardDrive :size="16" /></div>
+            <div class="disk-info">
+              <span class="disk-name">Disque {{ disk.index }} — {{ disk.label }}</span>
+              <span class="disk-meta">{{ formatSize(disk.size_gb) }} · {{ disk.disk_type }} · {{ disk.bus_type }}</span>
+            </div>
           </div>
           <div class="partitions-list">
             <div v-for="p in disk.partitions" :key="p.letter" class="part-row">
-              <span class="part-letter">{{ p.letter || 'Sans lettre' }}</span>
+              <span class="part-letter">{{ p.letter || '—' }}</span>
               <span class="part-label">{{ p.label || '—' }}</span>
               <span class="part-fs">{{ p.file_system }}</span>
               <span class="part-size">{{ formatSize(p.size_gb) }}</span>
+              <div class="part-bar-wrap">
+                <div class="part-bar-track">
+                  <div class="part-bar-fill" :style="{
+                    width: `${Math.round(((p.size_gb - p.free_gb) / p.size_gb) * 100)}%`,
+                    background: (p.free_gb / p.size_gb) < 0.1 ? 'var(--danger)' : 'var(--accent-primary)'
+                  }" />
+                </div>
+              </div>
               <span class="part-free" :style="{ color: (p.free_gb / p.size_gb) < 0.1 ? 'var(--danger)' : 'var(--success)' }">
                 {{ formatSize(p.free_gb) }} libres
               </span>
@@ -294,82 +362,172 @@ function formatSize(gb: number) {
 </template>
 
 <style scoped>
-.clone-page { display: flex; flex-direction: column; gap: 14px; }
+.clone-page { display: flex; flex-direction: column; gap: 16px; }
 
-.method-tabs { display: flex; gap: 6px; }
-.method-tab {
-  display: flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: var(--radius-md); border: 1.5px solid var(--border);
-  background: var(--bg-tertiary); cursor: pointer; font-family: inherit;
-  font-size: 13px; color: var(--text-secondary); transition: all 0.15s;
+/* Hero */
+.clone-hero {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, color-mix(in srgb, var(--accent-primary) 6%, var(--bg-secondary)) 100%);
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  position: relative; overflow: hidden;
 }
-.method-tab:hover { border-color: var(--text-muted); color: var(--text-primary); }
-.method-tab.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--bg-secondary); }
+.clone-hero::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary) 12%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.hero-icon-wrap { flex-shrink: 0; }
+.hero-icon {
+  width: 52px; height: 52px; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+  display: flex; align-items: center; justify-content: center; color: white;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.hero-text { flex: 1; }
+.hero-title { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+.hero-desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
 
+/* Prérequis */
+.prereq-card {
+  padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); border-left: 3px solid var(--info);
+}
+.prereq-title { font-size: 12px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: .05em; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.prereq-list { display: flex; flex-direction: column; gap: 6px; }
+.prereq-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+
+/* Méthodes */
+.methods-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .methods-row { grid-template-columns: 1fr; } }
+.method-card {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-xl);
+  background: var(--bg-secondary); cursor: pointer;
+  transition: all 0.2s; position: relative; overflow: hidden;
+}
+.method-card:hover { border-color: var(--text-muted); background: var(--bg-tertiary); transform: translateY(-1px); }
+.method-card.selected { border-color: var(--accent-primary); background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-secondary)); }
+.method-card.selected::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
+}
+.method-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white;
+}
+.method-icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 4px 12px rgba(59,130,246,.35); }
+.method-icon-orange { background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 4px 12px rgba(249,115,22,.35); }
+.method-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.method-name { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+.method-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--success-muted); color: var(--success); }
+.method-desc { font-size: 12px; color: var(--text-secondary); }
+.method-arrow { color: var(--text-muted); transition: color 0.15s, transform 0.15s; }
+.method-arrow.active { color: var(--accent-primary); transform: translateX(3px); }
+
+/* Toolbar */
 .toolbar { display: flex; align-items: center; gap: 10px; }
 .count-badge { font-size: 11px; color: var(--text-muted); font-family: monospace; }
 
+/* Info banners */
 .info-banner {
-  display: flex; gap: 8px; align-items: flex-start; padding: 10px 14px;
-  border-radius: var(--radius-md); font-size: 12px; line-height: 1.5;
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px 16px;
+  border-radius: var(--radius-lg); font-size: 12px; line-height: 1.6;
 }
-.info-banner.info    { background: var(--info-muted);    color: var(--info);    border: 1px solid var(--info); }
-.info-banner.warning { background: var(--warning-muted); color: var(--warning); border: 1px solid var(--warning); }
+.info-banner.info    { background: var(--info-muted);    color: var(--info);    border: 1px solid color-mix(in srgb, var(--info) 30%, transparent); }
+.info-banner.warning { background: var(--warning-muted); color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent); }
 
+/* Config */
 .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 700px) { .config-grid { grid-template-columns: 1fr; } }
 .config-card {
-  display: flex; flex-direction: column; gap: 8px; padding: 14px;
-  background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  display: flex; flex-direction: column; gap: 10px; padding: 16px;
+  background: var(--bg-secondary); border-radius: var(--radius-xl);
+  border: 1px solid var(--border); transition: border-color 0.15s;
 }
+.config-card:hover { border-color: var(--text-muted); }
 .config-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
 .drive-badge {
-  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-  background: var(--bg-tertiary); border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 13px;
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: var(--bg-tertiary); border-radius: var(--radius-md);
+  border: 1px solid var(--border); font-size: 13px;
 }
 .drive-badge.system { border-color: var(--accent-primary); color: var(--accent-primary); }
-.badge-sub { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.badge-sub { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .drive-select {
-  padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-md);
   background: var(--bg-tertiary); color: var(--text-primary); font-family: inherit; font-size: 12px;
   outline: none; cursor: pointer; transition: border-color 0.15s;
 }
 .drive-select:focus { border-color: var(--accent-primary); }
 .config-hint { font-size: 11px; color: var(--warning); }
 
-.confirm-row { padding: 10px 0; }
-.confirm-label {
-  display: flex; align-items: center; gap: 8px; font-size: 12px;
-  color: var(--text-secondary); cursor: pointer;
-}
-.confirm-label input { cursor: pointer; accent-color: var(--accent-primary); }
+/* Confirm */
+.confirm-row { padding: 8px 0; }
+.confirm-label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.confirm-label input { cursor: pointer; accent-color: var(--accent-primary); width: 15px; height: 15px; }
 
-.progress-section { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); }
+/* Progression */
+.progress-section { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-xl); border: 1px solid var(--border); }
+.step-bar { display: flex; align-items: center; gap: 0; }
+.step-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; position: relative; }
+.step-item:not(:last-child)::after { content:''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+.step-item.done::after { background: var(--success); }
+.step-item.active::after { background: linear-gradient(90deg, var(--accent-primary), var(--border)); }
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; border: 2px solid var(--border); background: var(--bg-tertiary);
+  color: var(--text-muted); z-index: 1; transition: all 0.3s;
+}
+.step-item.done .step-dot { background: var(--success); border-color: var(--success); color: white; }
+.step-item.active .step-dot { background: var(--accent-primary); border-color: var(--accent-primary); color: white; animation: pulse-dot 1s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent-primary) 40%,transparent)} 50%{box-shadow:0 0 0 6px transparent} }
+.step-label { font-size: 10px; color: var(--text-muted); text-align: center; }
+.step-item.done .step-label, .step-item.active .step-label { color: var(--text-primary); }
 .progress-header { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
 .progress-note { font-size: 11px; color: var(--text-muted); }
 
-.result-card { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border-radius: var(--radius-lg); border: 1px solid; }
+/* Résultat */
+.result-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px; border-radius: var(--radius-xl); border: 1px solid; }
 .result-card.success { background: var(--success-muted); border-color: var(--success); color: var(--success); }
 .result-card.error { background: var(--danger-muted); border-color: var(--danger); color: var(--danger); }
-.result-title { font-weight: 700; font-size: 14px; }
-.result-method, .result-msg, .result-duration { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+.result-title { font-weight: 800; font-size: 15px; }
+.result-method, .result-msg, .result-duration { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
-.disks-list { display: flex; flex-direction: column; gap: 10px; }
-.section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
-.disk-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.disk-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-tertiary); font-size: 13px; font-weight: 600; }
-.disk-name { flex: 1; color: var(--text-primary); }
+/* Bonnes pratiques */
+.checklist-card {
+  padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); border-left: 3px solid var(--warning);
+}
+.checklist-title { font-size: 12px; font-weight: 700; color: var(--warning); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.checklist-item { font-size: 12px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 6px; }
+
+/* Disques */
+.disks-section { display: flex; flex-direction: column; gap: 10px; }
+.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.disk-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; transition: border-color 0.15s; }
+.disk-card:hover { border-color: var(--text-muted); }
+.disk-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-tertiary); }
+.disk-icon { width: 34px; height: 34px; border-radius: var(--radius-md); background: var(--accent-muted); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0; }
+.disk-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.disk-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .disk-meta { font-size: 11px; color: var(--text-muted); font-family: monospace; }
 .partitions-list { padding: 0; }
-.part-row { display: flex; align-items: center; gap: 10px; padding: 6px 14px; font-size: 12px; border-top: 1px solid var(--border); }
-.part-letter { font-family: monospace; font-weight: 700; color: var(--accent-primary); min-width: 36px; }
-.part-label { flex: 1; color: var(--text-primary); }
-.part-fs { color: var(--text-muted); min-width: 60px; }
-.part-size { color: var(--text-secondary); min-width: 70px; text-align: right; font-family: monospace; }
-.part-free { min-width: 90px; text-align: right; font-family: monospace; font-size: 11px; }
-.badge-sys, .badge-boot { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-.badge-sys { background: var(--accent-muted); color: var(--accent-primary); }
-.badge-boot { background: var(--warning-muted); color: var(--warning); }
+.part-row { display: grid; grid-template-columns: 40px 1fr 60px 70px 80px 90px auto auto; align-items: center; gap: 8px; padding: 7px 16px; border-top: 1px solid var(--border); font-size: 12px; }
+.part-letter { font-family: monospace; font-weight: 700; color: var(--accent-primary); }
+.part-label { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.part-fs { color: var(--text-muted); }
+.part-size { color: var(--text-secondary); font-family: monospace; text-align: right; }
+.part-bar-wrap { min-width: 60px; }
+.part-bar-track { height: 5px; border-radius: 99px; background: var(--bg-elevated); border: 1px solid var(--border); overflow: hidden; }
+.part-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
+.part-free { font-family: monospace; font-size: 11px; text-align: right; }
+.badge-sys { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--accent-muted); color: var(--accent-primary); }
+.badge-boot { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--warning-muted); color: var(--warning); }
 
 .loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; color: var(--text-muted); font-size: 13px; }
 </style>

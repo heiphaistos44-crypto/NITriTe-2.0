@@ -11,9 +11,15 @@ import {
   Stethoscope, Trash2, RefreshCw, Save, Shield,
   Clock, CheckCircle, AlertTriangle, Activity,
   ArrowUp, ArrowDown, X, Zap,
+  Monitor, Thermometer, Flame, Pause, Play,
 } from "lucide-vue-next";
 
 const router = useRouter();
+
+// --- Interfaces monitoring détaillé ---
+interface CoreUsage { id: number; usage: number; }
+interface GpuInfo { name: string; usage_percent: number; vram_used_mb: number; vram_total_mb: number; temperature_c: number; }
+interface DiskTemp { name: string; temp_c: number; }
 
 // --- Métriques temps réel ---
 const cpuUsage = ref(0);
@@ -50,6 +56,17 @@ const topProcesses = ref<ProcessInfo[]>([]);
 const alerts = ref<AlertItem[]>([]);
 let alertIdCounter = 0;
 
+// --- Monitoring détaillé ---
+const cpuCores = ref<CoreUsage[]>([]);
+const gpuData = ref<GpuInfo[]>([]);
+const diskTemps = ref<DiskTemp[]>([]);
+const diskReadKbs = ref(0);
+const diskWriteKbs = ref(0);
+const networkDownKbs = ref(0);
+const networkUpKbs = ref(0);
+const paused = ref(false);
+const cpuTemp = ref(0);
+
 let unlisten: (() => void) | null = null;
 let devInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -63,7 +80,6 @@ const quickActions = [
   { label: "Mises à jour", icon: RefreshCw, route: "/updates", color: "info" as const, grad: "linear-gradient(135deg,#3b82f6,#2563eb)" },
   { label: "Sauvegarde", icon: Save, route: "/backup", color: "warning" as const, grad: "linear-gradient(135deg,#eab308,#ca8a04)" },
   { label: "Scan Antivirus", icon: Shield, route: "/scanvirus", color: "danger" as const, grad: "linear-gradient(135deg,#ef4444,#dc2626)" },
-  { label: "Monitoring", icon: Activity, route: "/monitoring", color: "accent" as const, grad: "linear-gradient(135deg,#a855f7,#7c3aed)" },
 ];
 
 function computeHealthScore() {
@@ -104,6 +120,18 @@ function applyMonitorData(raw: any) {
   networkDown.value = Math.round(raw.network_down_kbs ?? raw.net_download_kbs ?? 0);
   networkUp.value = Math.round(raw.network_up_kbs ?? raw.net_upload_kbs ?? 0);
 
+  // Monitoring détaillé
+  cpuCores.value = (raw.cpu_per_core ?? raw.cpu_cores ?? []).map((u: number | CoreUsage, i: number) =>
+    typeof u === "number" ? { id: i, usage: u } : u
+  );
+  gpuData.value = raw.gpu_data ?? [];
+  diskTemps.value = raw.disk_temps ?? [];
+  diskReadKbs.value = raw.disk_read_kbs ?? 0;
+  diskWriteKbs.value = raw.disk_write_kbs ?? 0;
+  cpuTemp.value = raw.cpu_temp_c ?? 0;
+  networkDownKbs.value = raw.network_down_kbs ?? raw.net_download_kbs ?? 0;
+  networkUpKbs.value = raw.network_up_kbs ?? raw.net_upload_kbs ?? 0;
+
   // Top processus
   topProcesses.value = (raw.top_processes ?? []).slice(0, 8).map((p: any) => ({
     pid: p.pid,
@@ -142,6 +170,18 @@ function clearAlerts() {
 function formatSpeed(kbs: number): string {
   if (kbs >= 1024) return `${(kbs / 1024).toFixed(1)} MB/s`;
   return `${Math.round(kbs)} KB/s`;
+}
+
+function coreBarColor(usage: number): string {
+  if (usage > 90) return "var(--danger)";
+  if (usage > 70) return "var(--warning)";
+  return "var(--accent-primary)";
+}
+
+function tempColor(t: number): string {
+  if (t > 85) return "var(--danger)";
+  if (t > 70) return "var(--warning)";
+  return "var(--success)";
 }
 
 const networkStatus = computed(() => {
@@ -358,6 +398,127 @@ onUnmounted(async () => {
       </div>
     </NCard>
 
+    <!-- Monitoring Détaillé : Header -->
+    <div class="monitoring-header" v-if="isLive">
+      <h2 class="section-title-mon"><Activity :size="16" /> Monitoring Temps Réel</h2>
+      <div style="display:flex;align-items:center;gap:8px">
+        <NBadge :variant="paused ? 'warning' : 'success'">{{ paused ? 'Pause' : 'Live' }}</NBadge>
+        <NButton variant="ghost" size="sm" @click="paused = !paused">
+          <Pause v-if="!paused" :size="13" /><Play v-else :size="13" />
+        </NButton>
+      </div>
+    </div>
+
+    <!-- GPU Cards -->
+    <div class="gpu-cards" v-if="gpuData.length && isLive && !paused">
+      <NCard v-for="(gpu, i) in gpuData" :key="i">
+        <template #header>
+          <div class="card-header-row">
+            <Monitor :size="14" />
+            <span>{{ gpu.name }}</span>
+          </div>
+        </template>
+        <div class="gpu-stat-row">
+          <span class="gpu-stat-label">Utilisation</span>
+          <div class="mon-bar-track" style="flex:1">
+            <div class="mon-bar-fill" :style="{ width: `${gpu.usage_percent}%`, background: coreBarColor(gpu.usage_percent) }" />
+          </div>
+          <span class="mon-val">{{ Math.round(gpu.usage_percent) }}%</span>
+        </div>
+        <div class="gpu-stat-row" v-if="gpu.vram_total_mb > 0">
+          <span class="gpu-stat-label">VRAM</span>
+          <div class="mon-bar-track" style="flex:1">
+            <div class="mon-bar-fill" :style="{ width: `${(gpu.vram_used_mb/gpu.vram_total_mb)*100}%`, background: 'var(--info)' }" />
+          </div>
+          <span class="mon-val">{{ gpu.vram_used_mb }} / {{ gpu.vram_total_mb }} MB</span>
+        </div>
+        <div class="gpu-stat-row" v-if="gpu.temperature_c > 0">
+          <span class="gpu-stat-label">Temp.</span>
+          <span class="mon-val" :style="{ color: tempColor(gpu.temperature_c) }">{{ gpu.temperature_c }}°C</span>
+        </div>
+      </NCard>
+    </div>
+
+    <!-- Températures -->
+    <NCard v-if="isLive && !paused && (cpuTemp > 0 || gpuData.some(g => g.temperature_c > 0) || diskTemps.length > 0)">
+      <template #header>
+        <div class="card-header-row">
+          <Thermometer :size="16" />
+          <span>Températures Composants</span>
+          <Flame v-if="cpuTemp > 80 || gpuData.some(g => g.temperature_c > 85) || diskTemps.some(d => d.temp_c > 55)"
+            :size="14" style="color:var(--danger);margin-left:4px" />
+        </div>
+      </template>
+      <div class="temps-grid">
+        <div v-if="cpuTemp > 0" class="temp-item">
+          <Cpu :size="14" />
+          <span class="temp-label">CPU</span>
+          <div class="temp-bar-track" style="flex:1">
+            <div class="temp-bar-fill" :style="{ width: `${Math.min((cpuTemp/100)*100,100)}%`, background: tempColor(cpuTemp) }" />
+          </div>
+          <span class="temp-value" :style="{ color: tempColor(cpuTemp) }">{{ cpuTemp }}°C</span>
+        </div>
+        <div v-for="(gpu, i) in gpuData.filter(g => g.temperature_c > 0)" :key="`gpu-t-${i}`" class="temp-item">
+          <Monitor :size="14" />
+          <span class="temp-label">{{ gpu.name.split(' ').slice(0,2).join(' ') }}</span>
+          <div class="temp-bar-track" style="flex:1">
+            <div class="temp-bar-fill" :style="{ width: `${Math.min((gpu.temperature_c/100)*100,100)}%`, background: tempColor(gpu.temperature_c) }" />
+          </div>
+          <span class="temp-value" :style="{ color: tempColor(gpu.temperature_c) }">{{ gpu.temperature_c }}°C</span>
+        </div>
+        <div v-for="(disk, i) in diskTemps" :key="`disk-t-${i}`" class="temp-item">
+          <HardDrive :size="14" />
+          <span class="temp-label">{{ disk.name.length > 16 ? disk.name.slice(0,16)+'…' : disk.name }}</span>
+          <div class="temp-bar-track" style="flex:1">
+            <div class="temp-bar-fill" :style="{ width: `${Math.min((disk.temp_c/80)*100,100)}%`, background: tempColor(disk.temp_c-10) }" />
+          </div>
+          <span class="temp-value" :style="{ color: tempColor(disk.temp_c-10) }">{{ disk.temp_c }}°C</span>
+        </div>
+      </div>
+    </NCard>
+
+    <!-- CPU Cores + Réseau/Disque -->
+    <div class="monitor-grid" v-if="isLive && !paused && cpuCores.length > 0">
+      <NCard>
+        <template #header>
+          <div class="card-header-row"><Cpu :size="16" /><span>Usage par Cœur</span></div>
+        </template>
+        <div class="cores-grid">
+          <div v-for="core in cpuCores" :key="core.id" class="core-item">
+            <span class="core-label">C{{ core.id }}</span>
+            <div class="mon-bar-track">
+              <div class="mon-bar-fill" :style="{ width: `${core.usage}%`, background: coreBarColor(core.usage) }" />
+            </div>
+            <span class="mon-val">{{ core.usage }}%</span>
+          </div>
+        </div>
+      </NCard>
+      <NCard>
+        <template #header>
+          <div class="card-header-row"><Wifi :size="16" /><span>Débits Réseau &amp; Disque</span></div>
+        </template>
+        <div class="net-speeds">
+          <div class="net-item">
+            <div class="net-icon net-download"><ArrowDown :size="15" /></div>
+            <div><div class="net-lbl">Download</div><div class="net-val">{{ formatSpeed(networkDownKbs) }}</div></div>
+          </div>
+          <div class="net-item">
+            <div class="net-icon net-upload"><ArrowUp :size="15" /></div>
+            <div><div class="net-lbl">Upload</div><div class="net-val">{{ formatSpeed(networkUpKbs) }}</div></div>
+          </div>
+          <div class="net-sep" />
+          <div class="net-item">
+            <div class="net-icon net-read"><HardDrive :size="15" /></div>
+            <div><div class="net-lbl">Lecture Disque</div><div class="net-val">{{ formatSpeed(diskReadKbs) }}</div></div>
+          </div>
+          <div class="net-item">
+            <div class="net-icon net-write"><HardDrive :size="15" /></div>
+            <div><div class="net-lbl">Écriture Disque</div><div class="net-val">{{ formatSpeed(diskWriteKbs) }}</div></div>
+          </div>
+        </div>
+      </NCard>
+    </div>
+
     <!-- Recent Activity -->
     <NCard>
       <template #header>
@@ -525,4 +686,40 @@ onUnmounted(async () => {
 .activity-empty { color: var(--text-muted); font-size: 13px; text-align: center; padding: 12px; }
 
 .font-mono { font-family: "JetBrains Mono", monospace; }
+
+/* Monitoring intégré */
+.monitoring-header { display: flex; justify-content: space-between; align-items: center; }
+.section-title-mon { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+.gpu-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.gpu-stat-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.gpu-stat-label { font-size: 12px; color: var(--text-secondary); min-width: 75px; }
+
+.monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .monitor-grid { grid-template-columns: 1fr; } }
+
+.temps-grid { display: flex; flex-direction: column; gap: 10px; }
+.temp-item { display: flex; align-items: center; gap: 8px; }
+.temp-label { font-size: 12px; color: var(--text-secondary); min-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.temp-bar-track { height: 6px; border-radius: 99px; background: var(--bg-elevated); border: 1px solid var(--border); overflow: hidden; }
+.temp-bar-fill { height: 100%; border-radius: 99px; transition: width 400ms ease, background 400ms ease; }
+.temp-value { font-size: 12px; font-weight: 600; font-family: "JetBrains Mono", monospace; min-width: 44px; text-align: right; }
+
+.cores-grid { display: flex; flex-direction: column; gap: 6px; }
+.core-item { display: flex; align-items: center; gap: 8px; }
+.core-label { font-size: 11px; color: var(--text-secondary); min-width: 22px; font-family: "JetBrains Mono", monospace; }
+.mon-bar-track { flex: 1; height: 6px; border-radius: 99px; background: var(--bg-elevated); border: 1px solid var(--border); overflow: hidden; }
+.mon-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover)); transition: width 300ms ease; }
+.mon-val { font-size: 11px; font-weight: 500; color: var(--text-secondary); font-family: "JetBrains Mono", monospace; min-width: 36px; text-align: right; }
+
+.net-speeds { display: flex; flex-direction: column; gap: 10px; }
+.net-item { display: flex; align-items: center; gap: 10px; }
+.net-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.net-download { background: linear-gradient(135deg, rgba(34,197,94,.25), rgba(34,197,94,.08)); color: var(--success); }
+.net-upload { background: linear-gradient(135deg, rgba(59,130,246,.25), rgba(59,130,246,.08)); color: var(--info); }
+.net-read { background: var(--info-muted); color: var(--info); }
+.net-write { background: var(--warning-muted); color: var(--warning); }
+.net-lbl { font-size: 11px; color: var(--text-secondary); }
+.net-val { font-size: 15px; font-weight: 600; color: var(--text-primary); font-family: "JetBrains Mono", monospace; }
+.net-sep { height: 1px; background: var(--border); margin: 2px 0; }
 </style>

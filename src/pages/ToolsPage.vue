@@ -101,15 +101,37 @@ const devTools: ToolInfo[] = [
   { id: "17", name: "Reseau & Internet", description: "Parametres reseau", command: "ms-settings:network", is_url: true, category: "parametres" },
 
   // Telechargements
-  { id: "18", name: "CrystalDiskInfo", description: "Sante du disque dur (S.M.A.R.T.)", command: "https://crystalmark.info/en/software/crystaldiskinfo/", is_url: true, category: "telechargements" },
-  { id: "19", name: "HWMonitor", description: "Surveillance des temperatures et voltages", command: "https://www.cpuid.com/softwares/hwmonitor.html", is_url: true, category: "telechargements" },
-  { id: "20", name: "CPU-Z", description: "Informations detaillees du processeur", command: "https://www.cpuid.com/softwares/cpu-z.html", is_url: true, category: "telechargements" },
+  { id: "18", name: "CrystalDiskInfo (web)", description: "Site officiel CrystalDiskInfo — version récente", command: "https://crystalmark.info/en/software/crystaldiskinfo/", is_url: true, category: "telechargements" },
+  { id: "19", name: "HWMonitor (web)", description: "Site officiel HWMonitor — version récente", command: "https://www.cpuid.com/softwares/hwmonitor.html", is_url: true, category: "telechargements" },
+  { id: "20", name: "CPU-Z (web)", description: "Site officiel CPU-Z — version récente", command: "https://www.cpuid.com/softwares/cpu-z.html", is_url: true, category: "telechargements" },
   { id: "25", name: "MajorGeeks", description: "Base de logiciels systeme et utilitaires", command: "https://www.majorgeeks.com/", is_url: true, category: "telechargements" },
   { id: "26", name: "Malekal", description: "Guides securite, drivers et Windows", command: "https://www.malekal.com/", is_url: true, category: "telechargements" },
   { id: "27", name: "YggTorrent", description: "Tracker torrent francophone", command: "https://www.yggtorrent.org/auth/login", is_url: true, category: "telechargements" },
   { id: "28", name: "La Cale", description: "Portail de telechargement", command: "https://la-cale.space/login", is_url: true, category: "telechargements" },
   { id: "29", name: "Gemini Tracker", description: "Tracker torrent prive", command: "https://gemini-tracker.org/login", is_url: true, category: "telechargements" },
   { id: "30", name: "C411 Tracker", description: "Portail torrent communautaire", command: "https://staging-68d548c5bd4.c411.org/login", is_url: true, category: "telechargements" },
+
+  // Portables locaux — Diagnostic
+  { id: "p1", name: "Autoruns64", description: "Gestion avancée des entrées de démarrage Windows (Sysinternals)", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\Autoruns\\Autoruns64.exe", is_url: false, category: "diagnostics" },
+  { id: "p3", name: "GetDataBack Pro", description: "Récupération de données avancée depuis des disques endommagés", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\GetDataBack Pro 5.55.Portable\\GetDataBackProPortable.exe", is_url: false, category: "diagnostics" },
+  { id: "p6", name: "CPU-Z Portable", description: "Informations détaillées sur le CPU, RAM et carte mère", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\CPU-ZPortable\\CPU-ZPortable.exe", is_url: false, category: "diagnostics" },
+  { id: "p7", name: "CrystalDiskInfo", description: "Analyse S.M.A.R.T. et santé des disques durs/SSD", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\CrystalDisk\\DiskInfo64.exe", is_url: false, category: "diagnostics" },
+  { id: "p8", name: "CrystalDiskMark Portable", description: "Benchmark de vitesse des disques (lecture/écriture)", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\CrystalDiskMarkPortable\\CrystalDiskMarkPortable.exe", is_url: false, category: "benchmark" },
+  { id: "p9", name: "HWiNFO Portable", description: "Informations matérielles complètes et monitoring temps réel", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\HWiNFOPortable\\HWiNFOPortable.exe", is_url: false, category: "diagnostics" },
+  { id: "p10", name: "HWMonitor Portable", description: "Surveillance des températures, voltages et ventilateurs", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\HWMonitorPortable\\HWMonitorPortable.exe", is_url: false, category: "diagnostics" },
+  { id: "p11", name: "Hard Disk Sentinel Pro", description: "Surveillance avancée de la santé des disques (HDD/SSD/NVMe)", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\Hard Disk Sentinel Pro Portable Version 4.60 Build 7377 FR\\HDSentinel.exe", is_url: false, category: "diagnostics" },
+  { id: "p12", name: "Process Explorer Portable", description: "Gestionnaire de processus avancé (Sysinternals)", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\ProcessExplorerPortable\\ProcessExplorerPortable.exe", is_url: false, category: "diagnostics" },
+  { id: "p13", name: "UserDiag", description: "Diagnostic utilisateur Windows complet", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\UserDiag\\UserDiag.exe", is_url: false, category: "diagnostics" },
+  // Portables locaux — Nettoyage
+  { id: "p2", name: "Bulk Crap Uninstaller", description: "Désinstalleur massif d'applications avec nettoyage des résidus", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\BCUninstaller_5.9.0_net6.0-windows10.0.18362.0\\BCUninstaller.exe", is_url: false, category: "nettoyage" },
+  { id: "p14", name: "AdwCleaner", description: "Suppression des adwares, PUP et toolbars indésirables", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\AdwCleaner\\adwcleaner.exe", is_url: false, category: "nettoyage" },
+  { id: "p15", name: "WiseCare 365", description: "Optimisation et nettoyage système complet", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\WiseCare365\\WiseCare365.exe", is_url: false, category: "nettoyage" },
+  { id: "p16", name: "Wise Disk Cleaner Portable", description: "Nettoyage des fichiers inutiles et defragmentation", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\WiseDiskCleanerPortable\\WiseDiskCleanerPortable.exe", is_url: false, category: "nettoyage" },
+  { id: "p17", name: "Spybot Portable", description: "Détection et suppression des logiciels espions", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\SpybotPortable\\SpybotPortable.exe", is_url: false, category: "nettoyage" },
+  // Portables locaux — Drivers
+  { id: "p4", name: "Display Driver Uninstaller (DDU)", description: "Désinstallation propre et complète des pilotes graphiques", command: "C:\\Users\\Momo\\Desktop\\Nitrite 2.0\\logiciel\\DDU v18.1.4.2\\Display Driver Uninstaller.exe", is_url: false, category: "drivers" },
+  // WinDirStat — à télécharger
+  { id: "p5", name: "WinDirStat", description: "Analyse visuelle de l'espace disque (à télécharger)", command: "https://windirstat.net/download.html", is_url: true, category: "diagnostics" },
 
   // Fabricants
   { id: "21", name: "Dell Support", description: "Support et pilotes Dell", command: "https://www.dell.com/support", is_url: true, category: "fabricants" },

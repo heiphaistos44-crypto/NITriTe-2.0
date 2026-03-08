@@ -17,8 +17,7 @@ export const navigationSections: NavSection[] = [
     items: [
       { id: "dashboard", label: "Tableau de bord", icon: "layout-dashboard", route: "/" },
       { id: "diagnostic", label: "Diagnostic", icon: "stethoscope", route: "/diagnostic" },
-      { id: "monitoring", label: "Monitoring", icon: "activity", route: "/monitoring" },
-      { id: "optimizations", label: "Optimisations", icon: "zap", route: "/optimizations" },
+{ id: "optimizations", label: "Optimisations", icon: "zap", route: "/optimizations" },
     ],
   },
   {

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { Search, RefreshCw, Cpu, Server, Play, Clock } from "lucide-vue-next";
+import { Search, RefreshCw, Cpu, Server, Play, Clock, X, SquarePlay, Square, RotateCcw, Trash2, Monitor } from "lucide-vue-next";
+import { invoke } from "@tauri-apps/api/core";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
+import NButton from "@/components/ui/NButton.vue";
 
 const props = defineProps<{
   tab: string;
@@ -19,6 +21,89 @@ const procSort = ref<"cpu"|"mem"|"name">("cpu");
 const svcSearch = ref("");
 const svcFilter = ref("all");
 const taskSearch = ref("");
+const actionMsg = ref("");
+const actionErr = ref(false);
+const busyPid = ref<number | null>(null);
+const busySvc = ref<string | null>(null);
+const busyTask = ref<string | null>(null);
+
+function showMsg(msg: string, err = false) {
+  actionMsg.value = msg;
+  actionErr.value = err;
+  setTimeout(() => { actionMsg.value = ""; }, 4000);
+}
+
+async function killProc(pid: number, name: string) {
+  if (!confirm(`Terminer le processus "${name}" (PID: ${pid}) ?`)) return;
+  busyPid.value = pid;
+  try {
+    const r = await invoke<string>("kill_process", { pid });
+    showMsg(r);
+    setTimeout(props.onRefresh, 800);
+  } catch (e: any) {
+    showMsg(e || "Erreur", true);
+  } finally { busyPid.value = null; }
+}
+
+async function ctrlService(name: string, action: string) {
+  busySvc.value = name + action;
+  try {
+    const r = await invoke<string>("control_service", { name, action });
+    showMsg(r);
+    setTimeout(props.onRefresh, 1000);
+  } catch (e: any) {
+    showMsg(e || "Erreur service", true);
+  } finally { busySvc.value = null; }
+}
+
+async function toggleStartup(item: any, enable: boolean) {
+  try {
+    const r = await invoke<string>("toggle_startup_program", {
+      name: item.name,
+      location: item.location,
+      command: item.command,
+      enable
+    });
+    showMsg(r);
+    setTimeout(props.onRefresh, 500);
+  } catch (e: any) {
+    showMsg(e || "Erreur démarrage", true);
+  }
+}
+
+async function removeStartup(item: any) {
+  if (!confirm(`Supprimer "${item.name}" du démarrage ?`)) return;
+  try {
+    const r = await invoke<string>("remove_startup_program", { name: item.name, location: item.location });
+    showMsg(r);
+    setTimeout(props.onRefresh, 500);
+  } catch (e: any) {
+    showMsg(e || "Erreur", true);
+  }
+}
+
+async function deleteTask(t: any) {
+  if (!confirm(`Supprimer la tâche "${t.name}" ?`)) return;
+  busyTask.value = t.name;
+  try {
+    const r = await invoke<string>("delete_scheduled_task", { taskName: t.name, taskPath: t.path || "" });
+    showMsg(r);
+    setTimeout(props.onRefresh, 800);
+  } catch (e: any) {
+    showMsg(e || "Erreur", true);
+  } finally { busyTask.value = null; }
+}
+
+async function runTaskNow(t: any) {
+  busyTask.value = t.name + "run";
+  try {
+    const fullName = t.path && t.path !== "\\" ? t.path.replace(/\\$/, "") + "\\" + t.name : t.name;
+    const r = await invoke<string>("run_scheduled_task_now", { taskName: fullName });
+    showMsg(r);
+  } catch (e: any) {
+    showMsg(e || "Erreur", true);
+  } finally { busyTask.value = null; }
+}
 
 const filteredProcs = computed(() => {
   let list = [...props.processes];
@@ -87,15 +172,20 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
         </button>
       </div>
 
+      <!-- Toast global -->
+      <teleport to="body">
+        <div v-if="actionMsg" :class="['action-toast', actionErr ? 'action-toast-err' : 'action-toast-ok']">{{ actionMsg }}</div>
+      </teleport>
+
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>PID</th><th>Nom</th><th>CPU %</th><th>RAM (MB)</th><th>Virt. (MB)</th><th>État</th><th>PPID</th></tr>
+            <tr><th>PID</th><th>Nom</th><th>CPU %</th><th>RAM (MB)</th><th>GPU %</th><th>État</th><th>Actions</th></tr>
           </thead>
           <tbody>
             <tr v-for="p in filteredProcs.slice(0, 300)" :key="p.pid">
               <td class="muted">{{ p.pid }}</td>
-              <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="p.path">{{ p.name }}</td>
+              <td style="font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="p.path || p.name">{{ p.name }}</td>
               <td>
                 <div style="display:flex;align-items:center;gap:6px;min-width:80px">
                   <span style="min-width:36px" :class="p.cpu_percent > 20 ? 'text-warn' : ''">{{ p.cpu_percent.toFixed(1) }}%</span>
@@ -103,9 +193,20 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
                 </div>
               </td>
               <td :class="p.memory_mb > 500 ? 'text-warn' : ''">{{ p.memory_mb.toFixed(0) }}</td>
-              <td class="muted">{{ p.virtual_memory_mb.toFixed(0) }}</td>
+              <td :class="(p.gpu_percent || 0) > 10 ? 'text-warn' : 'muted'">
+                {{ p.gpu_percent != null ? p.gpu_percent.toFixed(1) + '%' : '—' }}
+              </td>
               <td><NBadge :variant="p.status === 'Running' ? 'success' : p.status === 'Sleeping' ? 'default' : 'warning'" style="font-size:10px">{{ p.status }}</NBadge></td>
-              <td class="muted">{{ p.parent_pid || "—" }}</td>
+              <td>
+                <button
+                  class="kill-btn"
+                  :disabled="busyPid === p.pid"
+                  @click="killProc(p.pid, p.name)"
+                  title="Terminer le processus"
+                >
+                  <X :size="12" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -147,7 +248,7 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
       <div class="table-wrap">
         <table class="data-table">
           <thead>
-            <tr><th>Nom</th><th>Nom affiché</th><th>État</th><th>Démarrage</th><th>Compte</th><th>PID</th></tr>
+            <tr><th>Nom</th><th>Nom affiché</th><th>État</th><th>Démarrage</th><th>Compte</th><th>Actions</th></tr>
           </thead>
           <tbody>
             <tr v-for="(s, i) in filteredSvcs.slice(0, 400)" :key="i">
@@ -164,7 +265,25 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
                   style="font-size:10px">{{ s.start_mode }}</NBadge>
               </td>
               <td class="muted" style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.account || "—" }}</td>
-              <td class="muted">{{ s.process_id > 0 ? s.process_id : "—" }}</td>
+              <td style="white-space:nowrap">
+                <div style="display:flex;gap:4px">
+                  <button v-if="s.state !== 'Running'" class="svc-btn svc-start"
+                    :disabled="busySvc === s.name + 'start'"
+                    title="Démarrer" @click="ctrlService(s.name, 'start')">
+                    <SquarePlay :size="12" />
+                  </button>
+                  <button v-if="s.state === 'Running'" class="svc-btn svc-stop"
+                    :disabled="busySvc === s.name + 'stop'"
+                    title="Arrêter" @click="ctrlService(s.name, 'stop')">
+                    <Square :size="12" />
+                  </button>
+                  <button v-if="s.state === 'Running'" class="svc-btn svc-restart"
+                    :disabled="busySvc === s.name + 'restart'"
+                    title="Redémarrer" @click="ctrlService(s.name, 'restart')">
+                    <RotateCcw :size="12" />
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -180,7 +299,7 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
       <div v-if="!startupPrograms.length" class="diag-empty">Aucun programme au démarrage trouvé</div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Nom</th><th>Catégorie</th><th>Source</th><th>Portée</th><th>Commande</th></tr></thead>
+          <thead><tr><th>Nom</th><th>Catégorie</th><th>Source</th><th>Portée</th><th>Commande</th><th>Actions</th></tr></thead>
           <tbody>
             <tr v-for="(s, i) in startupPrograms" :key="i">
               <td style="font-weight:500">{{ s.name }}</td>
@@ -191,7 +310,17 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
               </td>
               <td class="muted" style="font-size:11px">{{ s.location }}</td>
               <td><NBadge :variant="s.user === 'Tous les utilisateurs' ? 'neutral' : 'default'" style="font-size:10px">{{ s.user }}</NBadge></td>
-              <td class="muted" style="font-size:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="s.command">{{ s.command }}</td>
+              <td class="muted" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="s.command">{{ s.command }}</td>
+              <td style="white-space:nowrap">
+                <div style="display:flex;gap:4px">
+                  <button class="svc-btn svc-restart" title="Désactiver" @click="toggleStartup(s, false)">
+                    <Square :size="12" />
+                  </button>
+                  <button class="svc-btn svc-stop" title="Supprimer" @click="removeStartup(s)">
+                    <Trash2 :size="12" />
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -210,7 +339,7 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Nom</th><th>Chemin</th><th>État</th><th>Déclencheur</th><th>Dernier exec.</th><th>Prochain exec.</th><th>Résultat</th></tr></thead>
+          <thead><tr><th>Nom</th><th>Chemin</th><th>État</th><th>Déclencheur</th><th>Dernier exec.</th><th>Résultat</th><th>Actions</th></tr></thead>
           <tbody>
             <tr v-for="(t, i) in filteredTasks.slice(0, 300)" :key="i">
               <td style="font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.name }}</td>
@@ -222,11 +351,24 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
               </td>
               <td class="muted" style="font-size:11px">{{ t.trigger || "—" }}</td>
               <td class="muted" style="font-size:11px">{{ t.last_run_time }}</td>
-              <td class="muted" style="font-size:11px">{{ t.next_run_time }}</td>
               <td>
                 <NBadge :variant="t.last_task_result === 0 ? 'success' : 'danger'" style="font-size:10px">
                   {{ t.last_task_result === 0 ? 'OK' : '0x' + t.last_task_result.toString(16).toUpperCase() }}
                 </NBadge>
+              </td>
+              <td style="white-space:nowrap">
+                <div style="display:flex;gap:4px">
+                  <button class="svc-btn svc-start" title="Exécuter maintenant"
+                    :disabled="busyTask === t.name + 'run'"
+                    @click="runTaskNow(t)">
+                    <SquarePlay :size="12" />
+                  </button>
+                  <button class="svc-btn svc-stop" title="Supprimer la tâche"
+                    :disabled="busyTask === t.name"
+                    @click="deleteTask(t)">
+                    <Trash2 :size="12" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -235,3 +377,35 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
     </div>
   </template>
 </template>
+
+<style scoped>
+.action-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.action-toast-ok { background: #1a4a1a; border: 1px solid #22c55e; color: #86efac; }
+.action-toast-err { background: #4a1a1a; border: 1px solid #ef4444; color: #fca5a5; }
+
+.kill-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.4);
+  background: rgba(239,68,68,0.12); color: #ef4444; cursor: pointer;
+  transition: all 0.15s;
+}
+.kill-btn:hover:not(:disabled) { background: rgba(239,68,68,0.3); }
+.kill-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.svc-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.15s;
+}
+.svc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.svc-start { border-color: rgba(34,197,94,0.4); color: #22c55e; }
+.svc-start:hover:not(:disabled) { background: rgba(34,197,94,0.2); }
+.svc-stop { border-color: rgba(239,68,68,0.4); color: #ef4444; }
+.svc-stop:hover:not(:disabled) { background: rgba(239,68,68,0.2); }
+.svc-restart { border-color: rgba(234,179,8,0.4); color: #eab308; }
+.svc-restart:hover:not(:disabled) { background: rgba(234,179,8,0.2); }
+</style>

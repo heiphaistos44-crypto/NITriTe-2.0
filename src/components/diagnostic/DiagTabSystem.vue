@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckCircle, AlertTriangle, Monitor, Cpu, CircuitBoard } from "lucide-vue-next";
+import { CheckCircle, AlertTriangle, Monitor, Cpu, CircuitBoard, Shield, Lock } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
@@ -10,6 +10,8 @@ const props = defineProps<{
   biosInfo: any;
   moboInfo: any;
   osExtended: any;
+  biosExtended?: any;
+  moboExtended?: any;
 }>();
 </script>
 
@@ -98,7 +100,7 @@ const props = defineProps<{
       <DiagBanner
         :icon="Cpu"
         title="BIOS / UEFI"
-        desc="Firmware, version SMBIOS, date de sortie et numéro de série système"
+        desc="Firmware, sécurité, TPM et informations avancées du système"
         color="amber"
       />
       <template v-if="biosInfo">
@@ -110,6 +112,53 @@ const props = defineProps<{
           <div class="info-row"><span>Version SMBIOS</span><NBadge variant="info">{{ biosInfo.smbios_version }}</NBadge></div>
           <div class="info-row info-full"><span>Numéro de série système</span><code>{{ biosInfo.serial_number || "N/A" }}</code></div>
         </div>
+
+        <!-- Informations étendues BIOS -->
+        <template v-if="biosExtended">
+          <p class="diag-section-label">Firmware & Sécurité</p>
+          <div class="info-grid">
+            <div class="info-row">
+              <span>Type firmware</span>
+              <NBadge :variant="biosExtended.firmware_type === 'UEFI' ? 'success' : 'warning'">
+                {{ biosExtended.firmware_type || '...' }}
+              </NBadge>
+            </div>
+            <div class="info-row">
+              <span>Secure Boot</span>
+              <NBadge :variant="biosExtended.secure_boot ? 'success' : 'neutral'">
+                <Lock :size="10" style="display:inline;margin-right:3px" />
+                {{ biosExtended.secure_boot ? 'Activé' : 'Désactivé' }}
+              </NBadge>
+            </div>
+            <div class="info-row">
+              <span>TPM présent</span>
+              <NBadge :variant="biosExtended.tpm_present ? 'success' : 'neutral'">
+                <Shield :size="10" style="display:inline;margin-right:3px" />
+                {{ biosExtended.tpm_present ? 'Oui' : 'Non' }}
+              </NBadge>
+            </div>
+            <div v-if="biosExtended.tpm_present" class="info-row">
+              <span>TPM activé</span>
+              <NBadge :variant="biosExtended.tpm_enabled ? 'success' : 'warning'">{{ biosExtended.tpm_enabled ? 'Oui' : 'Non' }}</NBadge>
+            </div>
+            <div v-if="biosExtended.tpm_spec_version" class="info-row">
+              <span>Version TPM</span><NBadge variant="info">TPM {{ biosExtended.tpm_spec_version }}</NBadge>
+            </div>
+            <div class="info-row">
+              <span>Type de châssis</span><span>{{ biosExtended.chassis_type || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span>Wake-on-LAN</span>
+              <NBadge :variant="biosExtended.wake_on_lan ? 'info' : 'neutral'">{{ biosExtended.wake_on_lan ? 'Activé' : 'Désactivé' }}</NBadge>
+            </div>
+            <div class="info-row">
+              <span>Démarrage rapide</span>
+              <NBadge :variant="biosExtended.fast_boot ? 'info' : 'neutral'">{{ biosExtended.fast_boot ? 'Activé' : 'Désactivé' }}</NBadge>
+            </div>
+          </div>
+        </template>
+
+        <div v-if="!biosExtended" class="diag-loading" style="margin-top:8px"><div class="diag-spinner"></div> Chargement des infos BIOS étendues...</div>
 
         <p class="diag-section-label">Informations complémentaires</p>
         <div class="card-block" style="margin-top:0">
@@ -132,7 +181,7 @@ const props = defineProps<{
       <DiagBanner
         :icon="CircuitBoard"
         title="Carte Mère"
-        desc="Fabricant, modèle, version et numéro de série du circuit imprimé principal"
+        desc="Fabricant, modèle, slots d'extension, socket CPU et informations hardware"
         color="teal"
       />
       <template v-if="moboInfo">
@@ -146,6 +195,46 @@ const props = defineProps<{
             <NBadge :variant="moboInfo.status === 'OK' ? 'success' : 'warning'">{{ moboInfo.status }}</NBadge>
           </div>
         </div>
+
+        <!-- Informations étendues Carte Mère -->
+        <template v-if="moboExtended">
+          <p class="diag-section-label">Informations système étendues</p>
+          <div class="info-grid">
+            <div v-if="moboExtended.model" class="info-row"><span>Modèle PC</span><span>{{ moboExtended.model }}</span></div>
+            <div v-if="moboExtended.cpu_socket" class="info-row"><span>Socket CPU</span><NBadge variant="info">{{ moboExtended.cpu_socket }}</NBadge></div>
+            <div class="info-row">
+              <span>Temp. carte mère</span>
+              <NBadge :variant="moboExtended.motherboard_temp_c > 0 ? (moboExtended.motherboard_temp_c > 70 ? 'danger' : moboExtended.motherboard_temp_c > 50 ? 'warning' : 'success') : 'neutral'">
+                {{ moboExtended.motherboard_temp_c > 0 ? moboExtended.motherboard_temp_c + ' °C' : 'Non disponible' }}
+              </NBadge>
+            </div>
+          </div>
+
+          <template v-if="moboExtended.expansion_slots?.length">
+            <p class="diag-section-label">Slots d'extension ({{ moboExtended.slot_count }})</p>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Désignation</th><th>Type</th><th>Statut</th><th>Largeur</th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(slot, i) in moboExtended.expansion_slots" :key="i">
+                    <td style="font-weight:500">{{ slot.name || `Slot ${i+1}` }}</td>
+                    <td><NBadge variant="default" style="font-size:10px">{{ slot.type || '—' }}</NBadge></td>
+                    <td>
+                      <NBadge :variant="slot.status == 3 || slot.status === 'Available' ? 'success' : slot.status == 4 || slot.status === 'In Use' ? 'info' : 'neutral'" style="font-size:10px">
+                        {{ slot.status == 3 ? 'Disponible' : slot.status == 4 ? 'Utilisé' : slot.status }}
+                      </NBadge>
+                    </td>
+                    <td class="muted">{{ slot.max_data_width > 0 ? slot.max_data_width + ' bit' : '—' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </template>
+        <div v-if="!moboExtended" class="diag-loading" style="margin-top:8px"><div class="diag-spinner"></div> Chargement des infos étendues...</div>
+
         <p class="diag-section-label">À propos</p>
         <div class="card-block" style="margin-top:0">
           <p class="muted" style="font-size:12px;line-height:1.6">

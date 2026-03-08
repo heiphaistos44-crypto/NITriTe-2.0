@@ -139,43 +139,42 @@ function healthVariant(h: string) {
     </div>
   </template>
 
-  <!-- Volumes logiques -->
-  <template v-else-if="tab === 'volumes'">
-    <div class="diag-tab-content">
-      <DiagBanner :icon="Layers" title="Volumes & Partitions" desc="Partitions logiques, occupation et systèmes de fichiers" color="cyan" />
-      <div v-if="!volumes.length" class="diag-empty">Aucun volume détecté</div>
-      <template v-else>
-        <p class="diag-section-label">Partitions & Volumes — {{ volumes.length }} volume(s)</p>
-        <div v-for="(v, i) in volumes" :key="i" class="card-block">
-          <div class="block-title">
-            <code style="font-size:16px">{{ v.drive_letter }}</code>
-            <span>{{ v.label || "Sans nom" }}</span>
-            <NBadge variant="info">{{ v.filesystem }}</NBadge>
-            <NBadge :variant="v.drive_type === 'Fixed' || v.drive_type === 'Disque fixe' ? 'default' : 'neutral'">{{ v.drive_type }}</NBadge>
-            <NBadge :variant="healthVariant(v.health_status)">{{ v.health_status }}</NBadge>
-          </div>
-          <div class="diag-stat-row" style="margin-bottom:12px">
-            <span style="min-width:60px">Espace</span>
-            <NProgress
-              :value="v.used_percent"
-              :variant="v.used_percent > 90 ? 'danger' : v.used_percent > 80 ? 'warning' : 'default'"
-              size="sm" showLabel
-            />
-            <span style="min-width:160px;text-align:right;font-size:12px;color:var(--text-secondary)">
-              {{ v.free_gb.toFixed(1) }} GB libres / {{ v.total_gb.toFixed(1) }} GB
-            </span>
-          </div>
-          <div class="info-grid">
-            <div class="info-row"><span>Total</span><span>{{ v.total_gb.toFixed(2) }} GB</span></div>
-            <div class="info-row"><span>Utilisé</span><span>{{ v.used_gb.toFixed(2) }} GB ({{ v.used_percent.toFixed(1) }}%)</span></div>
-            <div class="info-row"><span>Libre</span><span>{{ v.free_gb.toFixed(2) }} GB</span></div>
-            <div class="info-row"><span>Système de fichiers</span><NBadge variant="info">{{ v.filesystem }}</NBadge></div>
-            <div class="info-row"><span>Type de volume</span><span>{{ v.drive_type }}</span></div>
-            <div class="info-row"><span>Santé</span><NBadge :variant="healthVariant(v.health_status)">{{ v.health_status }}</NBadge></div>
-            <div class="info-row"><span>Statut opérationnel</span><span>{{ v.operational_status }}</span></div>
-          </div>
+  <!-- Volumes logiques — fusionnés dans l'onglet Disques -->
+  <template v-if="tab === 'disks' && volumes.length > 0">
+    <div class="diag-tab-content" style="padding-top:0">
+      <p class="diag-section-label" style="display:flex;align-items:center;gap:6px">
+        <Layers :size="14" style="color:var(--accent)" />
+        Volumes &amp; Partitions — {{ volumes.length }} volume(s)
+      </p>
+      <div v-for="(v, i) in volumes" :key="i" class="card-block">
+        <div class="block-title">
+          <code style="font-size:16px">{{ v.drive_letter }}</code>
+          <span>{{ v.label || "Sans nom" }}</span>
+          <NBadge variant="info">{{ v.filesystem }}</NBadge>
+          <NBadge :variant="v.drive_type === 'Fixed' || v.drive_type === 'Disque fixe' ? 'default' : 'neutral'">{{ v.drive_type }}</NBadge>
+          <NBadge :variant="healthVariant(v.health_status)">{{ v.health_status }}</NBadge>
         </div>
-      </template>
+        <div class="diag-stat-row" style="margin-bottom:12px">
+          <span style="min-width:60px">Espace</span>
+          <NProgress
+            :value="v.used_percent"
+            :variant="v.used_percent > 90 ? 'danger' : v.used_percent > 80 ? 'warning' : 'default'"
+            size="sm" showLabel
+          />
+          <span style="min-width:160px;text-align:right;font-size:12px;color:var(--text-secondary)">
+            {{ v.free_gb.toFixed(1) }} GB libres / {{ v.total_gb.toFixed(1) }} GB
+          </span>
+        </div>
+        <div class="info-grid">
+          <div class="info-row"><span>Total</span><span>{{ v.total_gb.toFixed(2) }} GB</span></div>
+          <div class="info-row"><span>Utilisé</span><span>{{ v.used_gb.toFixed(2) }} GB ({{ v.used_percent.toFixed(1) }}%)</span></div>
+          <div class="info-row"><span>Libre</span><span>{{ v.free_gb.toFixed(2) }} GB</span></div>
+          <div class="info-row"><span>Système de fichiers</span><NBadge variant="info">{{ v.filesystem }}</NBadge></div>
+          <div class="info-row"><span>Type de volume</span><span>{{ v.drive_type }}</span></div>
+          <div class="info-row"><span>Santé</span><NBadge :variant="healthVariant(v.health_status)">{{ v.health_status }}</NBadge></div>
+          <div class="info-row"><span>Statut opérationnel</span><span>{{ v.operational_status }}</span></div>
+        </div>
+      </div>
     </div>
   </template>
 </template>

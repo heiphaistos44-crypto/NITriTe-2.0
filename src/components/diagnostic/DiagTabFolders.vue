@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NProgress from "@/components/ui/NProgress.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { FolderOpen } from "lucide-vue-next";
+
+async function openFolder(path: string) {
+  await invoke("open_path", { path }).catch(() => {});
+}
 
 const props = defineProps<{
   folders: any[];
@@ -50,6 +56,9 @@ const totalFiles = computed(() => props.folders.reduce((a, f) => a + f.file_coun
               {{ sizeStr(f.size_mb) }}
             </NBadge>
             <span class="muted" style="font-size:11px">{{ f.file_count.toLocaleString() }} fichiers</span>
+            <NButton variant="ghost" size="sm" @click="openFolder(f.path)" style="padding:2px 6px;height:22px;font-size:11px">
+              <FolderOpen :size="11" /> Ouvrir
+            </NButton>
           </div>
         </div>
         <NProgress

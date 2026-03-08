@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -11,6 +10,7 @@ import {
   Database, RefreshCw, RotateCcw, Clock, Trash2,
   FileText, CheckCircle, XCircle, Folder, Search,
   Save, CheckSquare, Square, FolderOpen, HardDrive, GitCompare, Filter,
+  Shield, Lightbulb,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -344,18 +344,43 @@ onMounted(loadShadows);
 
 <template>
   <div class="recovery-page">
-    <DiagBanner :icon="Database" title="Récupération de Données" desc="Restaurez vos fichiers depuis les Shadow Copies, la Corbeille ou le journal NTFS" color="emerald" />
 
-    <!-- Onglets -->
+    <!-- Header Premium -->
+    <div class="recovery-hero">
+      <div class="hero-icon-wrap">
+        <div class="hero-icon"><Database :size="26" /></div>
+      </div>
+      <div class="hero-text">
+        <h1 class="hero-title">Récupération de Données</h1>
+        <p class="hero-desc">Restaurez vos fichiers depuis les Shadow Copies, la Corbeille, le journal NTFS ou un disque</p>
+      </div>
+    </div>
+
+    <!-- Carte "Comment ça marche" -->
+    <div class="how-card">
+      <div class="how-title"><Lightbulb :size="14" /> Comment ça marche — 5 méthodes de récupération</div>
+      <div class="how-grid">
+        <div class="how-item"><span class="how-num">1</span><div><strong>Shadow Copy</strong> — Points de restauration VSS de Windows (le plus fiable)</div></div>
+        <div class="how-item"><span class="how-num">2</span><div><strong>Corbeille</strong> — Fichiers récemment supprimés mais non vidés</div></div>
+        <div class="how-item"><span class="how-num">3</span><div><strong>Journal NTFS</strong> — USN Journal : suppressions récentes sur volumes NTFS</div></div>
+        <div class="how-item"><span class="how-num">4</span><div><strong>Sauvegarde Profil</strong> — Copie via Robocopy de vos dossiers utilisateur</div></div>
+        <div class="how-item"><span class="how-num">5</span><div><strong>Récupération Disque</strong> — Scan bas niveau via outils tiers (Recuva/TestDisk)</div></div>
+      </div>
+    </div>
+
+    <!-- Onglets améliorés -->
     <div class="tabs">
       <button class="tab-btn" :class="{ active: activeTab === 'shadow' }" @click="activeTab = 'shadow'; loadShadows()">
         <Clock :size="14" /> Points de Restauration
+        <span v-if="shadows.length > 0" class="tab-badge">{{ shadows.length }}</span>
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'recycle' }" @click="activeTab = 'recycle'; loadRecycleBin()">
         <Trash2 :size="14" /> Corbeille
+        <span v-if="recycleFiles.length > 0" class="tab-badge tab-badge-warn">{{ recycleFiles.length }}</span>
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'mft' }" @click="activeTab = 'mft'">
         <Search :size="14" /> Journal NTFS
+        <span v-if="mftFiles.length > 0" class="tab-badge">{{ mftFiles.length }}</span>
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'backup' }" @click="activeTab = 'backup'; loadUserFolders()">
         <Save :size="14" /> Sauvegarde Profil
@@ -388,12 +413,15 @@ onMounted(loadShadows);
             :class="{ selected: selectedShadow?.id === s.id }"
           >
             <div class="shadow-header">
-              <Clock :size="14" style="color:var(--accent-primary)" />
+              <div class="shadow-icon"><Clock :size="16" /></div>
               <div class="shadow-info">
                 <span class="shadow-date">{{ formatDate(s.creation_time) }}</span>
-                <span class="shadow-vol">Volume : {{ s.volume }}</span>
+                <div class="shadow-meta-row">
+                  <span class="shadow-vol">Volume : {{ s.volume }}</span>
+                  <span v-if="s.provider" class="shadow-provider">· {{ s.provider }}</span>
+                </div>
               </div>
-              <NButton variant="ghost" size="sm" @click="browseShadow(s)">
+              <NButton variant="primary" size="sm" @click="browseShadow(s)">
                 <Folder :size="12" /> Parcourir
               </NButton>
             </div>
@@ -539,19 +567,27 @@ onMounted(loadShadows);
 
       <div v-if="loadingRecycle" class="loading-state"><NSpinner :size="20" /><span>Lecture de la Corbeille...</span></div>
       <div v-else-if="recycleFiles.length === 0" class="empty">
-        <Trash2 :size="28" /><p>La Corbeille est vide</p>
+        <Trash2 :size="28" />
+        <p>La Corbeille est vide</p>
+        <p class="hint">Aucun fichier supprimé récemment à restaurer</p>
       </div>
-      <div v-else class="files-table files-table-simple">
-        <div class="file-row-simple header-row">
-          <span>Nom</span><span>Taille</span><span>Supprimé le</span><span></span>
+      <div v-else>
+        <div class="recycle-info-banner">
+          <Shield :size="13" />
+          <span>{{ recycleFiles.length }} fichier(s) supprimé(s) récupérables. Cliquez "Restaurer" pour les remettre à leur emplacement d'origine.</span>
         </div>
-        <div v-for="f in recycleFiles" :key="f.path" class="file-row-simple">
-          <span class="file-name"><FileText :size="12" /> {{ f.name }}</span>
-          <span class="file-size">{{ formatSize(f.size_bytes) }}</span>
-          <span class="file-date">{{ formatDate(f.deleted_date) }}</span>
-          <NButton variant="ghost" size="sm" @click="restoreRecycle(f)">
-            <RotateCcw :size="11" /> Restaurer
-          </NButton>
+        <div class="files-table files-table-simple">
+          <div class="file-row-simple header-row">
+            <span>Nom</span><span>Taille</span><span>Supprimé le</span><span></span>
+          </div>
+          <div v-for="f in recycleFiles" :key="f.path" class="file-row-simple">
+            <span class="file-name"><FileText :size="12" /> {{ f.name }}</span>
+            <span class="file-size">{{ formatSize(f.size_bytes) }}</span>
+            <span class="file-date">{{ formatDate(f.deleted_date) }}</span>
+            <NButton variant="ghost" size="sm" @click="restoreRecycle(f)">
+              <RotateCcw :size="11" /> Restaurer
+            </NButton>
+          </div>
         </div>
       </div>
     </div>
@@ -560,7 +596,11 @@ onMounted(loadShadows);
     <div v-if="activeTab === 'mft'" class="tab-content">
       <div class="info-banner">
         <Search :size="14" />
-        <span>Le journal NTFS (USN) enregistre les opérations récentes sur les fichiers. Permet de retrouver les fichiers supprimés récemment même sans logiciel tiers.</span>
+        <div>
+          <strong>Journal NTFS (USN)</strong> — Le système de fichiers NTFS enregistre toutes les opérations récentes dans un journal interne.
+          Cet outil scanne ce journal pour retrouver les noms des fichiers récemment supprimés.
+          <br><em style="font-size:11px;opacity:.8">⚠ Le journal ne contient que les métadonnées (nom, date). Pour récupérer le contenu, utilisez Recuva ou TestDisk.</em>
+        </div>
       </div>
 
       <div class="toolbar">
@@ -681,15 +721,64 @@ onMounted(loadShadows);
 <style scoped>
 .recovery-page { display: flex; flex-direction: column; gap: 14px; }
 
-.tabs { display: flex; gap: 6px; }
+/* Hero */
+.recovery-hero {
+  display: flex; align-items: center; gap: 16px; padding: 18px 22px;
+  background: linear-gradient(135deg, var(--bg-secondary), color-mix(in srgb, var(--success) 5%, var(--bg-secondary)));
+  border: 1px solid var(--border); border-radius: var(--radius-xl); position: relative; overflow: hidden;
+}
+.recovery-hero::before {
+  content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--success) 10%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.hero-icon-wrap { flex-shrink: 0; }
+.hero-icon {
+  width: 48px; height: 48px; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--success), color-mix(in srgb, var(--success) 70%, var(--info)));
+  display: flex; align-items: center; justify-content: center; color: white;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--success) 35%, transparent);
+  animation: float-rec 3s ease-in-out infinite;
+}
+@keyframes float-rec { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+.hero-text { flex: 1; }
+.hero-title { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+.hero-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* How card */
+.how-card {
+  padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); border-left: 3px solid var(--info);
+}
+.how-title { font-size: 12px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 8px; }
+.how-item { display:flex; align-items:flex-start; gap:10px; font-size:12px; color:var(--text-secondary); }
+.how-num { min-width:22px; height:22px; border-radius:50%; background:var(--accent-muted); color:var(--accent-primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .tab-btn {
-  display: flex; align-items: center; gap: 7px; padding: 9px 16px;
+  display: flex; align-items: center; gap: 7px; padding: 9px 14px;
   border-radius: var(--radius-md); border: 1.5px solid var(--border);
   background: var(--bg-tertiary); cursor: pointer; font-family: inherit;
-  font-size: 13px; color: var(--text-secondary); transition: all 0.15s;
+  font-size: 13px; color: var(--text-secondary); transition: all 0.15s; position: relative;
 }
 .tab-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
 .tab-btn.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--bg-secondary); }
+.tab-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--accent-muted); color: var(--accent-primary); min-width: 18px; text-align: center; }
+.tab-badge-warn { background: var(--warning-muted); color: var(--warning); }
+
+/* Recycle banner */
+.recycle-info-banner {
+  display:flex; align-items:center; gap:8px; padding:10px 14px;
+  background: var(--success-muted); color: var(--success); border: 1px solid color-mix(in srgb,var(--success) 30%,transparent);
+  border-radius: var(--radius-md); font-size:12px; margin-bottom:8px;
+}
+
+/* Shadow icon */
+.shadow-icon { width:32px; height:32px; border-radius:var(--radius-md); background:var(--accent-muted); display:flex; align-items:center; justify-content:center; color:var(--accent-primary); flex-shrink:0; }
+.shadow-meta-row { display:flex; align-items:center; gap:6px; }
+.shadow-provider { font-size:10px; color:var(--text-muted); font-family:monospace; }
 
 .tab-content { display: flex; flex-direction: column; gap: 12px; }
 .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

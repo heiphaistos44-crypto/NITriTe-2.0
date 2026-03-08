@@ -13,6 +13,7 @@ pub struct ProcessInfo {
     pub user: String,
     pub start_time: u64,
     pub virtual_memory_mb: f64,
+    pub gpu_percent: Option<f64>,
 }
 
 pub fn collect_processes() -> Vec<ProcessInfo> {
@@ -51,6 +52,7 @@ pub fn collect_processes() -> Vec<ProcessInfo> {
             parent_pid: p.parent().map(|pp| pp.as_u32()).unwrap_or(0),
             user: p.user_id().map(|uid| format!("{:?}", uid)).unwrap_or_default(),
             start_time: p.start_time(),
+            gpu_percent: None, // GPU usage non disponible via sysinfo — placeholder pour futures intégrations WMI
         }
     }).collect();
 

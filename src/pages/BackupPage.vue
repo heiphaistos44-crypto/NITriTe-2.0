@@ -14,6 +14,40 @@ import {
 
 const notify = useNotificationStore();
 
+// --- Format d'export ---
+type ExportFormat = 'json' | 'txt' | 'html' | 'md';
+const exportFormat = ref<ExportFormat>('txt');
+
+// --- Emplacement personnalisé ---
+const customBackupPath = ref('');
+const useCustomPath = ref(false);
+
+async function pickBackupFolder() {
+  try {
+    const { open } = await import('@tauri-apps/plugin-dialog');
+    const dir = await open({ directory: true, title: 'Choisir le dossier de sauvegarde' });
+    if (dir && typeof dir === 'string') {
+      customBackupPath.value = dir;
+      useCustomPath.value = true;
+    }
+  } catch (e: any) {
+    notify.error('Erreur sélection dossier', String(e));
+  }
+}
+
+async function openSaveFolder() {
+  try {
+    const { invoke } = await import('@tauri-apps/api/core');
+    if (customBackupPath.value) {
+      await invoke('open_path', { path: customBackupPath.value });
+    } else {
+      const { homeDir, join } = await import('@tauri-apps/api/path');
+      const defaultFolder = await join(await homeDir(), 'Documents', 'NiTriTe', 'backups');
+      await invoke('open_path', { path: defaultFolder });
+    }
+  } catch { notify.error("Impossible d'ouvrir le dossier"); }
+}
+
 // --- Backup items ---
 interface BackupItem {
   id: string;
@@ -106,7 +140,11 @@ async function createBackup() {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    const result = await invoke<{ path: string; total_items: number }>("create_backup", { items: selected });
+    const result = await invoke<{ path: string; total_items: number }>("create_backup", {
+      items: selected,
+      format: exportFormat.value,
+      customPath: useCustomPath.value ? customBackupPath.value : undefined,
+    });
     backupResult.value = { path: result.path, items: selected };
     notify.success("Sauvegarde terminée", result.path);
   } catch (e: any) {
@@ -142,6 +180,10 @@ async function loadBackups() {
   } finally {
     backupsLoading.value = false;
   }
+}
+
+async function openEntryFolder(_filename: string) {
+  await openSaveFolder();
 }
 
 async function openBackupFolder() {
@@ -212,6 +254,27 @@ onMounted(loadBackups);
           </button>
         </div>
 
+        <!-- Format d'export -->
+        <div class="export-format-row">
+          <span style="font-size:12px;color:var(--text-muted)">Format :</span>
+          <div class="format-tabs">
+            <button v-for="fmt in ['txt','html','md','json']" :key="fmt"
+              class="fmt-btn" :class="{ active: exportFormat === fmt }"
+              @click="exportFormat = fmt as ExportFormat">
+              .{{ fmt }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Emplacement de sauvegarde -->
+        <div class="path-row">
+          <span style="font-size:12px;color:var(--text-muted);flex-shrink:0">Dossier :</span>
+          <code class="path-code">{{ customBackupPath || '~/Documents/NiTriTe/backups (défaut)' }}</code>
+          <NButton variant="ghost" size="sm" @click="pickBackupFolder"><FolderOpen :size="12" /> Choisir</NButton>
+          <NButton variant="ghost" size="sm" @click="openSaveFolder"><FolderOpen :size="12" /> Ouvrir</NButton>
+          <button v-if="useCustomPath" class="link-btn" @click="useCustomPath = false; customBackupPath = ''">Réinitialiser</button>
+        </div>
+
         <div class="backup-actions">
           <span class="selected-count">{{ selectedCount }} / {{ backupItems.length }} selectionne(s)</span>
           <NButton
@@ -277,6 +340,9 @@ onMounted(loadBackups);
                 &middot; {{ backup.items_count }} elements
               </span>
             </div>
+            <NButton variant="ghost" size="sm" @click="openEntryFolder(backup.filename)" style="margin-left:auto;flex-shrink:0">
+              <FolderOpen :size="12" />
+            </NButton>
           </div>
         </div>
       </NCard>
@@ -528,6 +594,28 @@ onMounted(loadBackups);
 }
 
 .font-mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+.export-format-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px;
+}
+.format-tabs { display: flex; gap: 4px; }
+.fmt-btn {
+  padding: 3px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer;
+  font-size: 12px; font-family: monospace; transition: all var(--transition-fast);
+}
+.fmt-btn.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--accent-muted); }
+.fmt-btn:hover:not(.active) { border-color: var(--text-muted); color: var(--text-primary); }
+
+.path-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.path-code {
+  font-size: 11px; color: var(--accent-primary); flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: "JetBrains Mono", monospace;
 }
 </style>

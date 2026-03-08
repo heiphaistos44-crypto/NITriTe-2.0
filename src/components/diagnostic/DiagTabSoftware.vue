@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { Search, Package, Terminal } from "lucide-vue-next";
+import { invoke } from "@tauri-apps/api/core";
+import { Search, Package, Terminal, Plus, Trash2 } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 
 const props = defineProps<{
@@ -10,9 +12,47 @@ const props = defineProps<{
   envVars: any[];
 }>();
 
+const emit = defineEmits<{ refresh: [] }>();
+
 const softwareSearch = ref("");
 const envSearch = ref("");
 const sortBy = ref<"name"|"date"|"size"|"publisher">("name");
+
+// Ajout de variable
+const showAddForm = ref(false);
+const newVarName = ref("");
+const newVarValue = ref("");
+const newVarScope = ref<"Système"|"Utilisateur">("Utilisateur");
+const envMsg = ref("");
+const envErr = ref(false);
+
+function showEnvMsg(msg: string, err = false) {
+  envMsg.value = msg; envErr.value = err;
+  setTimeout(() => { envMsg.value = ""; }, 4000);
+}
+
+async function addEnvVar() {
+  if (!newVarName.value.trim()) { showEnvMsg("Le nom est requis.", true); return; }
+  try {
+    const r = await invoke<string>("set_environment_variable", {
+      name: newVarName.value.trim(),
+      value: newVarValue.value,
+      scope: newVarScope.value,
+    });
+    showEnvMsg(r);
+    newVarName.value = ""; newVarValue.value = ""; showAddForm.value = false;
+    emit("refresh");
+  } catch (e: any) { showEnvMsg(String(e), true); }
+}
+
+async function deleteEnvVar(e: any) {
+  if (!confirm(`Supprimer la variable "${e.name}" (${e.var_type}) ?`)) return;
+  try {
+    const r = await invoke<string>("delete_environment_variable", { name: e.name, scope: e.var_type });
+    showEnvMsg(r);
+    emit("refresh");
+  } catch (err: any) { showEnvMsg(String(err), true); }
+}
 
 const filteredSoftware = computed(() => {
   let list = [...props.softwareList];
@@ -117,21 +157,63 @@ const byPublisher = computed(() => {
   <template v-else-if="tab === 'env'">
     <div class="diag-tab-content">
       <DiagBanner :icon="Terminal" title="Variables d'Environnement" desc="Variables système et utilisateur" color="teal" />
-      <div class="diag-search">
-        <Search :size="14" />
-        <input v-model="envSearch" placeholder="Filtrer variable ou valeur..." class="diag-search-input" />
-        <span class="muted">{{ filteredEnv.length }}/{{ envVars.length }}</span>
+
+      <!-- Toolbar -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div class="diag-search" style="flex:1;margin:0">
+          <Search :size="14" />
+          <input v-model="envSearch" placeholder="Filtrer variable ou valeur..." class="diag-search-input" />
+          <span class="muted">{{ filteredEnv.length }}/{{ envVars.length }}</span>
+        </div>
+        <NButton variant="primary" size="sm" @click="showAddForm = !showAddForm">
+          <Plus :size="13" /> Ajouter
+        </NButton>
       </div>
+
+      <!-- Message feedback -->
+      <div v-if="envMsg" :style="{ color: envErr ? 'var(--error)' : 'var(--success)', fontSize: '12px', marginBottom: '8px' }">
+        {{ envMsg }}
+      </div>
+
+      <!-- Formulaire d'ajout -->
+      <div v-if="showAddForm" class="card-block" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:140px">
+          <p class="diag-section-label" style="margin:0 0 4px 0;font-size:11px">Nom</p>
+          <input v-model="newVarName" placeholder="MY_VARIABLE" class="diag-search-input" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text);font-size:12px" />
+        </div>
+        <div style="flex:2;min-width:200px">
+          <p class="diag-section-label" style="margin:0 0 4px 0;font-size:11px">Valeur</p>
+          <input v-model="newVarValue" placeholder="valeur..." class="diag-search-input" style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text);font-size:12px" />
+        </div>
+        <div>
+          <p class="diag-section-label" style="margin:0 0 4px 0;font-size:11px">Portée</p>
+          <div style="display:flex;gap:4px">
+            <NBadge v-for="s in ['Utilisateur','Système']" :key="s"
+              :variant="newVarScope === s ? 'info' : 'default'"
+              style="cursor:pointer" @click="newVarScope = s as any">{{ s }}</NBadge>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <NButton variant="success" size="sm" @click="addEnvVar">Créer</NButton>
+          <NButton variant="ghost" size="sm" @click="showAddForm = false">Annuler</NButton>
+        </div>
+      </div>
+
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Variable</th><th>Valeur</th><th>Portée</th></tr></thead>
+          <thead><tr><th>Variable</th><th>Valeur</th><th>Portée</th><th>Actions</th></tr></thead>
           <tbody>
             <tr v-for="(e, i) in filteredEnv" :key="i">
               <td><code style="font-size:11px">{{ e.name }}</code></td>
-              <td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:12px;color:var(--text-secondary)">
+              <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:12px;color:var(--text-secondary)">
                 {{ e.value }}
               </td>
               <td><NBadge :variant="e.var_type === 'Système' ? 'info' : 'default'" style="font-size:10px">{{ e.var_type }}</NBadge></td>
+              <td>
+                <button class="env-del-btn" title="Supprimer la variable" @click="deleteEnvVar(e)">
+                  <Trash2 :size="11" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -139,3 +221,14 @@ const byPublisher = computed(() => {
     </div>
   </template>
 </template>
+
+<style scoped>
+.env-del-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 4px;
+  border: 1px solid rgba(239,68,68,0.4);
+  background: rgba(239,68,68,0.1); color: #ef4444;
+  cursor: pointer; transition: all 0.15s;
+}
+.env-del-btn:hover { background: rgba(239,68,68,0.25); }
+</style>

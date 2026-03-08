@@ -16,12 +16,6 @@ const router = createRouter({
       meta: { title: "Diagnostic" },
     },
     {
-      path: "/monitoring",
-      name: "monitoring",
-      component: () => import("@/pages/MonitoringPage.vue"),
-      meta: { title: "Monitoring" },
-    },
-    {
       path: "/optimizations",
       name: "optimizations",
       component: () => import("@/pages/OptimizationsPage.vue"),
