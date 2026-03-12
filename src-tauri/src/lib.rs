@@ -288,17 +288,75 @@ async fn disable_startup_program(name: String, location: String) -> Result<maint
         .map_err(|e| NiTriTeError::System(e.to_string()))?
 }
 
+// === Nettoyage sortie ===
+
+#[tauri::command]
+async fn cleanup_on_exit(app: tauri::AppHandle) -> Result<(), NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        // 1. Logs applicatif (.logs/ à la racine du projet — dev uniquement)
+        let logs_candidates = [
+            std::env::current_dir().ok().map(|d| d.join(".logs")),
+            std::env::var("APPDATA").ok().map(|a| std::path::PathBuf::from(a).join("com.nitrite.tool").join("logs")),
+        ];
+        for candidate in logs_candidates.iter().flatten() {
+            if candidate.exists() {
+                let _ = std::fs::remove_dir_all(candidate);
+            }
+        }
+
+        // 2. Fichiers temp Tauri dans %LOCALAPPDATA%\com.nitrite.tool\EBWebView\...
+        if let Ok(local) = std::env::var("LOCALAPPDATA") {
+            let tauri_cache = std::path::PathBuf::from(&local).join("com.nitrite.tool");
+            for sub in &["EBWebView", "logs", "temp"] {
+                let p = tauri_cache.join(sub);
+                if p.exists() { let _ = std::fs::remove_dir_all(&p); }
+            }
+        }
+
+        // 3. Fichiers temp Windows portant "nitrite" dans le nom
+        if let Ok(temp) = std::env::var("TEMP") {
+            if let Ok(entries) = std::fs::read_dir(&temp) {
+                for entry in entries.flatten() {
+                    let name = entry.file_name().to_string_lossy().to_lowercase();
+                    if name.contains("nitrite") || name.contains("tauri") {
+                        if entry.path().is_dir() {
+                            let _ = std::fs::remove_dir_all(entry.path());
+                        } else {
+                            let _ = std::fs::remove_file(entry.path());
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. WebView2 data (cookies, cache) du dossier EBWebView
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            let webview_cache = std::path::PathBuf::from(&appdata).join("com.nitrite.tool");
+            for sub in &["logs", "tmp", "cache"] {
+                let p = webview_cache.join(sub);
+                if p.exists() { let _ = std::fs::remove_dir_all(&p); }
+            }
+        }
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))?;
+
+    // Forcer la fermeture après nettoyage
+    app.exit(0);
+    Ok(())
+}
+
 // === Backup ===
 
 #[tauri::command]
-async fn create_backup(items: Vec<String>) -> Result<backup::collector::BackupManifest, NiTriTeError> {
-    tokio::task::spawn_blocking(move || backup::collector::create_backup(items))
+async fn create_backup(items: Vec<String>, format: String, custom_path: Option<String>) -> Result<backup::collector::BackupManifest, NiTriTeError> {
+    tokio::task::spawn_blocking(move || backup::collector::create_backup(items, format, custom_path))
         .await
         .map_err(|e| NiTriTeError::System(e.to_string()))?
 }
 
 #[tauri::command]
-async fn list_backups() -> Result<Vec<String>, NiTriTeError> {
+async fn list_backups() -> Result<Vec<backup::collector::BackupEntryInfo>, NiTriTeError> {
     tokio::task::spawn_blocking(backup::collector::list_backups)
         .await
         .map_err(|e| NiTriTeError::System(e.to_string()))?
@@ -329,6 +387,7 @@ async fn ai_query(
     prompt: String,
     model: Option<String>,
     system_prompt: Option<String>,
+    history: Option<Vec<serde_json::Value>>,   // [{role, content}]
     state: tauri::State<'_, AppState>,
 ) -> Result<String, NiTriTeError> {
     let (url, default_model, temp) = {
@@ -336,7 +395,38 @@ async fn ai_query(
         (config.ollama_url.clone(), config.ollama_model.clone(), 0.7)
     };
     let m = model.unwrap_or(default_model);
-    ai::ollama::query(&url, &m, &prompt, system_prompt.as_deref(), temp).await
+
+    // Construire la liste de messages pour /api/chat
+    let mut messages: Vec<ai::ollama::OllamaChatMessage> = vec![];
+
+    // System prompt en premier
+    if let Some(sys) = &system_prompt {
+        if !sys.trim().is_empty() {
+            messages.push(ai::ollama::OllamaChatMessage {
+                role: "system".into(),
+                content: sys.trim().to_string(),
+            });
+        }
+    }
+
+    // Historique de la conversation
+    if let Some(hist) = history {
+        for msg in hist {
+            let role = msg["role"].as_str().unwrap_or("user").to_string();
+            let content = msg["content"].as_str().unwrap_or("").to_string();
+            if !content.is_empty() && (role == "user" || role == "assistant") {
+                messages.push(ai::ollama::OllamaChatMessage { role, content });
+            }
+        }
+    }
+
+    // Message actuel de l'utilisateur
+    messages.push(ai::ollama::OllamaChatMessage {
+        role: "user".into(),
+        content: prompt,
+    });
+
+    ai::ollama::chat(&url, &m, messages, temp).await
 }
 
 #[tauri::command]
@@ -833,6 +923,7 @@ async fn execute_tool(command: String, is_url: bool) -> Result<(), NiTriTeError>
         tokio::task::spawn_blocking(move || {
             std::process::Command::new("cmd")
                 .args(["/C", &command])
+                .creation_flags(0x08000000)
                 .spawn()
                 .map_err(|e| NiTriTeError::System(e.to_string()))?;
             Ok(())
@@ -1191,7 +1282,7 @@ try {
                 }
                 Ok(None) => {
                     if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); return vec![]; }
-                    std::thread::sleep(std::time::Duration::from_millis(300));
+                    std::thread::sleep(std::time::Duration::from_millis(50));
                 }
                 Err(_) => { let _ = child.kill(); return vec![]; }
             }
@@ -1325,7 +1416,7 @@ $result | ConvertTo-Json -Depth 4 -Compress
                 }
                 Ok(None) => {
                     if start.elapsed() > timeout { let _ = child.kill(); let _ = child.wait(); break; }
-                    std::thread::sleep(std::time::Duration::from_millis(300));
+                    std::thread::sleep(std::time::Duration::from_millis(50));
                 }
                 Err(_) => { let _ = child.kill(); break; }
             }
@@ -1338,9 +1429,11 @@ $result | ConvertTo-Json -Depth 4 -Compress
 
 #[tauri::command]
 async fn check_scoop() -> bool {
+    // Scoop est un script PowerShell — ne pas l'invoquer directement comme exe
     tokio::task::spawn_blocking(|| {
-        std::process::Command::new("scoop")
-            .arg("--version")
+        std::process::Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-Command",
+                "if (Get-Command scoop -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"])
             .creation_flags(0x08000000)
             .output()
             .map(|o| o.status.success())
@@ -1354,27 +1447,42 @@ pub struct ScoopPackage { pub name: String, pub installed: String, pub available
 #[tauri::command]
 async fn list_scoop_upgrades() -> Vec<ScoopPackage> {
     tokio::task::spawn_blocking(|| {
+        // ConvertFrom-String est déprécié — on parse manuellement la sortie de "scoop status"
+        let ps = r#"
+$lines = @(scoop status 2>$null)
+$rows = @()
+foreach ($line in $lines) {
+    $t = $line.Trim()
+    if ($t -eq '' -or $t -match '^Name' -or $t -match '^-{3}' -or $t -match '^Scoop') { continue }
+    $parts = $t -split '\s{2,}'
+    if ($parts.Count -ge 2) {
+        $rows += [PSCustomObject]@{
+            name      = $parts[0].Trim()
+            installed = if ($parts.Count -ge 2) { $parts[1].Trim() } else { '' }
+            available = if ($parts.Count -ge 3) { $parts[2].Trim() } else { '' }
+        }
+    }
+}
+$rows | ConvertTo-Json -Compress
+"#;
         let out = std::process::Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command",
-                "scoop status 2>$null | Select-Object -Skip 2 | ConvertFrom-String -PropertyNames Name,Installed,Available | Select-Object Name,Installed,Available | ConvertTo-Json -Compress"])
+            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
             .creation_flags(0x08000000)
             .output();
         if let Ok(o) = out {
             let text = String::from_utf8_lossy(&o.stdout);
             let t = text.trim();
-            if !t.is_empty() && t != "[]" {
-                let json_text = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
-                if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&json_text) {
-                    return arr.iter().filter_map(|v| {
-                        let name = v["Name"].as_str()?.to_string();
-                        if name.is_empty() { return None; }
-                        Some(ScoopPackage {
-                            name,
-                            installed: v["Installed"].as_str().unwrap_or("").to_string(),
-                            available: v["Available"].as_str().unwrap_or("").to_string(),
-                        })
-                    }).collect();
-                }
+            if t.is_empty() || t == "null" { return vec![]; }
+            let json_text = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
+            if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&json_text) {
+                return arr.iter().filter_map(|v| {
+                    let name = v["name"].as_str().filter(|s| !s.is_empty())?.to_string();
+                    Some(ScoopPackage {
+                        name,
+                        installed: v["installed"].as_str().unwrap_or("").to_string(),
+                        available: v["available"].as_str().unwrap_or("").to_string(),
+                    })
+                }).collect();
             }
         }
         vec![]
@@ -1384,8 +1492,10 @@ async fn list_scoop_upgrades() -> Vec<ScoopPackage> {
 #[tauri::command]
 async fn upgrade_scoop_all(window: tauri::Window) -> Result<(), NiTriTeError> {
     tokio::task::spawn_blocking(move || {
+        // 1. Met à jour Scoop lui-même, 2. Met à jour tous les apps, 3. Nettoie les vieilles versions
+        let ps = "scoop update; scoop update * 2>&1; scoop cleanup * 2>&1; Write-Output 'Mise a jour Scoop terminee.'";
         let out = std::process::Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", "scoop update *; scoop cleanup *"])
+            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
             .creation_flags(0x08000000)
             .output()
             .map_err(|e| NiTriTeError::System(e.to_string()))?;
@@ -1804,6 +1914,42 @@ async fn open_battery_report_html() -> Result<(), String> {
     }
 }
 
+/// Ouvre Regedit positionné sur une clé de registre précise
+#[tauri::command]
+async fn open_in_regedit(key_path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        #[cfg(target_os = "windows")]
+        {
+            // Normaliser le chemin : HKCU\ -> HKEY_CURRENT_USER\, etc.
+            let full_path = key_path
+                .replace("HKCU\\", "HKEY_CURRENT_USER\\")
+                .replace("HKLM\\", "HKEY_LOCAL_MACHINE\\")
+                .replace("HKCR\\", "HKEY_CLASSES_ROOT\\")
+                .replace("HKU\\", "HKEY_USERS\\")
+                .replace("HKCC\\", "HKEY_CURRENT_CONFIG\\");
+
+            // Écrire la clé de navigation regedit dans le registre
+            let set_ps = format!(
+                "Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Regedit' -Name 'LastKey' -Value '{}' -Force -ErrorAction SilentlyContinue",
+                full_path.replace('\'', "''")
+            );
+            let _ = std::process::Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", &set_ps])
+                .creation_flags(0x08000000)
+                .status();
+
+            // Ouvrir regedit
+            std::process::Command::new("regedit.exe")
+                .creation_flags(0x00000001) // Ouvrir visible (pas de CREATE_NO_WINDOW ici)
+                .spawn()
+                .map_err(|e| e.to_string())?;
+            Ok(())
+        }
+        #[cfg(not(target_os = "windows"))]
+        Err("Non supporté".to_string())
+    }).await.map_err(|e| e.to_string())?
+}
+
 /// Installe un gestionnaire de paquets (winget/scoop/chocolatey)
 #[tauri::command]
 async fn install_package_manager(manager: String, window: tauri::Window) -> Result<String, String> {
@@ -1852,7 +1998,7 @@ Write-Output 'Chocolatey installé !'
 
 /// Ouvre le gestionnaire de périphériques Windows filtré sur un type
 #[tauri::command]
-async fn open_device_manager(device_class: String) -> Result<(), String> {
+async fn open_device_manager(_device_class: String) -> Result<(), String> {
     tokio::task::spawn_blocking(move || {
         #[cfg(target_os = "windows")]
         {
@@ -2316,6 +2462,51 @@ try {
     }).await.map_err(|e| e.to_string())?
 }
 
+// === Profils ===
+
+#[tauri::command]
+fn list_profiles() -> Vec<utils::profiles::Profile> {
+    utils::profiles::list_profiles()
+}
+
+#[tauri::command]
+fn save_profile_cmd(profile: utils::profiles::Profile) -> Result<(), String> {
+    utils::profiles::save_profile(&profile).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_profile_cmd(name: String) -> Result<(), String> {
+    utils::profiles::delete_profile(&name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn export_profile_json(name: String) -> Option<String> {
+    utils::profiles::export_profile_json(&name)
+}
+
+#[tauri::command]
+fn import_profile_json(json: String) -> Result<utils::profiles::Profile, String> {
+    utils::profiles::import_profile_from_json(&json)
+}
+
+// === Gestionnaire de Dépendances ===
+
+#[tauri::command]
+async fn check_all_dependencies() -> Vec<system::dependencies::Dependency> {
+    tokio::task::spawn_blocking(system::dependencies::check_all)
+        .await
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+async fn install_dependency(winget_id: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        system::dependencies::install_via_winget(&winget_id)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 // === Setup Tauri ===
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -2400,6 +2591,8 @@ pub fn run() {
             save_script_file,
             // Reports
             list_reports,
+            // Exit cleanup
+            cleanup_on_exit,
             // Utils
             open_url,
             open_path,
@@ -2602,6 +2795,36 @@ pub fn run() {
             // Activation
             open_activation_settings,
             run_slmgr,
+            // Points de restauration
+            system::restore_points::list_restore_points_cmd,
+            system::restore_points::create_restore_point_cmd,
+            // Regedit navigation
+            open_in_regedit,
+            // Script Generator
+            installer::script_generator::generate_deploy_script,
+            // Script Validator
+            scripts::validator::validate_script,
+            // Favorites & Install History
+            installer::favorites::get_favorites_data,
+            installer::favorites::toggle_favorite,
+            installer::favorites::log_install,
+            installer::favorites::clear_install_history,
+            // Usage Stats
+            utils::stats::get_app_stats,
+            utils::stats::log_action,
+            utils::stats::reset_stats,
+            // Report Generator
+            utils::report_generator::generate_html_report,
+            utils::report_generator::generate_md_report,
+            // Profils
+            list_profiles,
+            save_profile_cmd,
+            delete_profile_cmd,
+            export_profile_json,
+            import_profile_json,
+            // Gestionnaire Dépendances
+            check_all_dependencies,
+            install_dependency,
         ])
         .run(tauri::generate_context!())
         .expect("Erreur lors du lancement de NiTriTe");

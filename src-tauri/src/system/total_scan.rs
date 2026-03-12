@@ -7,7 +7,7 @@ use std::os::windows::process::CommandExt;
 use crate::error::NiTriTeError;
 use super::extended_info::{get_bios_info, get_battery_extended};
 use super::scan_supplement::{BitlockerVolume, StorageItem, collect_scan_supplement};
-use super::scan_extra::{TopProcess, SuspTask, collect_scan_extra};
+use super::scan_extra::{TopProcess, SuspTask, WmiSubscriptionDetail, collect_scan_extra};
 
 // === Types ===
 
@@ -20,10 +20,12 @@ pub struct ScanResult {
     pub battery_cycles: i64,
     pub suspicious_processes: Vec<SuspiciousProcess>,
     pub disk_usage: Vec<DiskUsage>,
-    pub winget_upgradable: Vec<String>,
+    pub winget_upgradable: Vec<WingetUpgrade>,
     pub choco_upgradable: Vec<String>,
     pub dism_status: String,
+    pub dism_details: String,
     pub sfc_status: String,
+    pub sfc_details: String,
     pub scan_errors: Vec<String>,
     pub uptime_hours: f64,
     pub cpu_name: String,
@@ -81,6 +83,7 @@ pub struct ScanResult {
     pub rdp_enabled: bool,
     pub smbv1_enabled: bool,
     pub wmi_subscriptions: u32,
+    pub wmi_subscription_details: Vec<WmiSubscriptionDetail>,
     pub local_admins: Vec<String>,
     pub guest_enabled: bool,
     pub system_manufacturer: String,
@@ -96,6 +99,14 @@ pub struct ScanResult {
     pub top_ram: Vec<TopProcess>,
     pub susp_tasks_count: u32,
     pub susp_tasks: Vec<SuspTask>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct WingetUpgrade {
+    pub name: String,
+    pub id: String,
+    pub current_version: String,
+    pub available_version: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -151,7 +162,8 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
         battery_present: false, battery_health: 0.0, battery_cycles: -1,
         suspicious_processes: vec![], disk_usage: vec![],
         winget_upgradable: vec![], choco_upgradable: vec![],
-        dism_status: String::new(), sfc_status: String::new(), scan_errors: vec![],
+        dism_status: String::new(), dism_details: String::new(),
+        sfc_status: String::new(), sfc_details: String::new(), scan_errors: vec![],
         uptime_hours: 0.0, cpu_name: String::new(), cpu_cores: 0, cpu_usage_percent: 0.0,
         ram_total_gb: 0.0, ram_used_gb: 0.0, ram_usage_percent: 0.0,
         windows_version: String::new(), windows_activation: String::new(),
@@ -172,7 +184,7 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
         storage_items: vec![], monitors_detail: String::new(),
         tpm_present: false, tpm_enabled: false, tpm_version: String::new(),
         secure_boot: false, uac_level: String::new(),
-        rdp_enabled: false, smbv1_enabled: false, wmi_subscriptions: 0,
+        rdp_enabled: false, smbv1_enabled: false, wmi_subscriptions: 0, wmi_subscription_details: vec![],
         local_admins: vec![], guest_enabled: false,
         system_manufacturer: String::new(), system_model: String::new(), system_serial: String::new(),
         bios_manufacturer: String::new(), bios_version: String::new(), bios_date: String::new(),
@@ -260,11 +272,15 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
 
     // 13. DISM /CheckHealth (88→94%)
     emit_progress(&window, "Intégrité système (DISM)...", 88);
-    result.dism_status = tokio::task::spawn_blocking(run_dism_check).await.unwrap_or_else(|_| "Erreur".to_string());
+    let (dism_s, dism_d) = tokio::task::spawn_blocking(run_dism_check).await.unwrap_or_else(|_| ("Erreur".to_string(), String::new()));
+    result.dism_status = dism_s;
+    result.dism_details = dism_d;
 
     // 14. SFC /verifyonly (88→93%)
     emit_progress(&window, "Vérification SFC...", 88);
-    result.sfc_status = tokio::task::spawn_blocking(run_sfc_verify).await.unwrap_or_else(|_| "Erreur".to_string());
+    let (sfc_s, sfc_d) = tokio::task::spawn_blocking(run_sfc_verify).await.unwrap_or_else(|_| ("Erreur".to_string(), String::new()));
+    result.sfc_status = sfc_s;
+    result.sfc_details = sfc_d;
 
     // 15. Antivirus + Defender defs + BSOD + KB age + Temp size (93→97%)
     emit_progress(&window, "Antivirus, services & sécurité avancée...", 93);
@@ -320,6 +336,7 @@ pub async fn run_total_scan(window: tauri::Window) -> Result<ScanResult, NiTriTe
     result.rdp_enabled = extra.rdp_enabled;
     result.smbv1_enabled = extra.smbv1_enabled;
     result.wmi_subscriptions = extra.wmi_subscriptions;
+    result.wmi_subscription_details = extra.wmi_subscription_details;
     result.local_admins = extra.local_admins;
     result.guest_enabled = extra.guest_enabled;
     result.system_manufacturer = extra.system_manufacturer;
@@ -405,6 +422,7 @@ fn scan_suspicious_processes() -> Vec<SuspiciousProcess> {
     let output = Command::new("powershell")
         .args(["-NoProfile", "-NonInteractive", "-Command",
             "Get-Process | Select-Object Id,ProcessName,Path | ConvertTo-Json -Depth 1 -Compress"])
+        .creation_flags(0x08000000)
         .output();
     let text = match output { Ok(o) => String::from_utf8_lossy(&o.stdout).to_string(), Err(_) => return vec![] };
     let val: serde_json::Value = match serde_json::from_str(&text) { Ok(v) => v, Err(_) => return vec![] };
@@ -510,12 +528,50 @@ fn get_listening_ports() -> Vec<u16> {
 
 // === WinGet / Choco ===
 
-fn list_winget_upgradable() -> Vec<String> {
+fn list_winget_upgradable() -> Vec<WingetUpgrade> {
     let output = Command::new("winget").args(["upgrade", "--include-unknown"]).creation_flags(0x08000000).output();
     match output {
         Ok(o) => {
             let text = String::from_utf8_lossy(&o.stdout).to_string();
-            text.lines().filter(|l| !l.trim().is_empty() && !l.starts_with('-') && !l.starts_with('N') && !l.starts_with("Name") && !l.contains("packages")).map(|l| l.trim().to_string()).take(20).collect()
+            let mut result = Vec::new();
+            let mut past_separator = false;
+            for line in text.lines() {
+                let t = line.trim();
+                if t.is_empty() { continue; }
+                if !past_separator {
+                    if t.chars().all(|c| c == '-' || c == ' ') && t.len() > 10 { past_separator = true; }
+                    continue;
+                }
+                if t.to_lowercase().contains("package") || t.to_lowercase().contains("paquet") { break; }
+                // Split line by 2+ consecutive spaces
+                let parts: Vec<&str> = {
+                    let mut parts = Vec::new();
+                    let mut start = 0;
+                    let bytes = t.as_bytes();
+                    let mut i = 0;
+                    while i < bytes.len() {
+                        if i + 1 < bytes.len() && bytes[i] == b' ' && bytes[i + 1] == b' ' {
+                            let part = t[start..i].trim();
+                            if !part.is_empty() { parts.push(part); }
+                            while i < bytes.len() && bytes[i] == b' ' { i += 1; }
+                            start = i;
+                        } else { i += 1; }
+                    }
+                    let last = t[start..].trim();
+                    if !last.is_empty() { parts.push(last); }
+                    parts
+                };
+                if parts.len() >= 3 {
+                    result.push(WingetUpgrade {
+                        name: parts[0].to_string(),
+                        id: parts.get(1).unwrap_or(&"").to_string(),
+                        current_version: parts.get(2).unwrap_or(&"").to_string(),
+                        available_version: parts.get(3).unwrap_or(&"").to_string(),
+                    });
+                }
+                if result.len() >= 30 { break; }
+            }
+            result
         }
         Err(_) => vec![],
     }
@@ -535,20 +591,28 @@ fn list_choco_upgradable() -> Vec<String> {
 
 // === DISM / SFC ===
 
-fn run_dism_check() -> String {
+fn run_dism_check() -> (String, String) {
     let output = Command::new("DISM").args(["/Online", "/Cleanup-Image", "/CheckHealth"]).creation_flags(0x08000000).output();
     match output {
         Ok(o) => {
             let text = String::from_utf8_lossy(&o.stdout).to_string();
-            if text.contains("No component store corruption") || text.to_lowercase().contains("aucune corruption") { "Sain — Aucune corruption détectée".to_string() }
-            else if !o.status.success() { "Avertissement — Vérification requise".to_string() }
-            else { "OK".to_string() }
+            let status = if text.contains("No component store corruption") || text.to_lowercase().contains("aucune corruption") {
+                "Sain — Aucune corruption détectée".to_string()
+            } else if !o.status.success() {
+                "Avertissement — Vérification requise".to_string()
+            } else { "OK".to_string() };
+            let details: String = text.lines()
+                .filter(|l| !l.trim().is_empty())
+                .take(40)
+                .collect::<Vec<_>>()
+                .join("\n");
+            (status, details)
         }
-        Err(_) => "DISM non disponible".to_string(),
+        Err(_) => ("DISM non disponible".to_string(), String::new()),
     }
 }
 
-fn run_sfc_verify() -> String {
+fn run_sfc_verify() -> (String, String) {
     let output = Command::new("sfc").args(["/verifyonly"]).creation_flags(0x08000000).output();
     match output {
         Ok(o) => {
@@ -558,12 +622,21 @@ fn run_sfc_verify() -> String {
                 let utf16: Vec<u16> = bytes.chunks(2).map(|c| u16::from_le_bytes([c[0], c.get(1).copied().unwrap_or(0)])).collect();
                 String::from_utf16_lossy(&utf16)
             } else { raw };
-            if text.to_lowercase().contains("no integrity violations") { "Intègre — Aucune violation détectée".to_string() }
-            else if text.to_lowercase().contains("found corrupt") { "Fichiers corrompus détectés".to_string() }
-            else if !o.status.success() { "Avertissement — Relancer en administrateur".to_string() }
-            else { "Vérification complète".to_string() }
+            let status = if text.to_lowercase().contains("no integrity violations") {
+                "Intègre — Aucune violation détectée".to_string()
+            } else if text.to_lowercase().contains("found corrupt") {
+                "Fichiers corrompus détectés".to_string()
+            } else if !o.status.success() {
+                "Avertissement — Relancer en administrateur".to_string()
+            } else { "Vérification complète".to_string() };
+            let details: String = text.lines()
+                .filter(|l| !l.trim().is_empty())
+                .take(40)
+                .collect::<Vec<_>>()
+                .join("\n");
+            (status, details)
         }
-        Err(_) => "SFC non disponible".to_string(),
+        Err(_) => ("SFC non disponible".to_string(), String::new()),
     }
 }
 

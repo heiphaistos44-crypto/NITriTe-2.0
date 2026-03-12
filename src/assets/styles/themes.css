@@ -10,14 +10,16 @@ html.theme-transitioning * {
 :root,
 [data-theme="nitrite-dark"] {
   --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-tertiary: #27272a;
-  --bg-elevated: #3f3f46;
+  --bg-secondary: #111114;
+  --bg-tertiary: #1c1c20;
+  --bg-elevated: #2a2a30;
 
   --accent-primary: #f97316;
   --accent-hover: #fb923c;
   --accent-muted: rgba(249, 115, 22, 0.12);
-  --accent-glow: 0 0 20px rgba(249, 115, 22, 0.3);
+  --accent-subtle: rgba(249, 115, 22, 0.06);
+  --accent-glow: 0 0 24px rgba(249, 115, 22, 0.4);
+  --accent-glow-sm: 0 0 10px rgba(249, 115, 22, 0.3);
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
@@ -25,6 +27,7 @@ html.theme-transitioning * {
 
   --success: #22c55e;
   --success-muted: rgba(34, 197, 94, 0.12);
+  --success-glow: 0 0 12px rgba(34, 197, 94, 0.3);
   --warning: #eab308;
   --warning-muted: rgba(234, 179, 8, 0.12);
   --danger: #ef4444;
@@ -32,8 +35,12 @@ html.theme-transitioning * {
   --info: #3b82f6;
   --info-muted: rgba(59, 130, 246, 0.12);
 
-  --border: #27272a;
-  --border-hover: #3f3f46;
+  --border: #2e2e33;
+  --border-hover: #44444c;
+  --border-strong: #52525b;
+
+  --surface-glass: rgba(255, 255, 255, 0.04);
+  --surface-glass-hover: rgba(255, 255, 255, 0.07);
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -41,13 +48,14 @@ html.theme-transitioning * {
   --radius-xl: 16px;
 
   --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
+  --transition-normal: 220ms ease;
+  --transition-slow: 350ms ease;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-inner: inset 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* === Thème 2 : Cyber Blue === */
@@ -229,6 +237,228 @@ html.theme-transitioning * {
   --accent-hover: #94a3b8;
   --accent-muted: rgba(100, 116, 139, 0.12);
   --accent-glow: 0 0 20px rgba(100, 116, 139, 0.25);
+}
+
+/* === Thème 16 : Inferno === */
+[data-theme="inferno"] {
+  --bg-primary: #0c0200;
+  --bg-secondary: #180500;
+  --bg-tertiary: #270800;
+  --bg-elevated: #3d1000;
+  --accent-primary: #ff4500;
+  --accent-hover: #ff6a30;
+  --accent-muted: rgba(255, 69, 0, 0.12);
+  --accent-subtle: rgba(255, 69, 0, 0.06);
+  --accent-glow: 0 0 24px rgba(255, 69, 0, 0.45);
+  --text-primary: #fff5ee;
+  --text-secondary: #fca472;
+  --text-muted: #c2410c;
+  --border: #270800;
+  --border-hover: #3d1000;
+  --border-strong: #5a1800;
+}
+
+/* === Thème 17 : Aurora Borealis === */
+[data-theme="aurora"] {
+  --bg-primary: #020d18;
+  --bg-secondary: #051825;
+  --bg-tertiary: #0a2535;
+  --bg-elevated: #0f3548;
+  --accent-primary: #00d4aa;
+  --accent-hover: #00f0c0;
+  --accent-muted: rgba(0, 212, 170, 0.12);
+  --accent-subtle: rgba(0, 212, 170, 0.06);
+  --accent-glow: 0 0 24px rgba(0, 212, 170, 0.45);
+  --text-primary: #edfff9;
+  --text-secondary: #67e8c9;
+  --text-muted: #0e7a60;
+  --border: #0a2535;
+  --border-hover: #0f3548;
+  --border-strong: #155a40;
+}
+
+/* === Thème 18 : Moonlight === */
+[data-theme="moonlight"] {
+  --bg-primary: #0c1220;
+  --bg-secondary: #111a2e;
+  --bg-tertiary: #18243e;
+  --bg-elevated: #1e2e50;
+  --accent-primary: #7dd3fc;
+  --accent-hover: #bae6fd;
+  --accent-muted: rgba(125, 211, 252, 0.12);
+  --accent-subtle: rgba(125, 211, 252, 0.06);
+  --accent-glow: 0 0 24px rgba(125, 211, 252, 0.3);
+  --text-primary: #f0f8ff;
+  --text-secondary: #93c5fd;
+  --text-muted: #4a7fc1;
+  --border: #18243e;
+  --border-hover: #1e2e50;
+  --border-strong: #2a3e6e;
+}
+
+/* === Thème 19 : Ember Glow === */
+[data-theme="ember-glow"] {
+  --bg-primary: #100800;
+  --bg-secondary: #1c1000;
+  --bg-tertiary: #2a1800;
+  --bg-elevated: #3d2400;
+  --accent-primary: #fb923c;
+  --accent-hover: #fdba74;
+  --accent-muted: rgba(251, 146, 60, 0.12);
+  --accent-subtle: rgba(251, 146, 60, 0.06);
+  --accent-glow: 0 0 24px rgba(251, 146, 60, 0.4);
+  --text-primary: #fff7ed;
+  --text-secondary: #fdba74;
+  --text-muted: #9a3412;
+  --border: #2a1800;
+  --border-hover: #3d2400;
+  --border-strong: #573600;
+}
+
+/* === Thème 20 : Cobalt Night === */
+[data-theme="cobalt-night"] {
+  --bg-primary: #05091a;
+  --bg-secondary: #080e28;
+  --bg-tertiary: #0d1438;
+  --bg-elevated: #141c50;
+  --accent-primary: #2563eb;
+  --accent-hover: #3b82f6;
+  --accent-muted: rgba(37, 99, 235, 0.14);
+  --accent-subtle: rgba(37, 99, 235, 0.07);
+  --accent-glow: 0 0 24px rgba(37, 99, 235, 0.45);
+  --text-primary: #eff6ff;
+  --text-secondary: #93c5fd;
+  --text-muted: #1d4ed8;
+  --border: #0d1438;
+  --border-hover: #141c50;
+  --border-strong: #1e2d70;
+}
+
+/* === Thème 21 : Volcanic === */
+[data-theme="volcanic"] {
+  --bg-primary: #0a0806;
+  --bg-secondary: #150f0a;
+  --bg-tertiary: #221710;
+  --bg-elevated: #301f14;
+  --accent-primary: #f97316;
+  --accent-hover: #fb923c;
+  --accent-muted: rgba(249, 115, 22, 0.12);
+  --accent-subtle: rgba(249, 115, 22, 0.06);
+  --accent-glow: 0 0 24px rgba(249, 115, 22, 0.4);
+  --text-primary: #faf9f8;
+  --text-secondary: #a8978a;
+  --text-muted: #786050;
+  --border: #301f14;
+  --border-hover: #402818;
+  --border-strong: #5a381e;
+}
+
+/* === Thème 22 : Sakura (Clair) === */
+[data-theme="sakura"] {
+  --bg-primary: #fff8fb;
+  --bg-secondary: #fdf2f8;
+  --bg-tertiary: #fce7f3;
+  --bg-elevated: #fbcfe8;
+  --accent-primary: #ec4899;
+  --accent-hover: #f472b6;
+  --accent-muted: rgba(236, 72, 153, 0.1);
+  --accent-subtle: rgba(236, 72, 153, 0.05);
+  --accent-glow: 0 0 20px rgba(236, 72, 153, 0.25);
+  --text-primary: #1e0a14;
+  --text-secondary: #701a45;
+  --text-muted: #9d174d;
+  --border: #fce7f3;
+  --border-hover: #fbcfe8;
+  --border-strong: #f9a8d4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
+  --shadow-xl: 0 24px 48px rgba(0,0,0,0.15);
+  --success: #16a34a;
+  --success-muted: rgba(22,163,74,0.1);
+  --warning: #ca8a04;
+  --warning-muted: rgba(202,138,4,0.1);
+  --danger: #dc2626;
+  --danger-muted: rgba(220,38,38,0.1);
+  --info: #0284c7;
+  --info-muted: rgba(2,132,199,0.1);
+}
+
+/* === Thème 23 : Jade Temple === */
+[data-theme="jade-temple"] {
+  --bg-primary: #03100a;
+  --bg-secondary: #071a10;
+  --bg-tertiary: #0e2818;
+  --bg-elevated: #143820;
+  --accent-primary: #10b981;
+  --accent-hover: #34d399;
+  --accent-muted: rgba(16, 185, 129, 0.12);
+  --accent-subtle: rgba(16, 185, 129, 0.06);
+  --accent-glow: 0 0 24px rgba(16, 185, 129, 0.4);
+  --text-primary: #ecfdf5;
+  --text-secondary: #6ee7b7;
+  --text-muted: #065f46;
+  --border: #0e2818;
+  --border-hover: #143820;
+  --border-strong: #1d5030;
+}
+
+/* === Thème 24 : Hacker Terminal === */
+[data-theme="hacker"] {
+  --bg-primary: #000000;
+  --bg-secondary: #001500;
+  --bg-tertiary: #002800;
+  --bg-elevated: #003d00;
+  --accent-primary: #00ff41;
+  --accent-hover: #39ff5a;
+  --accent-muted: rgba(0, 255, 65, 0.12);
+  --accent-subtle: rgba(0, 255, 65, 0.06);
+  --accent-glow: 0 0 24px rgba(0, 255, 65, 0.5);
+  --text-primary: #00ff41;
+  --text-secondary: #00b32b;
+  --text-muted: #007a1e;
+  --border: #003000;
+  --border-hover: #005000;
+  --border-strong: #007000;
+  --radius-sm: 0px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --success: #00ff41;
+  --warning: #ffff00;
+  --danger: #ff0040;
+  --info: #00aaff;
+}
+
+/* === Thème 25 : Ice Storm (Clair) === */
+[data-theme="ice-storm"] {
+  --bg-primary: #f0f9ff;
+  --bg-secondary: #e0f2fe;
+  --bg-tertiary: #bae6fd;
+  --bg-elevated: #7dd3fc;
+  --accent-primary: #0284c7;
+  --accent-hover: #0369a1;
+  --accent-muted: rgba(2, 132, 199, 0.1);
+  --accent-subtle: rgba(2, 132, 199, 0.05);
+  --accent-glow: 0 0 20px rgba(2, 132, 199, 0.3);
+  --text-primary: #0c1a2e;
+  --text-secondary: #1e4c7a;
+  --text-muted: #64748b;
+  --border: #bae6fd;
+  --border-hover: #7dd3fc;
+  --border-strong: #38bdf8;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.1);
+  --shadow-xl: 0 24px 48px rgba(0,0,0,0.12);
+  --success: #15803d;
+  --success-muted: rgba(21,128,61,0.1);
+  --warning: #b45309;
+  --warning-muted: rgba(180,83,9,0.1);
+  --danger: #b91c1c;
+  --danger-muted: rgba(185,28,28,0.1);
+  --info: #0284c7;
+  --info-muted: rgba(2,132,199,0.1);
 }
 
 /* === Thème 15 : Custom (variables injectées via JS) === */

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -188,7 +189,6 @@ function mapCategory(raw: string): string {
 async function loadApps() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const wg = await invoke<boolean>("check_winget");
     wingetOk.value = wg;
     const raw = await invoke<AppInfo[]>("get_apps");
@@ -205,7 +205,6 @@ async function installApp(app: AppInfo) {
   installingIds.value.add(app.id);
   installLogs.value[app.id] = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("install_app", { wingetId: app.winget_id });
     installedIds.value.add(app.id);
   } catch {

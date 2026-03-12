@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -29,7 +30,6 @@ const diskCleanup = ref<ActionResult>({ loading: false, done: false, message: ""
 async function emptyRecycleBin() {
   recycleBin.value = { loading: true, done: false, message: "" };
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ message: string }>("empty_recycle_bin");
     recycleBin.value = { loading: false, done: true, message: result.message };
     notify.success("Corbeille videe", result.message);
@@ -42,7 +42,6 @@ async function emptyRecycleBin() {
 async function cleanTempFiles() {
   tempFiles.value = { loading: true, done: false, message: "" };
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ files_deleted: number; space_freed: string; message: string }>("clean_temp_files");
     tempFiles.value = { loading: false, done: true, message: result.message };
     notify.success("Nettoyage termine", result.message);
@@ -55,7 +54,6 @@ async function cleanTempFiles() {
 async function runDiskCleanup() {
   diskCleanup.value = { loading: true, done: false, message: "" };
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ message: string }>("run_disk_cleanup");
     diskCleanup.value = { loading: false, done: true, message: result.message };
     notify.success("Nettoyage disque", result.message);
@@ -79,7 +77,6 @@ const startupLoading = ref(true);
 async function loadStartupPrograms() {
   startupLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     startupPrograms.value = await invoke<StartupProgram[]>("get_startup_programs");
   } catch {
     startupPrograms.value = [
@@ -96,7 +93,6 @@ async function loadStartupPrograms() {
 
 async function disableProgram(prog: StartupProgram) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("disable_startup_program", { name: prog.name, location: prog.location });
     notify.success(`${prog.name} desactive du demarrage`);
     await loadStartupPrograms();
@@ -123,7 +119,6 @@ async function loadBrowserCaches() {
   browsersLoading.value = true;
   cleanResult.value = null;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const data = await invoke<any[]>("get_browser_cache_sizes");
     browsers.value = data
       .filter((b: any) => b.detected)
@@ -147,7 +142,6 @@ async function cleanSelectedBrowsers() {
   }
   cleaningBrowsers.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const results = await invoke<any[]>("clean_browser_cache", { browserIds: selected });
     const totalFreed = results.reduce((sum: number, r: any) => sum + r.freed_mb, 0);
     const totalDeleted = results.reduce((sum: number, r: any) => sum + r.files_deleted, 0);
@@ -249,7 +243,6 @@ const perfBtns = ref<DebloatBtn[]>([
 async function runDebloat(btn: DebloatBtn) {
   btn.loading = true; btn.result = null;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     let res: DebloatResult | DebloatResult[];
     if (btn.id === "bloatware") {
       res = await invoke<DebloatResult[]>("debloat_remove_bloatware", { apps: [] });

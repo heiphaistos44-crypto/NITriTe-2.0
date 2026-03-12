@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -65,7 +66,6 @@ async function loadDisks() {
   loadingDisks.value = true;
   disks.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     disks.value = await invoke<DiskInfo[]>("get_disks_for_clone");
     if (systemDrive.value) sourceDrive.value = systemDrive.value.letter.replace(":", "");
   } catch (e: any) {
@@ -92,7 +92,6 @@ async function startSystemImage() {
   cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
   progressMsg.value = "Lancement de Windows Backup (wbadmin)...";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     result.value = await invoke<CloneResult>("start_system_image", { targetDrive: targetDrive.value });
     progressStep.value = 4;
     if (result.value.success) notify.success("Image système créée", result.value.message);
@@ -108,7 +107,6 @@ async function startRobocopy() {
   cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
   progressMsg.value = "Démarrage Robocopy...";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     result.value = await invoke<CloneResult>("start_robocopy_clone", {
       sourceDrive: sourceDrive.value,
       targetDrive: targetDrive.value,

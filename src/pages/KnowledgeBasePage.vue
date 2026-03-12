@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import {
   BookOpen, Wifi, Zap, Shield, HardDrive,
   Monitor, Volume2, Usb, ChevronDown, ChevronRight,
-  Terminal,
+  Terminal, Copy, AlertTriangle, Settings, Cpu,
 } from "lucide-vue-next";
 
 const search = ref("");
@@ -228,6 +229,125 @@ const categories: KBCategory[] = [
       },
     ],
   },
+  {
+    id: "bsod", label: "Ecran Bleu (BSOD)", icon: AlertTriangle,
+    items: [
+      {
+        title: "BSOD CRITICAL_PROCESS_DIED",
+        symptoms: "Arret brutal avec code 0x000000EF, redemarrage automatique",
+        solution: [
+          "Lancer SFC : sfc /scannow (en administrateur)",
+          "Verifier la RAM avec Windows Memory Diagnostic",
+          "Mettre a jour tous les pilotes, notamment chipset et stockage",
+          "Verifier les logs : eventvwr > Journaux Windows > Systeme",
+          "Si recent : restaurer un point de restauration anterieur",
+        ],
+        command: "sfc /scannow",
+      },
+      {
+        title: "BSOD MEMORY_MANAGEMENT",
+        symptoms: "Code 0x0000001A, souvent apres ajout de RAM",
+        solution: [
+          "Lancer Windows Memory Diagnostic : mdsched.exe",
+          "Tester les barrettes RAM une par une",
+          "Verifier les slots RAM (nettoyage contacts)",
+          "Mettre a jour les pilotes graphiques et chipset",
+          "Verifier la temperature CPU/RAM (HWiNFO64)",
+        ],
+        command: "mdsched.exe",
+      },
+      {
+        title: "BSOD DRIVER_IRQL_NOT_LESS_OR_EQUAL",
+        symptoms: "Code 0x000000D1, souvent lie a un pilote defaillant",
+        solution: [
+          "Identifier le pilote fautif dans le dump : %SystemRoot%\\Minidump",
+          "Mettre a jour ou reinstaller le pilote incrimine",
+          "Desinstaller les logiciels installes recemment",
+          "Utiliser l'outil Driver Verifier (verifier.exe) pour diagnostiquer",
+          "Verifier avec WhoCrashed ou WinDbg",
+        ],
+        command: "verifier.exe",
+      },
+    ],
+  },
+  {
+    id: "registre", label: "Registre Windows", icon: Settings,
+    items: [
+      {
+        title: "Nettoyer les entrees Autorun suspectes",
+        symptoms: "Programmes inconnus au demarrage, lenteur, comportement anormal",
+        solution: [
+          "Ouvrir regedit.exe en tant qu'administrateur",
+          "Naviguer vers : HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Verifier chaque entree — supprimer les entrees inconnues",
+          "Faire de meme dans : HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "Utiliser Autoruns64 de Sysinternals pour une vue complete",
+        ],
+        command: "regedit.exe",
+      },
+      {
+        title: "Reparer les associations de fichiers",
+        symptoms: "Double-clic ne fonctionne plus, mauvais programme par defaut",
+        solution: [
+          "Ouvrir Parametres > Applications > Applications par defaut",
+          "Reinitialiser via PowerShell : cmd /c assoc .ext=AppName",
+          "Ou reparer via le registre : HKCR\\.ext",
+          "En dernier recours : Reparer Windows avec DISM",
+        ],
+        command: "dism /online /cleanup-image /restorehealth",
+      },
+      {
+        title: "Erreurs de registre orphelines",
+        symptoms: "Programmes desinstalles laissant des traces, erreurs au demarrage",
+        solution: [
+          "Sauvegarder le registre : regedit > Fichier > Exporter",
+          "Chercher dans : HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+          "Supprimer les cles des programmes desinstalles",
+          "Utiliser BCUninstaller pour nettoyer les residus proprement",
+          "Eviter les 'registry cleaners' tiers qui peuvent causer plus de problemes",
+        ],
+      },
+    ],
+  },
+  {
+    id: "demarrage", label: "Demarrage Windows", icon: Cpu,
+    items: [
+      {
+        title: "Windows ne demarre plus",
+        symptoms: "Ecran noir, boucle de reparation, impossible d'acceder au bureau",
+        solution: [
+          "Demarrer sur un support USB Windows 10/11",
+          "Aller dans Depanner > Options avancees > Reparer le demarrage",
+          "Ou utiliser : bootrec /fixmbr && bootrec /fixboot && bootrec /rebuildbcd",
+          "Si partition corrompue : chkdsk C: /f /r depuis l'invite de commandes",
+          "En dernier recours : reinstallation de Windows en gardant les donnees",
+        ],
+        command: "bootrec /rebuildbcd",
+      },
+      {
+        title: "Boucle de reparation automatique",
+        symptoms: "Windows tente de se reparer en boucle au demarrage",
+        solution: [
+          "Appuyer sur F8 ou Shift+F8 pour acceder aux options avancees",
+          "Choisir 'Desactiver la reparation automatique au demarrage'",
+          "Depuis WinRE : bcdedit /set {default} recoveryenabled No",
+          "Puis lancer SFC et DISM pour reparer les fichiers systeme",
+          "Verifier l'integrite du disque avec chkdsk",
+        ],
+        command: "bcdedit /set {default} recoveryenabled No",
+      },
+      {
+        title: "Demarrage dual-boot perdu",
+        symptoms: "Seul Windows apparait, Linux ou ancien OS inaccessible",
+        solution: [
+          "Verifier que la partition existe toujours via Disk Management",
+          "Reparer le grub Linux depuis un live USB",
+          "Ou reconstruire le BCD Windows : bootrec /rebuildbcd",
+          "Utiliser EasyBCD pour gerer le menu de demarrage",
+        ],
+      },
+    ],
+  },
 ];
 
 function toggleCategory(id: string) {
@@ -257,11 +377,16 @@ const filteredCategories = computed(() => {
 
 async function runCommand(cmd: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("run_system_command", { cmd: "cmd", args: ["/C", cmd] });
   } catch {
     // dev
   }
+}
+
+async function copyCommand(cmd: string) {
+  try {
+    await navigator.clipboard.writeText(cmd);
+  } catch { /* dev */ }
 }
 </script>
 
@@ -304,6 +429,9 @@ async function runCommand(cmd: string) {
               </div>
               <div v-if="item.command" class="command-block">
                 <code>{{ item.command }}</code>
+                <button class="copy-btn" @click="copyCommand(item.command!)" title="Copier">
+                  <Copy :size="12" />
+                </button>
                 <button class="run-btn" @click="runCommand(item.command!)">
                   <Terminal :size="12" /> Executer
                 </button>
@@ -443,6 +571,14 @@ async function runCommand(cmd: string) {
   transition: all 0.15s;
 }
 .run-btn:hover { background: var(--accent-primary); color: #fff; }
+.copy-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-tertiary); color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.copy-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.item-title { text-align: left; font-size: 13px; }
 .empty-state {
   text-align: center;
   padding: 40px;

@@ -36,3 +36,5 @@ pub mod bluetooth;
 pub mod perf_history;
 pub mod clone;
 pub mod data_recovery;
+pub mod restore_points;
+pub mod dependencies;

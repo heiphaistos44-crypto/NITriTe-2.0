@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -8,7 +9,7 @@ import NSearchBar from "@/components/ui/NSearchBar.vue";
 import NInput from "@/components/ui/NInput.vue";
 import {
   Wifi, Globe, Server, Search,
-  RefreshCw, Activity, ArrowUpDown, Zap, Signal,
+  RefreshCw, Activity, ArrowUpDown, Zap, Signal, ScanSearch,
 } from "lucide-vue-next";
 
 interface NetworkInterface {
@@ -63,6 +64,25 @@ const speedTesting = ref(false);
 const speedResult = ref<SpeedResult | null>(null);
 const multiPingResults = ref<{ host: string; latency: number; ok: boolean }[]>([]);
 
+// Scanner ARP
+interface ArpEntry { ip: string; mac: string; entry_type: string; interface: string; }
+const arpScanning = ref(false);
+const arpEntries = ref<ArpEntry[]>([]);
+
+// Scanner de ports
+interface PortScanResult { port: number; open: boolean; service: string; }
+const portScanHost = ref("192.168.1.1");
+const portScanInput = ref("22,80,443,3389,8080");
+const portScanning = ref(false);
+const portResults = ref<PortScanResult[]>([]);
+const PORT_PRESETS: Record<string, string> = {
+  Web: "80,443,8080,8443",
+  Admin: "22,3389,5900,5985",
+  Mail: "25,110,143,465,587,993,995",
+  DB: "3306,5432,1433,27017,6379",
+  Commun: "21,22,23,25,53,80,110,139,143,443,445,3306,3389",
+};
+
 const filteredConnections = computed(() => {
   if (!searchQuery.value) return connections.value;
   const q = searchQuery.value.toLowerCase();
@@ -108,7 +128,6 @@ const devConnections: Connection[] = [
 async function loadData() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     overview.value = await invoke<NetworkOverview>("get_network_overview");
     connections.value = await invoke<Connection[]>("get_connections");
   } catch {
@@ -129,7 +148,6 @@ async function doPing() {
   pinging.value = true;
   pingResult.value = null;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     pingResult.value = await invoke<PingResult>("ping_host", { host: pingHost.value.trim() });
   } catch {
     const latency = Math.round(5 + Math.random() * 40);
@@ -153,7 +171,6 @@ async function runSpeedTest() {
 
   for (const host of pingTargets) {
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
       const res = await invoke<PingResult>("ping_host", { host });
       multiPingResults.value.push({ host, latency: res.latency_ms, ok: res.success });
       if (res.success) latencies.push(res.latency_ms);
@@ -165,7 +182,6 @@ async function runSpeedTest() {
   // Download speed test via PowerShell
   let downloadMbps = 0;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const ps = `
 try {
   $url = 'https://speed.cloudflare.com/__down?bytes=10000000'
@@ -201,6 +217,33 @@ try {
     quality,
   };
   speedTesting.value = false;
+}
+
+async function scanArp() {
+  arpScanning.value = true;
+  arpEntries.value = [];
+  try {
+    arpEntries.value = await invoke<ArpEntry[]>("get_arp_table");
+  } catch { /* dev */ }
+  arpScanning.value = false;
+}
+
+async function scanPorts() {
+  if (!portScanHost.value.trim()) return;
+  const ports = portScanInput.value
+    .split(",")
+    .map((p) => parseInt(p.trim(), 10))
+    .filter((p) => !isNaN(p) && p > 0 && p <= 65535);
+  if (!ports.length) return;
+  portScanning.value = true;
+  portResults.value = [];
+  try {
+    portResults.value = await invoke<PortScanResult[]>("scan_ports", {
+      host: portScanHost.value.trim(),
+      ports,
+    });
+  } catch { /* dev */ }
+  portScanning.value = false;
 }
 
 onMounted(loadData);
@@ -371,6 +414,65 @@ onMounted(loadData);
               <span class="speed-value font-mono" style="font-size:12px">{{ speedResult.server }}</span>
             </div>
           </div>
+        </div>
+      </NCard>
+
+      <!-- Scanner ARP -->
+      <NCard>
+        <template #header>
+          <div class="section-header">
+            <ScanSearch :size="16" />
+            <span>Scanner Réseau Local (ARP)</span>
+            <NBadge v-if="arpEntries.length" variant="neutral" style="margin-left:auto">{{ arpEntries.length }} appareil(s)</NBadge>
+          </div>
+        </template>
+        <NButton variant="primary" :loading="arpScanning" @click="scanArp">
+          <Search :size="14" />
+          Scanner le réseau local
+        </NButton>
+        <div v-if="arpEntries.length" class="table-wrap" style="margin-top:12px">
+          <table class="data-table">
+            <thead><tr><th>IP</th><th>MAC</th><th>Type</th><th>Interface</th></tr></thead>
+            <tbody>
+              <tr v-for="e in arpEntries" :key="e.ip + e.mac">
+                <td class="font-mono">{{ e.ip }}</td>
+                <td class="font-mono">{{ e.mac }}</td>
+                <td><NBadge :variant="e.entry_type.toLowerCase().includes('dynamic') ? 'success' : 'neutral'">{{ e.entry_type }}</NBadge></td>
+                <td class="font-mono" style="font-size:11px">{{ e.interface }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </NCard>
+
+      <!-- Scanner de Ports -->
+      <NCard>
+        <template #header>
+          <div class="section-header">
+            <Server :size="16" />
+            <span>Scanner de Ports</span>
+          </div>
+        </template>
+        <div class="port-scan-controls">
+          <NInput v-model="portScanHost" placeholder="IP ou hostname" style="flex:1" />
+          <NInput v-model="portScanInput" placeholder="22,80,443..." style="flex:2" />
+          <NButton variant="primary" :loading="portScanning" @click="scanPorts">Scanner</NButton>
+        </div>
+        <div class="port-presets">
+          <span class="sub-header" style="margin-bottom:0;flex-shrink:0">Présets :</span>
+          <button v-for="(ports, label) in PORT_PRESETS" :key="label" class="preset-btn" @click="portScanInput = ports">{{ label }}</button>
+        </div>
+        <div v-if="portResults.length" class="table-wrap" style="margin-top:12px">
+          <table class="data-table">
+            <thead><tr><th>Port</th><th>Service</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr v-for="r in portResults" :key="r.port">
+                <td class="font-mono">{{ r.port }}</td>
+                <td>{{ r.service || "—" }}</td>
+                <td><NBadge :variant="r.open ? 'success' : 'neutral'">{{ r.open ? "Ouvert" : "Fermé" }}</NBadge></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </NCard>
 
@@ -660,4 +762,14 @@ onMounted(loadData);
   color: var(--text-muted) !important;
   padding: 20px !important;
 }
+
+.port-scan-controls { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+.port-presets { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.preset-btn {
+  font-size: 11px; padding: 3px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-tertiary); color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition-fast);
+}
+.preset-btn:hover { background: var(--accent-muted); color: var(--accent-primary); border-color: var(--accent-primary); }
 </style>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -48,7 +49,6 @@ const externalTools: AntivirusTool[] = [
 
 async function checkDefenderStatus() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<any>("run_system_command", {
       cmd: "powershell",
       args: ["-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
@@ -62,7 +62,6 @@ async function checkDefenderStatus() {
 
 async function openDefender() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("run_system_command", {
       cmd: "cmd",
       args: ["/C", "start", "ms-settings:windowsdefender"],
@@ -79,7 +78,6 @@ async function openDefender() {
 
 async function updateDefinitions() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("run_system_command", {
       cmd: "powershell",
       args: ["-Command", "Update-MpSignature"],
@@ -92,7 +90,6 @@ async function updateDefinitions() {
 
 async function openExternalTool(url: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_url", { url });
   } catch {
     window.open(url, "_blank");
@@ -125,7 +122,6 @@ async function startScan(type: "quick" | "full" | "offline" | "custom") {
   const scanTypeParam = type === "quick" ? "QuickScan" : "FullScan";
 
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
 
     // Simulate progress while scan runs
     const progressInterval = setInterval(() => {

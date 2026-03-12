@@ -47,19 +47,21 @@ const iconMap = {
 .toast {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--radius-xl);
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-xl);
-  animation: toast-in 300ms ease forwards;
+  border: 1px solid var(--border-hover);
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: toast-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.toast--success { border-left: 3px solid var(--success); }
-.toast--error { border-left: 3px solid var(--danger); }
-.toast--warning { border-left: 3px solid var(--warning); }
-.toast--info { border-left: 3px solid var(--info); }
+.toast--success { border-left: 3px solid var(--success); background: linear-gradient(135deg, rgba(34,197,94,0.06) 0%, var(--bg-secondary) 60%); }
+.toast--error   { border-left: 3px solid var(--danger);  background: linear-gradient(135deg, rgba(239,68,68,0.06) 0%, var(--bg-secondary) 60%); }
+.toast--warning { border-left: 3px solid var(--warning); background: linear-gradient(135deg, rgba(234,179,8,0.06) 0%, var(--bg-secondary) 60%); }
+.toast--info    { border-left: 3px solid var(--info);    background: linear-gradient(135deg, rgba(59,130,246,0.06) 0%, var(--bg-secondary) 60%); }
 
 .toast--success .toast-icon { color: var(--success); }
 .toast--error .toast-icon { color: var(--danger); }

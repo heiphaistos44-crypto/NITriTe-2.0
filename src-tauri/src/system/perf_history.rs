@@ -35,42 +35,39 @@ pub struct TopProcess {
     pub disk_mbps: f64,
 }
 
+/// Historique de performances — non-bloquant via spawn_blocking
 #[tauri::command]
-pub fn get_perf_history(samples: u32, interval_secs: u32) -> PerfHistory {
+pub async fn get_perf_history(samples: u32, interval_secs: u32) -> PerfHistory {
     let n = samples.min(120).max(5);
     let interval = interval_secs.min(60).max(1);
 
-    let ps = format!(r#"
+    let ps = format!(
+        r#"
 $n = {n}
 $iv = {interval}
 $points = @()
-$prevRead = 0; $prevWrite = 0; $prevRecv = 0; $prevSend = 0; $firstSample = $true
 
 for ($i = 0; $i -lt $n; $i++) {{
     $ts = (Get-Date).ToString('HH:mm:ss')
-    $cpu = [math]::Round((Get-WmiObject Win32_Processor -EA SilentlyContinue | Measure-Object LoadPercentage -Average).Average, 1)
-    $os  = Get-WmiObject Win32_OperatingSystem -EA SilentlyContinue
-    $ramUsed  = if($os){{[math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory)/1024,0)}}else{{0}}
-    $ramTotal = if($os){{[math]::Round($os.TotalVisibleMemorySize/1024,0)}}else{{0}}
+    $cpu = try {{
+        [math]::Round((Get-WmiObject Win32_Processor -EA Stop | Measure-Object LoadPercentage -Average).Average, 1)
+    }} catch {{ 0 }}
+    $os = Get-WmiObject Win32_OperatingSystem -EA SilentlyContinue
+    $ramUsed  = if($os) {{ [math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory)/1024, 0) }} else {{ 0 }}
+    $ramTotal = if($os) {{ [math]::Round($os.TotalVisibleMemorySize/1024, 0) }} else {{ 0 }}
 
-    # Disk IO counters
     $diskRead = 0; $diskWrite = 0
     try {{
-        $diskCounters = Get-Counter '\PhysicalDisk(_Total)\Disk Read Bytes/sec','\PhysicalDisk(_Total)\Disk Write Bytes/sec' -EA SilentlyContinue
-        if ($diskCounters) {{
-            $diskRead  = [math]::Round($diskCounters.CounterSamples[0].CookedValue / 1MB, 2)
-            $diskWrite = [math]::Round($diskCounters.CounterSamples[1].CookedValue / 1MB, 2)
-        }}
+        $dc = Get-Counter '\PhysicalDisk(_Total)\Disk Read Bytes/sec','\PhysicalDisk(_Total)\Disk Write Bytes/sec' -EA Stop
+        $diskRead  = [math]::Round($dc.CounterSamples[0].CookedValue / 1MB, 2)
+        $diskWrite = [math]::Round($dc.CounterSamples[1].CookedValue / 1MB, 2)
     }} catch {{}}
 
-    # Network IO counters
     $netRecv = 0; $netSend = 0
     try {{
-        $netCounters = Get-Counter '\Network Interface(*)\Bytes Received/sec','\Network Interface(*)\Bytes Sent/sec' -EA SilentlyContinue
-        if ($netCounters) {{
-            $netRecv = [math]::Round(($netCounters.CounterSamples | Where-Object {{$_.Path -match 'Bytes Received'}} | Measure-Object CookedValue -Sum).Sum / 1MB, 3)
-            $netSend = [math]::Round(($netCounters.CounterSamples | Where-Object {{$_.Path -match 'Bytes Sent'}} | Measure-Object CookedValue -Sum).Sum / 1MB, 3)
-        }}
+        $nc = Get-Counter '\Network Interface(*)\Bytes Received/sec','\Network Interface(*)\Bytes Sent/sec' -EA Stop
+        $netRecv = [math]::Round(($nc.CounterSamples | Where-Object {{$_.Path -match 'Bytes Received'}} | Measure-Object CookedValue -Sum).Sum / 1MB, 3)
+        $netSend = [math]::Round(($nc.CounterSamples | Where-Object {{$_.Path -match 'Bytes Sent'}} | Measure-Object CookedValue -Sum).Sum / 1MB, 3)
     }} catch {{}}
 
     $points += @{{
@@ -86,10 +83,10 @@ for ($i = 0; $i -lt $n; $i++) {{
     if ($i -lt $n - 1) {{ Start-Sleep -Seconds $iv }}
 }}
 
-$avgCpu  = [math]::Round(($points | Measure-Object -Property cpu -Average).Average, 1)
-$peakCpu = [math]::Round(($points | Measure-Object -Property cpu -Maximum).Maximum, 1)
-$avgRam  = [long]($points | Measure-Object -Property ramUsed -Average).Average
-$peakRam = [long]($points | Measure-Object -Property ramUsed -Maximum).Maximum
+$avgCpu  = if($points.Count) {{ [math]::Round(($points | Measure-Object -Property cpu -Average).Average, 1) }} else {{ 0 }}
+$peakCpu = if($points.Count) {{ [math]::Round(($points | Measure-Object -Property cpu -Maximum).Maximum, 1) }} else {{ 0 }}
+$avgRam  = if($points.Count) {{ [long]($points | Measure-Object -Property ramUsed -Average).Average }} else {{ 0 }}
+$peakRam = if($points.Count) {{ [long]($points | Measure-Object -Property ramUsed -Maximum).Maximum }} else {{ 0 }}
 
 @{{
     points   = $points
@@ -100,49 +97,58 @@ $peakRam = [long]($points | Measure-Object -Property ramUsed -Maximum).Maximum
     avgRam   = $avgRam
     peakRam  = $peakRam
 }} | ConvertTo-Json -Depth 4 -Compress
-"#, n=n, interval=interval);
+"#,
+        n = n,
+        interval = interval
+    );
 
-    #[cfg(target_os = "windows")]
-    {
-        let o = Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", &ps])
-            .creation_flags(0x08000000)
-            .output();
-        if let Ok(o) = o {
-            let t = String::from_utf8_lossy(&o.stdout);
-            if let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim()) {
-                let points = v["points"].as_array().map(|arr| {
-                    arr.iter().map(|p| PerfPoint {
-                        timestamp: p["ts"].as_str().unwrap_or("").to_string(),
-                        cpu_percent: p["cpu"].as_f64().unwrap_or(0.0),
-                        ram_used_mb: p["ramUsed"].as_u64().unwrap_or(0),
-                        ram_total_mb: p["ramTotal"].as_u64().unwrap_or(0),
-                        disk_read_mbps: p["diskRead"].as_f64().unwrap_or(0.0),
-                        disk_write_mbps: p["diskWrite"].as_f64().unwrap_or(0.0),
-                        net_recv_mbps: p["netRecv"].as_f64().unwrap_or(0.0),
-                        net_send_mbps: p["netSend"].as_f64().unwrap_or(0.0),
-                    }).collect()
-                }).unwrap_or_default();
+    tokio::task::spawn_blocking(move || {
+        #[cfg(target_os = "windows")]
+        {
+            let o = Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", &ps])
+                .creation_flags(0x08000000)
+                .output();
+            if let Ok(o) = o {
+                let t = String::from_utf8_lossy(&o.stdout);
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim()) {
+                    let points = v["points"].as_array().map(|arr| {
+                        arr.iter().map(|p| PerfPoint {
+                            timestamp: p["ts"].as_str().unwrap_or("").to_string(),
+                            cpu_percent: p["cpu"].as_f64().unwrap_or(0.0),
+                            ram_used_mb: p["ramUsed"].as_u64().unwrap_or(0),
+                            ram_total_mb: p["ramTotal"].as_u64().unwrap_or(0),
+                            disk_read_mbps: p["diskRead"].as_f64().unwrap_or(0.0),
+                            disk_write_mbps: p["diskWrite"].as_f64().unwrap_or(0.0),
+                            net_recv_mbps: p["netRecv"].as_f64().unwrap_or(0.0),
+                            net_send_mbps: p["netSend"].as_f64().unwrap_or(0.0),
+                        }).collect()
+                    }).unwrap_or_default();
 
-                return PerfHistory {
-                    points,
-                    sample_interval_secs: v["interval"].as_u64().unwrap_or(interval as u64) as u32,
-                    duration_secs: v["duration"].as_u64().unwrap_or(0) as u32,
-                    avg_cpu: v["avgCpu"].as_f64().unwrap_or(0.0),
-                    peak_cpu: v["peakCpu"].as_f64().unwrap_or(0.0),
-                    avg_ram_mb: v["avgRam"].as_u64().unwrap_or(0),
-                    peak_ram_mb: v["peakRam"].as_u64().unwrap_or(0),
-                };
+                    return PerfHistory {
+                        points,
+                        sample_interval_secs: v["interval"].as_u64().unwrap_or(interval as u64) as u32,
+                        duration_secs: v["duration"].as_u64().unwrap_or(0) as u32,
+                        avg_cpu: v["avgCpu"].as_f64().unwrap_or(0.0),
+                        peak_cpu: v["peakCpu"].as_f64().unwrap_or(0.0),
+                        avg_ram_mb: v["avgRam"].as_u64().unwrap_or(0),
+                        peak_ram_mb: v["peakRam"].as_u64().unwrap_or(0),
+                    };
+                }
             }
         }
-    }
-    PerfHistory::default()
+        PerfHistory::default()
+    })
+    .await
+    .unwrap_or_default()
 }
 
+/// Top processus par CPU — non-bloquant
 #[tauri::command]
-pub fn get_top_processes_by_cpu(limit: u32) -> Vec<TopProcess> {
+pub async fn get_top_processes_by_cpu(limit: u32) -> Vec<TopProcess> {
     let n = limit.min(50).max(5);
-    let ps = format!(r#"
+    let ps = format!(
+        r#"
 @(Get-Process -EA SilentlyContinue |
     Sort-Object CPU -Descending |
     Select-Object -First {n} |
@@ -155,27 +161,34 @@ pub fn get_top_processes_by_cpu(limit: u32) -> Vec<TopProcess> {
             disk = 0.0
         }}
     }}) | ConvertTo-Json -Compress
-"#, n=n);
-    #[cfg(target_os = "windows")]
-    {
-        let o = Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", &ps])
-            .creation_flags(0x08000000)
-            .output();
-        if let Ok(o) = o {
-            let t = String::from_utf8_lossy(&o.stdout);
-            let t = t.trim();
-            let arr_t = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
-            if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&arr_t) {
-                return arr.iter().map(|p| TopProcess {
-                    name: p["name"].as_str().unwrap_or("").to_string(),
-                    pid: p["pid"].as_u64().unwrap_or(0) as u32,
-                    cpu_percent: p["cpu"].as_f64().unwrap_or(0.0),
-                    ram_mb: p["ram"].as_u64().unwrap_or(0),
-                    disk_mbps: p["disk"].as_f64().unwrap_or(0.0),
-                }).collect();
+"#,
+        n = n
+    );
+
+    tokio::task::spawn_blocking(move || {
+        #[cfg(target_os = "windows")]
+        {
+            let o = Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", &ps])
+                .creation_flags(0x08000000)
+                .output();
+            if let Ok(o) = o {
+                let t = String::from_utf8_lossy(&o.stdout);
+                let t = t.trim();
+                let arr_t = if t.starts_with('{') { format!("[{}]", t) } else { t.to_string() };
+                if let Ok(arr) = serde_json::from_str::<Vec<serde_json::Value>>(&arr_t) {
+                    return arr.iter().map(|p| TopProcess {
+                        name: p["name"].as_str().unwrap_or("").to_string(),
+                        pid: p["pid"].as_u64().unwrap_or(0) as u32,
+                        cpu_percent: p["cpu"].as_f64().unwrap_or(0.0),
+                        ram_mb: p["ram"].as_u64().unwrap_or(0),
+                        disk_mbps: p["disk"].as_f64().unwrap_or(0.0),
+                    }).collect();
+                }
             }
         }
-    }
-    vec![]
+        vec![]
+    })
+    .await
+    .unwrap_or_default()
 }

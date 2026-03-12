@@ -7,14 +7,21 @@ fn default_true() -> bool { true }
 fn default_10() -> u64 { 10 }
 fn default_normal() -> String { "normal".to_string() }
 fn default_json() -> String { "json".to_string() }
+fn default_temperature() -> f64 { 0.7 }
+fn default_ollama_url() -> String { "http://localhost:11434".to_string() }
+fn default_ollama_model() -> String { "llama3:8b".to_string() }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub theme: String,
     pub language: String,
     pub sidebar_collapsed: bool,
+    #[serde(default = "default_ollama_url")]
     pub ollama_url: String,
+    #[serde(default = "default_ollama_model")]
     pub ollama_model: String,
+    #[serde(default = "default_temperature")]
+    pub ollama_temperature: f64,
     pub monitor_interval_ms: u64,
     #[serde(default = "default_true")]
     pub show_animations: bool,
@@ -38,6 +45,7 @@ impl Default for AppConfig {
             sidebar_collapsed: false,
             ollama_url: "http://localhost:11434".to_string(),
             ollama_model: "llama3:8b".to_string(),
+            ollama_temperature: 0.7,
             monitor_interval_ms: 2000,
             show_animations: true,
             compact_mode: false,

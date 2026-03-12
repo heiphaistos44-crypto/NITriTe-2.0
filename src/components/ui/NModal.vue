@@ -33,8 +33,9 @@ defineEmits<{ close: [] }>();
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px) saturate(0.8);
+  -webkit-backdrop-filter: blur(8px) saturate(0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,9 +43,9 @@ defineEmits<{ close: [] }>();
 
 .modal {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.04);
   width: 90%;
   max-height: 85vh;
   display: flex;
@@ -57,11 +58,14 @@ defineEmits<{ close: [] }>();
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .modal-header h3 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
 }
 
 .modal-close {

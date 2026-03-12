@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
@@ -52,7 +53,6 @@ const filteredWinEvents = computed(() => {
 async function loadWinEvents() {
   winEventsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     winEvents.value = await invoke<WinEventEntry[]>("get_event_logs", { logName: winLogName.value, count: 100 });
   } catch {
     winEvents.value = [
@@ -125,7 +125,6 @@ const devLogs: LogEntry[] = [
 
 async function loadLogs() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<LogEntry[]>("get_app_logs");
     logs.value = result;
   } catch {

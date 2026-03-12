@@ -42,19 +42,26 @@ defineEmits<{ "update:modelValue": [v: string] }>();
 
 .n-input {
   padding: 8px 12px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 13px;
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
 }
 
-.n-input:focus { border-color: var(--accent-primary); }
-.n-input--error { border-color: var(--danger); }
-.n-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.n-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+.n-input--error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-muted);
+}
+.n-input:disabled { opacity: 0.45; cursor: not-allowed; }
 .n-input::placeholder { color: var(--text-muted); }
 
 .n-input-error {

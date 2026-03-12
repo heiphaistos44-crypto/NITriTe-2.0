@@ -46,9 +46,14 @@ const currentPage = computed(() => {
   justify-content: space-between;
   padding: 0 24px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(9,9,11,0.95) 100%);
   min-height: 52px;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  position: relative;
+  z-index: 50;
+  /* Thin accent bottom line */
+  box-shadow: 0 1px 0 var(--border), 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .breadcrumb {
@@ -59,20 +64,24 @@ const currentPage = computed(() => {
 }
 
 .breadcrumb-section {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .breadcrumb-sep {
-  color: var(--border-hover);
-  font-size: 16px;
+  color: var(--border-strong);
+  font-size: 14px;
   line-height: 1;
+  margin: 0 -2px;
 }
 
 .breadcrumb-page {
   color: var(--text-primary);
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: -0.1px;
 }
 
 .header-actions {
@@ -85,7 +94,7 @@ const currentPage = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border: 1px solid var(--border-hover);
   border-radius: var(--radius-lg);
   background: var(--bg-tertiary);
@@ -97,10 +106,10 @@ const currentPage = computed(() => {
 }
 
 .search-btn:hover {
-  border-color: var(--accent-primary);
+  border-color: rgba(249, 115, 22, 0.4);
   color: var(--text-primary);
   background: var(--bg-elevated);
-  box-shadow: 0 0 0 2px var(--accent-muted);
+  box-shadow: 0 0 0 3px var(--accent-muted), var(--shadow-sm);
 }
 
 .search-label {

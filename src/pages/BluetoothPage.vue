@@ -1,0 +1,172 @@
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import NCard from "@/components/ui/NCard.vue";
+import NButton from "@/components/ui/NButton.vue";
+import NBadge from "@/components/ui/NBadge.vue";
+import NSkeleton from "@/components/ui/NSkeleton.vue";
+import { useNotificationStore } from "@/stores/notifications";
+import { Bluetooth, BluetoothOff, RefreshCw, Radio, Smartphone, Headphones, Laptop, Mouse } from "lucide-vue-next";
+
+const notify = useNotificationStore();
+
+interface BluetoothDevice {
+  name: string; address: string; device_class: string;
+  paired: boolean; connected: boolean; trusted: boolean;
+  rssi: number; manufacturer: string; category: string;
+}
+interface BluetoothAdapter {
+  name: string; address: string; enabled: boolean;
+  manufacturer: string; driver_version: string;
+}
+interface BluetoothReport {
+  adapters: BluetoothAdapter[]; devices: BluetoothDevice[];
+  bt_available: boolean; error: string;
+}
+
+const report = ref<BluetoothReport | null>(null);
+const loading = ref(true);
+const toggling = ref(false);
+
+function deviceIcon(cat: string) {
+  const c = cat.toLowerCase();
+  if (c.includes("audio") || c.includes("headph")) return Headphones;
+  if (c.includes("phone") || c.includes("mobile")) return Smartphone;
+  if (c.includes("mouse") || c.includes("hid")) return Mouse;
+  if (c.includes("computer")) return Laptop;
+  return Radio;
+}
+
+async function load() {
+  loading.value = true;
+  try {
+    report.value = await invoke<BluetoothReport>("get_bluetooth_info");
+  } catch (e: any) {
+    notify.error("Erreur Bluetooth", String(e));
+  }
+  loading.value = false;
+}
+
+async function toggleBt(enable: boolean) {
+  if (!enable && !confirm("Désactiver le Bluetooth ? Cela déconnectera tous les appareils associés.")) return;
+  toggling.value = true;
+  try {
+    await invoke("toggle_bluetooth", { enable });
+    notify.success(enable ? "Bluetooth activé" : "Bluetooth désactivé");
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+  toggling.value = false;
+}
+
+onMounted(load);
+</script>
+
+<template>
+  <div class="bt-page">
+    <div class="page-header">
+      <div class="header-icon"><Bluetooth :size="22" /></div>
+      <div>
+        <h1>Bluetooth</h1>
+        <p class="subtitle">Adaptateurs et appareils Bluetooth</p>
+      </div>
+      <NButton variant="ghost" size="sm" :loading="loading" @click="load" style="margin-left:auto">
+        <RefreshCw :size="13" /> Actualiser
+      </NButton>
+    </div>
+
+    <div v-if="loading">
+      <NSkeleton v-for="i in 3" :key="i" height="56px" style="margin-bottom:8px" />
+    </div>
+
+    <template v-else-if="report">
+      <div v-if="!report.bt_available" class="no-bt-banner">
+        <BluetoothOff :size="16" />
+        <span>Aucun adaptateur Bluetooth détecté sur cette machine.</span>
+      </div>
+
+      <!-- Adaptateurs -->
+      <NCard v-if="report.adapters.length">
+        <template #header>
+          <div class="section-header"><Radio :size="15" /><span>Adaptateurs ({{ report.adapters.length }})</span></div>
+        </template>
+        <div class="adapters-list">
+          <div v-for="a in report.adapters" :key="a.address" class="adapter-row">
+            <div class="adapter-icon" :class="a.enabled ? 'on' : 'off'">
+              <Bluetooth :size="16" />
+            </div>
+            <div class="adapter-info">
+              <span class="adapter-name">{{ a.name }}</span>
+              <span class="adapter-meta">{{ a.manufacturer }} · v{{ a.driver_version }} · {{ a.address }}</span>
+            </div>
+            <NBadge :variant="a.enabled ? 'success' : 'neutral'">{{ a.enabled ? 'Activé' : 'Désactivé' }}</NBadge>
+            <div class="adapter-btns">
+              <NButton v-if="!a.enabled" variant="primary" size="sm" :loading="toggling" @click="toggleBt(true)">Activer</NButton>
+              <NButton v-else variant="danger" size="sm" :loading="toggling" @click="toggleBt(false)">Désactiver</NButton>
+            </div>
+          </div>
+        </div>
+      </NCard>
+
+      <!-- Appareils -->
+      <NCard>
+        <template #header>
+          <div class="section-header"><Bluetooth :size="15" /><span>Appareils ({{ report.devices.length }})</span></div>
+        </template>
+
+        <div v-if="report.devices.length === 0" class="empty-state">
+          <Bluetooth :size="28" style="opacity:.25" />
+          <p>Aucun appareil Bluetooth associé</p>
+        </div>
+
+        <div v-else class="devices-grid">
+          <div v-for="d in report.devices" :key="d.address" class="device-card">
+            <div class="device-icon">
+              <component :is="deviceIcon(d.category)" :size="20" />
+            </div>
+            <div class="device-info">
+              <span class="device-name">{{ d.name || 'Appareil inconnu' }}</span>
+              <span class="device-addr">{{ d.address }}</span>
+              <span class="device-meta">{{ d.manufacturer || d.device_class }}</span>
+            </div>
+            <div class="device-badges">
+              <NBadge v-if="d.connected" variant="success" dot>Connecté</NBadge>
+              <NBadge v-if="d.paired" variant="accent">Jumelé</NBadge>
+              <NBadge v-if="d.trusted" variant="neutral">Approuvé</NBadge>
+            </div>
+          </div>
+        </div>
+      </NCard>
+    </template>
+  </div>
+</template>
+
+<style scoped>
+.bt-page { display: flex; flex-direction: column; gap: 14px; }
+.page-header { display: flex; align-items: center; gap: 12px; }
+.header-icon { width: 42px; height: 42px; border-radius: var(--radius-lg); background: var(--accent-muted); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0; }
+h1 { font-size: 22px; font-weight: 700; }
+.subtitle { font-size: 12px; color: var(--text-muted); }
+.no-bt-banner { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--warning-muted); border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent); border-radius: var(--radius-md); font-size: 13px; color: var(--warning); }
+.section-header { display: flex; align-items: center; gap: 8px; }
+.adapters-list { display: flex; flex-direction: column; gap: 8px; }
+.adapter-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+.adapter-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.adapter-icon.on { background: var(--accent-muted); color: var(--accent-primary); }
+.adapter-icon.off { background: var(--bg-elevated); color: var(--text-muted); }
+.adapter-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.adapter-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.adapter-meta { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.adapter-btns { flex-shrink: 0; }
+.devices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.device-card { padding: 14px; background: var(--bg-tertiary); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); transition: border-color var(--transition-fast); }
+.device-card:hover { border-color: var(--text-muted); }
+.device-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--accent-muted); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; }
+.device-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.device-addr { font-family: monospace; font-size: 10px; color: var(--text-muted); }
+.device-meta { font-size: 11px; color: var(--text-muted); }
+.device-info { display: flex; flex-direction: column; gap: 2px; }
+.device-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px; color: var(--text-muted); font-size: 13px; }
+</style>

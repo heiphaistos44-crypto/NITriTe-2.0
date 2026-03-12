@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import { useRoute } from "vue-router";
 import NCard from "@/components/ui/NCard.vue";
 import NTabs from "@/components/ui/NTabs.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -37,6 +39,7 @@ import DiagTabWsl from "@/components/diagnostic/DiagTabWsl.vue";
 import DiagTabBluetooth from "@/components/diagnostic/DiagTabBluetooth.vue";
 import DiagTabPerfHistory from "@/components/diagnostic/DiagTabPerfHistory.vue";
 import DiagTabScan from "@/components/diagnostic/DiagTabScan.vue";
+import DiagTabDriverUpdater from "@/components/diagnostic/DiagTabDriverUpdater.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Monitor, Cpu, MemoryStick, HardDrive, Globe, Headphones,
@@ -44,7 +47,7 @@ import {
   RefreshCw, ScanLine, FileJson, FileText, FileCode, FolderOpen,
   CircuitBoard, Wifi, Server, Shield, Activity, FolderTree,
   Users, Clock, FileDown, History, Lock, Wrench,
-  Gauge, Trash2, AlertTriangle, Settings, Terminal, Bluetooth,
+  Gauge, Trash2, AlertTriangle, Settings, Terminal, Bluetooth, Download,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -116,90 +119,111 @@ interface ScanResult {
 // ============= Tabs =============
 const TABS = [
   // ── Matériel ──────────────────────────────────────
-  { id: "os",          label: "Système",         icon: Monitor,       groupId: "hardware" },
-  { id: "bios",        label: "BIOS",            icon: CircuitBoard,  groupId: "hardware" },
-  { id: "mobo",        label: "Carte Mère",      icon: CircuitBoard,  groupId: "hardware" },
-  { id: "cpu",         label: "Processeur",      icon: Cpu,           groupId: "hardware" },
-  { id: "gpu",         label: "GPU",             icon: Monitor,       groupId: "hardware" },
-  { id: "ram",         label: "RAM",             icon: MemoryStick,   groupId: "hardware" },
-  { id: "disks",       label: "Disques & Volumes", icon: HardDrive,     groupId: "hardware" },
+  { id: "os",           label: "Système OS",        icon: Monitor,       groupId: "hardware" },
+  { id: "bios",         label: "BIOS / UEFI",        icon: CircuitBoard,  groupId: "hardware" },
+  { id: "mobo",         label: "Carte Mère",          icon: CircuitBoard,  groupId: "hardware" },
+  { id: "cpu",          label: "Processeur",          icon: Cpu,           groupId: "hardware" },
+  { id: "gpu",          label: "GPU",                 icon: Monitor,       groupId: "hardware" },
+  { id: "ram",          label: "RAM",                 icon: MemoryStick,   groupId: "hardware" },
+  { id: "disks",        label: "Disques & Volumes",   icon: HardDrive,     groupId: "hardware" },
   // ── Périphériques ─────────────────────────────────
-  { id: "monitors",    label: "Écrans",          icon: Monitor,       groupId: "devices" },
-  { id: "audio",       label: "Audio",           icon: Headphones,    groupId: "devices" },
-  { id: "usb",         label: "USB",             icon: Usb,           groupId: "devices" },
-  { id: "battery",     label: "Batterie",        icon: Battery,       groupId: "devices" },
-  { id: "power",       label: "Énergie",         icon: Zap,           groupId: "devices" },
-  { id: "printers",    label: "Imprimantes",     icon: Printer,       groupId: "devices" },
-  { id: "bluetooth",   label: "Bluetooth",       icon: Bluetooth,     groupId: "devices" },
+  { id: "monitors",     label: "Écrans",              icon: Monitor,       groupId: "devices" },
+  { id: "audio",        label: "Audio",               icon: Headphones,    groupId: "devices" },
+  { id: "usb",          label: "USB",                 icon: Usb,           groupId: "devices" },
+  { id: "battery",      label: "Batterie",            icon: Battery,       groupId: "devices" },
+  { id: "power",        label: "Énergie",             icon: Zap,           groupId: "devices" },
+  { id: "printers",     label: "Imprimantes",         icon: Printer,       groupId: "devices" },
+  { id: "bluetooth",    label: "Bluetooth",           icon: Bluetooth,     groupId: "devices" },
   // ── Réseau ────────────────────────────────────────
-  { id: "network",     label: "Adaptateurs",     icon: Wifi,          groupId: "network" },
-  { id: "connections", label: "Connexions",      icon: Activity,      groupId: "network" },
-  { id: "outils-reseau",label: "Outils Réseau",  icon: Wifi,          groupId: "network" },
-  { id: "hosts",       label: "Hosts",           icon: FileText,      groupId: "network" },
-  { id: "wsl",         label: "WSL",             icon: Terminal,      groupId: "network" },
-  // ── Logiciels ─────────────────────────────────────
-  { id: "software",    label: "Logiciels",       icon: Package,       groupId: "software" },
-  { id: "env",         label: "Variables",       icon: Server,        groupId: "software" },
-  { id: "startup",     label: "Démarrage",       icon: Play,          groupId: "software" },
-  { id: "processes",   label: "Processus",       icon: Activity,      groupId: "software" },
-  { id: "services",    label: "Services",        icon: Server,        groupId: "software" },
-  { id: "tasks",       label: "Tâches planif.",  icon: RefreshCw,     groupId: "software" },
-  { id: "updates",     label: "Mises à jour",    icon: RefreshCw,     groupId: "software" },
-  { id: "activation",  label: "Activation",      icon: Key,           groupId: "software" },
-  { id: "license",     label: "Licence",         icon: Key,           groupId: "software" },
-  { id: "folders",     label: "Dossiers",        icon: FolderTree,    groupId: "software" },
-  { id: "pilotes",     label: "Pilotes",         icon: HardDrive,     groupId: "software" },
-  { id: "nettoyeur",   label: "Nettoyeur",       icon: Trash2,        groupId: "software" },
-  { id: "benchmark",   label: "Benchmark",       icon: Gauge,         groupId: "software" },
-  { id: "boot",        label: "Boot",            icon: Settings,      groupId: "software" },
+  { id: "network",      label: "Adaptateurs",         icon: Wifi,          groupId: "network" },
+  { id: "connections",  label: "Connexions TCP",       icon: Activity,      groupId: "network" },
+  { id: "outils-reseau",label: "Outils Réseau",       icon: Wifi,          groupId: "network" },
+  { id: "hosts",        label: "Fichier Hosts",        icon: FileText,      groupId: "network" },
+  { id: "wsl",          label: "WSL / Linux",          icon: Terminal,      groupId: "network" },
+  // ── Système & Logiciels ───────────────────────────
+  { id: "software",     label: "Applications",        icon: Package,       groupId: "system" },
+  { id: "env",          label: "Variables Env.",       icon: Server,        groupId: "system" },
+  { id: "startup",      label: "Démarrage",           icon: Play,          groupId: "system" },
+  { id: "processes",    label: "Processus",           icon: Activity,      groupId: "system" },
+  { id: "services",     label: "Services",            icon: Server,        groupId: "system" },
+  { id: "tasks",        label: "Tâches planif.",       icon: RefreshCw,     groupId: "system" },
+  { id: "folders",      label: "Dossiers",            icon: FolderTree,    groupId: "system" },
+  // ── Windows ───────────────────────────────────────
+  { id: "updates",      label: "Mises à jour",        icon: RefreshCw,     groupId: "windows" },
+  { id: "pilotes",      label: "Pilotes",             icon: HardDrive,     groupId: "windows" },
+  { id: "driver-update",label: "Màj Pilotes",         icon: Download,      groupId: "windows" },
+  { id: "activation",   label: "Activation",          icon: Key,           groupId: "windows" },
+  { id: "license",      label: "Licences & Clés",     icon: Key,           groupId: "windows" },
+  { id: "boot",         label: "Boot Manager",         icon: Settings,      groupId: "windows" },
+  { id: "nettoyeur",    label: "Nettoyeur",           icon: Trash2,        groupId: "windows" },
   // ── Sécurité ──────────────────────────────────────
-  { id: "security",    label: "Sécurité",        icon: Shield,        groupId: "security" },
-  { id: "comptes",     label: "Comptes",         icon: Users,         groupId: "security" },
-  { id: "parefeu",     label: "Pare-feu",        icon: Shield,        groupId: "security" },
-  { id: "partages",    label: "Partages",        icon: FolderOpen,    groupId: "security" },
-  { id: "registre",    label: "Registre",        icon: Key,           groupId: "security" },
-  { id: "historique",  label: "Historique",      icon: History,       groupId: "security" },
-  { id: "certificats", label: "Certificats",     icon: Lock,          groupId: "security" },
-  // ── Performances & Outils ─────────────────────────
-  { id: "performances",label: "Performances",    icon: Activity,      groupId: "perf" },
-  { id: "perf-history",label: "Historique Perf", icon: Activity,      groupId: "perf" },
-  { id: "bsod",        label: "BSOD",            icon: AlertTriangle, groupId: "perf" },
-  { id: "reparation",  label: "Réparation",      icon: Wrench,        groupId: "perf" },
-  { id: "tools",       label: "Outils",          icon: Globe,         groupId: "perf" },
-  { id: "scan",        label: "Scan Total",      icon: ScanLine,      groupId: "perf" },
+  { id: "security",     label: "Sécurité",            icon: Shield,        groupId: "security" },
+  { id: "comptes",      label: "Comptes",             icon: Users,         groupId: "security" },
+  { id: "parefeu",      label: "Pare-feu",            icon: Shield,        groupId: "security" },
+  { id: "partages",     label: "Partages",            icon: FolderOpen,    groupId: "security" },
+  { id: "registre",     label: "Registre",            icon: Key,           groupId: "security" },
+  { id: "historique",   label: "Historique",          icon: History,       groupId: "security" },
+  { id: "certificats",  label: "Certificats",         icon: Lock,          groupId: "security" },
+  // ── Outils & Diagnostic ──────────────────────────
+  { id: "performances", label: "Performances",        icon: Activity,      groupId: "tools" },
+  { id: "perf-history", label: "Historique Perf",     icon: Activity,      groupId: "tools" },
+  { id: "benchmark",    label: "Benchmark",           icon: Gauge,         groupId: "tools" },
+  { id: "bsod",         label: "BSOD",                icon: AlertTriangle, groupId: "tools" },
+  { id: "reparation",   label: "Réparation",          icon: Wrench,        groupId: "tools" },
+  { id: "tools",        label: "Boîte à Outils",      icon: Globe,         groupId: "tools" },
+  { id: "scan",         label: "Scan Total",          icon: ScanLine,      groupId: "tools" },
 ];
 
 const GROUPS = [
-  { id: "all",      label: "Tout",           icon: Globe    },
-  { id: "hardware", label: "Matériel",       icon: Cpu      },
-  { id: "devices",  label: "Périphériques",  icon: Usb      },
-  { id: "network",  label: "Réseau",         icon: Wifi     },
-  { id: "software", label: "Logiciels",      icon: Package  },
-  { id: "security", label: "Sécurité",       icon: Shield   },
-  { id: "perf",     label: "Perf & Outils",  icon: Gauge    },
+  { id: "hardware",  label: "Matériel",           icon: Cpu      },
+  { id: "devices",   label: "Périphériques",      icon: Usb      },
+  { id: "network",   label: "Réseau",             icon: Wifi     },
+  { id: "system",    label: "Système",            icon: Package  },
+  { id: "windows",   label: "Windows",            icon: Settings },
+  { id: "security",  label: "Sécurité",           icon: Shield   },
+  { id: "tools",     label: "Outils & Diagnostic",icon: Gauge    },
 ];
 
-const activeGroup = ref("all");
-
-const filteredTabs = computed(() =>
-  activeGroup.value === "all"
-    ? TABS
-    : TABS.filter(t => t.groupId === activeGroup.value)
-);
-
-function selectGroup(id: string) {
-  activeGroup.value = id;
-  const tabs = id === "all" ? TABS : TABS.filter(t => t.groupId === id);
-  if (!tabs.find(t => t.id === activeTab.value)) {
-    const first = tabs[0];
-    if (first) { activeTab.value = first.id; loadTab(first.id); }
-  }
-}
-
+const route = useRoute();
 const activeTab = ref("os");
 const loadedTabs = ref<Set<string>>(new Set());
+const tabLoadTime = ref<Record<string, number>>({});
+const TAB_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const loadingTab = ref<string | null>(null);
 const tabError = ref<Record<string, string>>({});
+const navFilter = ref("");
+const activeGroup = ref("hardware");
+
+function visibleTabsForGroup(groupId: string) {
+  const f = navFilter.value.toLowerCase().trim();
+  return TABS.filter(t => t.groupId === groupId && (!f || t.label.toLowerCase().includes(f)));
+}
+
+function isGroupActive(groupId: string) {
+  return TABS.find(t => t.id === activeTab.value)?.groupId === groupId;
+}
+
+// Navigation depuis la barre de recherche globale (?tab=cpu)
+onMounted(() => {
+  const tabParam = route.query.tab as string | undefined;
+  if (tabParam && TABS.find(t => t.id === tabParam)) {
+    const grp = TABS.find(t => t.id === tabParam)?.groupId;
+    if (grp) activeGroup.value = grp;
+    activeTab.value = tabParam;
+    loadTab(tabParam);
+  } else {
+    loadTab("os");
+  }
+});
+
+watch(() => route.query.tab, (tabParam) => {
+  if (typeof tabParam === "string" && TABS.find(t => t.id === tabParam)) {
+    const grp = TABS.find(t => t.id === tabParam)?.groupId;
+    if (grp) activeGroup.value = grp;
+    activeTab.value = tabParam;
+    loadTab(tabParam);
+  }
+});
 
 // ============= Data refs =============
 const sysInfo = ref<SysInfo | null>(null);
@@ -242,12 +266,14 @@ const scanProblems = ref<string[]>([]);
 
 // ============= Loaders =============
 async function loadTab(tab: string, force = false) {
-  if (!force && loadedTabs.value.has(tab)) return;
+  const now = Date.now();
+  const lastLoad = tabLoadTime.value[tab] ?? 0;
+  const expired = now - lastLoad > TAB_TTL_MS;
+  if (!force && loadedTabs.value.has(tab) && !expired) return;
   loadedTabs.value.add(tab);
   loadingTab.value = tab;
   tabError.value[tab] = "";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     switch (tab) {
       case "os":
         if (!sysInfo.value) sysInfo.value = await invoke("get_system_info");
@@ -316,9 +342,11 @@ async function loadTab(tab: string, force = false) {
       case "boot":         break; // auto-chargé dans DiagTabBoot
       case "wsl":          break; // auto-chargé dans DiagTabWsl
       case "bluetooth":    break; // auto-chargé dans DiagTabBluetooth
-      case "perf-history": break; // auto-chargé dans DiagTabPerfHistory
+      case "perf-history":  break; // auto-chargé dans DiagTabPerfHistory
+      case "driver-update": break; // auto-chargé dans DiagTabDriverUpdater
       case "folders":     folders.value = await invoke("get_folder_sizes_detailed"); break;
     }
+    tabLoadTime.value[tab] = Date.now();
   } catch (e: any) {
     tabError.value[tab] = e?.toString() ?? "Erreur inconnue";
     loadedTabs.value.delete(tab);
@@ -326,7 +354,7 @@ async function loadTab(tab: string, force = false) {
 }
 
 watch(activeTab, (tab) => {
-  if (tab !== "tools" && tab !== "scan") loadTab(tab);
+  if (tab !== "tools" && tab !== "scan" && tab !== "driver-update") loadTab(tab);
 });
 
 async function refreshTab() {
@@ -386,7 +414,6 @@ function computeProblems(sr: ScanResult) {
 async function runTotalScan() {
   scanning.value = true; scanProgress.value = 0; scanStep.value = "Démarrage...";
   scanResult.value = null; scanProblems.value = [];
-  const { invoke } = await import("@tauri-apps/api/core");
   const { listen } = await import("@tauri-apps/api/event");
   try {
     scanStep.value = "Chargement composants..."; scanProgress.value = 5;
@@ -428,7 +455,6 @@ async function writeExport(defaultName: string, content: string, ext: string) {
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
     });
     if (!filePath) return;
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_content_to_path", { path: filePath, content });
     notify.success("Export sauvegardé", filePath);
   } catch (e: any) {
@@ -437,7 +463,6 @@ async function writeExport(defaultName: string, content: string, ext: string) {
 }
 
 async function openExportFolder() {
-  const { invoke } = await import("@tauri-apps/api/core");
   await invoke("open_path", { path: await invoke<string>("get_export_dir") });
 }
 
@@ -936,41 +961,78 @@ async function exportMd() {
   await writeExport("diagnostic.md", lines.join("\n"), "md");
 }
 
-// Init
-loadTab("os");
+// Init géré dans onMounted (support ?tab= query param)
 </script>
 
 <template>
   <div class="page-content">
     <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
-      <h2 style="margin:0;font-size:16px;font-weight:700">Diagnostic Système</h2>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <NButton variant="ghost" size="sm" @click="exportJson"><FileJson :size="13" /> JSON</NButton>
-        <NButton variant="ghost" size="sm" @click="exportTxt"><FileText :size="13" /> TXT</NButton>
-        <NButton variant="ghost" size="sm" @click="exportMd"><FileCode :size="13" /> MD</NButton>
-        <NButton variant="ghost" size="sm" @click="exportHtml"><FileDown :size="13" /> HTML</NButton>
-        <NButton variant="ghost" size="sm" @click="openExportFolder"><FolderOpen :size="13" /> Exports</NButton>
+    <div class="diag-page-header">
+      <div class="diag-page-title">
+        <h2>Diagnostic Système</h2>
+        <span class="diag-page-subtitle">{{ TABS.length }} analyses disponibles</span>
+      </div>
+      <div class="diag-exports">
+        <NButton variant="ghost" size="sm" @click="exportJson"><FileJson :size="13" />JSON</NButton>
+        <NButton variant="ghost" size="sm" @click="exportTxt"><FileText :size="13" />TXT</NButton>
+        <NButton variant="ghost" size="sm" @click="exportMd"><FileCode :size="13" />MD</NButton>
+        <NButton variant="ghost" size="sm" @click="exportHtml"><FileDown :size="13" />HTML</NButton>
+        <NButton variant="ghost" size="sm" @click="openExportFolder"><FolderOpen :size="13" />Exports</NButton>
       </div>
     </div>
 
-    <!-- Filtres catégories -->
-    <div class="group-pills">
-      <button
-        v-for="g in GROUPS" :key="g.id"
-        class="group-pill"
-        :class="{ active: activeGroup === g.id }"
-        @click="selectGroup(g.id)"
-      >
-        <component :is="g.icon" :size="12" />
-        {{ g.label }}
-        <span class="pill-count">{{ g.id === 'all' ? TABS.length : TABS.filter(t => t.groupId === g.id).length }}</span>
-      </button>
-    </div>
+    <!-- Layout principal -->
+    <div class="diag-layout">
 
-    <NTabs :tabs="filteredTabs" v-model="activeTab" wrap />
+      <!-- Panneau navigation latéral -->
+      <nav class="diag-sidenav">
+        <div class="diag-sidenav-filter">
+          <Search :size="12" class="sidenav-filter-icon" />
+          <input v-model="navFilter" class="sidenav-filter-input" placeholder="Filtrer les onglets…" />
+          <button v-if="navFilter" class="sidenav-filter-clear" @click="navFilter = ''">✕</button>
+        </div>
 
-    <NCard style="margin-top:12px;padding:16px">
+        <div class="sidenav-scroll">
+          <div
+            v-for="group in GROUPS"
+            :key="group.id"
+            class="sidenav-group"
+            :class="{ 'sidenav-group--active': isGroupActive(group.id) }"
+          >
+            <template v-if="visibleTabsForGroup(group.id).length > 0">
+              <div class="sidenav-group-label">
+                <component :is="group.icon" :size="11" />
+                {{ group.label }}
+                <span class="sidenav-group-count">{{ visibleTabsForGroup(group.id).length }}</span>
+              </div>
+              <button
+                v-for="tab in visibleTabsForGroup(group.id)"
+                :key="tab.id"
+                class="sidenav-item"
+                :class="{ active: activeTab === tab.id }"
+                @click="activeTab = tab.id"
+              >
+                <component :is="tab.icon" :size="14" class="sidenav-item-icon" />
+                <span class="sidenav-item-label">{{ tab.label }}</span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Zone de contenu -->
+      <div class="diag-content-area">
+        <!-- Breadcrumb onglet actif -->
+        <div class="diag-tab-breadcrumb">
+          <span class="breadcrumb-group">{{ GROUPS.find(g => g.id === TABS.find(t => t.id === activeTab)?.groupId)?.label }}</span>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-tab">{{ TABS.find(t => t.id === activeTab)?.label }}</span>
+          <button class="breadcrumb-refresh" @click="refreshTab" title="Rafraîchir">
+            <RefreshCw :size="12" />
+          </button>
+        </div>
+
+        <NCard style="padding:16px">
       <!-- Loading -->
       <div v-if="loadingTab === activeTab"
            style="display:flex;align-items:center;gap:10px;padding:24px 0;color:var(--text-secondary)">
@@ -1045,6 +1107,7 @@ loadTab("os");
         <DiagTabRegistry   v-else-if="activeTab === 'registre'" />
         <DiagTabHistory      v-else-if="activeTab === 'historique'" />
         <DiagTabSysDrivers     v-else-if="activeTab === 'pilotes'" />
+        <DiagTabDriverUpdater  v-else-if="activeTab === 'driver-update'" />
         <DiagTabCertificates v-else-if="activeTab === 'certificats'" />
         <DiagTabPerf         v-else-if="activeTab === 'performances'" />
         <DiagTabNetTools     v-else-if="activeTab === 'outils-reseau'" />
@@ -1071,6 +1134,8 @@ loadTab("os");
           :batteries="batteries" :onRunScan="runTotalScan"
         />
       </template>
-    </NCard>
+        </NCard>
+      </div><!-- /diag-content-area -->
+    </div><!-- /diag-layout -->
   </div>
 </template>

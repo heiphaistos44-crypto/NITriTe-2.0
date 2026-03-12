@@ -6,6 +6,7 @@ import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
+import NCollapse from "@/components/ui/NCollapse.vue";
 
 const props = defineProps<{
   tab: string;
@@ -295,36 +296,37 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
   <template v-else-if="tab === 'startup'">
     <div class="diag-tab-content">
       <DiagBanner :icon="Play" title="Programmes de Démarrage" desc="Applications lancées automatiquement au démarrage" color="orange" />
-      <p class="diag-section-label">Programmes au démarrage — {{ startupPrograms.length }}</p>
-      <div v-if="!startupPrograms.length" class="diag-empty">Aucun programme au démarrage trouvé</div>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Nom</th><th>Catégorie</th><th>Source</th><th>Portée</th><th>Commande</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr v-for="(s, i) in startupPrograms" :key="i">
-              <td style="font-weight:500">{{ s.name }}</td>
-              <td>
-                <NBadge
-                  :variant="s.category === 'Microsoft / Windows' ? 'info' : s.category === 'Sécurité' ? 'success' : s.category === 'Tiers' ? 'warning' : 'default'"
-                  style="font-size:10px">{{ s.category }}</NBadge>
-              </td>
-              <td class="muted" style="font-size:11px">{{ s.location }}</td>
-              <td><NBadge :variant="s.user === 'Tous les utilisateurs' ? 'neutral' : 'default'" style="font-size:10px">{{ s.user }}</NBadge></td>
-              <td class="muted" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="s.command">{{ s.command }}</td>
-              <td style="white-space:nowrap">
-                <div style="display:flex;gap:4px">
-                  <button class="svc-btn svc-restart" title="Désactiver" @click="toggleStartup(s, false)">
-                    <Square :size="12" />
-                  </button>
-                  <button class="svc-btn svc-stop" title="Supprimer" @click="removeStartup(s)">
-                    <Trash2 :size="12" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <NCollapse :title="'Programmes au démarrage — ' + startupPrograms.length" storageKey="diag-startup-programs" :defaultOpen="true">
+        <div v-if="!startupPrograms.length" class="diag-empty">Aucun programme au démarrage trouvé</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Nom</th><th>Catégorie</th><th>Source</th><th>Portée</th><th>Commande</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="(s, i) in startupPrograms" :key="i">
+                <td style="font-weight:500">{{ s.name }}</td>
+                <td>
+                  <NBadge
+                    :variant="s.category === 'Microsoft / Windows' ? 'info' : s.category === 'Sécurité' ? 'success' : s.category === 'Tiers' ? 'warning' : 'default'"
+                    style="font-size:10px">{{ s.category }}</NBadge>
+                </td>
+                <td class="muted" style="font-size:11px">{{ s.location }}</td>
+                <td><NBadge :variant="s.user === 'Tous les utilisateurs' ? 'neutral' : 'default'" style="font-size:10px">{{ s.user }}</NBadge></td>
+                <td class="muted" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="s.command">{{ s.command }}</td>
+                <td style="white-space:nowrap">
+                  <div style="display:flex;gap:4px">
+                    <button class="svc-btn svc-restart" title="Désactiver" @click="toggleStartup(s, false)">
+                      <Square :size="12" />
+                    </button>
+                    <button class="svc-btn svc-stop" title="Supprimer" @click="removeStartup(s)">
+                      <Trash2 :size="12" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </NCollapse>
     </div>
   </template>
 

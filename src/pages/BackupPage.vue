@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -130,7 +131,6 @@ async function createBackup() {
   backupStatus.value = "Initialisation...";
 
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
 
     // Simulate progress steps
     for (let i = 0; i < selected.length; i++) {
@@ -169,7 +169,6 @@ const backupsLoading = ref(true);
 async function loadBackups() {
   backupsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     previousBackups.value = await invoke<BackupEntry[]>("list_backups");
   } catch {
     previousBackups.value = [
@@ -188,7 +187,6 @@ async function openEntryFolder(_filename: string) {
 
 async function openBackupFolder() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     // Essaye d'abord le chemin retourné par le dernier backup
     const folder = backupResult.value?.path
       ? backupResult.value.path.substring(0, backupResult.value.path.lastIndexOf("\\"))

@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { useNotificationStore } from "@/stores/notifications";
+
+const notify = useNotificationStore();
 import { RefreshCw, Download, CheckCircle, AlertTriangle, Package } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NCollapse from "@/components/ui/NCollapse.vue";
 
 const props = defineProps<{ updatesHistory: any[] }>();
 
@@ -32,6 +37,8 @@ const scoopLoading  = ref(false);
 const scoopInstalled = ref(false);
 const scoopUpgrading = ref(false);
 const scoopMsg      = ref("");
+const scoopUpgradeLog = ref("");
+let scoopUnlisten: (() => void) | null = null;
 
 // === Windows Update ===
 async function scanWU() {
@@ -95,13 +102,67 @@ async function loadScoop() {
   scoopLoading.value = false;
 }
 async function upgradeScoop() {
-  scoopUpgrading.value = true; scoopMsg.value = "Mise à jour en cours...";
+  scoopUpgrading.value = true;
+  scoopMsg.value = "Mise à jour en cours (scoop update + scoop update *)...";
+  scoopUpgradeLog.value = "";
+  // Écoute le log en temps réel
+  if (scoopUnlisten) scoopUnlisten();
+  scoopUnlisten = await listen<string>("scoop-upgrade-done", (ev) => {
+    scoopUpgradeLog.value = ev.payload || "";
+    scoopMsg.value = "Mise à jour Scoop terminée ✓";
+    scoopUpgrading.value = false;
+    loadScoop();
+  });
   try {
     await invoke("upgrade_scoop_all");
-    scoopMsg.value = "Mise à jour Scoop terminée ✓";
-    await loadScoop();
-  } catch (e: any) { scoopMsg.value = "Erreur : " + e; }
-  scoopUpgrading.value = false;
+  } catch (e: any) {
+    scoopMsg.value = "Erreur : " + e;
+    scoopUpgrading.value = false;
+  }
+}
+
+const chocoInstalling  = ref(false);
+const chocoInstallMsg  = ref("");
+const scoopInstalling  = ref(false);
+const scoopInstallMsg  = ref("");
+
+async function installWinget() {
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("open_url", { url: "ms-windows-store://pdp/?productid=9NBLGGH4NNS1" });
+  } catch (e: any) {
+    notify.error("Impossible d'ouvrir le Microsoft Store", String(e));
+  }
+}
+
+async function installChoco() {
+  chocoInstalling.value = true;
+  chocoInstallMsg.value = "Installation Chocolatey en cours (droits admin requis)...";
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const msg = await invoke<string>("install_package_manager", { manager: "chocolatey" });
+    chocoInstallMsg.value = msg || "Chocolatey installé — relancez l'outil pour le détecter.";
+    setTimeout(() => loadChoco(), 6000);
+  } catch (e: any) {
+    chocoInstallMsg.value = "Erreur : " + String(e);
+    notify.error("Installation Chocolatey échouée", String(e));
+  }
+  chocoInstalling.value = false;
+}
+
+async function installScoop() {
+  scoopInstalling.value = true;
+  scoopInstallMsg.value = "Installation Scoop en cours (peut prendre 30s)...";
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const msg = await invoke<string>("install_package_manager", { manager: "scoop" });
+    scoopInstallMsg.value = msg || "Scoop installé — relancez l'outil pour le détecter.";
+    setTimeout(() => loadScoop(), 6000);
+  } catch (e: any) {
+    scoopInstallMsg.value = "Erreur : " + String(e);
+    notify.error("Installation Scoop échouée", String(e));
+  }
+  scoopInstalling.value = false;
 }
 
 function severityVariant(s: string) {
@@ -113,170 +174,234 @@ function severityVariant(s: string) {
 }
 
 onMounted(() => { loadWinget(); loadChoco(); loadScoop(); });
+onUnmounted(() => { if (scoopUnlisten) scoopUnlisten(); });
 </script>
 
 <template>
   <!-- ===== Windows Update ===== -->
-  <p class="diag-section-label">Windows Update — Mises à jour disponibles</p>
-  <div class="card-block">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-      <NButton variant="primary" size="sm" :disabled="scanningWU" @click="scanWU">
-        <NSpinner v-if="scanningWU" :size="12" />
-        <RefreshCw v-else :size="13" />
-        {{ scanningWU ? 'Scan en cours...' : 'Scanner les mises à jour' }}
-      </NButton>
-      <NButton v-if="wuScanned && pendingWU.length > 0" variant="success" size="sm"
-        :disabled="triggeringWU" @click="triggerWU">
-        <Download :size="13" />
-        {{ triggeringWU ? 'Déclenchement...' : 'Installer toutes (' + pendingWU.length + ')' }}
-      </NButton>
-      <span v-if="wuMessage" class="muted" style="font-size:12px">{{ wuMessage }}</span>
-    </div>
+  <NCollapse title="Windows Update — Mises à jour disponibles" storageKey="diag-updates-wu" :defaultOpen="true">
+    <div class="card-block">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <NButton variant="primary" size="sm" :disabled="scanningWU" @click="scanWU">
+          <NSpinner v-if="scanningWU" :size="12" />
+          <RefreshCw v-else :size="13" />
+          {{ scanningWU ? 'Scan en cours...' : 'Scanner les mises à jour' }}
+        </NButton>
+        <NButton v-if="wuScanned && pendingWU.length > 0" variant="success" size="sm"
+          :disabled="triggeringWU" @click="triggerWU">
+          <Download :size="13" />
+          {{ triggeringWU ? 'Déclenchement...' : 'Installer toutes (' + pendingWU.length + ')' }}
+        </NButton>
+        <span v-if="wuMessage" class="muted" style="font-size:12px">{{ wuMessage }}</span>
+      </div>
 
-    <div v-if="!wuScanned && !scanningWU" class="diag-empty" style="padding:8px 0">
-      Cliquez sur "Scanner" pour détecter les mises à jour Windows disponibles (utilise le cache local)
+      <div v-if="!wuScanned && !scanningWU" class="diag-empty" style="padding:8px 0">
+        Cliquez sur "Scanner" pour détecter les mises à jour Windows disponibles (utilise le cache local)
+      </div>
+      <div v-else-if="wuScanned && !pendingWU.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
+        <CheckCircle :size="14" /> Windows est à jour — aucune mise à jour en attente
+      </div>
+      <div v-else-if="pendingWU.length" class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Titre</th><th>KB</th><th>Sévérité</th><th>Taille</th><th>Téléchargé</th></tr></thead>
+          <tbody>
+            <tr v-for="(u, i) in pendingWU" :key="i">
+              <td style="max-width:300px;white-space:normal;word-break:break-word;font-size:11px">{{ u.title }}</td>
+              <td><code style="font-size:10px">{{ u.kb_ids || "—" }}</code></td>
+              <td><NBadge :variant="severityVariant(u.severity)" style="font-size:10px">{{ u.severity }}</NBadge></td>
+              <td class="muted" style="font-size:11px">{{ u.size_mb > 0 ? u.size_mb.toFixed(0)+' MB' : '—' }}</td>
+              <td>
+                <CheckCircle v-if="u.is_downloaded" :size="13" class="ic-ok" />
+                <span v-else class="muted" style="font-size:11px">Non</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div v-else-if="wuScanned && !pendingWU.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
-      <CheckCircle :size="14" /> Windows est à jour — aucune mise à jour en attente
+  </NCollapse>
+
+  <!-- ===== Winget ===== -->
+  <NCollapse title="WinGet — Gestionnaire de paquets Windows" storageKey="diag-updates-winget" :defaultOpen="false">
+    <div class="card-block">
+      <div v-if="wingetLoading" style="display:flex;align-items:center;gap:8px;font-size:13px"><NSpinner :size="14" /> Chargement...</div>
+      <div v-else-if="!wingetOk" class="diag-empty" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+        <span>WinGet non détecté ou non fonctionnel.</span>
+        <NButton variant="primary" size="sm" @click="installWinget">
+          <Download :size="13" /> Installer / Réparer WinGet (via Store)
+        </NButton>
+      </div>
+      <template v-else>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <NButton variant="ghost" size="sm" :disabled="wingetLoading" @click="loadWinget">
+            <RefreshCw :size="12" /> Actualiser
+          </NButton>
+          <NButton v-if="wingetList.length > 0" variant="primary" size="sm"
+            :disabled="wingetUpgrading" @click="upgradeWinget">
+            <Download v-if="!wingetUpgrading" :size="13" />
+            <NSpinner v-else :size="12" />
+            {{ wingetUpgrading ? 'Mise à jour...' : 'Tout mettre à jour (' + wingetList.length + ')' }}
+          </NButton>
+          <span v-if="wingetMsg" class="muted" style="font-size:12px">{{ wingetMsg }}</span>
+        </div>
+        <div v-if="!wingetList.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
+          <CheckCircle :size="14" /> Tous les paquets winget sont à jour
+        </div>
+        <div v-else class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Nom</th><th>ID</th><th>Installé</th><th>Disponible</th></tr></thead>
+            <tbody>
+              <tr v-for="(p, i) in wingetList.slice(0, 50)" :key="i">
+                <td>{{ p.name || p.Name || "—" }}</td>
+                <td><code style="font-size:10px">{{ p.id || p.Id || "—" }}</code></td>
+                <td class="muted" style="font-size:11px">{{ p.version || p.Version || "—" }}</td>
+                <td><NBadge variant="info" style="font-size:10px">{{ p.available || p.Available || "—" }}</NBadge></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
     </div>
-    <div v-else-if="pendingWU.length" class="table-wrap">
+  </NCollapse>
+
+  <!-- ===== Chocolatey ===== -->
+  <NCollapse title="Chocolatey" storageKey="diag-updates-chocolatey" :defaultOpen="false">
+    <div class="card-block">
+      <div v-if="chocoLoading" style="display:flex;align-items:center;gap:8px;font-size:13px"><NSpinner :size="14" /> Chargement...</div>
+      <div v-else-if="!chocoInstalled" class="diag-empty" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+        <span>Chocolatey n'est pas installé.</span>
+        <NButton variant="primary" size="sm" :disabled="chocoInstalling" @click="installChoco">
+          <NSpinner v-if="chocoInstalling" :size="12" />
+          <Download v-else :size="13" />
+          {{ chocoInstalling ? 'Installation...' : 'Installer Chocolatey' }}
+        </NButton>
+        <span v-if="chocoInstallMsg" class="muted" style="font-size:12px">{{ chocoInstallMsg }}</span>
+      </div>
+      <template v-else>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <NButton variant="ghost" size="sm" @click="loadChoco"><RefreshCw :size="12" /> Actualiser</NButton>
+          <NButton v-if="chocoList.length > 0" variant="primary" size="sm"
+            :disabled="chocoUpgrading" @click="upgradeChoco">
+            <Download v-if="!chocoUpgrading" :size="13" />
+            <NSpinner v-else :size="12" />
+            {{ chocoUpgrading ? 'Mise à jour...' : 'Tout mettre à jour (' + chocoList.length + ')' }}
+          </NButton>
+          <span v-if="chocoMsg" class="muted" style="font-size:12px">{{ chocoMsg }}</span>
+        </div>
+        <div v-if="!chocoList.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
+          <CheckCircle :size="14" /> Tous les paquets Chocolatey sont à jour
+        </div>
+        <div v-else class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Paquet</th><th>Installé</th><th>Disponible</th></tr></thead>
+            <tbody>
+              <tr v-for="(p, i) in chocoList" :key="i">
+                <td><Package :size="12" style="margin-right:4px;opacity:.6" />{{ typeof p === 'string' ? p.split('|')[0] : (p.name || p) }}</td>
+                <td class="muted" style="font-size:11px">{{ typeof p === 'string' ? p.split('|')[1] : (p.current_version || "—") }}</td>
+                <td><NBadge variant="info" style="font-size:10px">{{ typeof p === 'string' ? p.split('|')[2] : (p.available_version || "—") }}</NBadge></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
+  </NCollapse>
+
+  <!-- ===== Scoop ===== -->
+  <NCollapse title="Scoop — Gestionnaire de paquets" storageKey="diag-updates-scoop" :defaultOpen="false">
+    <div class="card-block">
+      <div v-if="scoopLoading" style="display:flex;align-items:center;gap:8px;font-size:13px">
+        <NSpinner :size="14" /> Détection Scoop en cours...
+      </div>
+
+      <!-- Non installé -->
+      <div v-else-if="!scoopInstalled" style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
+          <AlertTriangle :size="14" class="ic-warn" />
+          Scoop n'est pas installé sur ce PC.
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);padding:8px 12px;background:var(--bg-secondary);border-radius:6px;border:1px solid var(--border)">
+          Scoop est un gestionnaire de paquets en ligne de commande pour Windows.
+          L'installation se fait sans droits administrateur.
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <NButton variant="primary" size="sm" :disabled="scoopInstalling" @click="installScoop">
+            <NSpinner v-if="scoopInstalling" :size="12" />
+            <Download v-else :size="13" />
+            {{ scoopInstalling ? 'Installation en cours (30-60s)...' : 'Installer Scoop' }}
+          </NButton>
+          <NButton variant="ghost" size="sm" :disabled="scoopLoading" @click="loadScoop">
+            <RefreshCw :size="12" /> Vérifier à nouveau
+          </NButton>
+        </div>
+        <div v-if="scoopInstallMsg"
+          style="font-size:12px;padding:8px 10px;border-radius:5px;border-left:3px solid var(--accent-primary);background:var(--bg-secondary)">
+          {{ scoopInstallMsg }}
+        </div>
+      </div>
+
+      <!-- Installé -->
+      <template v-else>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <NButton variant="ghost" size="sm" :disabled="scoopLoading" @click="loadScoop">
+            <RefreshCw :size="12" /> Actualiser
+          </NButton>
+          <NButton v-if="scoopList.length > 0" variant="primary" size="sm"
+            :disabled="scoopUpgrading" @click="upgradeScoop">
+            <NSpinner v-if="scoopUpgrading" :size="12" />
+            <Download v-else :size="13" />
+            {{ scoopUpgrading ? 'Mise à jour en cours...' : `Tout mettre à jour (${scoopList.length})` }}
+          </NButton>
+          <NButton v-else variant="ghost" size="sm" :disabled="scoopUpgrading" @click="upgradeScoop">
+            <RefreshCw :size="12" /> Vérifier les mises à jour
+          </NButton>
+          <span v-if="scoopMsg" :class="scoopMsg.includes('✓') ? 'ic-ok' : 'muted'" style="font-size:12px">
+            {{ scoopMsg }}
+          </span>
+        </div>
+
+        <div v-if="!scoopList.length && !scoopUpgrading && !scoopUpgradeLog"
+          style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
+          <CheckCircle :size="14" /> Tous les paquets Scoop sont à jour
+        </div>
+
+        <div v-else-if="scoopList.length" class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Paquet</th><th>Version installée</th><th>Disponible</th></tr></thead>
+            <tbody>
+              <tr v-for="(p, i) in scoopList" :key="i">
+                <td style="font-weight:500"><Package :size="12" style="margin-right:5px;opacity:.5" />{{ p.name }}</td>
+                <td class="muted" style="font-size:11px">{{ p.installed || "—" }}</td>
+                <td><NBadge variant="info" style="font-size:10px">{{ p.available || "—" }}</NBadge></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Log de mise à jour -->
+        <div v-if="scoopUpgradeLog" style="margin-top:10px">
+          <p style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">Résultat :</p>
+          <pre style="font-size:10px;background:var(--bg-tertiary,#0d0d0f);border:1px solid var(--border);border-radius:4px;padding:8px;max-height:160px;overflow-y:auto;white-space:pre-wrap;color:var(--text-secondary)">{{ scoopUpgradeLog }}</pre>
+        </div>
+      </template>
+    </div>
+  </NCollapse>
+
+  <!-- ===== Historique KB ===== -->
+  <NCollapse :title="'Historique des mises à jour installées — ' + updatesHistory.length" storageKey="diag-updates-history" :defaultOpen="false">
+    <div v-if="!updatesHistory.length" class="diag-empty">Chargement de l'historique...</div>
+    <div v-else class="table-wrap">
       <table class="data-table">
-        <thead><tr><th>Titre</th><th>KB</th><th>Sévérité</th><th>Taille</th><th>Téléchargé</th></tr></thead>
+        <thead><tr><th>KB ID</th><th>Description</th><th>Installé le</th><th>Par</th></tr></thead>
         <tbody>
-          <tr v-for="(u, i) in pendingWU" :key="i">
-            <td style="max-width:300px;white-space:normal;word-break:break-word;font-size:11px">{{ u.title }}</td>
-            <td><code style="font-size:10px">{{ u.kb_ids || "—" }}</code></td>
-            <td><NBadge :variant="severityVariant(u.severity)" style="font-size:10px">{{ u.severity }}</NBadge></td>
-            <td class="muted" style="font-size:11px">{{ u.size_mb > 0 ? u.size_mb.toFixed(0)+' MB' : '—' }}</td>
-            <td>
-              <CheckCircle v-if="u.is_downloaded" :size="13" class="ic-ok" />
-              <span v-else class="muted" style="font-size:11px">Non</span>
-            </td>
+          <tr v-for="(u, i) in updatesHistory.slice(0, 200)" :key="i">
+            <td><code>{{ u.hotfix_id }}</code></td>
+            <td>{{ u.description }}</td>
+            <td class="muted">{{ u.installed_on }}</td>
+            <td class="muted">{{ u.installed_by || "—" }}</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
-
-  <!-- ===== Winget ===== -->
-  <p class="diag-section-label">WinGet — Gestionnaire de paquets Windows</p>
-  <div class="card-block">
-    <div v-if="wingetLoading" style="display:flex;align-items:center;gap:8px;font-size:13px"><NSpinner :size="14" /> Chargement...</div>
-    <div v-else-if="!wingetOk" class="diag-empty">WinGet non détecté sur ce système</div>
-    <template v-else>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <NButton variant="ghost" size="sm" :disabled="wingetLoading" @click="loadWinget">
-          <RefreshCw :size="12" /> Actualiser
-        </NButton>
-        <NButton v-if="wingetList.length > 0" variant="primary" size="sm"
-          :disabled="wingetUpgrading" @click="upgradeWinget">
-          <Download v-if="!wingetUpgrading" :size="13" />
-          <NSpinner v-else :size="12" />
-          {{ wingetUpgrading ? 'Mise à jour...' : 'Tout mettre à jour (' + wingetList.length + ')' }}
-        </NButton>
-        <span v-if="wingetMsg" class="muted" style="font-size:12px">{{ wingetMsg }}</span>
-      </div>
-      <div v-if="!wingetList.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
-        <CheckCircle :size="14" /> Tous les paquets winget sont à jour
-      </div>
-      <div v-else class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Nom</th><th>ID</th><th>Installé</th><th>Disponible</th></tr></thead>
-          <tbody>
-            <tr v-for="(p, i) in wingetList.slice(0, 50)" :key="i">
-              <td>{{ p.name || p.Name || "—" }}</td>
-              <td><code style="font-size:10px">{{ p.id || p.Id || "—" }}</code></td>
-              <td class="muted" style="font-size:11px">{{ p.version || p.Version || "—" }}</td>
-              <td><NBadge variant="info" style="font-size:10px">{{ p.available || p.Available || "—" }}</NBadge></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </template>
-  </div>
-
-  <!-- ===== Chocolatey ===== -->
-  <p class="diag-section-label">Chocolatey</p>
-  <div class="card-block">
-    <div v-if="chocoLoading" style="display:flex;align-items:center;gap:8px;font-size:13px"><NSpinner :size="14" /> Chargement...</div>
-    <div v-else-if="!chocoInstalled" class="diag-empty">Chocolatey non installé sur ce système</div>
-    <template v-else>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <NButton variant="ghost" size="sm" @click="loadChoco"><RefreshCw :size="12" /> Actualiser</NButton>
-        <NButton v-if="chocoList.length > 0" variant="primary" size="sm"
-          :disabled="chocoUpgrading" @click="upgradeChoco">
-          <Download v-if="!chocoUpgrading" :size="13" />
-          <NSpinner v-else :size="12" />
-          {{ chocoUpgrading ? 'Mise à jour...' : 'Tout mettre à jour (' + chocoList.length + ')' }}
-        </NButton>
-        <span v-if="chocoMsg" class="muted" style="font-size:12px">{{ chocoMsg }}</span>
-      </div>
-      <div v-if="!chocoList.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
-        <CheckCircle :size="14" /> Tous les paquets Chocolatey sont à jour
-      </div>
-      <div v-else class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Paquet</th><th>Installé</th><th>Disponible</th></tr></thead>
-          <tbody>
-            <tr v-for="(p, i) in chocoList" :key="i">
-              <td><Package :size="12" style="margin-right:4px;opacity:.6" />{{ typeof p === 'string' ? p.split('|')[0] : (p.name || p) }}</td>
-              <td class="muted" style="font-size:11px">{{ typeof p === 'string' ? p.split('|')[1] : (p.current_version || "—") }}</td>
-              <td><NBadge variant="info" style="font-size:10px">{{ typeof p === 'string' ? p.split('|')[2] : (p.available_version || "—") }}</NBadge></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </template>
-  </div>
-
-  <!-- ===== Scoop ===== -->
-  <p class="diag-section-label">Scoop</p>
-  <div class="card-block">
-    <div v-if="scoopLoading" style="display:flex;align-items:center;gap:8px;font-size:13px"><NSpinner :size="14" /> Chargement...</div>
-    <div v-else-if="!scoopInstalled" class="diag-empty">Scoop non installé sur ce système</div>
-    <template v-else>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <NButton variant="ghost" size="sm" @click="loadScoop"><RefreshCw :size="12" /> Actualiser</NButton>
-        <NButton v-if="scoopList.length > 0" variant="primary" size="sm"
-          :disabled="scoopUpgrading" @click="upgradeScoop">
-          <Download v-if="!scoopUpgrading" :size="13" />
-          <NSpinner v-else :size="12" />
-          {{ scoopUpgrading ? 'Mise à jour...' : 'Tout mettre à jour (' + scoopList.length + ')' }}
-        </NButton>
-        <span v-if="scoopMsg" class="muted" style="font-size:12px">{{ scoopMsg }}</span>
-      </div>
-      <div v-if="!scoopList.length" style="display:flex;align-items:center;gap:8px;color:var(--success);font-size:13px">
-        <CheckCircle :size="14" /> Tous les paquets Scoop sont à jour
-      </div>
-      <div v-else class="table-wrap">
-        <table class="data-table">
-          <thead><tr><th>Paquet</th><th>Installé</th><th>Disponible</th></tr></thead>
-          <tbody>
-            <tr v-for="(p, i) in scoopList" :key="i">
-              <td>{{ p.name || p.Name || p }}</td>
-              <td class="muted" style="font-size:11px">{{ p.installed || p.Installed || "—" }}</td>
-              <td><NBadge variant="info" style="font-size:10px">{{ p.available || p.Available || "—" }}</NBadge></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </template>
-  </div>
-
-  <!-- ===== Historique KB ===== -->
-  <p class="diag-section-label">Historique des mises à jour installées — {{ updatesHistory.length }}</p>
-  <div v-if="!updatesHistory.length" class="diag-empty">Chargement de l'historique...</div>
-  <div v-else class="table-wrap">
-    <table class="data-table">
-      <thead><tr><th>KB ID</th><th>Description</th><th>Installé le</th><th>Par</th></tr></thead>
-      <tbody>
-        <tr v-for="(u, i) in updatesHistory.slice(0, 200)" :key="i">
-          <td><code>{{ u.hotfix_id }}</code></td>
-          <td>{{ u.description }}</td>
-          <td class="muted">{{ u.installed_on }}</td>
-          <td class="muted">{{ u.installed_by || "—" }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  </NCollapse>
 </template>

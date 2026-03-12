@@ -2,20 +2,11 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export type ThemeName =
-  | "nitrite-dark"
-  | "cyber-blue"
-  | "matrix-green"
-  | "purple-haze"
-  | "red-alert"
-  | "arctic-light"
-  | "midnight-gold"
-  | "neon-synthwave"
-  | "ocean-deep"
-  | "rose-quartz"
-  | "void-dark"
-  | "forest-green"
-  | "copper-rust"
-  | "slate-steel"
+  | "nitrite-dark" | "cyber-blue" | "matrix-green" | "purple-haze" | "red-alert"
+  | "arctic-light" | "midnight-gold" | "neon-synthwave" | "ocean-deep" | "rose-quartz"
+  | "void-dark" | "forest-green" | "copper-rust" | "slate-steel"
+  | "inferno" | "aurora" | "moonlight" | "ember-glow" | "cobalt-night"
+  | "volcanic" | "sakura" | "jade-temple" | "hacker" | "ice-storm"
   | "custom";
 
 export const useAppStore = defineStore("app", () => {

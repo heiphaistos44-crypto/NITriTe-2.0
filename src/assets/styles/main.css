@@ -44,8 +44,8 @@ button, .nav-item, .collapse-btn, .section-header {
 
 /* === Scrollbar Custom === */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -53,12 +53,17 @@ button, .nav-item, .collapse-btn, .section-header {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-elevated);
-  border-radius: 3px;
+  background: var(--border-hover);
+  border-radius: 99px;
+  transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--border-strong);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* === Utilitaires === */
@@ -103,18 +108,20 @@ code {
 
 /* === Global page header pattern === */
 .page-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--text-primary) 50%, var(--accent-primary));
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 4px;
+  letter-spacing: -0.3px;
 }
 
 .page-subtitle {
   font-size: 13px;
   color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 /* === Stat number pattern === */
@@ -144,7 +151,56 @@ code {
   color: var(--accent-primary);
   padding-left: 10px;
   border-left: 3px solid var(--accent-primary);
+  box-shadow: -3px 0 10px rgba(249, 115, 22, 0.2);
   margin-bottom: 10px;
+}
+
+/* === Status dot === */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.status-dot--success { background: var(--success); box-shadow: 0 0 6px var(--success); animation: dot-pulse 2s ease-in-out infinite; }
+.status-dot--warning { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+.status-dot--danger  { background: var(--danger);  box-shadow: 0 0 6px var(--danger); animation: dot-pulse 1s ease-in-out infinite; }
+.status-dot--accent  { background: var(--accent-primary); box-shadow: 0 0 6px var(--accent-primary); }
+.status-dot--muted   { background: var(--text-muted); }
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+/* === Glass surface === */
+.glass {
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* === Premium card border === */
+.card-premium {
+  border-color: rgba(249, 115, 22, 0.25) !important;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.08), var(--shadow-lg);
+}
+
+/* === Divider === */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+  margin: 8px 0;
+}
+
+/* === Gradient text === */
+.gradient-text {
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* === Muted text === */
@@ -153,3 +209,12 @@ code {
 .text-success { color: var(--success); }
 .text-warning { color: var(--warning); }
 .text-danger { color: var(--danger); }
+
+/* === Interactive row pattern === */
+.hover-row {
+  transition: background var(--transition-fast);
+  border-radius: var(--radius-md);
+}
+.hover-row:hover {
+  background: var(--surface-glass-hover, rgba(255,255,255,0.04));
+}

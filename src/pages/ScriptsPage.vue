@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NTabs from "@/components/ui/NTabs.vue";
@@ -42,7 +43,6 @@ const filteredScripts = computed(() => {
 async function loadScripts() {
   scriptsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     scripts.value = await invoke<BuiltinScript[]>("get_builtin_scripts");
   } catch {
     scripts.value = [
@@ -70,6 +70,16 @@ const runningScriptId = ref<string | null>(null);
 const outputLines = ref<string[]>([]);
 const outputRef = ref<HTMLElement | null>(null);
 let unlisten: (() => void) | null = null;
+const elapsed = ref(0);
+let elapsedTimer: ReturnType<typeof setInterval> | null = null;
+
+function startElapsed() {
+  elapsed.value = 0;
+  elapsedTimer = setInterval(() => { elapsed.value++; }, 1000);
+}
+function stopElapsed() {
+  if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+}
 
 async function setupListener() {
   try {
@@ -103,7 +113,6 @@ const detectedPaths = ref<string[]>([]);
 
 async function openPath(p: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_path", { path: p });
   } catch { window.open(`file:///${p}`, "_blank"); }
 }
@@ -112,24 +121,24 @@ async function executeBuiltinScript(script: BuiltinScript) {
   runningScriptId.value = script.name;
   outputLines.value = [`> Execution de "${script.name}"...`, ""];
   detectedPaths.value = [];
+  startElapsed();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ success: boolean; output: string; exit_code: number }>("execute_script", {
       content: script.content,
       scriptType: script.script_type,
     });
     outputLines.value.push(result.output);
-    outputLines.value.push("", `--- Termine (code: ${result.exit_code}) ---`);
-    // Extraire les chemins depuis l'output
+    outputLines.value.push("", `--- Termine en ${elapsed.value}s (code: ${result.exit_code}) ---`);
     const paths = extractPaths(result.output);
     detectedPaths.value = [...new Set(paths)].slice(0, 8);
-    notify.success("Script termine", `${script.name} execute avec succes`);
+    notify.success("Script termine", `${script.name} — ${elapsed.value}s`);
   } catch {
     outputLines.value.push("Execution simulee en mode dev...");
     outputLines.value.push("Operation terminee.");
     outputLines.value.push("", "--- Termine (code: 0) ---");
     notify.info("Mode dev", `Simulation : ${script.name}`);
   } finally {
+    stopElapsed();
     runningScriptId.value = null;
   }
 }
@@ -151,21 +160,22 @@ async function executeCustomScript() {
   }
   customRunning.value = true;
   outputLines.value = [`> Script personnalise (${customType.value})...`, ""];
+  startElapsed();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ success: boolean; output: string; exit_code: number }>("execute_script", {
       content: customScript.value,
       scriptType: customType.value,
     });
     outputLines.value.push(result.output);
-    outputLines.value.push("", `--- Termine (code: ${result.exit_code}) ---`);
-    notify.success("Script termine", "Script personnalise execute");
+    outputLines.value.push("", `--- Termine en ${elapsed.value}s (code: ${result.exit_code}) ---`);
+    notify.success("Script termine", `Script personnalise — ${elapsed.value}s`);
   } catch {
     outputLines.value.push("Execution simulee en mode dev...");
     outputLines.value.push(customScript.value);
     outputLines.value.push("", "--- Termine (code: 0) ---");
     notify.info("Mode dev", "Simulation : script personnalise");
   } finally {
+    stopElapsed();
     customRunning.value = false;
   }
 }
@@ -192,7 +202,6 @@ const fileEdited = ref(false);
 async function loadScriptFiles() {
   scriptFilesLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     scriptFiles.value = await invoke<ScriptFile[]>("list_script_files", { dir: scriptBrowseDir.value });
   } catch {
     scriptFiles.value = [
@@ -208,7 +217,6 @@ async function openScriptFile(file: ScriptFile) {
   selectedFile.value = file;
   fileEdited.value = false;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     fileContent.value = await invoke<string>("read_script_file", { path: file.path });
   } catch {
     fileContent.value = `# Contenu simule de ${file.name}\necho "Hello World"`;
@@ -218,7 +226,6 @@ async function openScriptFile(file: ScriptFile) {
 async function saveScriptFile() {
   if (!selectedFile.value) return;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_script_file", { path: selectedFile.value.path, content: fileContent.value });
     notify.success("Fichier sauvegarde");
     fileEdited.value = false;
@@ -233,7 +240,6 @@ async function runScriptFile() {
   const st = selectedFile.value.script_type === "powershell" ? "powershell" : "cmd";
   outputLines.value = [`> Execution de "${selectedFile.value.name}"...`, ""];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ success: boolean; output: string; exit_code: number }>("execute_script", {
       content: fileContent.value,
       scriptType: st,
@@ -255,6 +261,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (unlisten) unlisten();
+  stopElapsed();
 });
 </script>
 
@@ -418,6 +425,7 @@ onUnmounted(() => {
           <div class="section-header">
             <Terminal :size="16" />
             <span>Console de sortie</span>
+            <span v-if="runningScriptId || customRunning" class="elapsed-badge">{{ elapsed }}s</span>
             <NButton variant="secondary" size="sm" @click="clearOutput" style="margin-left: auto">
               <Trash2 :size="14" />
               Vider
@@ -678,4 +686,15 @@ onUnmounted(() => {
 .editor-header { display: flex; align-items: center; justify-content: space-between; }
 .editor-filename { font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: "JetBrains Mono", monospace; }
 .editor-actions { display: flex; gap: 6px; }
+
+.elapsed-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--accent-primary);
+  background: var(--accent-muted);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  animation: heartbeat 1s ease-in-out infinite;
+}
 </style>

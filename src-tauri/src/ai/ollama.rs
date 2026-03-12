@@ -1,6 +1,43 @@
 use serde::{Deserialize, Serialize};
 use crate::error::NiTriTeError;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OllamaChatMessage {
+    pub role: String,    // "system" | "user" | "assistant"
+    pub content: String,
+}
+
+pub async fn chat(
+    url: &str,
+    model: &str,
+    messages: Vec<OllamaChatMessage>,
+    temperature: f64,
+) -> Result<String, NiTriTeError> {
+    let client = reqwest::Client::new();
+    let body = serde_json::json!({
+        "model": model,
+        "messages": messages,
+        "stream": false,
+        "options": { "temperature": temperature },
+    });
+    let resp = client
+        .post(format!("{}/api/chat", url))
+        .json(&body)
+        .timeout(std::time::Duration::from_secs(180))
+        .send()
+        .await
+        .map_err(|e| NiTriTeError::OllamaUnavailable(e.to_string()))?;
+    let result: serde_json::Value = resp.json().await?;
+    // /api/chat returns {"message": {"role": "assistant", "content": "..."}}
+    let content = result["message"]["content"].as_str().unwrap_or("").to_string();
+    if content.is_empty() {
+        // fallback au cas où la réponse a un format différent
+        Ok(result["response"].as_str().unwrap_or("").to_string())
+    } else {
+        Ok(content)
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct OllamaModel {
     pub name: String,

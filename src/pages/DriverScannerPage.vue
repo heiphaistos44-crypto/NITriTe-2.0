@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -96,7 +97,6 @@ async function scanDrivers() {
   loading.value = true;
   scanned.value = false;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<any>("run_system_command", {
       cmd: "driverquery",
       args: ["/FO", "CSV", "/V"],
@@ -149,7 +149,6 @@ function getDriverUrl(driver: DriverInfo): string {
 
 async function openSupportPage(url: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     if (url.startsWith("ms-settings:")) {
       await invoke("run_system_command", { cmd: "cmd", args: ["/C", "start", url] });
     } else {

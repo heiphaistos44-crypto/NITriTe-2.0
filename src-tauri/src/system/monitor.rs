@@ -212,10 +212,13 @@ pub fn start_monitoring(
 }
 
 fn collect_gpu_data() -> Result<Vec<GpuData>, String> {
+    #[cfg(target_os = "windows")]
+    use std::os::windows::process::CommandExt;
     // Try nvidia-smi first (NVIDIA GPUs)
     let nvidia = std::process::Command::new("nvidia-smi")
         .args(["--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu",
                "--format=csv,noheader,nounits"])
+        .creation_flags(0x08000000)
         .output();
 
     if let Ok(out) = nvidia {
@@ -346,8 +349,11 @@ try {
 }
 
 fn get_battery_info() -> Option<BatteryData> {
+    #[cfg(target_os = "windows")]
+    use std::os::windows::process::CommandExt;
     let output = std::process::Command::new("powershell")
         .args(["-Command", "(Get-WmiObject Win32_Battery | Select-Object EstimatedChargeRemaining, BatteryStatus | ConvertTo-Json)"])
+        .creation_flags(0x08000000)
         .output()
         .ok()?;
 

@@ -191,15 +191,15 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
     <div class="card-block">
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <NButton variant="ghost" size="sm"
-          @click="invoke('run_system_command', { command: 'start ms-settings:activation' }).catch(() => {})">
+          @click="invoke('open_url', { url: 'ms-settings:activation' }).catch(() => {})">
           <ExternalLink :size="12" /> Paramètres d'activation Windows
         </NButton>
         <NButton variant="ghost" size="sm"
-          @click="invoke('run_system_command', { command: 'slmgr /xpr' }).catch(() => {})">
+          @click="invoke('run_system_command', { cmd: 'cmd', args: ['/c', 'start', 'cmd', '/k', 'slmgr /xpr'] }).catch(() => {})">
           <Key :size="12" /> Vérifier expiration licence (slmgr /xpr)
         </NButton>
         <NButton variant="ghost" size="sm"
-          @click="invoke('run_system_command', { command: 'slmgr /dlv' }).catch(() => {})">
+          @click="invoke('run_system_command', { cmd: 'cmd', args: ['/c', 'start', 'cmd', '/k', 'slmgr /dlv'] }).catch(() => {})">
           <Key :size="12" /> Infos détaillées licence (slmgr /dlv)
         </NButton>
       </div>

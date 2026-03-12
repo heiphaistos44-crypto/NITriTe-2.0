@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -88,7 +89,6 @@ const devApps: PortableApp[] = [
 async function loadApps() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     apps.value = await invoke<PortableApp[]>("get_portable_apps");
 
     // Verifier les installations
@@ -105,7 +105,6 @@ async function loadApps() {
 
 async function downloadApp(app: PortableApp) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     // Ouvrir l'URL de telechargement dans le navigateur
     await invoke("open_url", { url: app.url });
     notify.info(`Ouverture du telechargement pour ${app.name}. Placez les fichiers dans le dossier logiciel/${app.id}/`);
@@ -116,7 +115,6 @@ async function downloadApp(app: PortableApp) {
 
 async function launchApp(app: PortableApp) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("launch_portable", { appId: app.id });
     notify.success(`${app.name} lance`);
   } catch (e: any) {
@@ -126,7 +124,6 @@ async function launchApp(app: PortableApp) {
 
 async function openPortablesFolder() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_portables_dir");
   } catch {
     notify.error("Impossible d'ouvrir le dossier");

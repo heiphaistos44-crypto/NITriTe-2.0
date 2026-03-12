@@ -1,26 +1,31 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import NInput from "@/components/ui/NInput.vue";
 import NToggle from "@/components/ui/NToggle.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { useAppStore, type ThemeName } from "@/stores/app";
 import { useNotificationStore } from "@/stores/notifications";
+import { useAiStore } from "@/stores/ai";
 import {
   Settings, Palette, Activity, Bot, Download, Info,
   Save, RotateCcw, Wifi, CheckCircle, XCircle, FolderOpen,
 } from "lucide-vue-next";
 
 const appStore = useAppStore();
-const notify = useNotificationStore();
+const notify   = useNotificationStore();
+const aiStore  = useAiStore();
 
 // ── État onglets ─────────────────────────────────────────────
 type Tab = "interface" | "performance" | "ai" | "export" | "about";
 const activeTab = ref<Tab>("interface");
 
 // ── Paramètres locaux ─────────────────────────────────────────
-const ollamaUrl = ref("http://localhost:11434");
-const ollamaModel = ref("llama3:8b");
+// ollamaUrl / ollamaModel / temperature → proxy vers le store AI (v-model compatible)
+const ollamaUrl   = computed({ get: () => aiStore.ollamaUrl,   set: v => { aiStore.ollamaUrl   = v; markChanged(); } });
+const ollamaModel = computed({ get: () => aiStore.ollamaModel, set: v => { aiStore.ollamaModel = v; markChanged(); } });
+const ollamaTemp  = computed({ get: () => aiStore.temperature, set: v => { aiStore.temperature = v; markChanged(); } });
 const monitorInterval = ref(2000);
 const processCount = ref(10);
 const sidebarDefault = ref(false);
@@ -35,34 +40,43 @@ function markChanged() { changed.value = true; }
 
 // ── Thèmes ────────────────────────────────────────────────────
 const themes: { id: ThemeName; label: string; color: string }[] = [
-  { id: "nitrite-dark",   label: "Nitrite Dark",    color: "#f97316" },
-  { id: "cyber-blue",     label: "Cyber Blue",      color: "#3b82f6" },
-  { id: "matrix-green",   label: "Matrix Green",    color: "#22c55e" },
-  { id: "purple-haze",    label: "Purple Haze",     color: "#a855f7" },
-  { id: "red-alert",      label: "Red Alert",       color: "#ef4444" },
-  { id: "arctic-light",   label: "Arctic Light",    color: "#0ea5e9" },
-  { id: "midnight-gold",  label: "Midnight Gold",   color: "#eab308" },
-  { id: "neon-synthwave", label: "Neon Synthwave",  color: "#f0abfc" },
-  { id: "ocean-deep",     label: "Ocean Deep",      color: "#06b6d4" },
-  { id: "rose-quartz",    label: "Rose Quartz",     color: "#f43f5e" },
-  { id: "void-dark",      label: "Void Dark",       color: "#6366f1" },
-  { id: "forest-green",   label: "Forest Green",    color: "#16a34a" },
-  { id: "copper-rust",    label: "Copper Rust",     color: "#d97706" },
-  { id: "slate-steel",    label: "Slate Steel",     color: "#64748b" },
-  { id: "custom",         label: "Custom",          color: "#6b7280" },
+  { id: "nitrite-dark",   label: "Nitrite Dark",      color: "#f97316" },
+  { id: "cyber-blue",     label: "Cyber Blue",        color: "#3b82f6" },
+  { id: "matrix-green",   label: "Matrix Green",      color: "#22c55e" },
+  { id: "purple-haze",    label: "Purple Haze",       color: "#a855f7" },
+  { id: "red-alert",      label: "Red Alert",         color: "#ef4444" },
+  { id: "arctic-light",   label: "Arctic Light",      color: "#0ea5e9" },
+  { id: "midnight-gold",  label: "Midnight Gold",     color: "#eab308" },
+  { id: "neon-synthwave", label: "Neon Synthwave",    color: "#f0abfc" },
+  { id: "ocean-deep",     label: "Ocean Deep",        color: "#06b6d4" },
+  { id: "rose-quartz",    label: "Rose Quartz",       color: "#f43f5e" },
+  { id: "void-dark",      label: "Void Dark (AMOLED)", color: "#6366f1" },
+  { id: "forest-green",   label: "Forest Green",      color: "#16a34a" },
+  { id: "copper-rust",    label: "Copper Rust",       color: "#d97706" },
+  { id: "slate-steel",    label: "Slate Steel",       color: "#64748b" },
+  { id: "inferno",        label: "Inferno",           color: "#ff4500" },
+  { id: "aurora",         label: "Aurora Borealis",   color: "#00d4aa" },
+  { id: "moonlight",      label: "Moonlight",         color: "#7dd3fc" },
+  { id: "ember-glow",     label: "Ember Glow",        color: "#fb923c" },
+  { id: "cobalt-night",   label: "Cobalt Night",      color: "#2563eb" },
+  { id: "volcanic",       label: "Volcanic",          color: "#f97316" },
+  { id: "sakura",         label: "Sakura (Clair)",    color: "#ec4899" },
+  { id: "jade-temple",    label: "Jade Temple",       color: "#10b981" },
+  { id: "hacker",         label: "Hacker Terminal",   color: "#00ff41" },
+  { id: "ice-storm",      label: "Ice Storm (Clair)", color: "#0284c7" },
+  { id: "custom",         label: "Custom",            color: "#6b7280" },
 ];
 
 // ── Chargement config ─────────────────────────────────────────
 onMounted(async () => {
+  // Charge la config IA depuis Rust → propage dans le store AI
+  await aiStore.loadFromConfig();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const cfg = await invoke<any>("get_config");
-    ollamaUrl.value    = cfg.ollama_url            ?? "http://localhost:11434";
-    ollamaModel.value  = cfg.ollama_model          ?? "llama3:8b";
-    monitorInterval.value = cfg.monitor_interval_ms ?? 2000;
-    processCount.value = cfg.process_count          ?? 10;
-    sidebarDefault.value = cfg.sidebar_collapsed    ?? false;
-    exportFormat.value = cfg.export_format          ?? "json";
+    monitorInterval.value  = cfg.monitor_interval_ms ?? 2000;
+    processCount.value     = cfg.process_count       ?? 10;
+    sidebarDefault.value   = cfg.sidebar_collapsed   ?? false;
+    exportFormat.value     = cfg.export_format       ?? "json";
     if (cfg.font_size) appStore.setFontSize(cfg.font_size);
     if (cfg.show_animations === false) {
       appStore.showAnimations = false;
@@ -76,7 +90,6 @@ async function testOllama() {
   ollamaTesting.value = true;
   ollamaStatus.value = "idle";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const ok = await invoke<boolean>("ai_check");
     ollamaStatus.value = ok ? "ok" : "error";
   } catch {
@@ -88,7 +101,6 @@ async function testOllama() {
 // ── Ouvrir dossier exports ────────────────────────────────────
 async function openExportFolder() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const dir = await invoke<string>("get_export_dir");
     await invoke("open_path", { path: dir });
   } catch (e: any) {
@@ -100,21 +112,21 @@ async function openExportFolder() {
 async function saveSettings() {
   saving.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_config", {
       config: {
-        theme: appStore.theme,
-        language: appStore.language,
-        sidebar_collapsed: sidebarDefault.value,
-        ollama_url: ollamaUrl.value,
-        ollama_model: ollamaModel.value,
-        monitor_interval_ms: monitorInterval.value,
-        show_animations: appStore.showAnimations,
-        compact_mode: false,
+        theme:                appStore.theme,
+        language:             appStore.language,
+        sidebar_collapsed:    sidebarDefault.value,
+        ollama_url:           aiStore.ollamaUrl,
+        ollama_model:         aiStore.ollamaModel,
+        ollama_temperature:   aiStore.temperature,
+        monitor_interval_ms:  monitorInterval.value,
+        show_animations:      appStore.showAnimations,
+        compact_mode:         false,
         notifications_enabled: true,
-        process_count: processCount.value,
-        font_size: appStore.fontSize,
-        export_format: exportFormat.value,
+        process_count:        processCount.value,
+        font_size:            appStore.fontSize,
+        export_format:        exportFormat.value,
       },
     });
     notify.success("Paramètres sauvegardés");
@@ -130,8 +142,9 @@ function resetDefaults() {
   appStore.setTheme("nitrite-dark");
   appStore.setFontSize("normal");
   if (!appStore.showAnimations) appStore.toggleAnimations();
-  ollamaUrl.value = "http://localhost:11434";
-  ollamaModel.value = "llama3:8b";
+  aiStore.ollamaUrl   = "http://localhost:11434";
+  aiStore.ollamaModel = "llama3:8b";
+  aiStore.temperature = 0.7;
   monitorInterval.value = 2000;
   processCount.value = 10;
   sidebarDefault.value = false;
@@ -285,6 +298,13 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
           <div class="setting-group">
             <label class="setting-label">Modèle par défaut</label>
             <NInput v-model="ollamaModel" placeholder="llama3:8b" @input="markChanged" />
+          </div>
+
+          <div class="setting-group">
+            <label class="setting-label">Température (créativité) — {{ ollamaTemp.toFixed(1) }}</label>
+            <input type="range" min="0" max="2" step="0.1" v-model.number="ollamaTemp"
+              @input="markChanged" class="range-slider" />
+            <div class="range-labels"><span>Précis (0)</span><span>Équilibré (0.7)</span><span>Créatif (2)</span></div>
           </div>
 
           <div class="setting-group">

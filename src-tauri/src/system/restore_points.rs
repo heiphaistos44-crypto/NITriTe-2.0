@@ -1,0 +1,112 @@
+use serde::Serialize;
+use std::process::Command;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
+use crate::error::NiTriTeError;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RestorePoint {
+    pub sequence_number: u32,
+    pub description: String,
+    pub creation_time: String,
+    pub restore_type: String,
+}
+
+pub fn list_restore_points() -> Result<Vec<RestorePoint>, NiTriTeError> {
+    let ps = r#"
+try {
+    $rps = Get-ComputerRestorePoint -ErrorAction Stop | Select-Object SequenceNumber, Description, CreationTime, @{Name='RestorePointType';Expression={$_.RestorePointType.ToString()}}
+    $rps | ConvertTo-Json -Compress
+} catch {
+    "[]"
+}
+"#;
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+        .creation_flags(0x08000000)
+        .output()
+        .map_err(|e| NiTriTeError::System(e.to_string()))?;
+
+    let raw = String::from_utf8_lossy(&output.stdout);
+    let trimmed = raw.trim();
+
+    if trimmed.is_empty() || trimmed == "[]" {
+        return Ok(vec![]);
+    }
+
+    // PowerShell peut retourner un objet unique au lieu d'un tableau
+    let json_str = if trimmed.starts_with('{') {
+        format!("[{}]", trimmed)
+    } else {
+        trimmed.to_string()
+    };
+
+    let parsed: Vec<serde_json::Value> = serde_json::from_str(&json_str)
+        .unwrap_or_default();
+
+    let points: Vec<RestorePoint> = parsed
+        .iter()
+        .filter_map(|v| {
+            let seq = v["SequenceNumber"].as_u64()? as u32;
+            let desc = v["Description"].as_str().unwrap_or("").to_string();
+            let time = v["CreationTime"].as_str().unwrap_or("").to_string();
+            let rtype = v["RestorePointType"].as_str().unwrap_or("APPLICATION_INSTALL").to_string();
+            Some(RestorePoint {
+                sequence_number: seq,
+                description: desc,
+                creation_time: time,
+                restore_type: rtype,
+            })
+        })
+        .collect();
+
+    Ok(points)
+}
+
+pub fn create_restore_point(description: &str) -> Result<(), NiTriTeError> {
+    // Nécessite les droits admin
+    let ps = format!(
+        r#"
+$desc = '{}'
+try {{
+    Checkpoint-Computer -Description $desc -RestorePointType "APPLICATION_INSTALL" -ErrorAction Stop
+    Write-Output "OK"
+}} catch {{
+    Write-Error $_.Exception.Message
+    exit 1
+}}
+"#,
+        description.replace('\'', "''")
+    );
+
+    let output = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-Command", &ps])
+        .creation_flags(0x08000000)
+        .output()
+        .map_err(|e| NiTriTeError::System(e.to_string()))?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        return Err(NiTriTeError::System(format!(
+            "Échec création point de restauration : {}",
+            err.trim()
+        )));
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn list_restore_points_cmd() -> Result<Vec<RestorePoint>, NiTriTeError> {
+    tokio::task::spawn_blocking(list_restore_points)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+}
+
+#[tauri::command]
+pub async fn create_restore_point_cmd(description: String) -> Result<(), NiTriTeError> {
+    tokio::task::spawn_blocking(move || create_restore_point(&description))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+}

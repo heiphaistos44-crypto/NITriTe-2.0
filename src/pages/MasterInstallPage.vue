@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -13,12 +14,30 @@ import {
   FileText, Music, Video, Wrench, RefreshCw,
   Cpu, HardDrive, Monitor, Printer, Archive,
   Bot, Users, Cloud, Star, Lock, Play,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Layers, FileCode,
 } from "lucide-vue-next";
 
 const notifications = useNotificationStore();
 const search = ref("");
 const installing = ref(false);
+const exportingScript = ref(false);
+
+// Profils prédéfinis
+interface Profile { id: string; label: string; icon: any; color: string; wingetIds: string[] }
+const PROFILES: Profile[] = [
+  { id: "essential", label: "Essentiels", icon: Star, color: "#f97316",
+    wingetIds: ["7zip.7zip", "Google.Chrome", "Mozilla.Firefox", "Notepad++.Notepad++", "VideoLAN.VLC", "Microsoft.PowerShell"] },
+  { id: "office", label: "Bureau", icon: FileText, color: "#3b82f6",
+    wingetIds: ["Microsoft.Office", "Adobe.Acrobat.Reader.64-bit", "TheDocumentFoundation.LibreOffice", "Zoom.Zoom", "Microsoft.Teams"] },
+  { id: "dev", label: "Dev", icon: Code, color: "#22c55e",
+    wingetIds: ["Microsoft.VisualStudioCode", "Git.Git", "Python.Python.3.12", "OpenJS.NodeJS", "JetBrains.IntelliJIDEA.Community", "Docker.DockerDesktop"] },
+  { id: "gaming", label: "Gaming", icon: Play, color: "#a855f7",
+    wingetIds: ["Valve.Steam", "Discord.Discord", "EpicGames.EpicGamesLauncher", "Nvidia.GeForceExperience", "Parsec.Parsec"] },
+  { id: "security", label: "Sécurité", icon: Shield, color: "#ef4444",
+    wingetIds: ["Malwarebytes.Malwarebytes", "WiresharkFoundation.Wireshark", "KeePassXCTeam.KeePassXC", "Bitwarden.Bitwarden"] },
+  { id: "creative", label: "Créatif", icon: Image, color: "#ec4899",
+    wingetIds: ["Inkscape.Inkscape", "GIMP.GIMP", "HandBrake.HandBrake", "OBSProject.OBSStudio", "Audacity.Audacity", "Blender.Blender"] },
+];
 const currentApp = ref("");
 const installProgress = ref(0);
 const installTotal = ref(0);
@@ -135,6 +154,51 @@ function selectCategory(catId: string) {
   catApps.forEach((a) => (a.checked = !allChecked));
 }
 
+function applyProfile(profile: Profile) {
+  // Sélectionner les apps du profil qui ne sont pas encore installées
+  let matched = 0;
+  apps.value.forEach((a) => {
+    if (profile.wingetIds.includes(a.winget_id ?? "") && !a.installed) {
+      a.checked = true;
+      matched++;
+    }
+  });
+  if (matched === 0) notifications.warning(`Profil "${profile.label}" : aucune app correspondante trouvée`);
+  else notifications.success(`Profil "${profile.label}" : ${matched} app(s) sélectionnée(s)`);
+}
+
+async function exportDeployScript() {
+  const selected = apps.value.filter((a) => a.checked && !a.installed && a.winget_id);
+  if (!selected.length) { notifications.warning("Aucune app avec WinGet ID sélectionnée"); return; }
+  exportingScript.value = true;
+  const lines = [
+    "@echo off",
+    ":: Script de déploiement généré par NiTriTe",
+    `:: ${new Date().toLocaleString("fr-FR")}`,
+    "",
+    "echo === Installation des logiciels ===",
+    "",
+  ];
+  for (const app of selected) {
+    lines.push(`echo Installation de ${app.name}...`);
+    lines.push(`winget install --id ${app.winget_id} --silent --accept-package-agreements --accept-source-agreements`);
+    lines.push("");
+  }
+  lines.push("echo === Terminé ===", "pause");
+  const content = lines.join("\r\n");
+  try {
+    await invoke("save_export_file", { filename: "deploy_nitrite.bat", content });
+    notifications.success("Script exporté", "deploy_nitrite.bat");
+  } catch {
+    // fallback: clipboard
+    try {
+      await navigator.clipboard.writeText(content);
+      notifications.info("Script copié dans le presse-papier");
+    } catch { notifications.error("Export échoué"); }
+  }
+  exportingScript.value = false;
+}
+
 async function installSelection() {
   const selected = apps.value.filter((a) => a.checked && !a.installed);
   if (selected.length === 0) {
@@ -152,7 +216,6 @@ async function installSelection() {
     installProgress.value = Math.round((installIndex.value / installTotal.value) * 100);
 
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
       const result = await invoke<{ success: boolean; app_id: string; message: string }>("install_app", {
         appId: app.id,
         wingetId: app.winget_id ?? undefined,
@@ -177,7 +240,6 @@ async function installSelection() {
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<any[]>("get_apps");
     apps.value = result.map((a: any) => ({ ...a, checked: false, installed: false }));
   } catch {
@@ -206,6 +268,16 @@ onMounted(async () => {
           Tout déselectionner
         </NButton>
         <NButton
+          variant="ghost"
+          size="sm"
+          :loading="exportingScript"
+          :disabled="selectedCount === 0"
+          @click="exportDeployScript"
+        >
+          <FileCode :size="14" />
+          Export .bat
+        </NButton>
+        <NButton
           variant="primary"
           size="sm"
           :loading="installing"
@@ -217,6 +289,30 @@ onMounted(async () => {
         </NButton>
       </div>
     </div>
+
+    <!-- Profils prédéfinis -->
+    <NCard>
+      <template #header>
+        <div style="display:flex;align-items:center;gap:8px">
+          <Layers :size="16" />
+          <span>Profils Prédéfinis</span>
+          <span style="font-size:12px;color:var(--text-muted);margin-left:4px">— Sélection rapide par usage</span>
+        </div>
+      </template>
+      <div class="profiles-grid">
+        <button
+          v-for="profile in PROFILES"
+          :key="profile.id"
+          class="profile-card"
+          :style="{ '--p-color': profile.color }"
+          @click="applyProfile(profile)"
+        >
+          <component :is="profile.icon" :size="20" :style="{ color: profile.color }" />
+          <span class="profile-label">{{ profile.label }}</span>
+          <span class="profile-count">{{ profile.wingetIds.length }} apps</span>
+        </button>
+      </div>
+    </NCard>
 
     <!-- Progress -->
     <NCard v-if="installing">
@@ -412,4 +508,24 @@ onMounted(async () => {
 }
 
 .empty-icon { opacity: 0.3; }
+
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+.profile-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 10px; border-radius: var(--radius-lg);
+  border: 1px solid var(--border); background: var(--bg-tertiary);
+  cursor: pointer; transition: all var(--transition-fast);
+}
+.profile-card:hover {
+  border-color: var(--p-color, var(--accent-primary));
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.profile-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.profile-count { font-size: 11px; color: var(--text-muted); }
 </style>

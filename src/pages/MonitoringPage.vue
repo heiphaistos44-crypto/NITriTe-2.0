@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import StatsCard from "@/components/shared/StatsCard.vue";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -103,7 +104,6 @@ function tempColor(t: number): string {
 
 async function launchOcct() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("execute_tool", { command: "OCCT.exe", isUrl: false });
   } catch {
     window.open("https://www.occt.eu/download", "_blank");
@@ -155,7 +155,6 @@ function togglePause() {
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const { listen } = await import("@tauri-apps/api/event");
     await invoke("start_monitoring");
     unlisten = (await listen<any>("system-monitor", (event) => {
@@ -209,7 +208,6 @@ onUnmounted(async () => {
   if (unlisten) unlisten();
   if (devInterval) clearInterval(devInterval);
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("stop_monitoring");
   } catch {
     // ignore

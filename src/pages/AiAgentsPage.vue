@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NDropdown from "@/components/ui/NDropdown.vue";
@@ -21,7 +22,6 @@ const statusChecking = ref(true);
 async function checkOllamaStatus() {
   statusChecking.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<boolean>("ai_check");
     ollamaConnected.value = result;
   } catch {
@@ -39,7 +39,6 @@ const modelsLoading = ref(false);
 async function loadModels() {
   modelsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const list = await invoke<{ name: string; size_gb: number; modified_at: string }[]>("ai_list_models");
     models.value = list.map((m) => ({ value: m.name, label: `${m.name} (${m.size_gb.toFixed(1)} GB)` }));
     if (list.length && !selectedModel.value) {
@@ -113,12 +112,18 @@ async function sendMessage() {
   sending.value = true;
   scrollChat();
 
+  // Historique structuré [{role, content}] — exclut le dernier message (déjà envoyé comme prompt)
+  const history = messages.value
+    .slice(0, -1)   // tout sauf le message actuel
+    .slice(-20)     // max 20 échanges de contexte
+    .map((m) => ({ role: m.role, content: m.content }));
+
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const response = await invoke<string>("ai_query", {
       model: selectedModel.value,
       prompt: text,
-      systemPrompt: activeSystemPrompt.value,
+      systemPrompt: activeSystemPrompt.value || null,
+      history: history.length ? history : null,
     });
 
     const cmd = extractCommand(response);
@@ -127,19 +132,11 @@ async function sendMessage() {
       content: response,
       command: cmd ?? undefined,
     });
-  } catch {
-    // Mode dev : reponse simulee
-    const fakeResponses = [
-      "D'apres votre description, il semble que le probleme vient du cache DNS. Essayez cette commande :\n\n```cmd\nipconfig /flushdns\n```\n\nCela devrait resoudre le probleme de connexion.",
-      "Pour verifier l'integrite des fichiers systeme, lancez :\n\n```powershell\nsfc /scannow\n```\n\nCette commande analysera et reparera automatiquement les fichiers corrompus.",
-      "Je recommande de commencer par verifier l'utilisation memoire. Ouvrez le Gestionnaire des taches (Ctrl+Shift+Esc) et regardez l'onglet Performances.\n\nSi la RAM est saturee, identifiez les processus gourmands dans l'onglet Processus.",
-    ];
-    const fake = fakeResponses[messages.value.length % fakeResponses.length];
-    const cmd = extractCommand(fake);
+  } catch (err: any) {
+    // Ollama non disponible — message d'erreur explicite
     messages.value.push({
       role: "assistant",
-      content: fake,
-      command: cmd ?? undefined,
+      content: `⚠ Impossible de joindre Ollama.\n\nAssurez-vous qu'Ollama est lancé (\`ollama serve\`) et qu'un modèle est installé (\`ollama pull llama3.2\`).\n\nErreur : ${String(err)}`,
     });
   } finally {
     sending.value = false;
@@ -153,7 +150,6 @@ async function executeCommand(msgIndex: number) {
 
   msg.commandRunning = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<{ command: string; success: boolean; stdout: string; stderr: string }>("ai_execute_command", {
       command: msg.command,
     });

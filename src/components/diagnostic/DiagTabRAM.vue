@@ -4,6 +4,7 @@ import { HardDrive } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
+import NCollapse from "@/components/ui/NCollapse.vue";
 
 const props = defineProps<{
   ramData: any;
@@ -33,39 +34,41 @@ const channels = computed(() => {
       color="blue"
     />
     <template v-if="ramData">
-      <p class="diag-section-label">Résumé RAM</p>
-      <div class="info-grid" style="margin-bottom:12px">
-        <div class="info-row"><span>Slots utilisés</span><NBadge variant="info">{{ ramData.used_slots }} / {{ ramData.total_slots }}</NBadge></div>
-        <div class="info-row"><span>Capacité totale</span><NBadge variant="success">{{ ramData.total_capacity_gb.toFixed(0) }} GB</NBadge></div>
-        <div class="info-row"><span>Configuration</span><span>{{ channels }}</span></div>
-        <div v-if="sysInfo" class="info-row"><span>Utilisée</span><span>{{ sysInfo.ram.used_gb.toFixed(1) }} GB ({{ Math.round(sysInfo.ram.usage_percent) }}%)</span></div>
-      </div>
-
-      <div v-if="sysInfo" class="diag-stat-row" style="margin-bottom:16px">
-        <span>Usage RAM</span>
-        <NProgress :value="sysInfo.ram.usage_percent" :variant="sysInfo.ram.usage_percent > 85 ? 'danger' : sysInfo.ram.usage_percent > 70 ? 'warning' : 'default'" size="sm" showLabel />
-      </div>
-
-      <p class="diag-section-label">Modules installés</p>
-      <div v-for="(s, i) in ramData.slots" :key="i" class="card-block">
-        <div class="block-title">
-          <span>{{ s.device_locator }}</span>
-          <span class="muted" style="font-size:12px;font-weight:400">— {{ s.bank_label }}</span>
-          <NBadge variant="info">{{ s.capacity_gb.toFixed(0) }} GB</NBadge>
-          <NBadge variant="success">{{ s.memory_type }}-{{ s.speed_mhz }}</NBadge>
+      <NCollapse title="Résumé RAM" storageKey="diag-ram-summary" :defaultOpen="true">
+        <div class="info-grid" style="margin-bottom:12px">
+          <div class="info-row"><span>Slots utilisés</span><NBadge variant="info">{{ ramData.used_slots }} / {{ ramData.total_slots }}</NBadge></div>
+          <div class="info-row"><span>Capacité totale</span><NBadge variant="success">{{ ramData.total_capacity_gb.toFixed(0) }} GB</NBadge></div>
+          <div class="info-row"><span>Configuration</span><span>{{ channels }}</span></div>
+          <div v-if="sysInfo" class="info-row"><span>Utilisée</span><span>{{ sysInfo.ram.used_gb.toFixed(1) }} GB ({{ Math.round(sysInfo.ram.usage_percent) }}%)</span></div>
         </div>
-        <div class="info-grid">
-          <div class="info-row"><span>Capacité</span><span>{{ s.capacity_gb.toFixed(0) }} GB</span></div>
-          <div class="info-row"><span>Type mémoire</span><NBadge variant="info">{{ s.memory_type }}</NBadge></div>
-          <div class="info-row"><span>Vitesse nominale (XMP/JEDEC)</span><span>{{ s.speed_mhz }} MHz</span></div>
-          <div class="info-row"><span>Vitesse configurée</span><span>{{ s.configured_speed_mhz }} MHz</span></div>
-          <div class="info-row"><span>Format</span><NBadge variant="default">{{ s.form_factor }}</NBadge></div>
-          <div class="info-row"><span>Largeur de données</span><span>{{ s.data_width > 0 ? s.data_width + ' bits' : 'N/A' }}</span></div>
-          <div class="info-row"><span>Fabricant</span><span>{{ s.manufacturer || "N/A" }}</span></div>
-          <div class="info-row"><span>Numéro de pièce (P/N)</span><code>{{ s.part_number || "N/A" }}</code></div>
-          <div class="info-row info-full"><span>Numéro de série</span><code>{{ s.serial_number || "N/A" }}</code></div>
+
+        <div v-if="sysInfo" class="diag-stat-row" style="margin-bottom:16px">
+          <span>Usage RAM</span>
+          <NProgress :value="sysInfo.ram.usage_percent" :variant="sysInfo.ram.usage_percent > 85 ? 'danger' : sysInfo.ram.usage_percent > 70 ? 'warning' : 'default'" size="sm" showLabel />
         </div>
-      </div>
+      </NCollapse>
+
+      <NCollapse title="Modules installés" storageKey="diag-ram-modules" :defaultOpen="true">
+        <div v-for="(s, i) in ramData.slots" :key="i" class="card-block">
+          <div class="block-title">
+            <span>{{ s.device_locator }}</span>
+            <span class="muted" style="font-size:12px;font-weight:400">— {{ s.bank_label }}</span>
+            <NBadge variant="info">{{ s.capacity_gb.toFixed(0) }} GB</NBadge>
+            <NBadge variant="success">{{ s.memory_type }}-{{ s.speed_mhz }}</NBadge>
+          </div>
+          <div class="info-grid">
+            <div class="info-row"><span>Capacité</span><span>{{ s.capacity_gb.toFixed(0) }} GB</span></div>
+            <div class="info-row"><span>Type mémoire</span><NBadge variant="info">{{ s.memory_type }}</NBadge></div>
+            <div class="info-row"><span>Vitesse nominale (XMP/JEDEC)</span><span>{{ s.speed_mhz }} MHz</span></div>
+            <div class="info-row"><span>Vitesse configurée</span><span>{{ s.configured_speed_mhz }} MHz</span></div>
+            <div class="info-row"><span>Format</span><NBadge variant="default">{{ s.form_factor }}</NBadge></div>
+            <div class="info-row"><span>Largeur de données</span><span>{{ s.data_width > 0 ? s.data_width + ' bits' : 'N/A' }}</span></div>
+            <div class="info-row"><span>Fabricant</span><span>{{ s.manufacturer || "N/A" }}</span></div>
+            <div class="info-row"><span>Numéro de pièce (P/N)</span><code>{{ s.part_number || "N/A" }}</code></div>
+            <div class="info-row info-full"><span>Numéro de série</span><code>{{ s.serial_number || "N/A" }}</code></div>
+          </div>
+        </div>
+      </NCollapse>
     </template>
     <div v-else class="diag-loading"><div class="diag-spinner"></div> Informations RAM non disponibles...</div>
   </div>

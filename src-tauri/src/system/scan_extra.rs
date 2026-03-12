@@ -21,6 +21,13 @@ pub struct SuspTask {
     pub exec: String,
 }
 
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct WmiSubscriptionDetail {
+    pub name: String,
+    pub consumer_type: String,
+    pub path: String,
+}
+
 #[derive(Debug, Default)]
 pub struct ScanExtra {
     // Sécurité système
@@ -32,6 +39,7 @@ pub struct ScanExtra {
     pub rdp_enabled: bool,
     pub smbv1_enabled: bool,
     pub wmi_subscriptions: u32,
+    pub wmi_subscription_details: Vec<WmiSubscriptionDetail>,
     // Comptes
     pub local_admins: Vec<String>,
     pub guest_enabled: bool,
@@ -142,8 +150,12 @@ try {
 
 # === WMI Subscriptions (indicateur malware) ===
 try {
-    $out.WmiSubs = ([int](Get-WmiObject -Namespace root\subscription -Class __EventConsumer -ErrorAction SilentlyContinue | Measure-Object).Count)
-} catch { $out.WmiSubs = 0 }
+    $consumers = Get-WmiObject -Namespace root\subscription -Class __EventConsumer -ErrorAction SilentlyContinue
+    $out.WmiSubs = ([int]($consumers | Measure-Object).Count)
+    $out.WmiSubsList = @($consumers | ForEach-Object {
+        @{name=[string]$_.Name; type=[string]$_.__CLASS; path=[string]$_.__PATH}
+    })
+} catch { $out.WmiSubs = 0; $out.WmiSubsList = @() }
 
 # === Mises à jour en cache (rapide, sans connexion) ===
 try {
@@ -224,6 +236,14 @@ $out | ConvertTo-Json -Depth 3 -Compress
                 }).collect())
                 .unwrap_or_default();
 
+            let wmi_subscription_details = v["WmiSubsList"].as_array()
+                .map(|a| a.iter().map(|s| WmiSubscriptionDetail {
+                    name: s["name"].as_str().unwrap_or("").to_string(),
+                    consumer_type: s["type"].as_str().unwrap_or("").to_string(),
+                    path: s["path"].as_str().unwrap_or("").to_string(),
+                }).collect())
+                .unwrap_or_default();
+
             return ScanExtra {
                 tpm_present: v["TpmPresent"].as_bool().unwrap_or(false),
                 tpm_enabled: v["TpmEnabled"].as_bool().unwrap_or(false),
@@ -233,6 +253,7 @@ $out | ConvertTo-Json -Depth 3 -Compress
                 rdp_enabled: v["RdpEnabled"].as_bool().unwrap_or(false),
                 smbv1_enabled: v["SmbV1"].as_bool().unwrap_or(false),
                 wmi_subscriptions: v["WmiSubs"].as_u64().unwrap_or(0) as u32,
+                wmi_subscription_details,
                 local_admins,
                 guest_enabled: v["GuestEnabled"].as_bool().unwrap_or(false),
                 system_manufacturer: v["SysMfr"].as_str().unwrap_or("").to_string(),

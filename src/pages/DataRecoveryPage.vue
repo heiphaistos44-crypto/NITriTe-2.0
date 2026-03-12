@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -66,7 +67,6 @@ const filteredShadowFiles = computed(() => {
 async function loadShadows() {
   loadingShadows.value = true; shadows.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     shadows.value = await invoke<ShadowCopy[]>("list_shadow_copies");
   } catch (e: any) {
     notify.error("Erreur Shadow Copy", String(e));
@@ -105,7 +105,6 @@ async function browseShadow(shadow: ShadowCopy, path: string = "") {
   browsingPath.value = fullPath;
   loadingBrowse.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     shadowFiles.value = await invoke<RecoveredFile[]>("browse_shadow_copy", {
       devicePath: shadow.device_path,
       relativePath: fullPath,
@@ -133,7 +132,6 @@ async function searchInShadow() {
   isSearching.value = true;
   selectedFiles.value = new Set();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     shadowFiles.value = await invoke<RecoveredFile[]>("search_shadow_copy", {
       devicePath: selectedShadow.value.device_path,
       query: searchQuery.value.trim(),
@@ -163,7 +161,6 @@ async function batchRestore() {
   if (selectedFiles.value.size === 0) return;
   batchRestoring.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<BatchRestoreResult>("restore_files_batch", {
       files: Array.from(selectedFiles.value),
       targetFolder: restoreTarget.value,
@@ -179,7 +176,6 @@ async function batchRestore() {
 
 async function restoreFromShadow(file: RecoveredFile) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<RestoreResult>("restore_from_shadow", {
       sourcePath: file.path,
       targetFolder: restoreTarget.value,
@@ -198,7 +194,6 @@ const loadingRecycle = ref(false);
 async function loadRecycleBin() {
   loadingRecycle.value = true; recycleFiles.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     recycleFiles.value = await invoke<RecoveredFile[]>("scan_recycle_bin");
   } catch (e: any) {
     notify.error("Erreur Corbeille", String(e));
@@ -208,7 +203,6 @@ async function loadRecycleBin() {
 
 async function restoreRecycle(file: RecoveredFile) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<RestoreResult>("restore_recycle_bin_item", {
       originalPath: file.path,
     });
@@ -231,7 +225,6 @@ const mftDrive = ref("C");
 async function scanMft() {
   loadingMft.value = true; mftFiles.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     mftFiles.value = await invoke<RecoveredFile[]>("scan_deleted_files", { drive: mftDrive.value });
   } catch (e: any) {
     notify.error("Erreur scan MFT", String(e));
@@ -243,7 +236,6 @@ async function scanMft() {
 async function scanAllMft() {
   loadingMft.value = true; mftFiles.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     mftFiles.value = await invoke<RecoveredFile[]>("scan_all_deleted_files");
   } catch (e: any) {
     notify.error("Erreur scan global", String(e));
@@ -268,7 +260,6 @@ async function loadUserFolders(force = false) {
   if (!force && userFolders.value.length > 0) return;
   loadingFolders.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     userFolders.value = await invoke<UserFolder[]>("get_user_profile_folders");
     // Sélection par défaut : Documents + Bureau (uniquement au premier chargement)
     if (force || selectedFolders.value.size === 0) {
@@ -309,7 +300,6 @@ async function startProfileBackup() {
     }
   );
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     backupResult.value = await invoke<BackupResult>("backup_user_folders", {
       folders: Array.from(selectedFolders.value),
       target: backupTarget.value,

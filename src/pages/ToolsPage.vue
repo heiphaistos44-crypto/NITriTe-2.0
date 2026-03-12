@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
@@ -162,7 +163,6 @@ function normalizeCategory(section: string): string {
 async function loadTools() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const raw = await invoke<any[]>("get_tools");
     tools.value = raw.map((t, i) => ({
       id: String(i),
@@ -181,7 +181,6 @@ async function loadTools() {
 async function launchTool(tool: ToolInfo) {
   launchingId.value = tool.id;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("execute_tool", { command: tool.command, isUrl: tool.is_url });
   } catch {
     // Dev fallback : ouvrir l'URL dans le navigateur ou log

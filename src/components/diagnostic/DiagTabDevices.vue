@@ -6,6 +6,7 @@ import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
+import NCollapse from "@/components/ui/NCollapse.vue";
 
 const props = defineProps<{
   tab: string;
@@ -90,31 +91,32 @@ async function openDeviceManager() {
       />
       <div v-if="!monitors.length" class="diag-loading"><div class="diag-spinner"></div> Aucun écran détecté via WMI...</div>
       <template v-else>
-        <p class="diag-section-label">Écrans connectés — {{ monitors.length }}</p>
-        <div v-for="(m, i) in monitors" :key="i" class="card-block">
-          <div class="block-title">
-            <span>{{ m.name }}</span>
-            <NBadge variant="info">{{ m.screen_width }}×{{ m.screen_height }}</NBadge>
-            <NBadge v-if="m.availability === 'Principal'" variant="success">Principal</NBadge>
+        <NCollapse :title="'Écrans connectés — ' + monitors.length" storageKey="diag-devices-monitors" :defaultOpen="true">
+          <div v-for="(m, i) in monitors" :key="i" class="card-block">
+            <div class="block-title">
+              <span>{{ m.name }}</span>
+              <NBadge variant="info">{{ m.screen_width }}×{{ m.screen_height }}</NBadge>
+              <NBadge v-if="m.availability === 'Principal'" variant="success">Principal</NBadge>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span>Résolution</span><span style="font-weight:600">{{ m.screen_width }}×{{ m.screen_height }}</span></div>
+              <div class="info-row"><span>Densité (PPI)</span><span>{{ m.pixels_per_inch > 0 ? m.pixels_per_inch + ' PPI' : 'N/A' }}</span></div>
+              <div class="info-row"><span>Taux de rafraîchissement</span>
+                <NBadge variant="info">{{ m.refresh_rate_hz > 0 ? m.refresh_rate_hz + ' Hz' : (m.availability === 'Principal' ? 'Voir GPU' : 'N/A') }}</NBadge>
+              </div>
+              <div class="info-row"><span>Fabricant</span><span>{{ m.manufacturer || "N/A" }}</span></div>
+              <div class="info-row"><span>Disponibilité</span><NBadge :variant="m.availability === 'Principal' ? 'success' : 'default'">{{ m.availability || "N/A" }}</NBadge></div>
+              <div class="info-row"><span>Rapport d'aspect</span>
+                <span>{{ m.screen_width > 0 ? (m.screen_width / (m.screen_height || 1)).toFixed(2) + ':1' : 'N/A' }}</span>
+              </div>
+              <div class="info-row"><span>Classification PPI</span>
+                <NBadge :variant="m.pixels_per_inch >= 200 ? 'success' : m.pixels_per_inch >= 140 ? 'info' : 'default'">
+                  {{ m.pixels_per_inch >= 200 ? 'HiDPI / Retina' : m.pixels_per_inch >= 140 ? 'QHD / FHD+' : m.pixels_per_inch >= 90 ? 'FHD standard' : 'Basse résolution' }}
+                </NBadge>
+              </div>
+            </div>
           </div>
-          <div class="info-grid">
-            <div class="info-row"><span>Résolution</span><span style="font-weight:600">{{ m.screen_width }}×{{ m.screen_height }}</span></div>
-            <div class="info-row"><span>Densité (PPI)</span><span>{{ m.pixels_per_inch > 0 ? m.pixels_per_inch + ' PPI' : 'N/A' }}</span></div>
-            <div class="info-row"><span>Taux de rafraîchissement</span>
-              <NBadge variant="info">{{ m.refresh_rate_hz > 0 ? m.refresh_rate_hz + ' Hz' : (m.availability === 'Principal' ? 'Voir GPU' : 'N/A') }}</NBadge>
-            </div>
-            <div class="info-row"><span>Fabricant</span><span>{{ m.manufacturer || "N/A" }}</span></div>
-            <div class="info-row"><span>Disponibilité</span><NBadge :variant="m.availability === 'Principal' ? 'success' : 'default'">{{ m.availability || "N/A" }}</NBadge></div>
-            <div class="info-row"><span>Rapport d'aspect</span>
-              <span>{{ m.screen_width > 0 ? (m.screen_width / (m.screen_height || 1)).toFixed(2) + ':1' : 'N/A' }}</span>
-            </div>
-            <div class="info-row"><span>Classification PPI</span>
-              <NBadge :variant="m.pixels_per_inch >= 200 ? 'success' : m.pixels_per_inch >= 140 ? 'info' : 'default'">
-                {{ m.pixels_per_inch >= 200 ? 'HiDPI / Retina' : m.pixels_per_inch >= 140 ? 'QHD / FHD+' : m.pixels_per_inch >= 90 ? 'FHD standard' : 'Basse résolution' }}
-              </NBadge>
-            </div>
-          </div>
-        </div>
+        </NCollapse>
       </template>
     </div>
   </template>
@@ -136,19 +138,20 @@ async function openDeviceManager() {
       </div>
       <div v-if="!audioDevices.length" class="diag-loading"><div class="diag-spinner"></div> Aucun périphérique audio...</div>
       <template v-else>
-        <p class="diag-section-label">Périphériques audio — {{ audioDevices.length }}</p>
-        <div v-for="(a, i) in audioDevices" :key="i" class="card-block">
-          <div class="block-title">
-            <span>{{ a.name }}</span>
-            <NBadge :variant="a.status === 'OK' ? 'success' : 'warning'">{{ a.status }}</NBadge>
-            <NBadge v-if="a.audio_type" variant="info" style="font-size:10px">{{ a.audio_type === 'Render' ? '🔊 Sortie' : '🎙 Entrée' }}</NBadge>
+        <NCollapse :title="'Périphériques audio — ' + audioDevices.length" storageKey="diag-devices-audio" :defaultOpen="true">
+          <div v-for="(a, i) in audioDevices" :key="i" class="card-block">
+            <div class="block-title">
+              <span>{{ a.name }}</span>
+              <NBadge :variant="a.status === 'OK' ? 'success' : 'warning'">{{ a.status }}</NBadge>
+              <NBadge v-if="a.audio_type" variant="info" style="font-size:10px">{{ a.audio_type === 'Render' ? '🔊 Sortie' : '🎙 Entrée' }}</NBadge>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span>Fabricant</span><span>{{ a.manufacturer || "N/A" }}</span></div>
+              <div class="info-row"><span>Statut</span><NBadge :variant="a.status === 'OK' ? 'success' : 'warning'">{{ a.status }}</NBadge></div>
+              <div class="info-row info-full"><span>Device ID</span><code style="font-size:9px;word-break:break-all">{{ a.device_id || "N/A" }}</code></div>
+            </div>
           </div>
-          <div class="info-grid">
-            <div class="info-row"><span>Fabricant</span><span>{{ a.manufacturer || "N/A" }}</span></div>
-            <div class="info-row"><span>Statut</span><NBadge :variant="a.status === 'OK' ? 'success' : 'warning'">{{ a.status }}</NBadge></div>
-            <div class="info-row info-full"><span>Device ID</span><code style="font-size:9px;word-break:break-all">{{ a.device_id || "N/A" }}</code></div>
-          </div>
-        </div>
+        </NCollapse>
       </template>
     </div>
   </template>
@@ -170,22 +173,23 @@ async function openDeviceManager() {
       </div>
       <div v-if="!usbDevices.length" class="diag-loading"><div class="diag-spinner"></div> Aucun périphérique USB détecté...</div>
       <template v-else>
-        <p class="diag-section-label">Périphériques USB — {{ usbDevices.length }}</p>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr><th>Nom</th><th>Catégorie</th><th>Fabricant</th><th>Statut</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(u, i) in usbDevices" :key="i">
-                <td style="font-weight:500">{{ u.name }}</td>
-                <td><NBadge variant="default" style="font-size:10px">{{ u.pnp_class || "—" }}</NBadge></td>
-                <td class="muted">{{ u.manufacturer || "—" }}</td>
-                <td><NBadge :variant="u.status === 'OK' ? 'success' : 'warning'" style="font-size:10px">{{ u.status }}</NBadge></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <NCollapse :title="'Périphériques USB — ' + usbDevices.length" storageKey="diag-devices-usb" :defaultOpen="true">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Nom</th><th>Catégorie</th><th>Fabricant</th><th>Statut</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="(u, i) in usbDevices" :key="i">
+                  <td style="font-weight:500">{{ u.name }}</td>
+                  <td><NBadge variant="default" style="font-size:10px">{{ u.pnp_class || "—" }}</NBadge></td>
+                  <td class="muted">{{ u.manufacturer || "—" }}</td>
+                  <td><NBadge :variant="u.status === 'OK' ? 'success' : 'warning'" style="font-size:10px">{{ u.status }}</NBadge></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </NCollapse>
       </template>
     </div>
   </template>
@@ -201,28 +205,29 @@ async function openDeviceManager() {
       />
       <div v-if="!printers.length" class="diag-loading"><div class="diag-spinner"></div> Aucune imprimante installée...</div>
       <template v-else>
-        <p class="diag-section-label">Imprimantes — {{ printers.length }}</p>
-        <div v-for="(p, i) in printers" :key="i" class="card-block">
-          <div class="block-title">
-            <span>{{ p.name }}</span>
-            <NBadge v-if="p.is_default" variant="success">⭐ Défaut</NBadge>
-            <NBadge v-if="p.is_network" variant="info">Réseau</NBadge>
-            <NBadge v-if="p.shared" variant="neutral">Partagée</NBadge>
+        <NCollapse :title="'Imprimantes — ' + printers.length" storageKey="diag-devices-printers" :defaultOpen="true">
+          <div v-for="(p, i) in printers" :key="i" class="card-block">
+            <div class="block-title">
+              <span>{{ p.name }}</span>
+              <NBadge v-if="p.is_default" variant="success">⭐ Défaut</NBadge>
+              <NBadge v-if="p.is_network" variant="info">Réseau</NBadge>
+              <NBadge v-if="p.shared" variant="neutral">Partagée</NBadge>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span>Driver</span><span>{{ p.driver_name }}</span></div>
+              <div class="info-row"><span>Port</span><code>{{ p.port_name }}</code></div>
+              <div class="info-row"><span>Réseau</span><NBadge :variant="p.is_network ? 'info' : 'default'">{{ p.is_network ? "Oui" : "Non" }}</NBadge></div>
+              <div class="info-row"><span>Partagée</span><span>{{ p.shared ? "Oui" : "Non" }}</span></div>
+              <div class="info-row"><span>Statut</span><NBadge :variant="p.status === 'OK' || p.status === 'Normal' ? 'success' : 'warning'">{{ p.status || "N/A" }}</NBadge></div>
+            </div>
+            <div style="margin-top:10px">
+              <NButton v-if="!p.is_default" size="sm" variant="secondary" :disabled="loading" @click="setDefaultPrinter(p.name)">
+                <Star :size="13" style="margin-right:5px" />
+                Définir par défaut
+              </NButton>
+            </div>
           </div>
-          <div class="info-grid">
-            <div class="info-row"><span>Driver</span><span>{{ p.driver_name }}</span></div>
-            <div class="info-row"><span>Port</span><code>{{ p.port_name }}</code></div>
-            <div class="info-row"><span>Réseau</span><NBadge :variant="p.is_network ? 'info' : 'default'">{{ p.is_network ? "Oui" : "Non" }}</NBadge></div>
-            <div class="info-row"><span>Partagée</span><span>{{ p.shared ? "Oui" : "Non" }}</span></div>
-            <div class="info-row"><span>Statut</span><NBadge :variant="p.status === 'OK' || p.status === 'Normal' ? 'success' : 'warning'">{{ p.status || "N/A" }}</NBadge></div>
-          </div>
-          <div style="margin-top:10px">
-            <NButton v-if="!p.is_default" size="sm" variant="secondary" :disabled="loading" @click="setDefaultPrinter(p.name)">
-              <Star :size="13" style="margin-right:5px" />
-              Définir par défaut
-            </NButton>
-          </div>
-        </div>
+        </NCollapse>
       </template>
     </div>
   </template>
@@ -310,34 +315,35 @@ async function openDeviceManager() {
         desc="Gestion énergétique Windows — Activer un plan en un clic"
         color="amber"
       />
-      <p class="diag-section-label">Plans d'alimentation Windows — {{ powerPlans.length }}</p>
-      <div v-if="!powerPlans.length" class="diag-loading"><div class="diag-spinner"></div> Aucun plan d'énergie...</div>
-      <div v-for="(p, i) in powerPlans" :key="i" class="card-block">
-        <div class="block-title">
-          <span>{{ p.name }}</span>
-          <NBadge v-if="p.is_active" variant="success">⚡ ACTIF</NBadge>
+      <NCollapse :title="'Plans d\'alimentation Windows — ' + powerPlans.length" storageKey="diag-devices-power" :defaultOpen="true">
+        <div v-if="!powerPlans.length" class="diag-loading"><div class="diag-spinner"></div> Aucun plan d'énergie...</div>
+        <div v-for="(p, i) in powerPlans" :key="i" class="card-block">
+          <div class="block-title">
+            <span>{{ p.name }}</span>
+            <NBadge v-if="p.is_active" variant="success">⚡ ACTIF</NBadge>
+          </div>
+          <div class="info-row"><span>GUID</span><code style="font-size:10px">{{ p.guid }}</code></div>
+          <div style="margin-top:10px">
+            <NButton
+              v-if="!p.is_active"
+              size="sm"
+              variant="secondary"
+              :disabled="loading"
+              @click="activatePlan(p.guid, p.name)"
+            >
+              <Zap :size="13" style="margin-right:5px" />
+              Activer ce plan
+            </NButton>
+          </div>
         </div>
-        <div class="info-row"><span>GUID</span><code style="font-size:10px">{{ p.guid }}</code></div>
-        <div style="margin-top:10px">
-          <NButton
-            v-if="!p.is_active"
-            size="sm"
-            variant="secondary"
-            :disabled="loading"
-            @click="activatePlan(p.guid, p.name)"
-          >
-            <Zap :size="13" style="margin-right:5px" />
-            Activer ce plan
-          </NButton>
+        <div class="card-block" style="margin-top:8px">
+          <p class="muted" style="font-size:12px;line-height:1.6">
+            Les plans d'énergie contrôlent la fréquence CPU, la mise en veille des disques,
+            et la gestion thermique. Le plan <strong>Haute Performance</strong> désactive les économies d'énergie
+            pour des performances maximales.
+          </p>
         </div>
-      </div>
-      <div class="card-block" style="margin-top:8px">
-        <p class="muted" style="font-size:12px;line-height:1.6">
-          Les plans d'énergie contrôlent la fréquence CPU, la mise en veille des disques,
-          et la gestion thermique. Le plan <strong>Haute Performance</strong> désactive les économies d'énergie
-          pour des performances maximales.
-        </p>
-      </div>
+      </NCollapse>
     </div>
   </template>
 </template>

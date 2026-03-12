@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -54,7 +55,6 @@ const loadingPreview = ref(false);
 async function showPreview(app: InstalledApp) {
   previewApp.value = app; previewItems.value = []; loadingPreview.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     previewItems.value = await invoke<string[]>("preview_residuals", { appName: app.name, publisher: app.publisher });
   } catch (e: any) { notify.error("Erreur preview", String(e)); }
   loadingPreview.value = false;
@@ -114,7 +114,6 @@ function toggleAll() {
 async function loadApps() {
   loading.value = true; apps.value = []; selected.value = new Set();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     apps.value = await invoke<InstalledApp[]>("list_installed_apps_for_uninstall");
   } catch (e: any) { notify.error("Chargement échoué", String(e)); }
   loading.value = false;
@@ -130,7 +129,6 @@ async function startUninstall() {
   showResults.value = false;
   previewApp.value = null;
 
-  const { invoke } = await import("@tauri-apps/api/core");
 
   for (let i = 0; i < jobs.value.length; i++) {
     const job = jobs.value[i];
@@ -174,7 +172,6 @@ async function startUninstall() {
 async function deleteJobResiduals(job: UninstallJob) {
   handlingResiduals.value[job.app.name] = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const r = await invoke<ResidualCleanResult>("delete_residuals", { paths: job.residuals });
     if (r.success) notify.success("Résidus supprimés", r.message);
     else notify.error("Suppression partielle", r.message);
@@ -186,7 +183,6 @@ async function deleteJobResiduals(job: UninstallJob) {
 async function extractJobResiduals(job: UninstallJob) {
   handlingResiduals.value[job.app.name] = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const r = await invoke<ResidualCleanResult>("extract_residuals", {
       paths: job.residuals,
       target: extractTarget.value,

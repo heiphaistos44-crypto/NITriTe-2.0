@@ -31,10 +31,22 @@ export const navigationSections: NavSection[] = [
     ],
   },
   {
+    title: "Performance",
+    items: [
+      { id: "benchmark", label: "Benchmark", icon: "gauge", route: "/benchmark" },
+      { id: "perf-history", label: "Historique Perf.", icon: "bar-chart-3", route: "/perf-history" },
+    ],
+  },
+  {
     title: "Avancé",
     items: [
       { id: "clone", label: "Clonage Système", icon: "copy", route: "/clone" },
       { id: "data-recovery", label: "Récupération Données", icon: "database", route: "/data-recovery" },
+      { id: "boot-manager", label: "Boot Manager", icon: "server", route: "/boot-manager" },
+      { id: "hosts-editor", label: "Éditeur Hosts", icon: "globe", route: "/hosts-editor" },
+      { id: "bsod-analyzer", label: "Analyse BSOD", icon: "bug", route: "/bsod-analyzer" },
+      { id: "wsl", label: "WSL Linux", icon: "terminal-square", route: "/wsl" },
+      { id: "restore-points", label: "Restauration", icon: "shield-check", route: "/restore-points" },
     ],
   },
   {
@@ -44,14 +56,17 @@ export const navigationSections: NavSection[] = [
       { id: "drivers", label: "Drivers", icon: "cpu", route: "/drivers" },
       { id: "driver-scanner", label: "Scanner Pilotes", icon: "scan", route: "/driver-scanner" },
       { id: "uninstaller", label: "Désinstallateur", icon: "trash-2", route: "/uninstaller" },
+      { id: "cleaner", label: "Nettoyeur Avancé", icon: "sparkles", route: "/cleaner" },
       { id: "backup", label: "Sauvegarde", icon: "save", route: "/backup" },
       { id: "scanvirus", label: "Scan Antivirus", icon: "shield", route: "/scanvirus" },
+      { id: "dependencies", label: "Dépendances", icon: "package", route: "/dependencies" },
     ],
   },
   {
     title: "Reseau & Terminal",
     items: [
       { id: "network", label: "Reseau", icon: "wifi", route: "/network" },
+      { id: "bluetooth", label: "Bluetooth", icon: "bluetooth", route: "/bluetooth" },
       { id: "terminal", label: "Terminal", icon: "terminal", route: "/terminal" },
       { id: "scripts", label: "Scripts Windows", icon: "file-code", route: "/scripts" },
     ],
@@ -68,6 +83,14 @@ export const navigationSections: NavSection[] = [
     title: "Rapports",
     items: [
       { id: "logs", label: "Logs", icon: "scroll-text", route: "/logs" },
+      { id: "theme-editor", label: "Éditeur de Thème", icon: "palette", route: "/theme-editor" },
+    ],
+  },
+  {
+    title: "Configuration",
+    items: [
+      { id: "settings", label: "Paramètres", icon: "settings", route: "/settings" },
+      { id: "profiles", label: "Profils", icon: "user", route: "/profiles" },
     ],
   },
 ];

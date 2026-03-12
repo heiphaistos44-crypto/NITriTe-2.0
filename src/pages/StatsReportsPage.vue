@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -100,7 +101,6 @@ function computeHealth() {
 async function loadStats() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const info = await invoke<any>("get_system_info");
     const platform = await invoke<any>("get_platform_info").catch(() => null);
 
@@ -182,7 +182,6 @@ const reportsLoading = ref(false);
 async function loadReports() {
   reportsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     reports.value = await invoke<ReportFile[]>("list_reports");
   } catch {
     reports.value = [
@@ -196,7 +195,6 @@ async function loadReports() {
 
 async function openReportFolder() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("run_system_command", { cmd: "explorer", args: ["%USERPROFILE%\\Documents\\NiTriTe"] });
   } catch {
     notifications.info("Mode dev", "Ouverture dossier simulee");

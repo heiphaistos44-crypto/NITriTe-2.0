@@ -1,11 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicegui/nicegui/refs/heads/main/.schema/tauri.schema.json",
   "productName": "Nitrite",
-  "version": "26.19.0",
+  "version": "26.32.0",
   "identifier": "com.nitrite.tool",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:5175",
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev"
   },
@@ -40,7 +40,7 @@
     "resources": [],
     "windows": {
       "nsis": {
-        "installMode": "both",
+        "installMode": "perMachine",
         "displayLanguageSelector": false
       }
     }

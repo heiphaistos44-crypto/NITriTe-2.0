@@ -4,3 +4,5 @@ pub mod portables;
 pub mod chocolatey;
 pub mod windows_update;
 pub mod uninstaller;
+pub mod script_generator;
+pub mod favorites;

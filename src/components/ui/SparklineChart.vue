@@ -1,0 +1,79 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  data: number[];
+  color?: string;
+  height?: number;
+  fill?: boolean;
+  label?: string;
+}>();
+
+const h = computed(() => props.height ?? 40);
+const w = 120;
+const color = computed(() => props.color ?? "var(--accent-primary)");
+
+const points = computed(() => {
+  const d = props.data;
+  if (!d || d.length < 2) return "";
+  const min = Math.min(...d);
+  const max = Math.max(...d);
+  const range = max - min || 1;
+  const step = w / (d.length - 1);
+  return d
+    .map((v, i) => {
+      const x = i * step;
+      const y = h.value - ((v - min) / range) * (h.value - 4) - 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
+});
+
+const fillPath = computed(() => {
+  if (!points.value) return "";
+  const d = props.data;
+  const min = Math.min(...d);
+  const max = Math.max(...d);
+  const range = max - min || 1;
+  const step = w / (d.length - 1);
+  const last = `${(d.length - 1) * step},${h.value}`;
+  const first = `0,${h.value}`;
+  return `M ${first} L ${points.value
+    .split(" ")
+    .map((p) => `L ${p}`)
+    .join(" ")} L ${last} Z`;
+});
+</script>
+
+<template>
+  <div class="spark-wrap">
+    <svg :width="w" :height="h" :viewBox="`0 0 ${w} ${h}`" preserveAspectRatio="none">
+      <defs>
+        <linearGradient :id="`grad-${label}`" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" :stop-color="color" stop-opacity="0.35" />
+          <stop offset="100%" :stop-color="color" stop-opacity="0.02" />
+        </linearGradient>
+      </defs>
+      <path
+        v-if="fill && fillPath"
+        :d="fillPath"
+        :fill="`url(#grad-${label})`"
+        stroke="none"
+      />
+      <polyline
+        v-if="points"
+        :points="points"
+        fill="none"
+        :stroke="color"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    </svg>
+  </div>
+</template>
+
+<style scoped>
+.spark-wrap { display: flex; align-items: center; }
+svg { overflow: visible; }
+</style>

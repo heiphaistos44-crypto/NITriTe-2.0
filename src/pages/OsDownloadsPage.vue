@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -112,7 +113,6 @@ collapsed.value = new Set(osSections.map(s => s.title));
 
 async function openDownload(url: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_url", { url });
   } catch {
     try {

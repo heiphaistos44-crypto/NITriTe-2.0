@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router";
 import StatsCard from "@/components/shared/StatsCard.vue";
+import SparklineChart from "@/components/ui/SparklineChart.vue";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -32,6 +34,7 @@ const networkUp = ref(0);
 const healthScore = ref(0);
 const loading = ref(true);
 const isLive = ref(false);
+const isSimulation = ref(false);
 
 // --- Noms composants ---
 const cpuName = ref("");
@@ -66,6 +69,18 @@ const networkDownKbs = ref(0);
 const networkUpKbs = ref(0);
 const paused = ref(false);
 const cpuTemp = ref(0);
+
+// Historique pour sparklines (20 derniers points)
+const cpuHistory = ref<number[]>([]);
+const ramHistory = ref<number[]>([]);
+const netHistory = ref<number[]>([]);
+const diskHistory = ref<number[]>([]);
+const MAX_HISTORY = 20;
+
+function pushHistory(arr: typeof cpuHistory, val: number) {
+  arr.value.push(val);
+  if (arr.value.length > MAX_HISTORY) arr.value.shift();
+}
 
 let unlisten: (() => void) | null = null;
 let devInterval: ReturnType<typeof setInterval> | null = null;
@@ -124,8 +139,15 @@ function applyMonitorData(raw: any) {
   cpuCores.value = (raw.cpu_per_core ?? raw.cpu_cores ?? []).map((u: number | CoreUsage, i: number) =>
     typeof u === "number" ? { id: i, usage: u } : u
   );
-  gpuData.value = raw.gpu_data ?? [];
-  diskTemps.value = raw.disk_temps ?? [];
+  // Ne pas écraser avec [] si l'event ne contient pas de données GPU → évite le flicker
+  if (Array.isArray(raw.gpu_data) && raw.gpu_data.length > 0) {
+    gpuData.value = raw.gpu_data;
+  }
+  if (Array.isArray(raw.disk_temps) && raw.disk_temps.length > 0) {
+    diskTemps.value = raw.disk_temps;
+  } else if (!Array.isArray(raw.disk_temps)) {
+    diskTemps.value = [];
+  }
   diskReadKbs.value = raw.disk_read_kbs ?? 0;
   diskWriteKbs.value = raw.disk_write_kbs ?? 0;
   cpuTemp.value = raw.cpu_temp_c ?? 0;
@@ -156,6 +178,10 @@ function applyMonitorData(raw: any) {
     if (alerts.value.length > 10) alerts.value = alerts.value.slice(0, 10);
   }
 
+  pushHistory(cpuHistory, cpuUsage.value);
+  pushHistory(ramHistory, ramUsage.value);
+  pushHistory(netHistory, Math.min(100, (networkDownKbs.value + networkUpKbs.value) / 100));
+  pushHistory(diskHistory, diskUsage.value);
   computeHealthScore();
 }
 
@@ -193,7 +219,6 @@ const networkStatus = computed(() => {
 onMounted(async () => {
   // Charger les logs récents
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const logs = await invoke<any[]>("get_app_logs");
     if (logs && logs.length > 0) {
       recentActivity.value = logs.slice(0, 5).map(l => ({
@@ -206,7 +231,6 @@ onMounted(async () => {
 
   // Démarrer le monitoring live
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const { listen } = await import("@tauri-apps/api/event");
     await invoke("start_monitoring");
     isLive.value = true;
@@ -228,7 +252,8 @@ onMounted(async () => {
     if (info.gpus?.length > 0) gpuName.value = info.gpus[0].name ?? "";
     computeHealthScore();
   } catch {
-    // Mode dev : simulation
+    // Mode dev : simulation (backend inaccessible)
+    isSimulation.value = true;
     cpuUsage.value = 23;
     ramUsage.value = 45;
     ramUsedGb.value = 14.4;
@@ -244,6 +269,11 @@ onMounted(async () => {
       cpuUsage.value = Math.round(10 + Math.random() * 40);
       ramUsage.value = Math.round(40 + Math.random() * 20);
       networkDown.value = Math.round(Math.random() * 2000);
+      networkDownKbs.value = networkDown.value;
+      pushHistory(cpuHistory, cpuUsage.value);
+      pushHistory(ramHistory, ramUsage.value);
+      pushHistory(netHistory, Math.min(100, networkDown.value / 20));
+      pushHistory(diskHistory, diskUsage.value);
       computeHealthScore();
     }, 2000);
     computeHealthScore();
@@ -255,7 +285,6 @@ onUnmounted(async () => {
   if (unlisten) unlisten();
   if (devInterval) clearInterval(devInterval);
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("stop_monitoring");
   } catch { /* ignore */ }
 });
@@ -269,9 +298,9 @@ onUnmounted(async () => {
         <h1 class="welcome-title">Tableau de bord</h1>
         <p class="welcome-date">{{ new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) }}</p>
       </div>
-      <NBadge :variant="isLive ? 'success' : 'neutral'" class="live-badge">
+      <NBadge :variant="isLive ? 'success' : isSimulation ? 'warning' : 'neutral'" class="live-badge">
         <span v-if="isLive" class="live-dot"></span>
-        {{ isLive ? "Monitoring actif" : "Mode statique" }}
+        {{ isLive ? "Monitoring actif" : isSimulation ? "⚠ Simulation" : "Mode statique" }}
       </NBadge>
     </div>
 
@@ -296,6 +325,30 @@ onUnmounted(async () => {
       <StatsCard title="RAM" :subtitle="`${ramUsedGb} / ${ramTotalGb} GB`" :value="`${ramUsage}%`" :icon="MemoryStick" :progress="ramUsage" color="info" />
       <StatsCard title="Disque" :subtitle="diskModel || 'Partition C:'" :value="`${diskUsage}%`" :icon="HardDrive" :progress="diskUsage" color="warning" />
       <StatsCard title="Réseau" :subtitle="networkStatus" :value="formatSpeed(networkDown)" :icon="Wifi" color="success" />
+    </div>
+
+    <!-- Sparklines Tendances -->
+    <div v-if="cpuHistory.length >= 3" class="sparklines-row">
+      <div class="sparkline-card">
+        <span class="sparkline-label">CPU</span>
+        <SparklineChart :data="cpuHistory" color="var(--accent-primary)" :height="36" :fill="true" label="cpu" />
+        <span class="sparkline-val">{{ cpuUsage }}%</span>
+      </div>
+      <div class="sparkline-card">
+        <span class="sparkline-label">RAM</span>
+        <SparklineChart :data="ramHistory" color="var(--info, #60a5fa)" :height="36" :fill="true" label="ram" />
+        <span class="sparkline-val">{{ ramUsage }}%</span>
+      </div>
+      <div class="sparkline-card">
+        <span class="sparkline-label">Disque</span>
+        <SparklineChart :data="diskHistory" color="var(--warning)" :height="36" :fill="true" label="disk" />
+        <span class="sparkline-val">{{ diskUsage }}%</span>
+      </div>
+      <div class="sparkline-card">
+        <span class="sparkline-label">Réseau</span>
+        <SparklineChart :data="netHistory" color="var(--success)" :height="36" :fill="true" label="net" />
+        <span class="sparkline-val">{{ formatSpeed(networkDown) }}</span>
+      </div>
     </div>
 
     <!-- Health + Quick Actions -->
@@ -612,6 +665,41 @@ onUnmounted(async () => {
   gap: 16px;
 }
 @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Sparklines tendances */
+.sparklines-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 1200px) { .sparklines-row { grid-template-columns: repeat(2, 1fr); } }
+.sparkline-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.sparkline-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  width: 36px;
+  flex-shrink: 0;
+}
+.sparkline-val {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}
 
 .dashboard-grid {
   display: grid;

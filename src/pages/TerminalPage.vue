@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NButton from "@/components/ui/NButton.vue";
 import { Terminal, Trash2, Send, ChevronDown } from "lucide-vue-next";
 
@@ -27,7 +28,6 @@ const activeShell = ref("cmd");
 
 async function loadShells() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     shells.value = await invoke<ShellInfo[]>("detect_shells");
     // Selectionner le premier shell disponible
     const available = shells.value.filter(s => s.available);
@@ -74,7 +74,6 @@ async function executeCommand() {
   running.value = true;
 
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<any>("run_in_shell", {
       shellId: activeShell.value,
       command: cmd,

@@ -182,6 +182,106 @@ fn repair_cmd_and_label(repair_type: &str) -> Option<(&'static str, String)> {
         // Restauration
         "restore_point"   => Some(("Créer point de restauration",  "powershell -Command \"Checkpoint-Computer -Description 'NiTriTe Backup' -RestorePointType MODIFY_SETTINGS\"".to_string())),
 
+        // DNS personnalisé
+        "set_dns_google"  => Some(("DNS → Google (8.8.8.8)", concat!(
+            "powershell -Command \"",
+            "$adapter = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -First 1; ",
+            "Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses 8.8.8.8,8.8.4.4\""
+        ).to_string())),
+        "set_dns_cf"      => Some(("DNS → Cloudflare (1.1.1.1)", concat!(
+            "powershell -Command \"",
+            "$adapter = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -First 1; ",
+            "Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses 1.1.1.1,1.0.0.1\""
+        ).to_string())),
+        "reset_dns_auto"  => Some(("DNS → Auto (DHCP)", concat!(
+            "powershell -Command \"",
+            "$adapter = Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -First 1; ",
+            "Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ResetServerAddresses\""
+        ).to_string())),
+
+        // Intégrité système supplémentaires
+        "dism_cleanup"    => Some(("DISM Cleanup-Image",           "dism /Online /Cleanup-Image /StartComponentCleanup".to_string())),
+        "sfc_verify_only" => Some(("SFC /VERIFYONLY",              "sfc /VERIFYONLY".to_string())),
+
+        // Démarrage & Boot
+        "bootrec_fixmbr"    => Some(("Réparer MBR",               "bootrec /fixmbr".to_string())),
+        "bootrec_fixboot"   => Some(("Réparer secteur Boot",       "bootrec /fixboot".to_string())),
+        "bootrec_rebuildbcd"=> Some(("Reconstruire BCD",           "bootrec /rebuildbcd".to_string())),
+        "startup_repair"    => Some(("Réparer démarrage auto", concat!(
+            "powershell -Command \"",
+            "Get-CimInstance -ClassName Win32_StartupCommand | ",
+            "Where-Object { -not (Test-Path $_.Command.Trim('\"')) } | ",
+            "ForEach-Object { Write-Host $_.Name, $_.Command }\""
+        ).to_string())),
+        "disable_fast_startup" => Some(("Désactiver démarrage rapide", concat!(
+            "powershell -Command \"",
+            "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power' ",
+            "-Name HiberbootEnabled -Value 0 -Type DWord\""
+        ).to_string())),
+        "enable_fast_startup"  => Some(("Activer démarrage rapide", concat!(
+            "powershell -Command \"",
+            "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power' ",
+            "-Name HiberbootEnabled -Value 1 -Type DWord\""
+        ).to_string())),
+
+        // MAJ & Sécurité supplémentaires
+        "defender_full_scan" => Some(("Scan complet Defender",    "powershell -Command Start-MpScan -ScanType FullScan".to_string())),
+        "enable_firewall"    => Some(("Activer Pare-feu", concat!(
+            "netsh advfirewall set allprofiles state on"
+        ).to_string())),
+        "wu_usoclient"       => Some(("Forcer scan WU",            "UsoClient.exe StartScan".to_string())),
+
+        // Cache & Nettoyage supplémentaires
+        "dns_cache_flush"  => Some(("Vider cache DNS (PS)",        "powershell -Command Clear-DnsClientCache".to_string())),
+        "font_cache"       => Some(("Reconstruire cache polices", concat!(
+            "net stop FontCache & net stop FontCache3.0.0.0 & ",
+            "del /F /Q \"%WinDir%\\ServiceProfiles\\LocalService\\AppData\\Local\\FontCache\\*\" & ",
+            "del /F /Q \"%WinDir%\\ServiceProfiles\\LocalService\\AppData\\Local\\FontCache-System\\*\" & ",
+            "net start FontCache"
+        ).to_string())),
+        "store_cache"      => Some(("Réparer Windows Store", concat!(
+            "wsreset.exe & ",
+            "powershell -Command \"Remove-Item -Recurse -Force ",
+            "$env:LocalAppData\\Packages\\Microsoft.WindowsStore_8wekyb3d8bbwe\\LocalCache\\* -ErrorAction SilentlyContinue\""
+        ).to_string())),
+        "delivery_opt"     => Some(("Vider Delivery Optimization", concat!(
+            "powershell -Command \"",
+            "Stop-Service -Name DoSvc -Force -ErrorAction SilentlyContinue; ",
+            "Remove-Item -Recurse -Force C:\\Windows\\SoftwareDistribution\\DeliveryOptimization\\* -ErrorAction SilentlyContinue; ",
+            "Start-Service -Name DoSvc -ErrorAction SilentlyContinue\""
+        ).to_string())),
+
+        // Services & Processus
+        "restart_explorer" => Some(("Redémarrer Explorer", concat!(
+            "taskkill /F /IM explorer.exe & start explorer.exe"
+        ).to_string())),
+        "restart_audio"    => Some(("Redémarrer service Audio", concat!(
+            "net stop AudioSrv & net stop AudioEndpointBuilder & ",
+            "net start AudioEndpointBuilder & net start AudioSrv"
+        ).to_string())),
+        "reset_permissions"=> Some(("Reset permissions TEMP",     "icacls %TEMP% /reset /T /C /Q".to_string())),
+        "clear_recent"     => Some(("Vider fichiers récents", concat!(
+            "del /F /Q \"%APPDATA%\\Microsoft\\Windows\\Recent\\*\" & ",
+            "del /F /Q \"%APPDATA%\\Microsoft\\Windows\\Recent\\AutomaticDestinations\\*\" & ",
+            "del /F /Q \"%APPDATA%\\Microsoft\\Windows\\Recent\\CustomDestinations\\*\""
+        ).to_string())),
+
+        // Disques & Stockage
+        "chkdsk_spotfix"   => Some(("CHKDSK /spotfix",             "chkdsk C: /spotfix".to_string())),
+        "trim_ssd"         => Some(("Trim SSD",                    "powershell -Command Optimize-Volume -DriveLetter C -ReTrim -Verbose".to_string())),
+        "diskcleanup"      => Some(("Nettoyage disque C:",          "cleanmgr /sagerun:1".to_string())),
+        "storage_sense"    => Some(("Storage Sense (manuel)",       "powershell -Command \"Invoke-StorageSense\"".to_string())),
+
+        // Activation & Registre
+        "reactivate_windows" => Some(("Réactiver Windows",         "slmgr /ato".to_string())),
+        "reset_slmgr"        => Some(("Reset WPA registre",        "slmgr /rearm".to_string())),
+        "reg_compact"        => Some(("Compacter Registre",        "powershell -Command \"& 'C:\\Windows\\System32\\reg.exe' export HKLM\\SYSTEM NUL /y\"".to_string())),
+        "reg_check_hkcu"     => Some(("Vérifier HKCU Run",        "reg query HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run".to_string())),
+
+        // Points de restauration
+        "list_restore_pts"  => Some(("Lister points restauration", "powershell -Command Get-ComputerRestorePoint | Format-Table -AutoSize".to_string())),
+        "enable_restore"    => Some(("Activer protection système", "powershell -Command Enable-ComputerRestore -Drive 'C:\\'".to_string())),
+
         _ => None,
     }
 }

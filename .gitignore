@@ -1,6 +1,11 @@
 # ===========================
-# Nitrite 1.0 - .gitignore
+# Nitrite 2.0 - .gitignore
 # ===========================
+
+# --- Build output (releases portables) ---
+release/
+tools/
+*.sfx
 
 # --- Dossier logiciel : applications portables (trop volumineuses) ---
 logiciel/

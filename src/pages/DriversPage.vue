@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
@@ -90,7 +91,6 @@ function parseCSV(csv: string): DriverEntry[] {
 async function loadDrivers() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<any>("run_system_command", {
       cmd: "driverquery",
       args: ["/FO", "CSV", "/V"],
@@ -142,7 +142,6 @@ async function openExportFolder() {
   if (!folder) return;
   await ensureExportDir(folder);
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_path", { path: folder });
   } catch { notifications.error("Impossible d'ouvrir le dossier"); }
 }
@@ -219,7 +218,6 @@ const recommendedLoading = ref(true);
 async function loadRecommended() {
   recommendedLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     recommended.value = await invoke<RecommendedDriver[]>("get_recommended_drivers");
   } catch {
     recommended.value = [
@@ -234,7 +232,6 @@ async function loadRecommended() {
 
 async function openDriverUrl(url: string) {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_url", { url });
   } catch {
     window.open(url, "_blank");

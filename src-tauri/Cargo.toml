@@ -1,13 +1,13 @@
 [package]
 name = "nitrite"
-version = "26.19.0"
-description = "Nitrite v26.19 - Maintenance Informatique Professionnelle"
+version = "26.32.0"
+description = "Nitrite v26.31 - Maintenance Informatique Professionnelle"
 authors = ["NiTriTe"]
 edition = "2021"
 
 [lib]
 name = "nitrite_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["staticlib", "rlib"]
 
 [[bin]]
 name = "nitrite"

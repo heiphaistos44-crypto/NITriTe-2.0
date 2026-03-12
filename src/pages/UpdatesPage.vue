@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -11,12 +12,14 @@ import {
   CheckCircle, AlertTriangle, ArrowUpCircle,
   Terminal, Shield, Calendar, Search, Play,
 } from "lucide-vue-next";
+import { listen } from "@tauri-apps/api/event";
 
 const notify = useNotificationStore();
 
 const tabs = [
   { id: "winget", label: "WinGet" },
   { id: "chocolatey", label: "Chocolatey" },
+  { id: "scoop", label: "Scoop" },
   { id: "windows", label: "Windows Update" },
 ];
 const activeTab = ref("winget");
@@ -38,7 +41,6 @@ const devWingetPkgs: WingetPackage[] = [
 async function checkWinget() {
   wingetStatus.value = "checking"; wingetPkgs.value = []; wingetLogs.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     wingetOk.value = await invoke<boolean>("check_winget");
     if (!wingetOk.value) { wingetStatus.value = "error"; return; }
     wingetPkgs.value = await invoke<WingetPackage[]>("list_upgradable");
@@ -53,7 +55,6 @@ async function checkWinget() {
 async function upgradeAllWinget() {
   wingetStatus.value = "updating"; wingetLogs.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("upgrade_all");
     wingetStatus.value = "done"; wingetPkgs.value = [];
     notify.success("WinGet", "Toutes les mises à jour installées");
@@ -76,7 +77,6 @@ const chocoMsg = ref("");
 async function checkChocolatey() {
   chocoStatus.value = "checking"; chocoPkgs.value = []; chocoMsg.value = "";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     chocoOk.value = await invoke<boolean>("check_chocolatey");
     if (!chocoOk.value) { chocoStatus.value = "error"; chocoMsg.value = "Chocolatey non installé"; return; }
     chocoPkgs.value = await invoke<ChocoPackage[]>("list_chocolatey_upgrades");
@@ -91,7 +91,6 @@ async function checkChocolatey() {
 async function upgradeAllChoco() {
   chocoStatus.value = "updating";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const res = await invoke<{ success: boolean; upgraded_count: number; message: string }>("upgrade_chocolatey_all");
     chocoStatus.value = "done"; chocoPkgs.value = [];
     chocoMsg.value = res.message;
@@ -102,6 +101,62 @@ async function upgradeAllChoco() {
     chocoMsg.value = e?.toString() ?? "Erreur upgrade";
     notify.error("Chocolatey", chocoMsg.value);
   }
+}
+
+// === Scoop ===
+interface ScoopPackage { name: string; installed: string; available: string; }
+const scoopOk = ref(false);
+const scoopPkgs = ref<ScoopPackage[]>([]);
+const scoopStatus = ref<"idle" | "checking" | "updating" | "done" | "error">("idle");
+const scoopMsg = ref("");
+const scoopLog = ref("");
+const scoopInstalling = ref(false);
+const scoopInstallMsg = ref("");
+let unlistenScoop: (() => void) | null = null;
+
+async function checkScoop() {
+  scoopStatus.value = "checking"; scoopPkgs.value = []; scoopMsg.value = ""; scoopLog.value = "";
+  try {
+    scoopOk.value = await invoke<boolean>("check_scoop");
+    if (!scoopOk.value) { scoopStatus.value = "error"; return; }
+    scoopPkgs.value = await invoke<ScoopPackage[]>("list_scoop_upgrades");
+    scoopStatus.value = scoopPkgs.value.length > 0 ? "idle" : "done";
+    if (scoopPkgs.value.length === 0) scoopMsg.value = "Tous les paquets sont à jour";
+  } catch {
+    scoopOk.value = false; scoopStatus.value = "error";
+    scoopMsg.value = "Scoop non disponible";
+  }
+}
+
+async function upgradeAllScoop() {
+  scoopStatus.value = "updating"; scoopLog.value = ""; scoopMsg.value = "Mise à jour en cours...";
+  if (unlistenScoop) unlistenScoop();
+  unlistenScoop = await listen<string>("scoop-upgrade-done", (e) => {
+    scoopLog.value = e.payload || "";
+    scoopMsg.value = "Mise à jour Scoop terminée ✓";
+    scoopStatus.value = "done";
+    scoopPkgs.value = [];
+  });
+  try {
+    await invoke("upgrade_scoop_all");
+  } catch (e: any) {
+    scoopMsg.value = "Erreur : " + e;
+    scoopStatus.value = "error";
+  }
+}
+
+async function installScoop() {
+  scoopInstalling.value = true;
+  scoopInstallMsg.value = "Installation Scoop en cours (30-60s)...";
+  try {
+    const msg = await invoke<string>("install_package_manager", { manager: "scoop" });
+    scoopInstallMsg.value = msg || "Scoop installé — rechargez pour détecter.";
+    setTimeout(() => checkScoop(), 6000);
+  } catch (e: any) {
+    scoopInstallMsg.value = "Erreur : " + String(e);
+    notify.error("Scoop", String(e));
+  }
+  scoopInstalling.value = false;
 }
 
 // === Windows Update ===
@@ -119,7 +174,6 @@ let unlistenWu: (() => void) | null = null;
 async function checkWindowsUpdates() {
   winUpdateStatus.value = "checking"; winUpdates.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     winUpdates.value = await invoke<WinUpdate[]>("check_windows_updates");
     winUpdateStatus.value = "done";
   } catch {
@@ -135,7 +189,6 @@ async function checkWindowsUpdates() {
 async function searchPendingUpdates() {
   wuPendingStatus.value = "searching"; wuPending.value = []; wuLogs.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     wuPending.value = await invoke<WuPendingUpdate[]>("search_pending_updates");
     wuPendingStatus.value = "done";
     if (wuPending.value.length === 0) notify.success("Windows Update", "Système à jour !");
@@ -149,7 +202,6 @@ async function installAllUpdates() {
   if (wuInstalling.value) return;
   wuInstalling.value = true; wuLogs.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const { listen } = await import("@tauri-apps/api/event");
     unlistenWu = (await listen<string>("wu-log", (e) => { wuLogs.value.push(e.payload); })) as unknown as () => void;
     const ok = await invoke<boolean>("install_windows_updates");
@@ -167,7 +219,6 @@ async function installAllUpdates() {
 
 async function openWindowsUpdate() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("execute_tool", { command: "ms-settings:windowsupdate", isUrl: true });
   } catch { window.open("ms-settings:windowsupdate", "_blank"); }
 }
@@ -190,6 +241,7 @@ onMounted(async () => {
 onUnmounted(() => {
   if (unlistenLog) unlistenLog();
   if (unlistenWu) unlistenWu();
+  if (unlistenScoop) unlistenScoop();
 });
 </script>
 
@@ -282,6 +334,73 @@ onUnmounted(() => {
               </table>
             </div>
           </NCard>
+        </template>
+
+        <!-- === Scoop === -->
+        <template v-else-if="activeTab === 'scoop'">
+          <div class="tab-actions">
+            <NBadge :variant="scoopOk ? 'success' : 'neutral'"><Package :size="12" /> Scoop {{ scoopOk ? "OK" : "absent" }}</NBadge>
+            <NButton variant="secondary" size="sm" :loading="scoopStatus === 'checking'" @click="checkScoop">
+              <RefreshCw :size="14" /> Scanner
+            </NButton>
+            <NButton v-if="scoopPkgs.length" variant="primary" size="sm" :loading="scoopStatus === 'updating'" @click="upgradeAllScoop">
+              <Download :size="14" /> Tout mettre à jour ({{ scoopPkgs.length }})
+            </NButton>
+          </div>
+
+          <div v-if="scoopStatus === 'checking'" class="loading-state"><NSpinner :size="24" /><p>Détection Scoop...</p></div>
+
+          <!-- Non installé -->
+          <div v-else-if="scoopStatus === 'error' && !scoopOk" style="display:flex;flex-direction:column;gap:12px;padding:20px 0">
+            <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)">
+              <AlertTriangle :size="16" style="color:var(--warning)" /> Scoop n'est pas installé sur ce PC.
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);padding:10px 14px;background:var(--bg-secondary);border-radius:6px;border:1px solid var(--border)">
+              Scoop est un gestionnaire de paquets en ligne de commande pour Windows.
+              L'installation se fait <strong>sans droits administrateur</strong>.
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <NButton variant="primary" size="sm" :loading="scoopInstalling" @click="installScoop">
+                <Download :size="14" /> {{ scoopInstalling ? 'Installation (30-60s)...' : 'Installer Scoop' }}
+              </NButton>
+              <NButton variant="ghost" size="sm" @click="checkScoop"><RefreshCw :size="13" /> Vérifier à nouveau</NButton>
+            </div>
+            <div v-if="scoopInstallMsg" style="font-size:12px;padding:8px 12px;border-radius:5px;border-left:3px solid var(--accent-primary);background:var(--bg-secondary)">
+              {{ scoopInstallMsg }}
+            </div>
+          </div>
+
+          <!-- Installé -->
+          <template v-else>
+            <div v-if="scoopStatus === 'done' && !scoopPkgs.length && !scoopLog" class="done-state">
+              <CheckCircle :size="32" class="ok" /><p>{{ scoopMsg || "Tous les paquets Scoop sont à jour" }}</p>
+            </div>
+            <span v-if="scoopMsg && scoopStatus !== 'done'" class="muted" style="font-size:12px;display:block;margin-bottom:8px">{{ scoopMsg }}</span>
+
+            <NCard v-if="scoopPkgs.length">
+              <template #header>
+                <div class="section-header"><ArrowUpCircle :size="16" /><span>Mises à jour disponibles</span><NBadge variant="warning" style="margin-left:auto">{{ scoopPkgs.length }}</NBadge></div>
+              </template>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Paquet</th><th>Installé</th><th>Disponible</th></tr></thead>
+                  <tbody>
+                    <tr v-for="pkg in scoopPkgs" :key="pkg.name">
+                      <td class="pkg-name"><Package :size="12" style="margin-right:5px;opacity:.5" />{{ pkg.name }}</td>
+                      <td class="font-mono ver-old">{{ pkg.installed || "—" }}</td>
+                      <td class="font-mono ver-new">{{ pkg.available || "—" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </NCard>
+
+            <NCard v-if="scoopLog">
+              <template #header><div class="section-header"><Terminal :size="16" /><span>Résultat</span></div></template>
+              <div class="log-output">{{ scoopLog }}</div>
+            </NCard>
+            <div v-if="scoopStatus === 'updating'" class="loading-state"><NSpinner :size="24" /><p>Mise à jour Scoop en cours...</p></div>
+          </template>
         </template>
 
         <!-- === Windows Update === -->
