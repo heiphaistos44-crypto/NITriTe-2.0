@@ -492,7 +492,7 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 .dl-info { font-size:11px; color:var(--text-muted); text-align:right; }
 
 /* Catalog */
-.catalog { display:flex; flex-direction:column; gap:8px; }
+.catalog { display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
 .catalog-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-tertiary); transition:border-color .15s; }
 .catalog-item.recommended { border-color:color-mix(in srgb,var(--warning) 40%,var(--border)); }
 .catalog-item:hover { border-color:var(--accent-muted); }
