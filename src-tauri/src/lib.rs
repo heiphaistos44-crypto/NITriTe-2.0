@@ -499,12 +499,11 @@ async fn ai_llamacpp_status(state: tauri::State<'_, AppState>) -> Result<bool, N
 }
 
 #[tauri::command]
-async fn ai_list_gguf_models(models_dir: Option<String>) -> Result<Vec<ai::llamacpp::GgufModel>, NiTriTeError> {
-    let dir = models_dir.unwrap_or_else(|| {
-        std::env::current_exe()
-            .ok().and_then(|p| p.parent().map(|d| d.join("models").to_string_lossy().into_owned()))
-            .unwrap_or_else(|| "./models".to_string())
-    });
+async fn ai_list_gguf_models() -> Result<Vec<ai::llamacpp::GgufModel>, NiTriTeError> {
+    let exe_dir = std::env::current_exe()
+        .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
+        .unwrap_or_default();
+    let dir = ai::llamacpp::models_dir(&exe_dir);
     Ok(ai::llamacpp::list_gguf_models(&dir))
 }
 
@@ -514,6 +513,37 @@ async fn ai_find_llamacpp_server() -> Result<Option<String>, NiTriTeError> {
         .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
         .unwrap_or_default();
     Ok(ai::llamacpp::find_server_binary(&exe_dir))
+}
+
+#[tauri::command]
+fn ai_model_catalog() -> Vec<ai::llamacpp::ModelCatalogEntry> {
+    ai::llamacpp::model_catalog()
+}
+
+#[tauri::command]
+async fn ai_download_server(app: tauri::AppHandle) -> Result<String, String> {
+    let exe_dir = std::env::current_exe()
+        .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
+        .unwrap_or_default();
+    let app_clone = app.clone();
+    ai::llamacpp::download_server(&exe_dir, move |progress| {
+        let _ = app_clone.emit("ai:download-progress", &progress);
+    }).await
+}
+
+#[tauri::command]
+async fn ai_download_model(
+    app: tauri::AppHandle,
+    url: String,
+    filename: String,
+) -> Result<String, String> {
+    let exe_dir = std::env::current_exe()
+        .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
+        .unwrap_or_default();
+    let app_clone = app.clone();
+    ai::llamacpp::download_model_file(&url, &filename, &exe_dir, move |progress| {
+        let _ = app_clone.emit("ai:download-progress", &progress);
+    }).await
 }
 
 // === Scripts ===
@@ -2651,6 +2681,9 @@ pub fn run() {
             ai_llamacpp_status,
             ai_list_gguf_models,
             ai_find_llamacpp_server,
+            ai_model_catalog,
+            ai_download_server,
+            ai_download_model,
             // Scripts
             get_builtin_scripts,
             execute_script,

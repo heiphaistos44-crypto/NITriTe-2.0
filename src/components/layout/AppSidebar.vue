@@ -139,7 +139,7 @@ const pinnedItems = computed(() =>
         <transition name="fade">
           <div v-if="!iconsOnly" class="logo-text">
             <span class="logo-title">NiTriTe</span>
-            <span class="logo-version">v26.33.0</span>
+            <span class="logo-version">v26.34.0</span>
           </div>
         </transition>
       </div>
