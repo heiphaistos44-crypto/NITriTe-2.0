@@ -7,6 +7,9 @@ release/
 tools/
 *.sfx
 
+# --- Archive (docs dev, tests, assets obsoletes) ---
+_archive/
+
 # --- Dossier logiciel : applications portables (trop volumineuses) ---
 logiciel/
 
