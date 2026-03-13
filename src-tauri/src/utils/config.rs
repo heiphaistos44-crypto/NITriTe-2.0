@@ -10,18 +10,31 @@ fn default_json() -> String { "json".to_string() }
 fn default_temperature() -> f64 { 0.7 }
 fn default_ollama_url() -> String { "http://localhost:11434".to_string() }
 fn default_ollama_model() -> String { "llama3:8b".to_string() }
+fn default_ai_backend() -> String { "llamacpp".to_string() }
+fn default_llamacpp_port() -> u16 { 8080 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
     pub theme: String,
     pub language: String,
     pub sidebar_collapsed: bool,
+    // Ollama (installation requise)
     #[serde(default = "default_ollama_url")]
     pub ollama_url: String,
     #[serde(default = "default_ollama_model")]
     pub ollama_model: String,
     #[serde(default = "default_temperature")]
     pub ollama_temperature: f64,
+    // Backend IA actif: "ollama" | "llamacpp"
+    #[serde(default = "default_ai_backend")]
+    pub ai_backend: String,
+    // llama.cpp portable (sans installation)
+    #[serde(default)]
+    pub llamacpp_server_path: String,
+    #[serde(default)]
+    pub llamacpp_model_path: String,
+    #[serde(default = "default_llamacpp_port")]
+    pub llamacpp_port: u16,
     pub monitor_interval_ms: u64,
     #[serde(default = "default_true")]
     pub show_animations: bool,
@@ -46,6 +59,10 @@ impl Default for AppConfig {
             ollama_url: "http://localhost:11434".to_string(),
             ollama_model: "llama3:8b".to_string(),
             ollama_temperature: 0.7,
+            ai_backend: "llamacpp".to_string(),
+            llamacpp_server_path: String::new(),
+            llamacpp_model_path: String::new(),
+            llamacpp_port: 8080,
             monitor_interval_ms: 2000,
             show_animations: true,
             compact_mode: false,

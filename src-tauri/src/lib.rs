@@ -390,43 +390,45 @@ async fn ai_query(
     history: Option<Vec<serde_json::Value>>,   // [{role, content}]
     state: tauri::State<'_, AppState>,
 ) -> Result<String, NiTriTeError> {
-    let (url, default_model, temp) = {
+    let (backend, port, ollama_url, default_model) = {
         let config = state.config.lock().await;
-        (config.ollama_url.clone(), config.ollama_model.clone(), 0.7)
+        (config.ai_backend.clone(), config.llamacpp_port, config.ollama_url.clone(), config.ollama_model.clone())
     };
+    let temp = 0.7_f64;
     let m = model.unwrap_or(default_model);
 
-    // Construire la liste de messages pour /api/chat
-    let mut messages: Vec<ai::ollama::OllamaChatMessage> = vec![];
+    // Construire les messages
+    let mut messages_ollama: Vec<ai::ollama::OllamaChatMessage> = vec![];
+    let mut messages_llama: Vec<ai::llamacpp::ChatMessage> = vec![];
 
-    // System prompt en premier
+    let add_msg = |role: &str, content: &str,
+                   mo: &mut Vec<ai::ollama::OllamaChatMessage>,
+                   ml: &mut Vec<ai::llamacpp::ChatMessage>| {
+        mo.push(ai::ollama::OllamaChatMessage { role: role.into(), content: content.into() });
+        ml.push(ai::llamacpp::ChatMessage   { role: role.into(), content: content.into() });
+    };
+
     if let Some(sys) = &system_prompt {
         if !sys.trim().is_empty() {
-            messages.push(ai::ollama::OllamaChatMessage {
-                role: "system".into(),
-                content: sys.trim().to_string(),
-            });
+            add_msg("system", sys.trim(), &mut messages_ollama, &mut messages_llama);
         }
     }
-
-    // Historique de la conversation
     if let Some(hist) = history {
         for msg in hist {
             let role = msg["role"].as_str().unwrap_or("user").to_string();
             let content = msg["content"].as_str().unwrap_or("").to_string();
             if !content.is_empty() && (role == "user" || role == "assistant") {
-                messages.push(ai::ollama::OllamaChatMessage { role, content });
+                add_msg(&role, &content, &mut messages_ollama, &mut messages_llama);
             }
         }
     }
+    add_msg("user", &prompt, &mut messages_ollama, &mut messages_llama);
 
-    // Message actuel de l'utilisateur
-    messages.push(ai::ollama::OllamaChatMessage {
-        role: "user".into(),
-        content: prompt,
-    });
-
-    ai::ollama::chat(&url, &m, messages, temp).await
+    if backend == "llamacpp" {
+        ai::llamacpp::chat(port, &m, messages_llama, temp).await
+    } else {
+        ai::ollama::chat(&ollama_url, &m, messages_ollama, temp).await
+    }
 }
 
 #[tauri::command]
@@ -434,6 +436,84 @@ async fn ai_execute_command(command: String) -> Result<ai::tool_calling::SafeCom
     tokio::task::spawn_blocking(move || ai::tool_calling::execute_safe(&command))
         .await
         .map_err(|e| NiTriTeError::System(e.to_string()))?
+}
+
+#[tauri::command]
+async fn ai_start_llamacpp(
+    model_path: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let (server_path, port) = {
+        let config = state.config.lock().await;
+        (config.llamacpp_server_path.clone(), config.llamacpp_port)
+    };
+    // Détecter le binaire si chemin non configuré
+    let exe_dir = std::env::current_exe()
+        .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
+        .unwrap_or_default();
+    let bin = if !server_path.is_empty() && std::path::Path::new(&server_path).exists() {
+        server_path
+    } else {
+        ai::llamacpp::find_server_binary(&exe_dir)
+            .ok_or_else(|| "llama-server.exe introuvable. Placez-le dans logiciel/AI/".to_string())?
+    };
+
+    // Tuer l'ancien processus si présent
+    {
+        let mut proc = state.llamacpp_process.lock().await;
+        if let Some(mut child) = proc.take() {
+            let _ = child.kill();
+        }
+    }
+
+    let child = ai::llamacpp::start_server(&bin, &model_path, port)
+        .map_err(|e| e.to_string())?;
+
+    {
+        let mut proc = state.llamacpp_process.lock().await;
+        *proc = Some(child);
+    }
+    // Sauvegarder le chemin du modèle
+    {
+        let mut config = state.config.lock().await;
+        config.llamacpp_model_path = model_path;
+        config.llamacpp_server_path = bin;
+        let _ = config.save();
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn ai_stop_llamacpp(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    let mut proc = state.llamacpp_process.lock().await;
+    if let Some(mut child) = proc.take() {
+        child.kill().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn ai_llamacpp_status(state: tauri::State<'_, AppState>) -> Result<bool, NiTriTeError> {
+    let port = { state.config.lock().await.llamacpp_port };
+    Ok(ai::llamacpp::is_server_ready(port).await)
+}
+
+#[tauri::command]
+async fn ai_list_gguf_models(models_dir: Option<String>) -> Result<Vec<ai::llamacpp::GgufModel>, NiTriTeError> {
+    let dir = models_dir.unwrap_or_else(|| {
+        std::env::current_exe()
+            .ok().and_then(|p| p.parent().map(|d| d.join("models").to_string_lossy().into_owned()))
+            .unwrap_or_else(|| "./models".to_string())
+    });
+    Ok(ai::llamacpp::list_gguf_models(&dir))
+}
+
+#[tauri::command]
+async fn ai_find_llamacpp_server() -> Result<Option<String>, NiTriTeError> {
+    let exe_dir = std::env::current_exe()
+        .ok().and_then(|p| p.parent().map(|d| d.to_string_lossy().into_owned()))
+        .unwrap_or_default();
+    Ok(ai::llamacpp::find_server_binary(&exe_dir))
 }
 
 // === Scripts ===
@@ -2566,6 +2646,11 @@ pub fn run() {
             ai_list_models,
             ai_query,
             ai_execute_command,
+            ai_start_llamacpp,
+            ai_stop_llamacpp,
+            ai_llamacpp_status,
+            ai_list_gguf_models,
+            ai_find_llamacpp_server,
             // Scripts
             get_builtin_scripts,
             execute_script,

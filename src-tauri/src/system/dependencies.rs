@@ -50,136 +50,121 @@ fn check_ps(ps_expr: &str) -> (bool, String) {
     }
 }
 
+macro_rules! dep {
+    ($id:expr, $name:expr, $cat:expr, $desc:expr, $ok:expr, $v:expr, $wid:expr, $url:expr) => {
+        Dependency {
+            id: $id.into(), name: $name.into(), category: $cat.into(),
+            description: $desc.into(), installed: $ok, version: $v,
+            winget_id: $wid.into(), install_url: $url.into(),
+        }
+    };
+}
+
+/// Toutes les vérifications s'exécutent en parallèle via thread::scope.
+/// Réduit le temps de ~10-15s (séquentiel) à ~1-2s (parallèle).
 pub fn check_all() -> Vec<Dependency> {
-    vec![
-        // === Outils Dev ===
-        {
+    std::thread::scope(|s| {
+        // === Développement ===
+        let h_git = s.spawn(|| {
             let (ok, v) = check("git", "--version");
-            Dependency { id: "git".into(), name: "Git".into(), category: "Développement".into(),
-                description: "Gestionnaire de versions distribué".into(),
-                installed: ok, version: v, winget_id: "Git.Git".into(),
-                install_url: "https://git-scm.com/download/win".into() }
-        },
-        {
+            dep!("git","Git","Développement","Gestionnaire de versions distribué",ok,v,"Git.Git","https://git-scm.com/download/win")
+        });
+        let h_node = s.spawn(|| {
             let (ok, v) = check("node", "--version");
-            Dependency { id: "nodejs".into(), name: "Node.js".into(), category: "Développement".into(),
-                description: "Runtime JavaScript (LTS)".into(),
-                installed: ok, version: v, winget_id: "OpenJS.NodeJS.LTS".into(),
-                install_url: "https://nodejs.org".into() }
-        },
-        {
+            dep!("nodejs","Node.js","Développement","Runtime JavaScript (LTS)",ok,v,"OpenJS.NodeJS.LTS","https://nodejs.org")
+        });
+        let h_python = s.spawn(|| {
             let (ok, v) = check("python", "--version");
-            Dependency { id: "python".into(), name: "Python".into(), category: "Développement".into(),
-                description: "Langage de script Python 3".into(),
-                installed: ok, version: v, winget_id: "Python.Python.3.12".into(),
-                install_url: "https://python.org".into() }
-        },
-        {
+            dep!("python","Python","Développement","Langage de script Python 3",ok,v,"Python.Python.3.12","https://python.org")
+        });
+        let h_rust = s.spawn(|| {
             let (ok, v) = check("rustc", "--version");
-            Dependency { id: "rust".into(), name: "Rust (rustc)".into(), category: "Développement".into(),
-                description: "Compilateur Rust via rustup".into(),
-                installed: ok, version: v, winget_id: "Rustlang.Rustup".into(),
-                install_url: "https://rustup.rs".into() }
-        },
-        {
+            dep!("rust","Rust (rustc)","Développement","Compilateur Rust via rustup",ok,v,"Rustlang.Rustup","https://rustup.rs")
+        });
+        let h_vscode = s.spawn(|| {
             let (ok, v) = check("code", "--version");
-            Dependency { id: "vscode".into(), name: "Visual Studio Code".into(), category: "Développement".into(),
-                description: "Éditeur de code Microsoft".into(),
-                installed: ok, version: v.lines().next().unwrap_or("").to_string(),
-                winget_id: "Microsoft.VisualStudioCode".into(),
-                install_url: "https://code.visualstudio.com".into() }
-        },
-        {
+            let short = v.lines().next().unwrap_or("").to_string();
+            dep!("vscode","Visual Studio Code","Développement","Éditeur de code Microsoft",ok,short,"Microsoft.VisualStudioCode","https://code.visualstudio.com")
+        });
+        let h_dotnet = s.spawn(|| {
             let (ok, v) = check("dotnet", "--version");
-            Dependency { id: "dotnet".into(), name: ".NET Runtime".into(), category: "Développement".into(),
-                description: "Runtime .NET Microsoft".into(),
-                installed: ok, version: v, winget_id: "Microsoft.DotNet.Runtime.8".into(),
-                install_url: "https://dot.net".into() }
-        },
-        // === Gestionnaires de paquets ===
-        {
+            dep!("dotnet",".NET Runtime","Développement","Runtime .NET Microsoft",ok,v,"Microsoft.DotNet.Runtime.8","https://dot.net")
+        });
+
+        // === Gestionnaires ===
+        let h_winget = s.spawn(|| {
             let (ok, v) = check_ps("if (Get-Command winget -EA SilentlyContinue) { (winget --version) } else { exit 1 }");
-            Dependency { id: "winget".into(), name: "WinGet".into(), category: "Gestionnaires".into(),
-                description: "Gestionnaire de paquets Windows officiel".into(),
-                installed: ok, version: v, winget_id: String::new(),
-                install_url: "ms-windows-store://pdp/?productid=9NBLGGH4NNS1".into() }
-        },
-        {
+            dep!("winget","WinGet","Gestionnaires","Gestionnaire de paquets Windows officiel",ok,v,"","ms-windows-store://pdp/?productid=9NBLGGH4NNS1")
+        });
+        let h_scoop = s.spawn(|| {
             let (ok, v) = check_ps("if (Get-Command scoop -EA SilentlyContinue) { scoop --version 2>&1 | Select-Object -First 1 } else { exit 1 }");
-            Dependency { id: "scoop".into(), name: "Scoop".into(), category: "Gestionnaires".into(),
-                description: "Gestionnaire de paquets sans admin".into(),
-                installed: ok, version: v, winget_id: String::new(),
-                install_url: "https://scoop.sh".into() }
-        },
-        {
+            dep!("scoop","Scoop","Gestionnaires","Gestionnaire de paquets sans admin",ok,v,"","https://scoop.sh")
+        });
+        let h_choco = s.spawn(|| {
             let (ok, v) = check_ps("if (Get-Command choco -EA SilentlyContinue) { choco --version } else { exit 1 }");
-            Dependency { id: "chocolatey".into(), name: "Chocolatey".into(), category: "Gestionnaires".into(),
-                description: "Gestionnaire de paquets Windows".into(),
-                installed: ok, version: v, winget_id: String::new(),
-                install_url: "https://chocolatey.org/install".into() }
-        },
+            dep!("chocolatey","Chocolatey","Gestionnaires","Gestionnaire de paquets Windows",ok,v,"","https://chocolatey.org/install")
+        });
+
         // === Outils Système ===
-        {
+        let h_curl = s.spawn(|| {
             let (ok, v) = check("curl", "--version");
             let short = v.lines().next().unwrap_or("").to_string();
-            Dependency { id: "curl".into(), name: "curl".into(), category: "Outils Système".into(),
-                description: "Outil de transfert HTTP/S en ligne de commande".into(),
-                installed: ok, version: short, winget_id: "curl.curl".into(),
-                install_url: "https://curl.se".into() }
-        },
-        {
+            dep!("curl","curl","Outils Système","Outil de transfert HTTP/S en ligne de commande",ok,short,"curl.curl","https://curl.se")
+        });
+        let h_7zip = s.spawn(|| {
             let (ok, v) = check("7z", "i");
             let short = v.lines().next().unwrap_or("").to_string();
-            Dependency { id: "7zip".into(), name: "7-Zip".into(), category: "Outils Système".into(),
-                description: "Archiveur haute compression".into(),
-                installed: ok, version: short, winget_id: "7zip.7zip".into(),
-                install_url: "https://7-zip.org".into() }
-        },
-        {
-            let (ok, _) = check_ps("if (Test-Path 'C:\\Program Files\\Notepad++\\notepad++.exe') { (& 'C:\\Program Files\\Notepad++\\notepad++.exe' -version 2>&1) } else { exit 1 }");
-            Dependency { id: "notepadpp".into(), name: "Notepad++".into(), category: "Outils Système".into(),
-                description: "Éditeur de texte avancé".into(),
-                installed: ok, version: String::new(), winget_id: "Notepad++.Notepad++".into(),
-                install_url: "https://notepad-plus-plus.org".into() }
-        },
-        {
+            dep!("7zip","7-Zip","Outils Système","Archiveur haute compression",ok,short,"7zip.7zip","https://7-zip.org")
+        });
+        let h_npp = s.spawn(|| {
+            let (ok, _) = check_ps("if (Test-Path 'C:\\Program Files\\Notepad++\\notepad++.exe') { 'present' } else { exit 1 }");
+            dep!("notepadpp","Notepad++","Outils Système","Éditeur de texte avancé",ok,String::new(),"Notepad++.Notepad++","https://notepad-plus-plus.org")
+        });
+        let h_ssh = s.spawn(|| {
             let (ok, _) = check_ps("if (Get-Command ssh -EA SilentlyContinue) { 'present' } else { exit 1 }");
-            Dependency { id: "openssh".into(), name: "OpenSSH Client".into(), category: "Outils Système".into(),
-                description: "Client SSH intégré Windows".into(),
-                installed: ok, version: String::new(), winget_id: "Microsoft.OpenSSH.Beta".into(),
-                install_url: String::new().into() }
-        },
+            dep!("openssh","OpenSSH Client","Outils Système","Client SSH intégré Windows",ok,String::new(),"Microsoft.OpenSSH.Beta","")
+        });
+
         // === Médias & Productivité ===
-        {
+        let h_vlc = s.spawn(|| {
             let (ok, _) = check_ps("if (Test-Path 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe') { 'present' } else { exit 1 }");
-            Dependency { id: "vlc".into(), name: "VLC Media Player".into(), category: "Médias".into(),
-                description: "Lecteur multimédia universel".into(),
-                installed: ok, version: String::new(), winget_id: "VideoLAN.VLC".into(),
-                install_url: "https://www.videolan.org".into() }
-        },
-        {
+            dep!("vlc","VLC Media Player","Médias","Lecteur multimédia universel",ok,String::new(),"VideoLAN.VLC","https://www.videolan.org")
+        });
+        let h_pt = s.spawn(|| {
             let (ok, _) = check_ps("if (Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object { $_.DisplayName -like '*PowerToys*' }) { 'present' } else { exit 1 }");
-            Dependency { id: "powertoys".into(), name: "PowerToys".into(), category: "Productivité".into(),
-                description: "Suite d'utilitaires Microsoft pour power users".into(),
-                installed: ok, version: String::new(), winget_id: "Microsoft.PowerToys".into(),
-                install_url: String::new().into() }
-        },
+            dep!("powertoys","PowerToys","Productivité","Suite d'utilitaires Microsoft pour power users",ok,String::new(),"Microsoft.PowerToys","")
+        });
+
         // === Runtimes ===
-        {
+        let h_java = s.spawn(|| {
             let (ok, v) = check_ps("if (Get-Command java -EA SilentlyContinue) { java -version 2>&1 | Select-Object -First 1 } else { exit 1 }");
-            Dependency { id: "java".into(), name: "Java (JRE)".into(), category: "Runtimes".into(),
-                description: "Java Runtime Environment".into(),
-                installed: ok, version: v, winget_id: "Oracle.JavaRuntimeEnvironment".into(),
-                install_url: "https://java.com".into() }
-        },
-        {
+            dep!("java","Java (JRE)","Runtimes","Java Runtime Environment",ok,v,"Oracle.JavaRuntimeEnvironment","https://java.com")
+        });
+        let h_go = s.spawn(|| {
             let (ok, v) = check_ps("if (Get-Command go -EA SilentlyContinue) { go version } else { exit 1 }");
-            Dependency { id: "golang".into(), name: "Go".into(), category: "Runtimes".into(),
-                description: "Langage Go (runtime + compilateur)".into(),
-                installed: ok, version: v, winget_id: "GoLang.Go".into(),
-                install_url: "https://go.dev".into() }
-        },
-    ]
+            dep!("golang","Go","Runtimes","Langage Go (runtime + compilateur)",ok,v,"GoLang.Go","https://go.dev")
+        });
+
+        vec![
+            h_git.join().unwrap_or_else(|_| dep!("git","Git","Développement","",false,String::new(),"Git.Git","")),
+            h_node.join().unwrap_or_else(|_| dep!("nodejs","Node.js","Développement","",false,String::new(),"OpenJS.NodeJS.LTS","")),
+            h_python.join().unwrap_or_else(|_| dep!("python","Python","Développement","",false,String::new(),"Python.Python.3.12","")),
+            h_rust.join().unwrap_or_else(|_| dep!("rust","Rust","Développement","",false,String::new(),"Rustlang.Rustup","")),
+            h_vscode.join().unwrap_or_else(|_| dep!("vscode","VS Code","Développement","",false,String::new(),"Microsoft.VisualStudioCode","")),
+            h_dotnet.join().unwrap_or_else(|_| dep!("dotnet",".NET","Développement","",false,String::new(),"Microsoft.DotNet.Runtime.8","")),
+            h_winget.join().unwrap_or_else(|_| dep!("winget","WinGet","Gestionnaires","",false,String::new(),"","")),
+            h_scoop.join().unwrap_or_else(|_| dep!("scoop","Scoop","Gestionnaires","",false,String::new(),"","")),
+            h_choco.join().unwrap_or_else(|_| dep!("chocolatey","Chocolatey","Gestionnaires","",false,String::new(),"","")),
+            h_curl.join().unwrap_or_else(|_| dep!("curl","curl","Outils Système","",false,String::new(),"curl.curl","")),
+            h_7zip.join().unwrap_or_else(|_| dep!("7zip","7-Zip","Outils Système","",false,String::new(),"7zip.7zip","")),
+            h_npp.join().unwrap_or_else(|_| dep!("notepadpp","Notepad++","Outils Système","",false,String::new(),"Notepad++.Notepad++","")),
+            h_ssh.join().unwrap_or_else(|_| dep!("openssh","OpenSSH","Outils Système","",false,String::new(),"Microsoft.OpenSSH.Beta","")),
+            h_vlc.join().unwrap_or_else(|_| dep!("vlc","VLC","Médias","",false,String::new(),"VideoLAN.VLC","")),
+            h_pt.join().unwrap_or_else(|_| dep!("powertoys","PowerToys","Productivité","",false,String::new(),"Microsoft.PowerToys","")),
+            h_java.join().unwrap_or_else(|_| dep!("java","Java","Runtimes","",false,String::new(),"Oracle.JavaRuntimeEnvironment","")),
+            h_go.join().unwrap_or_else(|_| dep!("golang","Go","Runtimes","",false,String::new(),"GoLang.Go","")),
+        ]
+    })
 }
 
 pub fn install_via_winget(winget_id: &str) -> Result<String, String> {
