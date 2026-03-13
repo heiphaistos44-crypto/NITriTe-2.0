@@ -146,12 +146,15 @@ pub async fn download_server(
     download_with_progress(&client, &url, &zip_path, total_size, "llama-server.exe", &emit_fn).await
         .map_err(|e| format!("Téléchargement: {}", e))?;
 
-    // 4. Extraire llama-server.exe
-    let server_path = format!("{}\\llama-server.exe", dest_dir);
-    extract_from_zip(&zip_path, "llama-server.exe", &server_path)
+    // 4. Extraire TOUS les fichiers (exe + DLLs) → 100% portable, zéro dépendance
+    extract_all_zip(&zip_path, &dest_dir)
         .map_err(|e| format!("Extraction: {}", e))?;
     let _ = std::fs::remove_file(&zip_path);
 
+    let server_path = format!("{}\\llama-server.exe", dest_dir);
+    if !std::path::Path::new(&server_path).exists() {
+        return Err("llama-server.exe introuvable après extraction".into());
+    }
     emit_fn(DownloadProgress { name: "llama-server.exe".into(), downloaded_mb: 0.0, total_mb: 0.0, percent: 100, done: true, error: None });
     Ok(server_path)
 }
@@ -213,19 +216,25 @@ async fn download_with_progress(
     Ok(())
 }
 
-fn extract_from_zip(zip_path: &str, filename: &str, dest: &str) -> Result<(), String> {
+/// Extrait tous les fichiers du ZIP à plat dans dest_dir (ignore les sous-dossiers).
+/// Cela garantit que llama-server.exe trouve ses DLLs au même endroit → 100% portable.
+fn extract_all_zip(zip_path: &str, dest_dir: &str) -> Result<(), String> {
     let data = std::fs::read(zip_path).map_err(|e| e.to_string())?;
     let reader = std::io::Cursor::new(data);
     let mut archive = zip::ZipArchive::new(reader).map_err(|e| e.to_string())?;
     for i in 0..archive.len() {
         let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
-        if entry.name().ends_with(filename) {
-            let mut out = std::fs::File::create(dest).map_err(|e| e.to_string())?;
-            std::io::copy(&mut entry, &mut out).map_err(|e| e.to_string())?;
-            return Ok(());
-        }
+        if entry.is_dir() { continue; }
+        // Extraire seulement les fichiers utiles (exe, dll, so)
+        let name = entry.name().to_string();
+        let basename = name.split('/').last().unwrap_or(&name);
+        let ext = basename.rsplit('.').next().unwrap_or("").to_lowercase();
+        if !["exe", "dll", "so", "dylib"].contains(&ext.as_str()) { continue; }
+        let dest = format!("{}\\{}", dest_dir, basename);
+        let mut out = std::fs::File::create(&dest).map_err(|e| e.to_string())?;
+        std::io::copy(&mut entry, &mut out).map_err(|e| e.to_string())?;
     }
-    Err(format!("{} introuvable dans l'archive", filename))
+    Ok(())
 }
 
 // ─── Gestion du serveur ────────────────────────────────────────────────────────
