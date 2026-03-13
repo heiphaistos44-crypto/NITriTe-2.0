@@ -278,14 +278,19 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
         <!-- ── llama.cpp mode ── -->
         <template v-if="backend === 'llamacpp'">
 
-          <!-- ÉTAPE 1 : Binaire serveur -->
+          <!-- ÉTAPE 1 : Moteur IA -->
           <NCard>
             <template #header>
-              <div class="section-header"><Package :size="15" /><span>Étape 1 — Serveur</span></div>
+              <div class="section-header"><Package :size="15" /><span>Étape 1 — Moteur IA</span></div>
             </template>
             <div class="config-section">
-              <div v-if="serverBin" class="step-ok"><CheckCircle :size="14" /> {{ serverBin.split(/[\\/]/).pop() }} <span class="ok-badge">Prêt</span></div>
-              <div v-else class="step-missing"><XCircle :size="14" /> llama-server.exe introuvable</div>
+              <div class="portable-badge">
+                <CheckCircle :size="12" style="color:var(--success)" />
+                <span>100% portable — aucune installation système</span>
+              </div>
+
+              <div v-if="serverBin" class="step-ok"><CheckCircle :size="14" /> Moteur prêt <span class="ok-badge">✓ Dans le dossier app</span></div>
+              <div v-else class="step-missing"><XCircle :size="14" /> Moteur IA non téléchargé</div>
 
               <NProgress v-if="serverDlProgress && !serverDlProgress.done"
                 :value="serverDlProgress.percent" :max="100" :glow="true" style="height:6px" />
@@ -295,11 +300,12 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 
               <NButton v-if="!serverBin" variant="primary" size="sm" :disabled="downloadingServer" @click="downloadServer">
                 <NSpinner v-if="downloadingServer" :size="13" /><Download v-else :size="13" />
-                {{ downloadingServer ? "Téléchargement..." : "Installer llama-server.exe" }}
+                {{ downloadingServer ? "Téléchargement..." : "Télécharger le moteur IA" }}
               </NButton>
               <NButton v-else variant="ghost" size="sm" @click="downloadServer">
                 <RefreshCw :size="13" /> Mettre à jour
               </NButton>
+              <p class="step-note">Le moteur se télécharge dans <code>logiciel/AI/</code> — rien n'est installé sur Windows.</p>
             </div>
           </NCard>
 
@@ -486,10 +492,13 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 .config-section { display:flex; flex-direction:column; gap:10px; }
 
 /* Steps */
+.portable-badge { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--success); background:var(--success-muted); padding:5px 8px; border-radius:5px; }
 .step-ok { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--success); font-weight:500; }
 .step-missing { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--danger); }
 .ok-badge { background:var(--success-muted); color:var(--success); font-size:10px; padding:1px 6px; border-radius:4px; margin-left:4px; }
 .dl-info { font-size:11px; color:var(--text-muted); text-align:right; }
+.step-note { font-size:10px; color:var(--text-muted); line-height:1.5; margin:0; }
+.step-note code { color:var(--accent-primary); font-size:10px; }
 
 /* Catalog */
 .catalog { display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
