@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useNotificationStore } from "@/stores/notifications";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NProgress from "@/components/ui/NProgress.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NInput from "@/components/ui/NInput.vue";
 import {
@@ -24,12 +26,18 @@ interface Dependency {
   install_url: string;
 }
 
+interface DepsProgress { checked: number; total: number; item: Dependency; done: boolean; }
+
 const deps          = ref<Dependency[]>([]);
 const loading       = ref(false);
+const scanChecked   = ref(0);
+const scanTotal     = ref(17);
 const installing    = ref<string | null>(null);
 const filterText    = ref("");
 const selectedCat   = ref("Tous");
 const lastChecked   = ref<string | null>(null);
+
+let unlistenDeps: (() => void) | null = null;
 
 const categories = computed(() => {
   const cats = new Set(deps.value.map(d => d.category));
@@ -53,14 +61,27 @@ const stats = computed(() => ({
 }));
 
 async function checkAll() {
+  deps.value = [];
+  scanChecked.value = 0;
   loading.value = true;
-  try {
-    deps.value = await invoke<Dependency[]>("check_all_dependencies");
-    lastChecked.value = new Date().toLocaleTimeString("fr-FR");
-  } catch (e: any) {
-    notify.error("Erreur", String(e));
-  }
-  loading.value = false;
+
+  if (unlistenDeps) { unlistenDeps(); unlistenDeps = null; }
+  unlistenDeps = await listen<DepsProgress>("deps:progress", (ev) => {
+    const p = ev.payload;
+    scanChecked.value = p.checked;
+    scanTotal.value   = p.total;
+    // Ajouter ou mettre à jour la dépendance dans la liste
+    const idx = deps.value.findIndex(d => d.id === p.item.id);
+    if (idx >= 0) deps.value[idx] = p.item;
+    else deps.value.push(p.item);
+    if (p.done) {
+      loading.value = false;
+      lastChecked.value = new Date().toLocaleTimeString("fr-FR");
+    }
+  });
+
+  // Fire-and-forget — l'UI reste navigable
+  invoke("scan_dependencies_stream").catch(() => { loading.value = false; });
 }
 
 async function installDep(dep: Dependency) {
@@ -92,6 +113,7 @@ async function openUrl(url: string) {
 }
 
 onMounted(checkAll);
+onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
 </script>
 
 <template>
@@ -107,6 +129,14 @@ onMounted(checkAll);
         <RefreshCw v-else :size="14" />
         {{ loading ? "Vérification..." : "Tout vérifier" }}
       </NButton>
+    </div>
+
+    <!-- Progression streaming -->
+    <div v-if="loading" class="scan-progress-bar">
+      <NSpinner :size="13" />
+      <span class="scan-label">Vérification {{ scanChecked }}/{{ scanTotal }}…</span>
+      <NProgress :value="scanChecked" :max="scanTotal" size="sm" style="flex:1" />
+      <span class="scan-hint">Vous pouvez naviguer librement</span>
     </div>
 
     <!-- Stats globales -->
@@ -233,6 +263,9 @@ onMounted(checkAll);
 .page-header { display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px; }
 .page-header h1 { font-size:22px;font-weight:700; }
 .page-subtitle { color:var(--text-muted);font-size:13px;margin-top:3px; }
+.scan-progress-bar { display:flex;align-items:center;gap:10px;padding:9px 14px;background:color-mix(in srgb,var(--accent-primary) 8%,var(--bg-secondary));border:1px solid color-mix(in srgb,var(--accent-primary) 25%,var(--border));border-radius:var(--radius-md); }
+.scan-label { font-size:12px;color:var(--accent-primary);font-weight:600;white-space:nowrap; }
+.scan-hint { font-size:11px;color:var(--text-muted);white-space:nowrap; }
 
 .stats-bar { display:flex;align-items:center;gap:16px;padding:12px 16px;
   background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap; }

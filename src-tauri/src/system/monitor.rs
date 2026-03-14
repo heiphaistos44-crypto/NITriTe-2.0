@@ -100,13 +100,23 @@ pub fn start_monitoring(
         let mut prev_tx: u64 = networks.iter().map(|(_, n)| n.total_transmitted()).sum();
         let mut prev_disk_read: u64 = 0u64;
         let mut prev_disk_write: u64 = 0u64;
+        // Compteur de ticks : refresh processus tous les 5 ticks seulement
+        // (ex: interval 1s → refresh processus toutes les 5s au lieu de chaque seconde)
+        let mut tick: u8 = 0;
 
         running.store(true, Ordering::SeqCst);
 
         while running.load(Ordering::SeqCst) {
             sys.refresh_cpu_usage();
             sys.refresh_memory();
-            sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+            // Refresh processus allégé : seulement CPU/mémoire des processus existants,
+            // re-scan complet uniquement toutes les 5 itérations.
+            if tick == 0 {
+                sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+            } else {
+                sys.refresh_processes(sysinfo::ProcessesToUpdate::All, false);
+            }
+            tick = (tick + 1) % 5;
             networks.refresh();
             disks.refresh();
 

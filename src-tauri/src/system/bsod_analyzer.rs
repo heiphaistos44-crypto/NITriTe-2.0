@@ -25,7 +25,11 @@ pub struct BsodReport {
 }
 
 #[tauri::command]
-pub fn get_bsod_history() -> BsodReport {
+pub async fn get_bsod_history() -> BsodReport {
+    tokio::task::spawn_blocking(get_bsod_report).await.unwrap_or_default()
+}
+
+pub fn get_bsod_report() -> BsodReport {
     let ps = r#"
 $report = @{}
 try {

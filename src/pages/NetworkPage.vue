@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -128,7 +129,7 @@ const devConnections: Connection[] = [
 async function loadData() {
   loading.value = true;
   try {
-    overview.value = await invoke<NetworkOverview>("get_network_overview");
+    overview.value = await cachedInvoke<NetworkOverview>("get_network_overview");
     connections.value = await invoke<Connection[]>("get_connections");
   } catch {
     overview.value = devOverview;

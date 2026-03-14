@@ -79,6 +79,14 @@
                 <span class="bsod-v mono">{{ e.parameters.join(' | ') }}</span>
               </div>
             </div>
+            <!-- Suggestions de fix -->
+            <div class="bsod-fixes">
+              <div class="bsod-fixes-title"><Wrench :size="13" /> Suggestions de correction</div>
+              <div v-for="(fix, fi) in getFixSuggestions(e.bug_check_hex || e.bug_check_code)" :key="fi" class="bsod-fix-item">
+                <CheckCircle2 :size="12" style="color:var(--success);flex-shrink:0;margin-top:1px" />
+                <span>{{ fix }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -99,7 +107,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import { AlertTriangle, RefreshCw, Search, ChevronDown, BookOpen } from 'lucide-vue-next'
+import { cachedInvoke } from '@/composables/useCachedInvoke'
+import { AlertTriangle, RefreshCw, Search, ChevronDown, BookOpen, Wrench, CheckCircle2 } from 'lucide-vue-next'
 
 interface BsodEntry { timestamp: string; bug_check_code: string; bug_check_hex: string; description: string; parameters: string[]; module: string; dump_file: string; dump_size_kb: number }
 interface BsodReport { entries: BsodEntry[]; total_count: number; last_bsod: string; dump_folder: string; dump_count: number }
@@ -110,7 +119,7 @@ const descCache: Record<string, string> = {}
 
 async function load() {
   loading.value = true
-  try { report.value = await invoke<BsodReport>('get_bsod_history') }
+  try { report.value = await cachedInvoke<BsodReport>('get_bsod_history') }
   finally { loading.value = false }
 }
 function getDescSync(code: string): string {
@@ -122,6 +131,39 @@ function getDescSync(code: string): string {
 async function doLookup() {
   if (!lookupCode.value.trim()) return
   lookupResult.value = await invoke<string>('get_bugcheck_description', { code: lookupCode.value.trim() })
+}
+
+// ── KB de fixes par code BSOD ──────────────────────────────────────────
+const bsodFixes: Record<string, string[]> = {
+  '0x0000003B': ['Mettre à jour tous les pilotes (GPU, réseau, son)', 'Analyser la RAM avec Windows Memory Diagnostic', 'Lancer SFC /scannow + DISM /Online /Cleanup-Image /RestoreHealth', 'Désinstaller les antivirus tiers récemment installés'],
+  '0x0000007E': ['Vérifier les pilotes récemment installés dans le Gestionnaire de périphériques', 'Démarrer en mode sans échec et désinstaller les pilotes suspects', 'Analyser la mémoire RAM', 'Mettre à jour le BIOS'],
+  '0x00000124': ['Problème matériel (CPU/GPU surchauffe) — vérifier les températures', 'Tester la stabilité avec Prime95 ou OCCT', 'Mettre à jour le BIOS', 'Vérifier le refroidissement (pâte thermique, ventilateurs)'],
+  '0x0000009F': ['Mettre à jour les pilotes d\'alimentation', 'Désactiver le démarrage rapide Windows', 'Modifier le plan d\'alimentation → Performance élevée', 'Mettre à jour le BIOS et les pilotes chipset'],
+  '0x00000050': ['Analyser la RAM avec Memtest86 (test long)', 'Désinstaller les logiciels installés récemment', 'Vérifier la compatibilité RAM/XMP dans le BIOS', 'Réinstaller Windows si le problème persiste'],
+  '0x00000116': ['Mettre à jour les pilotes GPU (désinstaller proprement avec DDU)', 'Réinstaller les pilotes depuis le site officiel', 'Vérifier la température GPU (surchauffe ?)', 'Tester avec le GPU intégré si disponible'],
+  '0x0000001E': ['Mettre à jour les pilotes', 'Analyser avec SFC /scannow', 'Désactiver l\'overclocking CPU/RAM', 'Vérifier les mises à jour Windows'],
+  '0x00000133': ['Mettre à jour les pilotes chipset', 'Désactiver temporairement l\'antivirus', 'Vérifier les erreurs disque avec chkdsk /f', 'Réduire les timings RAM dans le BIOS'],
+  '0xC0000005': ['Lancer SFC /scannow et DISM', 'Analyser la RAM', 'Vérifier l\'espace disque (min 10% libre)', 'Mettre à jour les pilotes et Windows Update'],
+  '0x00000101': ['Vérifier la stabilité CPU (surchauffe, overclocking)', 'Réinitialiser l\'overclocking à valeurs d\'usine', 'Mettre à jour le BIOS', 'Vérifier la tension CPU dans le BIOS'],
+  '0x0000007A': ['Vérifier les erreurs disque avec chkdsk /r /f', 'Vérifier la santé du disque (SMART) dans NiTriTe → Stockage', 'Remplacer le disque si santé critique', 'Lancer DISM /Online /Cleanup-Image /RestoreHealth'],
+  '0x00000139': ['Mettre à jour tous les pilotes', 'Analyser la RAM', 'Désactiver l\'overclocking', 'Lancer SFC /scannow'],
+}
+
+function getFixSuggestions(code: string): string[] {
+  if (!code) return []
+  const upper = code.toUpperCase().replace('0X', '0x')
+  if (bsodFixes[upper]) return bsodFixes[upper]
+  const stripped = upper.replace('0x', '').replace(/^0+/, '').toUpperCase()
+  for (const [k, v] of Object.entries(bsodFixes)) {
+    if (k.replace('0x', '').replace(/^0+/, '').toUpperCase() === stripped) return v
+  }
+  return [
+    'Lancer SFC /scannow pour réparer les fichiers système',
+    'Analyser la RAM avec Windows Memory Diagnostic',
+    'Mettre à jour tous les pilotes depuis le Gestionnaire de périphériques',
+    'Installer les dernières mises à jour Windows Update',
+    'Vérifier les températures CPU/GPU sous charge',
+  ]
 }
 </script>
 
@@ -193,4 +235,9 @@ async function doLookup() {
 .bsod-loading { display: flex; align-items: center; gap: 10px; padding: 20px; font-size: 13px; color: var(--text-muted); }
 .bsod-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.15); border-top-color: #ef4444; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Fixes */
+.bsod-fixes { background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.2); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.bsod-fixes-title { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11px; opacity: .8; margin-bottom: 4px; text-transform: uppercase; color: var(--success); }
+.bsod-fix-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
 </style>

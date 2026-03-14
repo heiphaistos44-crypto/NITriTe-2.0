@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke } from "@/composables/useCachedInvoke";
 import { Key, Shield, ShieldCheck, ShieldOff, ExternalLink, AlertTriangle, CheckCircle } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -19,7 +20,7 @@ const activating = ref(false);
 const statusMsg = ref("");
 
 onMounted(async () => {
-  try { licenseInfo.value = await invoke<WinLicense>("get_windows_license"); }
+  try { licenseInfo.value = await cachedInvoke<WinLicense>("get_windows_license"); }
   catch { /* silencieux */ }
   loading.value = false;
 });

@@ -1,354 +1,46 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, markRaw } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import NCard from "@/components/ui/NCard.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
+import { knowledgeBase } from "@/data/knowledgeBase";
+import type { KBCategory } from "@/data/knowledgeBase";
 import {
   BookOpen, Wifi, Zap, Shield, HardDrive,
   Monitor, Volume2, Usb, ChevronDown, ChevronRight,
   Terminal, Copy, AlertTriangle, Settings, Cpu,
+  CheckCircle,
 } from "lucide-vue-next";
 
-const search = ref("");
-const expandedCategory = ref<string | null>(null);
-const expandedItem = ref<string | null>(null);
+// Map icon name → composant
+const iconMap: Record<string, any> = {
+  Wifi:          markRaw(Wifi),
+  Zap:           markRaw(Zap),
+  Shield:        markRaw(Shield),
+  HardDrive:     markRaw(HardDrive),
+  Monitor:       markRaw(Monitor),
+  Volume2:       markRaw(Volume2),
+  Usb:           markRaw(Usb),
+  AlertTriangle: markRaw(AlertTriangle),
+  Settings:      markRaw(Settings),
+  Cpu:           markRaw(Cpu),
+  Terminal:      markRaw(Terminal),
+  BookOpen:      markRaw(BookOpen),
+  CheckCircle:   markRaw(CheckCircle),
+};
 
-interface KBItem {
-  title: string;
-  symptoms: string;
-  solution: string[];
-  command?: string;
-}
+// Enrichissement : ajouter les composants icône à la volée
+const categories = computed<(KBCategory & { iconComponent: any })[]>(() =>
+  knowledgeBase.map((cat) => ({
+    ...cat,
+    iconComponent: iconMap[cat.icon] ?? iconMap.Settings,
+  }))
+);
 
-interface KBCategory {
-  id: string;
-  label: string;
-  icon: any;
-  items: KBItem[];
-}
-
-const categories: KBCategory[] = [
-  {
-    id: "reseau", label: "Reseau", icon: Wifi,
-    items: [
-      {
-        title: "Pas de connexion Internet",
-        symptoms: "Pages web inaccessibles, icone reseau avec triangle jaune",
-        solution: [
-          "Verifier le cable Ethernet ou la connexion Wi-Fi",
-          "Redemarrer le routeur/modem (attendre 30s)",
-          "Vider le cache DNS : ipconfig /flushdns",
-          "Reinitialiser la pile TCP/IP : netsh int ip reset",
-          "Reinitialiser Winsock : netsh winsock reset",
-        ],
-        command: "ipconfig /flushdns && netsh int ip reset && netsh winsock reset",
-      },
-      {
-        title: "Wi-Fi deconnecte frequemment",
-        symptoms: "Connexion instable, deconnexions repetees",
-        solution: [
-          "Mettre a jour le pilote Wi-Fi via le Gestionnaire de peripheriques",
-          "Desactiver la gestion d'alimentation de l'adaptateur Wi-Fi",
-          "Changer le canal Wi-Fi sur le routeur (eviter les canaux encombres)",
-          "Verifier les interferences (micro-ondes, Bluetooth)",
-        ],
-      },
-      {
-        title: "DNS lent ou ne resout pas",
-        symptoms: "Sites longs a charger, erreur DNS_PROBE_FINISHED_NXDOMAIN",
-        solution: [
-          "Changer les DNS : utiliser 8.8.8.8 / 8.8.4.4 (Google) ou 1.1.1.1 (Cloudflare)",
-          "Vider le cache DNS : ipconfig /flushdns",
-          "Verifier le fichier hosts : C:\\Windows\\System32\\drivers\\etc\\hosts",
-        ],
-        command: "ipconfig /flushdns",
-      },
-    ],
-  },
-  {
-    id: "performance", label: "Performance", icon: Zap,
-    items: [
-      {
-        title: "PC lent au demarrage",
-        symptoms: "Demarrage > 2 minutes, bureau long a apparaitre",
-        solution: [
-          "Desactiver les programmes au demarrage (Gestionnaire des taches > Demarrage)",
-          "Verifier l'espace disque (> 15% libre minimum)",
-          "Lancer un nettoyage de disque : cleanmgr",
-          "Verifier les malwares avec Windows Defender",
-          "Envisager un SSD si disque dur mecanique",
-        ],
-        command: "cleanmgr",
-      },
-      {
-        title: "Utilisation CPU a 100%",
-        symptoms: "Ventilateurs bruyants, PC tres lent, taches ne repondent plus",
-        solution: [
-          "Ouvrir le Gestionnaire des taches (Ctrl+Shift+Echap)",
-          "Identifier le processus consommateur",
-          "Si svchost.exe : verifier Windows Update",
-          "Si SearchIndexer : reconstruire l'index de recherche",
-          "Scanner les malwares",
-        ],
-        command: "tasklist /FI \"STATUS eq running\" /SOR MEMUSAGE",
-      },
-      {
-        title: "Memoire RAM saturee",
-        symptoms: "Message 'memoire insuffisante', ralentissements",
-        solution: [
-          "Fermer les onglets de navigateur inutiles",
-          "Verifier les fuites memoire dans le Gestionnaire des taches",
-          "Augmenter la memoire virtuelle (Panneau de config > Systeme > Parametres avances)",
-          "Envisager d'ajouter de la RAM physique",
-        ],
-      },
-    ],
-  },
-  {
-    id: "securite", label: "Securite", icon: Shield,
-    items: [
-      {
-        title: "Windows Defender desactive",
-        symptoms: "Icone bouclier avec croix rouge, notifications de securite",
-        solution: [
-          "Ouvrir Securite Windows (ms-settings:windowsdefender)",
-          "Activer la protection en temps reel",
-          "Verifier qu'aucun antivirus tiers ne bloque Defender",
-          "Lancer : sc start WinDefend",
-        ],
-        command: "sc query WinDefend",
-      },
-      {
-        title: "Suspicion de malware",
-        symptoms: "Pop-ups, redirections web, programmes inconnus, lenteur soudaine",
-        solution: [
-          "Lancer un scan complet Windows Defender",
-          "Demarrer en mode sans echec et scanner",
-          "Verifier les programmes installes recemment",
-          "Verifier les extensions de navigateur",
-          "Reinitialiser les navigateurs si necessaire",
-        ],
-      },
-    ],
-  },
-  {
-    id: "stockage", label: "Stockage", icon: HardDrive,
-    items: [
-      {
-        title: "Disque plein",
-        symptoms: "Barre d'espace disque rouge, impossible de sauvegarder",
-        solution: [
-          "Lancer le nettoyage de disque : cleanmgr /d C:",
-          "Vider la corbeille",
-          "Supprimer les fichiers temporaires : del /q /f /s %TEMP%\\*",
-          "Deplacer les gros fichiers sur un autre disque",
-          "Desinstaller les programmes inutilises",
-        ],
-        command: "cleanmgr /d C:",
-      },
-      {
-        title: "Disque dur bruyant ou lent",
-        symptoms: "Clics, grattements, temps d'acces eleves",
-        solution: [
-          "Sauvegarder immediatement les donnees importantes",
-          "Lancer un diagnostic : wmic diskdrive get status",
-          "Verifier avec chkdsk /f /r (au redemarrage)",
-          "Envisager le remplacement par un SSD",
-        ],
-        command: "wmic diskdrive get status",
-      },
-    ],
-  },
-  {
-    id: "affichage", label: "Affichage", icon: Monitor,
-    items: [
-      {
-        title: "Ecran noir au demarrage",
-        symptoms: "PC demarre mais ecran reste noir, curseur visible ou non",
-        solution: [
-          "Essayer Ctrl+Alt+Suppr puis Gestionnaire des taches",
-          "Tester avec un autre cable/port video",
-          "Demarrer en mode sans echec (F8 ou Shift+Redemarrer)",
-          "Mettre a jour le pilote graphique",
-          "Reinitialiser l'affichage : Win+Ctrl+Shift+B",
-        ],
-      },
-      {
-        title: "Resolution incorrecte",
-        symptoms: "Image floue, elements trop grands ou trop petits",
-        solution: [
-          "Clic droit bureau > Parametres d'affichage",
-          "Selectionner la resolution recommandee",
-          "Mettre a jour le pilote graphique",
-          "Verifier le cable (HDMI/DP pour les hautes resolutions)",
-        ],
-      },
-    ],
-  },
-  {
-    id: "audio", label: "Audio", icon: Volume2,
-    items: [
-      {
-        title: "Pas de son",
-        symptoms: "Icone son avec croix, aucun son des haut-parleurs",
-        solution: [
-          "Verifier le volume et le peripherique de sortie",
-          "Clic droit icone son > Ouvrir les parametres de son",
-          "Lancer l'utilitaire de resolution des problemes audio",
-          "Reinstaller le pilote audio : Gestionnaire de peripheriques > Controleurs audio",
-          "Redemarrer le service audio : net stop audiosrv && net start audiosrv",
-        ],
-        command: "net stop audiosrv && net start audiosrv",
-      },
-    ],
-  },
-  {
-    id: "peripheriques", label: "Peripheriques", icon: Usb,
-    items: [
-      {
-        title: "Peripherique USB non reconnu",
-        symptoms: "Message 'peripherique USB non reconnu', pas de detection",
-        solution: [
-          "Essayer un autre port USB",
-          "Redemarrer le PC",
-          "Mettre a jour les pilotes USB : Gestionnaire de peripheriques > Controleurs USB",
-          "Desinstaller le peripherique dans le Gestionnaire puis rebrancher",
-          "Verifier l'alimentation USB (hub alimente si necessaire)",
-        ],
-      },
-      {
-        title: "Imprimante ne fonctionne pas",
-        symptoms: "Impression bloquee, imprimante hors ligne",
-        solution: [
-          "Verifier la connexion (USB/Wi-Fi)",
-          "Redemarrer le spooler d'impression",
-          "Supprimer et rajouter l'imprimante",
-          "Mettre a jour les pilotes depuis le site du fabricant",
-        ],
-        command: "net stop spooler && net start spooler",
-      },
-    ],
-  },
-  {
-    id: "bsod", label: "Ecran Bleu (BSOD)", icon: AlertTriangle,
-    items: [
-      {
-        title: "BSOD CRITICAL_PROCESS_DIED",
-        symptoms: "Arret brutal avec code 0x000000EF, redemarrage automatique",
-        solution: [
-          "Lancer SFC : sfc /scannow (en administrateur)",
-          "Verifier la RAM avec Windows Memory Diagnostic",
-          "Mettre a jour tous les pilotes, notamment chipset et stockage",
-          "Verifier les logs : eventvwr > Journaux Windows > Systeme",
-          "Si recent : restaurer un point de restauration anterieur",
-        ],
-        command: "sfc /scannow",
-      },
-      {
-        title: "BSOD MEMORY_MANAGEMENT",
-        symptoms: "Code 0x0000001A, souvent apres ajout de RAM",
-        solution: [
-          "Lancer Windows Memory Diagnostic : mdsched.exe",
-          "Tester les barrettes RAM une par une",
-          "Verifier les slots RAM (nettoyage contacts)",
-          "Mettre a jour les pilotes graphiques et chipset",
-          "Verifier la temperature CPU/RAM (HWiNFO64)",
-        ],
-        command: "mdsched.exe",
-      },
-      {
-        title: "BSOD DRIVER_IRQL_NOT_LESS_OR_EQUAL",
-        symptoms: "Code 0x000000D1, souvent lie a un pilote defaillant",
-        solution: [
-          "Identifier le pilote fautif dans le dump : %SystemRoot%\\Minidump",
-          "Mettre a jour ou reinstaller le pilote incrimine",
-          "Desinstaller les logiciels installes recemment",
-          "Utiliser l'outil Driver Verifier (verifier.exe) pour diagnostiquer",
-          "Verifier avec WhoCrashed ou WinDbg",
-        ],
-        command: "verifier.exe",
-      },
-    ],
-  },
-  {
-    id: "registre", label: "Registre Windows", icon: Settings,
-    items: [
-      {
-        title: "Nettoyer les entrees Autorun suspectes",
-        symptoms: "Programmes inconnus au demarrage, lenteur, comportement anormal",
-        solution: [
-          "Ouvrir regedit.exe en tant qu'administrateur",
-          "Naviguer vers : HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-          "Verifier chaque entree — supprimer les entrees inconnues",
-          "Faire de meme dans : HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-          "Utiliser Autoruns64 de Sysinternals pour une vue complete",
-        ],
-        command: "regedit.exe",
-      },
-      {
-        title: "Reparer les associations de fichiers",
-        symptoms: "Double-clic ne fonctionne plus, mauvais programme par defaut",
-        solution: [
-          "Ouvrir Parametres > Applications > Applications par defaut",
-          "Reinitialiser via PowerShell : cmd /c assoc .ext=AppName",
-          "Ou reparer via le registre : HKCR\\.ext",
-          "En dernier recours : Reparer Windows avec DISM",
-        ],
-        command: "dism /online /cleanup-image /restorehealth",
-      },
-      {
-        title: "Erreurs de registre orphelines",
-        symptoms: "Programmes desinstalles laissant des traces, erreurs au demarrage",
-        solution: [
-          "Sauvegarder le registre : regedit > Fichier > Exporter",
-          "Chercher dans : HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-          "Supprimer les cles des programmes desinstalles",
-          "Utiliser BCUninstaller pour nettoyer les residus proprement",
-          "Eviter les 'registry cleaners' tiers qui peuvent causer plus de problemes",
-        ],
-      },
-    ],
-  },
-  {
-    id: "demarrage", label: "Demarrage Windows", icon: Cpu,
-    items: [
-      {
-        title: "Windows ne demarre plus",
-        symptoms: "Ecran noir, boucle de reparation, impossible d'acceder au bureau",
-        solution: [
-          "Demarrer sur un support USB Windows 10/11",
-          "Aller dans Depanner > Options avancees > Reparer le demarrage",
-          "Ou utiliser : bootrec /fixmbr && bootrec /fixboot && bootrec /rebuildbcd",
-          "Si partition corrompue : chkdsk C: /f /r depuis l'invite de commandes",
-          "En dernier recours : reinstallation de Windows en gardant les donnees",
-        ],
-        command: "bootrec /rebuildbcd",
-      },
-      {
-        title: "Boucle de reparation automatique",
-        symptoms: "Windows tente de se reparer en boucle au demarrage",
-        solution: [
-          "Appuyer sur F8 ou Shift+F8 pour acceder aux options avancees",
-          "Choisir 'Desactiver la reparation automatique au demarrage'",
-          "Depuis WinRE : bcdedit /set {default} recoveryenabled No",
-          "Puis lancer SFC et DISM pour reparer les fichiers systeme",
-          "Verifier l'integrite du disque avec chkdsk",
-        ],
-        command: "bcdedit /set {default} recoveryenabled No",
-      },
-      {
-        title: "Demarrage dual-boot perdu",
-        symptoms: "Seul Windows apparait, Linux ou ancien OS inaccessible",
-        solution: [
-          "Verifier que la partition existe toujours via Disk Management",
-          "Reparer le grub Linux depuis un live USB",
-          "Ou reconstruire le BCD Windows : bootrec /rebuildbcd",
-          "Utiliser EasyBCD pour gerer le menu de demarrage",
-        ],
-      },
-    ],
-  },
-];
+const search             = ref("");
+const expandedCategory   = ref<string | null>(null);
+const expandedItem       = ref<string | null>(null);
+const copiedCmd          = ref<string | null>(null);
 
 function toggleCategory(id: string) {
   expandedCategory.value = expandedCategory.value === id ? null : id;
@@ -360,89 +52,136 @@ function toggleItem(title: string) {
 }
 
 const filteredCategories = computed(() => {
-  if (!search.value) return categories;
+  const cats = categories.value;
+  if (!search.value.trim()) return cats;
   const q = search.value.toLowerCase();
-  return categories
+  return cats
     .map((cat) => ({
       ...cat,
       items: cat.items.filter(
         (item) =>
           item.title.toLowerCase().includes(q) ||
-          item.symptoms.toLowerCase().includes(q) ||
-          item.solution.some((s) => s.toLowerCase().includes(q))
+          (item.symptoms ?? "").toLowerCase().includes(q) ||
+          (item.solution ?? []).some((s) => s.toLowerCase().includes(q)) ||
+          (item.code ?? "").toLowerCase().includes(q)
       ),
     }))
     .filter((cat) => cat.items.length > 0);
 });
 
+// Compteurs globaux
+const totalCategories = computed(() => knowledgeBase.length);
+const totalArticles   = computed(() => knowledgeBase.reduce((n, c) => n + c.items.length, 0));
+
 async function runCommand(cmd: string) {
   try {
     await invoke("run_system_command", { cmd: "cmd", args: ["/C", cmd] });
-  } catch {
-    // dev
-  }
+  } catch { /* dev */ }
 }
 
-async function copyCommand(cmd: string) {
+async function copyToClipboard(text: string) {
   try {
-    await navigator.clipboard.writeText(cmd);
+    await navigator.clipboard.writeText(text);
+    copiedCmd.value = text;
+    setTimeout(() => { copiedCmd.value = null; }, 2000);
   } catch { /* dev */ }
 }
 </script>
 
 <template>
   <div class="kb-page">
+    <!-- Header -->
     <div class="page-header">
-      <h1><BookOpen :size="22" /> Base de Connaissances</h1>
-      <p class="page-subtitle">Solutions aux problemes courants</p>
+      <div>
+        <h1><BookOpen :size="22" /> Base de Connaissances</h1>
+        <p class="page-subtitle">{{ totalCategories }} catégories · {{ totalArticles }} articles · Solutions aux problèmes courants</p>
+      </div>
     </div>
 
-    <NSearchBar v-model="search" placeholder="Rechercher un probleme..." />
+    <!-- Recherche -->
+    <NSearchBar v-model="search" placeholder="Rechercher un problème, une commande, un symptôme…" />
 
+    <!-- Grille de catégories -->
     <div class="categories">
       <div v-for="cat in filteredCategories" :key="cat.id" class="category">
+        <!-- En-tête catégorie -->
         <button class="cat-header" @click="toggleCategory(cat.id)">
-          <component :is="cat.icon" :size="18" style="color: var(--accent-primary)" />
+          <component :is="cat.iconComponent" :size="18" class="cat-icon" />
           <span class="cat-label">{{ cat.label }}</span>
-          <span class="cat-count">{{ cat.items.length }} articles</span>
-          <ChevronDown v-if="expandedCategory === cat.id" :size="16" />
-          <ChevronRight v-else :size="16" />
+          <span class="cat-count">{{ cat.items.length }} article{{ cat.items.length > 1 ? 's' : '' }}</span>
+          <ChevronDown v-if="expandedCategory === cat.id" :size="16" class="chevron" />
+          <ChevronRight v-else :size="16" class="chevron" />
         </button>
 
+        <!-- Liste des articles -->
         <div v-if="expandedCategory === cat.id" class="cat-items">
           <div v-for="item in cat.items" :key="item.title" class="kb-item">
+            <!-- En-tête article -->
             <button class="item-header" @click="toggleItem(item.title)">
               <span class="item-title">{{ item.title }}</span>
               <ChevronDown v-if="expandedItem === item.title" :size="14" />
               <ChevronRight v-else :size="14" />
             </button>
 
+            <!-- Contenu article -->
             <div v-if="expandedItem === item.title" class="item-content">
-              <div class="symptoms">
-                <strong>Symptomes :</strong> {{ item.symptoms }}
+              <!-- Symptômes -->
+              <div v-if="item.symptoms" class="symptoms">
+                <AlertTriangle :size="13" style="color: var(--warning); flex-shrink:0" />
+                <span><strong>Symptômes :</strong> {{ item.symptoms }}</span>
               </div>
+
+              <!-- Solutions -->
               <div class="solution">
                 <strong>Solution :</strong>
                 <ol>
                   <li v-for="(step, i) in item.solution" :key="i">{{ step }}</li>
                 </ol>
               </div>
+
+              <!-- Bloc code -->
+              <div v-if="item.code" class="code-block">
+                <div class="code-header">
+                  <Terminal :size="12" />
+                  <span>Script / Commandes</span>
+                  <button class="copy-btn-sm" @click="copyToClipboard(item.code!)" title="Copier le code">
+                    <Copy :size="11" />
+                    {{ copiedCmd === item.code ? 'Copié !' : 'Copier' }}
+                  </button>
+                </div>
+                <pre class="code-content">{{ item.code }}</pre>
+              </div>
+
+              <!-- Commande rapide -->
               <div v-if="item.command" class="command-block">
                 <code>{{ item.command }}</code>
-                <button class="copy-btn" @click="copyCommand(item.command!)" title="Copier">
+                <button
+                  class="copy-btn"
+                  :class="{ copied: copiedCmd === item.command }"
+                  @click="copyToClipboard(item.command!)"
+                  title="Copier"
+                >
                   <Copy :size="12" />
                 </button>
                 <button class="run-btn" @click="runCommand(item.command!)">
-                  <Terminal :size="12" /> Executer
+                  <Terminal :size="12" /> Exécuter
                 </button>
+              </div>
+
+              <!-- Note -->
+              <div v-if="item.note" class="note-block">
+                💡 {{ item.note }}
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Aucun résultat -->
       <div v-if="filteredCategories.length === 0" class="empty-state">
-        Aucun resultat pour "{{ search }}"
+        <BookOpen :size="36" style="opacity: 0.2" />
+        <p>Aucun résultat pour <strong>"{{ search }}"</strong></p>
+        <p class="empty-hint">Essayez un terme plus général (ex: "réseau", "lent", "BSOD")</p>
       </div>
     </div>
   </div>
@@ -454,6 +193,7 @@ async function copyCommand(cmd: string) {
   flex-direction: column;
   gap: 16px;
 }
+
 .page-header h1 {
   font-size: 22px;
   font-weight: 700;
@@ -461,22 +201,25 @@ async function copyCommand(cmd: string) {
   align-items: center;
   gap: 10px;
 }
+
 .page-subtitle {
   color: var(--text-muted);
   font-size: 13px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
-.categories {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+
+/* ── Catégories ── */
+.categories { display: flex; flex-direction: column; gap: 6px; }
+
 .category {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-secondary);
+  transition: border-color 0.15s;
 }
+.category:has(.cat-header:hover) { border-color: var(--border-hover); }
+
 .cat-header {
   display: flex;
   align-items: center;
@@ -493,34 +236,47 @@ async function copyCommand(cmd: string) {
   transition: background 0.15s;
 }
 .cat-header:hover { background: var(--bg-tertiary); }
+
+.cat-icon { color: var(--accent-primary); flex-shrink: 0; }
 .cat-count {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 400;
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
 }
-.cat-items {
-  border-top: 1px solid var(--border);
-}
-.kb-item {
-  border-bottom: 1px solid var(--border);
-}
+.chevron { color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Articles ── */
+.cat-items { border-top: 1px solid var(--border); }
+
+.kb-item { border-bottom: 1px solid var(--border); }
 .kb-item:last-child { border-bottom: none; }
+
 .item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 12px 16px 12px 44px;
+  padding: 11px 16px 11px 44px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
   color: var(--text-secondary);
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+  gap: 8px;
 }
 .item-header:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+.item-title { flex: 1; text-align: left; }
+
+/* ── Contenu ── */
 .item-content {
   padding: 0 16px 16px 44px;
   font-size: 13px;
@@ -528,38 +284,115 @@ async function copyCommand(cmd: string) {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  animation: fade-in-up 200ms ease forwards;
 }
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .symptoms {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 8px 12px;
-  background: var(--bg-tertiary);
+  background: rgba(234, 179, 8, 0.07);
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--warning);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
+
 .solution ol {
   margin: 6px 0 0 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  line-height: 1.5;
 }
+
+/* ── Bloc code (scripts multi-lignes) ── */
+.code-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.copy-btn-sm {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  transition: all 0.15s;
+}
+.copy-btn-sm:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.code-content {
+  margin: 0;
+  padding: 12px 14px;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* ── Commande rapide ── */
 .command-block {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 12px;
   background: var(--bg-primary);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 .command-block code {
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent-primary);
   flex: 1;
+  min-width: 0;
+  word-break: break-all;
 }
+.copy-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.copy-btn:hover, .copy-btn.copied { border-color: var(--accent-primary); color: var(--accent-primary); }
+
 .run-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: flex; align-items: center; gap: 4px;
   padding: 4px 10px;
   border: 1px solid var(--accent-primary);
   border-radius: var(--radius-sm);
@@ -569,20 +402,30 @@ async function copyCommand(cmd: string) {
   font-family: inherit;
   font-size: 11px;
   transition: all 0.15s;
+  flex-shrink: 0;
 }
 .run-btn:hover { background: var(--accent-primary); color: #fff; }
-.copy-btn {
-  display: flex; align-items: center; justify-content: center;
-  padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--bg-tertiary); color: var(--text-muted);
-  cursor: pointer; transition: all 0.15s;
+
+/* ── Note ── */
+.note-block {
+  padding: 8px 12px;
+  background: rgba(249, 115, 22, 0.07);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
-.copy-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-.item-title { text-align: left; font-size: 13px; }
+
+/* ── État vide ── */
 .empty-state {
-  text-align: center;
-  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px;
   color: var(--text-muted);
   font-size: 14px;
+  text-align: center;
 }
+.empty-hint { font-size: 12px; color: var(--text-muted); opacity: 0.7; }
 </style>

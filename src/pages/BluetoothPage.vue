@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -40,7 +41,7 @@ function deviceIcon(cat: string) {
 async function load() {
   loading.value = true;
   try {
-    report.value = await invoke<BluetoothReport>("get_bluetooth_info");
+    report.value = await cachedInvoke<BluetoothReport>("get_bluetooth_info");
   } catch (e: any) {
     notify.error("Erreur Bluetooth", String(e));
   }

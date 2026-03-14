@@ -8,22 +8,24 @@ const diskUsage = ref(0);
 const networkDown = ref(0);
 
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
+let unlistenMonitor: (() => void) | null = null;
 
 onMounted(async () => {
   try {
     const { listen } = await import("@tauri-apps/api/event");
-    await listen("system-monitor", (event: any) => {
+    // Stocker le unlisten pour nettoyage propre
+    unlistenMonitor = await listen("system-monitor", (event: any) => {
       const data = event.payload;
-      cpuUsage.value = data.cpu_percent ?? 0;
-      ramUsage.value = data.ram_percent ?? 0;
-      diskUsage.value = data.disk_percent ?? 0;
+      cpuUsage.value   = data.cpu_percent      ?? 0;
+      ramUsage.value   = data.ram_percent       ?? 0;
+      diskUsage.value  = data.disk_percent      ?? 0;
       networkDown.value = data.network_down_kbs ?? 0;
     });
   } catch {
     monitorInterval = setInterval(() => {
-      cpuUsage.value = Math.round(10 + Math.random() * 40);
-      ramUsage.value = Math.round(30 + Math.random() * 30);
-      diskUsage.value = Math.round(40 + Math.random() * 20);
+      cpuUsage.value    = Math.round(10 + Math.random() * 40);
+      ramUsage.value    = Math.round(30 + Math.random() * 30);
+      diskUsage.value   = Math.round(40 + Math.random() * 20);
       networkDown.value = Math.round(Math.random() * 500);
     }, 2000);
   }
@@ -31,6 +33,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (monitorInterval) clearInterval(monitorInterval);
+  if (unlistenMonitor) unlistenMonitor();
 });
 
 function statusColor(value: number): string {

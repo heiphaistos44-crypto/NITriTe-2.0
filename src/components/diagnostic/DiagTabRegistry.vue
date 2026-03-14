@@ -2,8 +2,10 @@
 import { ref, onMounted, computed } from "vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
+import NModal from "@/components/ui/NModal.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
-import { Database, AlertTriangle, CheckCircle, Key } from "lucide-vue-next";
+import { Database, AlertTriangle, CheckCircle, Key, FolderOpen, ChevronRight, Edit2, Trash2, RefreshCw } from "lucide-vue-next";
 
 interface RegEntry {
   hive: string; key: string; name: string; value: string; suspicious: boolean;
@@ -30,12 +32,187 @@ const allRunEntries = computed(() => {
   if (!data.value) return [];
   return [...(data.value.run_hklm || []), ...(data.value.run_hkcu || []), ...(data.value.run_once || [])];
 });
+
+// ── Navigateur de registre ────────────────────────────────────────────────────
+const activePanel = ref<"security" | "browser">("security");
+
+const ROOT_HIVES = ["HKEY_LOCAL_MACHINE", "HKEY_CURRENT_USER", "HKEY_CLASSES_ROOT", "HKEY_USERS", "HKEY_CURRENT_CONFIG"];
+
+interface RegValue { name: string; kind: string; data: string; }
+interface RegBrowseResult { path: string; subkeys: string[]; values: RegValue[]; error?: string; }
+
+const browsePath  = ref("HKEY_LOCAL_MACHINE");
+const browseInput = ref("HKEY_LOCAL_MACHINE");
+const browsing    = ref(false);
+const browseResult = ref<RegBrowseResult | null>(null);
+const breadcrumb  = computed(() => {
+  const parts = browsePath.value.replace(/\\/g, "/").split("/").filter(Boolean);
+  const crumbs = [];
+  let acc = "";
+  for (const p of parts) {
+    acc = acc ? `${acc}\\${p}` : p;
+    crumbs.push({ label: p, path: acc });
+  }
+  return crumbs;
+});
+
+async function browseTo(path: string) {
+  browsePath.value = path;
+  browseInput.value = path;
+  browsing.value = true;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    browseResult.value = await invoke<RegBrowseResult>("registry_browse", { path });
+  } catch (e: any) {
+    browseResult.value = { path, subkeys: [], values: [], error: String(e) };
+  }
+  browsing.value = false;
+}
+
+function openSubkey(name: string) {
+  browseTo(`${browsePath.value}\\${name}`);
+}
+
+// Modal édition
+const editModal  = ref(false);
+const editName   = ref("");
+const editData   = ref("");
+const editSaving = ref(false);
+
+function startEdit(v: RegValue) {
+  editName.value = v.name;
+  editData.value = v.data;
+  editModal.value = true;
+}
+
+async function saveEdit() {
+  editSaving.value = true;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("registry_set_value", { path: browsePath.value, name: editName.value, data: editData.value });
+    editModal.value = false;
+    await browseTo(browsePath.value);
+  } catch (e: any) { alert(String(e)); }
+  editSaving.value = false;
+}
+
+async function deleteValue(name: string) {
+  if (!confirm(`Supprimer la valeur "${name}" ?`)) return;
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("registry_delete_value", { path: browsePath.value, name });
+    await browseTo(browsePath.value);
+  } catch (e: any) { alert(String(e)); }
+}
+
+function kindVariant(kind: string): "info" | "warning" | "success" | "neutral" {
+  if (kind === "String" || kind === "ExpandString") return "info";
+  if (kind === "DWord" || kind === "QWord") return "success";
+  if (kind === "Binary") return "warning";
+  return "neutral";
+}
 </script>
 
 <template>
   <div class="diag-tab-content">
-    <DiagBanner :icon="Database" title="Éditeur de Registre" desc="Lecture, recherche et modification du registre Windows" color="amber" />
+    <DiagBanner :icon="Database" title="Registre Windows" desc="Analyse de persistance et navigateur de registre" color="amber" />
 
+    <!-- Sélecteur de panneau -->
+    <div class="reg-panel-tabs">
+      <button :class="['reg-tab', { active: activePanel === 'security' }]" @click="activePanel = 'security'">
+        <AlertTriangle :size="14" /> Analyse sécurité
+      </button>
+      <button :class="['reg-tab', { active: activePanel === 'browser' }]" @click="activePanel = 'browser'; if (!browseResult) browseTo('HKEY_LOCAL_MACHINE')">
+        <FolderOpen :size="14" /> Navigateur
+      </button>
+    </div>
+
+    <!-- ── Navigateur ── -->
+    <div v-if="activePanel === 'browser'" class="reg-browser">
+      <!-- Barre d'adresse -->
+      <div class="reg-addr-bar">
+        <input v-model="browseInput" class="reg-addr-input" placeholder="HKEY_LOCAL_MACHINE\SOFTWARE\..." @keyup.enter="browseTo(browseInput)" />
+        <NButton variant="primary" size="sm" :disabled="browsing" @click="browseTo(browseInput)">
+          <RefreshCw v-if="browsing" :size="13" style="animation:spin .8s linear infinite" /><ChevronRight v-else :size="13" /> Aller
+        </NButton>
+      </div>
+
+      <!-- Breadcrumb -->
+      <div class="reg-breadcrumb">
+        <button v-for="(crumb, i) in breadcrumb" :key="crumb.path" class="crumb-btn" @click="browseTo(crumb.path)">
+          {{ crumb.label }}<span v-if="i < breadcrumb.length - 1" class="crumb-sep">\</span>
+        </button>
+      </div>
+
+      <!-- Hives racine -->
+      <div v-if="!browseResult && !browsing" class="reg-hives">
+        <button v-for="h in ROOT_HIVES" :key="h" class="hive-btn" @click="browseTo(h)">
+          <FolderOpen :size="14" style="color:var(--warning)" /> {{ h }}
+        </button>
+      </div>
+
+      <div v-if="browsing" class="diag-loading"><div class="diag-spinner"></div> Lecture du registre...</div>
+
+      <div v-else-if="browseResult">
+        <!-- Erreur -->
+        <div v-if="browseResult.error" style="color:var(--danger);font-size:13px;padding:8px">
+          <AlertTriangle :size="13" style="display:inline;margin-right:5px" />{{ browseResult.error }}
+        </div>
+        <template v-else>
+          <!-- Sous-clés -->
+          <div v-if="browseResult.subkeys.length" class="reg-section">
+            <div class="reg-section-title"><FolderOpen :size="13" /> Sous-clés ({{ browseResult.subkeys.length }})</div>
+            <div class="reg-subkeys">
+              <button v-for="sk in browseResult.subkeys" :key="sk" class="reg-subkey" @click="openSubkey(sk)">
+                <FolderOpen :size="13" style="color:var(--warning);flex-shrink:0" />
+                <span>{{ sk }}</span>
+                <ChevronRight :size="12" style="margin-left:auto;opacity:.4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Valeurs -->
+          <div class="reg-section">
+            <div class="reg-section-title"><Key :size="13" /> Valeurs ({{ browseResult.values.length }})</div>
+            <div v-if="!browseResult.values.length" class="muted" style="font-size:12px;padding:6px">(Aucune valeur)</div>
+            <div v-else class="reg-values-table">
+              <div class="reg-values-head">
+                <span>Nom</span><span>Type</span><span>Données</span><span></span>
+              </div>
+              <div v-for="v in browseResult.values" :key="v.name" class="reg-value-row">
+                <code class="val-name">{{ v.name }}</code>
+                <NBadge :variant="kindVariant(v.kind)" style="font-size:9px">{{ v.kind }}</NBadge>
+                <span class="val-data">{{ v.data.length > 60 ? v.data.slice(0,60)+'...' : v.data }}</span>
+                <div class="val-actions">
+                  <button class="val-btn" @click="startEdit(v)" title="Modifier"><Edit2 :size="11" /></button>
+                  <button class="val-btn danger" @click="deleteValue(v.name)" title="Supprimer"><Trash2 :size="11" /></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Modal édition valeur -->
+      <NModal :open="editModal" @close="editModal = false" :title="`Modifier : ${editName}`">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Valeur</label>
+            <textarea v-model="editData" rows="4" style="width:100%;padding:8px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;resize:vertical" />
+          </div>
+          <div style="font-size:11px;color:var(--warning)">⚠ Modification directe du registre — assurez-vous de savoir ce que vous faites.</div>
+        </div>
+        <template #footer>
+          <NButton variant="ghost" @click="editModal = false">Annuler</NButton>
+          <NButton variant="primary" :disabled="editSaving" @click="saveEdit">
+            <NSpinner v-if="editSaving" :size="12" /> Enregistrer
+          </NButton>
+        </template>
+      </NModal>
+    </div>
+
+    <!-- ── Sécurité (analyse persistance) ── -->
+    <div v-if="activePanel === 'security'">
     <div v-if="loading" class="diag-loading"><div class="diag-spinner"></div> Analyse registre...</div>
     <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>
     <div v-else-if="data" style="display:flex;flex-direction:column;gap:14px">
@@ -135,5 +312,47 @@ const allRunEntries = computed(() => {
         </div>
       </div>
     </div>
+    </div><!-- fin panel sécurité -->
+
   </div>
 </template>
+
+<style scoped>
+/* Onglets panneau */
+.reg-panel-tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:12px; }
+.reg-tab { display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-bottom:2px solid transparent; background:none; color:var(--text-muted); font-family:inherit; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; }
+.reg-tab:hover { color:var(--text-primary); }
+.reg-tab.active { color:var(--accent-primary); border-bottom-color:var(--accent-primary); }
+
+/* Navigateur */
+.reg-browser { display:flex; flex-direction:column; gap:10px; }
+.reg-addr-bar { display:flex; gap:8px; }
+.reg-addr-input { flex:1; padding:8px 12px; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--text-primary); font-family:"JetBrains Mono",monospace; font-size:12px; outline:none; }
+.reg-addr-input:focus { border-color:var(--accent-primary); }
+.reg-breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:2px; font-size:11px; padding:4px 0; }
+.crumb-btn { background:none; border:none; color:var(--text-secondary); cursor:pointer; font-family:inherit; font-size:11px; padding:2px 4px; border-radius:3px; }
+.crumb-btn:hover { background:var(--bg-tertiary); color:var(--accent-primary); }
+.crumb-sep { color:var(--border-hover); margin:0 2px; }
+.reg-hives { display:flex; flex-direction:column; gap:6px; }
+.hive-btn { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text-primary); font-family:"JetBrains Mono",monospace; font-size:12px; cursor:pointer; transition:border-color .15s; text-align:left; }
+.hive-btn:hover { border-color:var(--warning); }
+.reg-section { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.reg-section-title { display:flex; align-items:center; gap:6px; padding:8px 12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-tertiary); }
+.reg-subkeys { display:flex; flex-direction:column; max-height:200px; overflow-y:auto; }
+.reg-subkey { display:flex; align-items:center; gap:8px; padding:7px 12px; border:none; background:none; color:var(--text-primary); font-family:"JetBrains Mono",monospace; font-size:12px; cursor:pointer; transition:background .1s; text-align:left; border-bottom:1px solid var(--border); }
+.reg-subkey:last-child { border-bottom:none; }
+.reg-subkey:hover { background:var(--bg-tertiary); }
+.reg-subkey span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.reg-values-table { display:flex; flex-direction:column; max-height:280px; overflow-y:auto; }
+.reg-values-head { display:grid; grid-template-columns:1fr 90px 2fr 60px; padding:5px 10px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-tertiary); }
+.reg-value-row { display:grid; grid-template-columns:1fr 90px 2fr 60px; align-items:center; padding:6px 10px; border-bottom:1px solid var(--border); font-size:12px; transition:background .1s; }
+.reg-value-row:last-child { border-bottom:none; }
+.reg-value-row:hover { background:var(--bg-tertiary); }
+.val-name { font-family:"JetBrains Mono",monospace; color:var(--accent-primary); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.val-data { color:var(--text-secondary); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.val-actions { display:flex; gap:3px; justify-content:flex-end; }
+.val-btn { display:flex; align-items:center; justify-content:center; width:22px; height:22px; border:none; border-radius:4px; background:var(--bg-tertiary); color:var(--text-muted); cursor:pointer; transition:all .1s; }
+.val-btn:hover { background:var(--bg-elevated); color:var(--text-primary); }
+.val-btn.danger:hover { background:var(--danger-muted); color:var(--danger); }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>

@@ -208,6 +208,23 @@ const sections: DocSection[] = [
     ],
   },
   {
+    id: "ia-portable",
+    title: "IA locale portable (llama.cpp)",
+    icon: Bot,
+    content: [
+      { type: "text", value: "L'assistant IA de NiTriTe fonctionne en mode 100% portable : aucune installation sur le PC cible. Tout tourne depuis le dossier de l'application." },
+      { type: "list", value: [
+        "Étape 1 — Téléchargez le moteur IA (llama-server.exe) depuis l'onglet Assistant IA",
+        "Étape 2 — Téléchargez un modèle GGUF depuis le catalogue (6 modèles disponibles)",
+        "Étape 3 — Démarrez le serveur et posez vos questions",
+        "Le moteur et les modèles sont stockés dans logiciel/AI/ et models/",
+        "Aucune trace laissée sur le système cible",
+      ] },
+      { type: "tip", value: "Modèle recommandé : Phi-3 Mini 3.8B (2.2 GB, excellent rapport qualité/vitesse)." },
+      { type: "warning", value: "Le chargement du modèle peut prendre 30-60 secondes selon votre disque et la taille du modèle." },
+    ],
+  },
+  {
     id: "raccourcis",
     title: "Raccourcis clavier",
     icon: Keyboard,
@@ -333,9 +350,11 @@ const filteredSections = computed(() => {
         <div class="section-header"><Info :size="16" /><span>A propos de NiTriTe</span></div>
       </template>
       <div class="about-info">
-        <div class="about-row"><span>Application</span><span>NiTriTe</span></div>
-        <div class="about-row"><span>Version</span><span>1.0</span></div>
+        <div class="about-row"><span>Application</span><span>NiTriTe 2.0</span></div>
+        <div class="about-row"><span>Version</span><span>26.37.0</span></div>
         <div class="about-row"><span>Stack</span><span>Tauri v2 + Rust + Vue 3 + TypeScript</span></div>
+        <div class="about-row"><span>IA</span><span>llama.cpp portable + Ollama</span></div>
+        <div class="about-row"><span>Onglets diagnostic</span><span>33 onglets, 6 catégories</span></div>
         <div class="about-row"><span>Auteur</span><span>Momo</span></div>
         <div class="about-row"><span>Licence</span><span>Usage interne</span></div>
       </div>

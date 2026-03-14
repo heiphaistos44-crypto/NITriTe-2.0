@@ -51,6 +51,10 @@ function isValidIp(ip: string): boolean {
   return v6.test(ip);
 }
 
+async function autoBackup() {
+  try { await invoke<string>("backup_hosts"); } catch { /* silencieux */ }
+}
+
 async function addEntry() {
   if (!newIp.value.trim() || !newHostname.value.trim()) {
     notify.warning("Champs requis", "IP et hostname sont obligatoires.");
@@ -60,6 +64,7 @@ async function addEntry() {
     notify.warning("IP invalide", "Entrez une adresse IPv4 (ex: 127.0.0.1) ou IPv6 valide.");
     return;
   }
+  await autoBackup();
   adding.value = true;
   try {
     const msg = await invoke<string>("add_hosts_entry", {
@@ -77,6 +82,7 @@ async function addEntry() {
 }
 
 async function deleteEntry(line: number, hostname: string) {
+  await autoBackup();
   try {
     await invoke<string>("delete_hosts_entry", { lineNumber: line });
     notify.success("Supprimé", hostname);
@@ -87,6 +93,7 @@ async function deleteEntry(line: number, hostname: string) {
 }
 
 async function toggleEntry(line: number, enable: boolean) {
+  await autoBackup();
   try {
     await invoke<string>("toggle_hosts_entry", { lineNumber: line, enable });
     notify.success(enable ? "Activé" : "Désactivé");

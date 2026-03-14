@@ -161,3 +161,107 @@ $out | ConvertTo-Json -Depth 4 -Compress
     }
     RegistryPersistence::default()
 }
+
+// ── Navigateur de registre ────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct RegBrowseResult {
+    pub path: String,
+    pub subkeys: Vec<String>,
+    pub values: Vec<RegValue>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct RegValue {
+    pub name: String,
+    pub kind: String,
+    pub data: String,
+}
+
+#[tauri::command]
+pub fn registry_browse(path: String) -> RegBrowseResult {
+    let ps = format!(
+        r#"
+$ErrorActionPreference = 'Stop'
+try {{
+    $key = Get-Item -LiteralPath 'Registry::{}' -ErrorAction Stop
+    $subkeys = $key.GetSubKeyNames() | Sort-Object
+    $values = @()
+    foreach ($v in $key.GetValueNames()) {{
+        $kind = $key.GetValueKind($v).ToString()
+        $raw = $key.GetValue($v)
+        $data = if ($raw -eq $null) {{ '' }} elseif ($raw -is [byte[]]) {{ ($raw | ForEach-Object {{ '{0:X2}' -f $_ }}) -join ' ' }} else {{ $raw.ToString() }}
+        $values += [PSCustomObject]@{{ Name = if ($v -eq '') {{ '(Default)' }} else {{ $v }}; Kind = $kind; Data = $data }}
+    }}
+    [PSCustomObject]@{{ Path = '{}'; Subkeys = $subkeys; Values = $values; Error = $null }} | ConvertTo-Json -Depth 3
+}} catch {{
+    [PSCustomObject]@{{ Path = '{}'; Subkeys = @(); Values = @(); Error = $_.Exception.Message }} | ConvertTo-Json
+}}
+"#,
+        path.replace('\'', "''"),
+        path.replace('\'', "''"),
+        path.replace('\'', "''")
+    );
+
+    let mut cmd = Command::new("powershell");
+    cmd.args(["-NoProfile", "-NonInteractive", "-Command", &ps]);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(0x08000000);
+
+    if let Ok(out) = cmd.output() {
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        if let Ok(v) = serde_json::from_str::<serde_json::Value>(&stdout) {
+            let subkeys = v["Subkeys"].as_array()
+                .map(|a| a.iter().filter_map(|s| s.as_str().map(|x| x.to_string())).collect())
+                .unwrap_or_default();
+            let values = v["Values"].as_array()
+                .map(|a| a.iter().filter_map(|item| {
+                    Some(RegValue {
+                        name: item["Name"].as_str()?.to_string(),
+                        kind: item["Kind"].as_str().unwrap_or("Unknown").to_string(),
+                        data: item["Data"].as_str().unwrap_or("").to_string(),
+                    })
+                }).collect())
+                .unwrap_or_default();
+            let error = v["Error"].as_str().filter(|s| !s.is_empty()).map(|s| s.to_string());
+            return RegBrowseResult { path, subkeys, values, error };
+        }
+    }
+
+    RegBrowseResult { path: path.clone(), error: Some("Accès refusé ou chemin invalide".to_string()), ..Default::default() }
+}
+
+#[tauri::command]
+pub fn registry_set_value(path: String, name: String, data: String) -> Result<String, String> {
+    let real_name = if name == "(Default)" { "" } else { &name };
+    let ps = format!(
+        r#"Set-ItemProperty -LiteralPath 'Registry::{}' -Name '{}' -Value '{}' -ErrorAction Stop; 'OK'"#,
+        path.replace('\'', "''"),
+        real_name.replace('\'', "''"),
+        data.replace('\'', "''")
+    );
+    let mut cmd = Command::new("powershell");
+    cmd.args(["-NoProfile", "-NonInteractive", "-Command", &ps]);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(0x08000000);
+    let out = cmd.output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok("Valeur mise à jour".to_string()) }
+    else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+}
+
+#[tauri::command]
+pub fn registry_delete_value(path: String, name: String) -> Result<String, String> {
+    let ps = format!(
+        r#"Remove-ItemProperty -LiteralPath 'Registry::{}' -Name '{}' -ErrorAction Stop; 'OK'"#,
+        path.replace('\'', "''"),
+        name.replace('\'', "''")
+    );
+    let mut cmd = Command::new("powershell");
+    cmd.args(["-NoProfile", "-NonInteractive", "-Command", &ps]);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(0x08000000);
+    let out = cmd.output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok("Valeur supprimée".to_string()) }
+    else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+}

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -29,7 +30,7 @@ const descriptions = ref<Record<string, string>>({});
 async function loadReport() {
   loading.value = true;
   try {
-    report.value = await invoke<BsodReport>("get_bsod_history");
+    report.value = await cachedInvoke<BsodReport>("get_bsod_history");
   } catch (e: any) {
     notify.error("Erreur BSOD", String(e));
   }

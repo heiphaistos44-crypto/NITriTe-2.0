@@ -101,6 +101,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
+import { cachedInvoke } from '@/composables/useCachedInvoke'
 import { Bluetooth, RefreshCw, Cpu, Smartphone } from 'lucide-vue-next'
 
 interface BluetoothAdapter { name: string; address: string; enabled: boolean; manufacturer: string; driver_version: string }
@@ -112,7 +113,7 @@ const msg = ref(''); const msgErr = ref(false)
 
 function showMsg(t: string, err = false) { msg.value = t; msgErr.value = err; setTimeout(() => { msg.value = '' }, 3000) }
 
-async function load() { loading.value = true; try { report.value = await invoke<BluetoothReport>('get_bluetooth_info') } finally { loading.value = false } }
+async function load() { loading.value = true; try { report.value = await cachedInvoke<BluetoothReport>('get_bluetooth_info') } finally { loading.value = false } }
 
 async function toggleBt(enable: boolean) {
   try { const r = await invoke<string>('toggle_bluetooth', { enable }); showMsg(r); setTimeout(load, 1500) }

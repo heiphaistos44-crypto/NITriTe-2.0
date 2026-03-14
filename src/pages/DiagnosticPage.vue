@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, defineAsyncComponent } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRoute } from "vue-router";
 import NCard from "@/components/ui/NCard.vue";
@@ -7,39 +7,43 @@ import NTabs from "@/components/ui/NTabs.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import DiagnosticToolsGrid from "@/components/shared/DiagnosticToolsGrid.vue";
-import DiagTabSystem from "@/components/diagnostic/DiagTabSystem.vue";
-import DiagTabCPU from "@/components/diagnostic/DiagTabCPU.vue";
-import DiagTabGPU from "@/components/diagnostic/DiagTabGPU.vue";
-import DiagTabRAM from "@/components/diagnostic/DiagTabRAM.vue";
-import DiagTabStorage from "@/components/diagnostic/DiagTabStorage.vue";
-import DiagTabNetwork from "@/components/diagnostic/DiagTabNetwork.vue";
-import DiagTabDevices from "@/components/diagnostic/DiagTabDevices.vue";
-import DiagTabSoftware from "@/components/diagnostic/DiagTabSoftware.vue";
-import DiagTabProcesses from "@/components/diagnostic/DiagTabProcesses.vue";
-import DiagTabSecurity from "@/components/diagnostic/DiagTabSecurity.vue";
-import DiagTabUpdates from "@/components/diagnostic/DiagTabUpdates.vue";
-import DiagTabActivation from "@/components/diagnostic/DiagTabActivation.vue";
-import DiagTabFolders from "@/components/diagnostic/DiagTabFolders.vue";
-import DiagTabAccounts from "@/components/diagnostic/DiagTabAccounts.vue";
-import DiagTabFirewall from "@/components/diagnostic/DiagTabFirewall.vue";
-import DiagTabShares from "@/components/diagnostic/DiagTabShares.vue";
-import DiagTabRegistry from "@/components/diagnostic/DiagTabRegistry.vue";
-import DiagTabHistory from "@/components/diagnostic/DiagTabHistory.vue";
-import DiagTabSysDrivers from "@/components/diagnostic/DiagTabSysDrivers.vue";
-import DiagTabCertificates from "@/components/diagnostic/DiagTabCertificates.vue";
-import DiagTabPerf from "@/components/diagnostic/DiagTabPerf.vue";
-import DiagTabNetTools from "@/components/diagnostic/DiagTabNetTools.vue";
-import DiagTabRepair from "@/components/diagnostic/DiagTabRepair.vue";
-import DiagTabBenchmark from "@/components/diagnostic/DiagTabBenchmark.vue";
-import DiagTabCleaner from "@/components/diagnostic/DiagTabCleaner.vue";
-import DiagTabBsod from "@/components/diagnostic/DiagTabBsod.vue";
-import DiagTabHosts from "@/components/diagnostic/DiagTabHosts.vue";
-import DiagTabBoot from "@/components/diagnostic/DiagTabBoot.vue";
-import DiagTabWsl from "@/components/diagnostic/DiagTabWsl.vue";
-import DiagTabBluetooth from "@/components/diagnostic/DiagTabBluetooth.vue";
-import DiagTabPerfHistory from "@/components/diagnostic/DiagTabPerfHistory.vue";
-import DiagTabScan from "@/components/diagnostic/DiagTabScan.vue";
-import DiagTabDriverUpdater from "@/components/diagnostic/DiagTabDriverUpdater.vue";
+
+// ── Lazy-loading de tous les onglets diagnostics ──────────────────────────────
+// Chaque composant n'est chargé que la première fois que l'onglet est ouvert.
+// Cela réduit le bundle initial et le temps de parse au démarrage.
+const DiagTabSystem        = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabSystem.vue"));
+const DiagTabCPU           = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabCPU.vue"));
+const DiagTabGPU           = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabGPU.vue"));
+const DiagTabRAM           = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabRAM.vue"));
+const DiagTabStorage       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabStorage.vue"));
+const DiagTabNetwork       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabNetwork.vue"));
+const DiagTabDevices       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabDevices.vue"));
+const DiagTabSoftware      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabSoftware.vue"));
+const DiagTabProcesses     = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabProcesses.vue"));
+const DiagTabSecurity      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabSecurity.vue"));
+const DiagTabUpdates       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabUpdates.vue"));
+const DiagTabActivation    = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabActivation.vue"));
+const DiagTabFolders       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabFolders.vue"));
+const DiagTabAccounts      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabAccounts.vue"));
+const DiagTabFirewall      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabFirewall.vue"));
+const DiagTabShares        = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabShares.vue"));
+const DiagTabRegistry      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabRegistry.vue"));
+const DiagTabHistory       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabHistory.vue"));
+const DiagTabSysDrivers    = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabSysDrivers.vue"));
+const DiagTabCertificates  = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabCertificates.vue"));
+const DiagTabPerf          = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabPerf.vue"));
+const DiagTabNetTools      = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabNetTools.vue"));
+const DiagTabRepair        = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabRepair.vue"));
+const DiagTabBenchmark     = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabBenchmark.vue"));
+const DiagTabCleaner       = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabCleaner.vue"));
+const DiagTabBsod          = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabBsod.vue"));
+const DiagTabHosts         = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabHosts.vue"));
+const DiagTabBoot          = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabBoot.vue"));
+const DiagTabWsl           = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabWsl.vue"));
+const DiagTabBluetooth     = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabBluetooth.vue"));
+const DiagTabPerfHistory   = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabPerfHistory.vue"));
+const DiagTabScan          = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabScan.vue"));
+const DiagTabDriverUpdater = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabDriverUpdater.vue"));
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Monitor, Cpu, MemoryStick, HardDrive, Globe, Headphones,

@@ -11,6 +11,7 @@ import { useAiStore } from "@/stores/ai";
 import {
   Settings, Palette, Activity, Bot, Download, Info,
   Save, RotateCcw, Wifi, CheckCircle, XCircle, FolderOpen,
+  Upload,
 } from "lucide-vue-next";
 
 const appStore = useAppStore();
@@ -96,6 +97,41 @@ async function testOllama() {
     ollamaStatus.value = "error";
   }
   ollamaTesting.value = false;
+}
+
+// ── Export / Import config complète ──────────────────────────
+async function exportConfig() {
+  try {
+    const cfg = await invoke<any>("get_config");
+    const payload = JSON.stringify({ ...cfg, __nitrite_version: "26.37.0", __exported_at: new Date().toISOString() }, null, 2);
+    const { save } = await import("@tauri-apps/plugin-dialog");
+    const { writeTextFile } = await import("@tauri-apps/plugin-fs");
+    const path = await save({ defaultPath: "nitrite-config.json", filters: [{ name: "JSON", extensions: ["json"] }] });
+    if (path) { await writeTextFile(path, payload); notify.success("Config exportée", path); }
+  } catch (e: any) { notify.error("Export config", String(e)); }
+}
+
+async function importConfig() {
+  try {
+    const { open } = await import("@tauri-apps/plugin-dialog");
+    const { readTextFile } = await import("@tauri-apps/plugin-fs");
+    const path = await open({ filters: [{ name: "Config NiTriTe JSON", extensions: ["json"] }] });
+    if (!path || Array.isArray(path)) return;
+    const raw = await readTextFile(path as string);
+    const cfg = JSON.parse(raw);
+    delete cfg.__nitrite_version; delete cfg.__exported_at;
+    await invoke("save_config", { config: cfg });
+    // Appliquer dans les stores
+    if (cfg.theme)          appStore.setTheme(cfg.theme);
+    if (cfg.font_size)      appStore.setFontSize(cfg.font_size);
+    if (cfg.ollama_url)     aiStore.ollamaUrl   = cfg.ollama_url;
+    if (cfg.ollama_model)   aiStore.ollamaModel = cfg.ollama_model;
+    if (cfg.ollama_temperature) aiStore.temperature = cfg.ollama_temperature;
+    if (cfg.export_format)  exportFormat.value  = cfg.export_format;
+    if (cfg.monitor_interval_ms) monitorInterval.value = cfg.monitor_interval_ms;
+    if (cfg.process_count)  processCount.value  = cfg.process_count;
+    notify.success("Config importée", "Paramètres rechargés depuis le fichier");
+  } catch (e: any) { notify.error("Import config", String(e)); }
 }
 
 // ── Ouvrir dossier exports ────────────────────────────────────
@@ -346,6 +382,19 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
               <FolderOpen :size="13" /> Ouvrir le dossier exports
             </NButton>
           </div>
+
+          <div class="setting-group">
+            <p class="setting-label">Configuration complète</p>
+            <p class="setting-hint">Exportez ou importez tous vos paramètres NiTriTe (thème, IA, préférences) vers un fichier JSON.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+              <NButton variant="secondary" @click="exportConfig">
+                <Download :size="13" /> Exporter la config
+              </NButton>
+              <NButton variant="ghost" @click="importConfig">
+                <Upload :size="13" /> Importer une config
+              </NButton>
+            </div>
+          </div>
         </div>
 
         <!-- ══ À PROPOS ══ -->
@@ -353,7 +402,7 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
           <h2 class="tab-title"><Info :size="16" /> À propos</h2>
 
           <div class="about-card">
-            <div class="about-badge">v26.9.0</div>
+            <div class="about-badge">v26.37.0</div>
             <p class="about-name">NiTriTe</p>
             <p class="about-sub">Outil de diagnostic et maintenance Windows</p>
           </div>

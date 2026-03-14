@@ -408,7 +408,7 @@ export const useLayoutStore = defineStore("layout", () => {
     document.body.style.fontSize = `${state.value.fontSize}px`;
   }
 
-  watch(cssVars, applyToDocument, { deep: true });
+  watch(cssVars, applyToDocument);
 
   load();
 

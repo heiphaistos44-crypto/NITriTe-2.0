@@ -2608,6 +2608,15 @@ async fn check_all_dependencies() -> Vec<system::dependencies::Dependency> {
         .unwrap_or_default()
 }
 
+/// Streaming : émet `deps:progress` par dépendance vérifiée.
+#[tauri::command]
+async fn scan_dependencies_stream(app: tauri::AppHandle) {
+    tokio::task::spawn_blocking(move || {
+        system::dependencies::check_all_streaming(&app);
+    }).await.ok();
+}
+
+
 #[tauri::command]
 async fn install_dependency(winget_id: String) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
@@ -2814,6 +2823,9 @@ pub fn run() {
             system::firewall_rules::get_firewall_rules,
             system::shares::get_network_shares,
             system::registry_persist::get_registry_persistence,
+            system::registry_persist::registry_browse,
+            system::registry_persist::registry_set_value,
+            system::registry_persist::registry_delete_value,
             system::sys_history::get_system_history,
             // Nouveaux modules 10x
             system::sys_drivers::get_sys_drivers_list,
@@ -2846,6 +2858,7 @@ pub fn run() {
             system::benchmark::run_disk_bench,
             // Cleaner
             system::cleaner::get_clean_targets,
+            system::cleaner::scan_clean_targets_stream,
             system::cleaner::clean_target,
             system::cleaner::get_large_files,
             // BSOD Analyzer
@@ -2942,6 +2955,7 @@ pub fn run() {
             import_profile_json,
             // Gestionnaire Dépendances
             check_all_dependencies,
+            scan_dependencies_stream,
             install_dependency,
         ])
         .run(tauri::generate_context!())

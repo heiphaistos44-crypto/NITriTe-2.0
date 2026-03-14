@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke, refreshCached } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -58,7 +59,7 @@ function formatDate(raw: string): string {
 async function load() {
   loading.value = true;
   try {
-    points.value = await invoke<RestorePoint[]>("list_restore_points_cmd");
+    points.value = await cachedInvoke<RestorePoint[]>("list_restore_points_cmd");
     points.value.sort((a, b) => b.sequence_number - a.sequence_number);
   } catch (e: any) {
     notify.error("Erreur", String(e));

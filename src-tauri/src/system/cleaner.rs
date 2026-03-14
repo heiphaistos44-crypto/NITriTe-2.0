@@ -1,7 +1,18 @@
 use serde::Serialize;
 use std::process::Command;
+use tauri::Emitter;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+
+// ─── Événements streaming ──────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CleanerProgress {
+    pub scanned: u8,
+    pub total: u8,
+    pub item: Option<CleanTarget>,
+    pub done: bool,
+}
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct CleanTarget {
@@ -87,6 +98,87 @@ $items = @(
     vec![]
 }
 
+/// Version streaming : émet un événement `cleaner:progress` par cible.
+/// Permet à l'UI de rester réactive pendant le scan.
+#[tauri::command]
+pub async fn scan_clean_targets_stream(app: tauri::AppHandle) {
+    let app_clone = app.clone();
+    tokio::task::spawn_blocking(move || {
+        let targets: &[(&str, &str, &str)] = &[
+            ("%TEMP%",               "",                                                                   "Temp"),
+            ("Windows\\Temp",        "C:\\Windows\\Temp",                                                  "Temp"),
+            ("Prefetch",             "C:\\Windows\\Prefetch",                                              "Système"),
+            ("Dumps mémoire",        "C:\\Windows\\Minidump",                                             "Système"),
+            ("Logs CBS",             "C:\\Windows\\Logs\\CBS",                                             "Logs"),
+            ("Windows Error Reports","",                                                                   "Logs"),
+            ("Corbeille",            "",                                                                    "Corbeille"),
+            ("Chrome Cache",         "",                                                                   "Navigateurs"),
+            ("Edge Cache",           "",                                                                   "Navigateurs"),
+            ("Firefox Cache",        "",                                                                   "Navigateurs"),
+            ("Windows Update Cache", "C:\\Windows\\SoftwareDistribution\\Download",                       "Windows Update"),
+            ("Thumbnails DB",        "",                                                                   "Cache système"),
+        ];
+        let total = targets.len() as u8;
+        for (idx, (name, path, cat)) in targets.iter().enumerate() {
+            let ps_resolve = format!(r#"
+$name='{name}';$path='{path}';$cat='{cat}'
+if($name -eq '%TEMP%'){{$path=$env:TEMP}}
+elseif($name -eq 'Windows Error Reports'){{$path="$env:LOCALAPPDATA\Microsoft\Windows\WER\ReportArchive"}}
+elseif($name -eq 'Chrome Cache'){{$path="$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache"}}
+elseif($name -eq 'Edge Cache'){{$path="$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache"}}
+elseif($name -eq 'Firefox Cache'){{$path="$env:APPDATA\Mozilla\Firefox\Profiles"}}
+$sz=0.0;$cnt=0
+if($path -and (Test-Path $path)){{
+    $files=@(Get-ChildItem $path -Recurse -File -EA SilentlyContinue)
+    $cnt=$files.Count
+    $bytes=($files|Measure-Object -Property Length -Sum -EA SilentlyContinue).Sum
+    $sz=if($bytes){{[math]::Round($bytes/1MB,2)}}else{{0}}
+}}elseif($name -eq 'Corbeille'){{
+    try{{$rb=(New-Object -ComObject Shell.Application).Namespace(0xA);$cnt=@($rb.Items()).Count;$sz=0.1*$cnt}}catch{{}}
+}}
+@{{name=$name;path=[string]$path;mb=$sz;count=$cnt;cat=$cat}}|ConvertTo-Json -Compress
+"#, name=name, path=path, cat=cat);
+
+            let result = {
+                #[cfg(target_os = "windows")]
+                {
+                    Command::new("powershell")
+                        .args(["-NoProfile", "-NonInteractive", "-Command", &ps_resolve])
+                        .creation_flags(0x08000000)
+                        .output()
+                        .ok()
+                        .and_then(|o| serde_json::from_str::<serde_json::Value>(
+                            String::from_utf8_lossy(&o.stdout).trim()
+                        ).ok())
+                }
+                #[cfg(not(target_os = "windows"))]
+                { None::<serde_json::Value> }
+            };
+
+            let item = result.as_ref().map(|v| CleanTarget {
+                name:       v["name"].as_str().unwrap_or(name).to_string(),
+                path:       v["path"].as_str().unwrap_or("").to_string(),
+                size_mb:    v["mb"].as_f64().unwrap_or(0.0),
+                file_count: v["count"].as_u64().unwrap_or(0) as u32,
+                category:   v["cat"].as_str().unwrap_or(cat).to_string(),
+            }).or_else(|| Some(CleanTarget {
+                name: name.to_string(),
+                path: path.to_string(),
+                size_mb: 0.0,
+                file_count: 0,
+                category: cat.to_string(),
+            }));
+
+            let _ = app_clone.emit("cleaner:progress", CleanerProgress {
+                scanned: idx as u8 + 1,
+                total,
+                item,
+                done: idx as u8 + 1 == total,
+            });
+        }
+    }).await.ok();
+}
+
 #[tauri::command]
 pub fn clean_target(target_name: String) -> CleanResult {
     let ps = match target_name.as_str() {
@@ -121,7 +213,13 @@ pub fn clean_target(target_name: String) -> CleanResult {
 }
 
 #[tauri::command]
-pub fn get_large_files(folder: String, min_size_mb: f64) -> Vec<serde_json::Value> {
+pub async fn get_large_files(folder: String, min_size_mb: f64) -> Vec<serde_json::Value> {
+    tokio::task::spawn_blocking(move || get_large_files_sync(folder, min_size_mb))
+        .await
+        .unwrap_or_default()
+}
+
+fn get_large_files_sync(folder: String, min_size_mb: f64) -> Vec<serde_json::Value> {
     let f = folder.replace('"', "").replace('\'', "");
     let min_bytes = (min_size_mb * 1048576.0) as u64;
     let ps = format!(r#"

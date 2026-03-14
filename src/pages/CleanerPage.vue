@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -11,22 +12,28 @@ import { Trash2, RefreshCw, Search, FileText, CheckSquare, Square, HardDrive, Za
 
 const notify = useNotificationStore();
 
-interface CleanTarget {
-  name: string; path: string; size_mb: number;
-  file_count: number; category: string;
-}
+interface CleanTarget { name: string; path: string; size_mb: number; file_count: number; category: string; }
 interface LargeFile { name: string; path: string; mb: number; ext: string; mod: string; }
 interface CleanResult { target: string; success: boolean; freed_mb: number; files_deleted: number; message: string; }
+interface CleanerProgress { scanned: number; total: number; item: CleanTarget | null; done: boolean; }
 
-const targets = ref<CleanTarget[]>([]);
+const targets    = ref<CleanTarget[]>([]);
 const largeFiles = ref<LargeFile[]>([]);
-const loading = ref(true);
+
+// État de scan streaming
+const scanProgress = ref(0);
+const scanTotal    = ref(12);
+const scanning     = ref(false);
+
 const loadingLarge = ref(false);
-const selected = ref<Set<string>>(new Set());
-const cleaning = ref(false);
+const largeScanned = ref(false); // true après premier scan manuel
+const selected     = ref<Set<string>>(new Set());
+const cleaning     = ref(false);
 const cleanProgress = ref(0);
-const totalFreed = ref(0);
-const largeMinMb = ref(100);
+const totalFreed   = ref(0);
+const largeMinMb   = ref(100);
+
+let unlistenCleaner: (() => void) | null = null;
 
 const grouped = computed(() => {
   const groups: Record<string, CleanTarget[]> = {};
@@ -48,21 +55,34 @@ function formatMb(mb: number) {
 }
 
 async function load() {
-  loading.value = true;
-  try {
-    targets.value = await invoke<CleanTarget[]>("get_clean_targets");
-    // Pré-sélectionner les cibles sûres (Temp, Logs)
-    targets.value
-      .filter(t => ["Temp", "Logs", "Cache système"].includes(t.category))
-      .forEach(t => selected.value.add(t.name));
-  } catch (e: any) {
-    notify.error("Erreur chargement", String(e));
-  }
-  loading.value = false;
+  // Reset état
+  targets.value = [];
+  selected.value = new Set();
+  scanning.value = true;
+  scanProgress.value = 0;
+
+  // Écouter les événements streaming
+  if (unlistenCleaner) { unlistenCleaner(); unlistenCleaner = null; }
+  unlistenCleaner = await listen<CleanerProgress>("cleaner:progress", (ev) => {
+    const p = ev.payload;
+    scanProgress.value = p.scanned;
+    scanTotal.value = p.total;
+    if (p.item) {
+      targets.value.push(p.item);
+      // Auto-sélection des cibles sûres
+      if (["Temp", "Logs", "Cache système"].includes(p.item.category))
+        selected.value = new Set([...selected.value, p.item.name]);
+    }
+    if (p.done) scanning.value = false;
+  });
+
+  // Lancer le scan en fire-and-forget (non-bloquant → UI reste fluide)
+  invoke("scan_clean_targets_stream").catch(() => { scanning.value = false; });
 }
 
 async function loadLargeFiles() {
   loadingLarge.value = true;
+  largeScanned.value = true;
   try {
     largeFiles.value = await invoke<LargeFile[]>("get_large_files", {
       folder: "C:\\Users",
@@ -87,10 +107,11 @@ async function clean() {
   }
   notify.success("Nettoyage terminé", `${formatMb(totalFreed.value)} libérés`);
   cleaning.value = false;
-  await load();
+  load(); // Rescan (fire-and-forget)
 }
 
-onMounted(() => { load(); loadLargeFiles(); });
+onMounted(() => { load(); });
+onUnmounted(() => { if (unlistenCleaner) unlistenCleaner(); });
 </script>
 
 <template>
@@ -101,7 +122,7 @@ onMounted(() => { load(); loadLargeFiles(); });
         <h1>Nettoyeur Avancé</h1>
         <p class="subtitle">Libérez de l'espace disque en supprimant les fichiers inutiles</p>
       </div>
-      <NButton variant="ghost" size="sm" :loading="loading" @click="load" style="margin-left:auto">
+      <NButton variant="ghost" size="sm" :loading="scanning" @click="load" style="margin-left:auto">
         <RefreshCw :size="13" /> Analyser
       </NButton>
     </div>
@@ -131,14 +152,20 @@ onMounted(() => { load(); loadLargeFiles(); });
       </div>
     </div>
 
+    <!-- Progression nettoyage -->
     <NProgress v-if="cleaning" :value="cleanProgress" showLabel size="sm" />
 
-    <div v-if="loading">
-      <NSkeleton v-for="i in 6" :key="i" height="52px" style="margin-bottom:6px" />
+    <!-- Barre de progression du scan — ne bloque pas l'UI -->
+    <div v-if="scanning" class="scan-progress-bar">
+      <div class="scan-label">
+        <Search :size="13" style="color:var(--accent-primary)" />
+        <span>Analyse en cours… {{ scanProgress }}/{{ scanTotal }}</span>
+      </div>
+      <NProgress :value="scanProgress" :max="scanTotal" size="sm" style="flex:1" />
     </div>
 
     <!-- Cibles groupées par catégorie -->
-    <div v-else class="targets-sections">
+    <div class="targets-sections">
       <NCard v-for="(items, cat) in grouped" :key="cat">
         <template #header>
           <div class="section-header">
@@ -168,24 +195,38 @@ onMounted(() => { load(); loadLargeFiles(); });
       </NCard>
     </div>
 
-    <!-- Gros fichiers -->
+    <!-- Gros fichiers — scan manuel uniquement (peut prendre 1-5 min sur C:\Users) -->
     <NCard>
       <template #header>
         <div class="section-header">
           <Search :size="15" /><span>Fichiers volumineux</span>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;color:var(--text-muted)">Min :</span>
-            <select v-model="largeMinMb" class="mini-select" @change="loadLargeFiles">
+            <select v-model="largeMinMb" class="mini-select">
               <option :value="50">50 Mo</option>
               <option :value="100">100 Mo</option>
               <option :value="500">500 Mo</option>
               <option :value="1000">1 Go</option>
             </select>
-            <NButton variant="ghost" size="sm" :loading="loadingLarge" @click="loadLargeFiles"><Search :size="12" /></NButton>
+            <NButton variant="primary" size="sm" :loading="loadingLarge" @click="loadLargeFiles">
+              <Search :size="12" /> Analyser
+            </NButton>
           </div>
         </div>
       </template>
-      <div v-if="loadingLarge" class="loading-state"><NSkeleton v-for="i in 5" :key="i" height="36px" style="margin-bottom:4px" /></div>
+      <!-- Avant premier scan : invite à lancer manuellement -->
+      <div v-if="!largeScanned && !loadingLarge" class="large-not-scanned">
+        <Search :size="28" style="opacity:.2" />
+        <p>Cliquez sur <strong>Analyser</strong> pour rechercher les fichiers volumineux dans <code>C:\Users</code></p>
+        <p class="large-warning">Cette analyse peut prendre 1 à 5 minutes. Vous pouvez continuer à utiliser l'application pendant ce temps.</p>
+      </div>
+      <div v-else-if="loadingLarge" class="loading-state">
+        <div class="large-scan-info">
+          <Search :size="16" style="color:var(--accent-primary)" />
+          <span>Scan de C:\Users en cours… Vous pouvez naviguer librement.</span>
+        </div>
+        <NSkeleton v-for="i in 5" :key="i" height="36px" style="margin-bottom:4px" />
+      </div>
       <div v-else-if="!largeFiles.length" class="empty-state"><FileText :size="24" style="opacity:.25" /><p>Aucun fichier > {{ largeMinMb }} Mo trouvé</p></div>
       <div v-else class="large-files-list">
         <div v-for="f in largeFiles" :key="f.path" class="large-file-row">
@@ -229,4 +270,10 @@ h1 { font-size: 22px; font-weight: 700; }
 .file-path { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "JetBrains Mono", monospace; font-size: 11px; }
 .file-size { font-family: "JetBrains Mono", monospace; color: var(--danger); font-weight: 700; text-align: right; }
 .loading-state, .empty-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px; color: var(--text-muted); font-size: 13px; }
+.scan-progress-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: color-mix(in srgb,var(--accent-primary) 8%,var(--bg-secondary)); border: 1px solid color-mix(in srgb,var(--accent-primary) 30%,var(--border)); border-radius: var(--radius-md); }
+.scan-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent-primary); white-space: nowrap; font-weight: 500; }
+.large-not-scanned { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px 20px; color: var(--text-muted); font-size: 13px; text-align: center; }
+.large-not-scanned code { color: var(--accent-primary); background: var(--bg-tertiary); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+.large-warning { font-size: 11px; color: color-mix(in srgb,var(--success) 80%,var(--text-muted)); background: var(--success-muted); padding: 6px 12px; border-radius: 6px; }
+.large-scan-info { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent-primary); margin-bottom: 8px; }
 </style>

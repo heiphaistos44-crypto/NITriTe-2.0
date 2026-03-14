@@ -6,6 +6,22 @@ use std::os::windows::process::CommandExt;
 use crate::error::NiTriTeError;
 use crate::utils::paths;
 
+/// Écrit le script PS dans un fichier .ps1 temporaire et l'exécute.
+/// Évite les limites de taille de -Command et les problèmes d'échappement.
+fn run_ps_temp(script: &str) -> Result<String, NiTriTeError> {
+    let tmp = std::env::temp_dir().join("nitrite_backup_ps.ps1");
+    std::fs::write(&tmp, script.as_bytes())
+        .map_err(|e| NiTriTeError::System(e.to_string()))?;
+    let out = Command::new("powershell")
+        .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+               tmp.to_str().unwrap_or("")])
+        .creation_flags(0x08000000)
+        .output()
+        .map_err(|e| NiTriTeError::System(e.to_string()))?;
+    let _ = std::fs::remove_file(&tmp);
+    Ok(String::from_utf8_lossy(&out.stdout).to_string())
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct BackupManifest {
     pub timestamp: String,
@@ -178,10 +194,17 @@ pub fn create_backup(selected_items: Vec<String>, format: String, custom_path: O
                     items.push(BackupItem { name: "Imprimantes".into(), category: "Materiel".into(), size_bytes: data.len(), data });
                 }
             }
+            "system_components" => {
+                if let Ok(data) = collect_system_components() {
+                    items.push(BackupItem { name: "Composants PC".into(), category: "Materiel".into(), size_bytes: data.len(), data });
+                }
+            }
             _ => {}
         }
     }
 
+    // Tri par catégorie pour éviter les sections dupliquées dans le rendu
+    items.sort_by(|a, b| a.category.cmp(&b.category));
     let total_items = items.len();
 
     let backup_dir = if let Some(ref p) = custom_path {
@@ -321,38 +344,227 @@ fn render_md(m: &BackupManifest) -> String {
 }
 
 fn render_html(m: &BackupManifest) -> String {
-    let mut rows = String::new();
+    // Comptage des items par catégorie
+    let mut cat_counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    for item in &m.items {
+        *cat_counts.entry(item.category.clone()).or_insert(0) += 1;
+    }
+
+    // Ordre d'apparition des catégories
+    let mut cats_seen: Vec<String> = Vec::new();
+    for item in &m.items {
+        if !cats_seen.contains(&item.category) {
+            cats_seen.push(item.category.clone());
+        }
+    }
+
+    // Liens de navigation avec compteur
+    let nav_links: String = cats_seen.iter().map(|c| {
+        let slug = c.to_lowercase().replace(' ', "-");
+        let count = cat_counts.get(c).copied().unwrap_or(0);
+        format!(
+            "<a href='#cat-{slug}' class='nav-link'>{c}<span class='nav-count'>{count}</span></a>",
+            slug = slug, c = html_escape(c), count = count
+        )
+    }).collect::<Vec<_>>().join("\n");
+
+    // Sections collapsibles (<details>/<summary> = natif, 0 JS requis)
+    let mut sections = String::new();
     let mut current_cat = String::new();
     for item in &m.items {
         if item.category != current_cat {
-            rows.push_str(&format!("<tr><th colspan='2' class='cat'>{}</th></tr>", html_escape(&item.category)));
+            if !current_cat.is_empty() {
+                sections.push_str("</div></details>\n");
+            }
             current_cat = item.category.clone();
+            let slug = current_cat.to_lowercase().replace(' ', "-");
+            let count = cat_counts.get(&current_cat).copied().unwrap_or(0);
+            sections.push_str(&format!(
+                "<details class='section' id='cat-{slug}' open>\
+<summary class='section-header'>\
+<span class='section-arrow'>▶</span>\
+<h2>{cat}</h2>\
+<span class='section-count'>{count} élément{s}</span>\
+</summary>\
+<div class='cards'>\n",
+                slug  = slug,
+                cat   = html_escape(&current_cat),
+                count = count,
+                s     = if count > 1 { "s" } else { "" },
+            ));
         }
-        rows.push_str(&format!(
-            "<tr><td class='name'>{}</td><td class='data'><pre>{}</pre></td></tr>",
-            html_escape(&item.name), html_escape(&item.data)
+        let data_html = html_escape(&json_to_readable(&item.data));
+        sections.push_str(&format!(
+            "<details class='card' open>\
+<summary class='card-title'>\
+<span class='card-arrow'>▶</span>{name}\
+</summary>\
+<pre class='card-data'>{data}</pre>\
+</details>\n",
+            name = html_escape(&item.name),
+            data = data_html,
         ));
     }
+    if !current_cat.is_empty() {
+        sections.push_str("</div></details>\n");
+    }
+
     format!(r#"<!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8">
-<title>NiTriTe Backup {ts}</title>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NiTriTe — Rapport de Sauvegarde — {ts}</title>
 <style>
-  body{{font-family:system-ui,sans-serif;background:#0f0f10;color:#e5e5e5;margin:0;padding:20px}}
-  h1{{color:#f97316;border-bottom:2px solid #f97316;padding-bottom:8px}}
-  .meta{{color:#888;font-size:13px;margin-bottom:20px}}
-  table{{width:100%;border-collapse:collapse;background:#1a1a1f;border-radius:8px;overflow:hidden}}
-  th,td{{padding:10px 14px;text-align:left;border-bottom:1px solid #2e2e33}}
-  .cat{{background:#1e1e28;color:#f97316;font-size:12px;text-transform:uppercase;letter-spacing:.08em}}
-  .name{{color:#a1a1aa;font-weight:600;white-space:nowrap;width:200px}}
-  .data pre{{margin:0;font-size:12px;color:#e5e5e5;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto}}
-</style></head><body>
-<h1>NiTriTe — Rapport de Sauvegarde</h1>
-<p class="meta">Date : {ts} &nbsp;|&nbsp; {total} éléments exportés</p>
-<table>{rows}</table>
+  *{{box-sizing:border-box;margin:0;padding:0}}
+  :root{{
+    --bg:#09090b;--bg2:#111113;--bg3:#18181b;--border:#27272a;--border2:#3f3f46;
+    --accent:#f97316;--text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;
+    --success:#22c55e;--radius:10px;
+  }}
+  body{{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);
+    display:flex;min-height:100vh;font-size:13px}}
+
+  /* ── Sidebar ── */
+  nav{{width:230px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+    padding:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}}
+  .nav-brand{{padding:20px;border-bottom:1px solid var(--border);flex-shrink:0}}
+  .nav-brand-title{{font-size:18px;font-weight:800;
+    background:linear-gradient(135deg,#fafafa 40%,#f97316);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}}
+  .nav-brand-sub{{font-size:10px;color:var(--text3);font-family:'Courier New',monospace;margin-top:3px}}
+  .nav-actions{{padding:10px 12px;border-bottom:1px solid var(--border);
+    display:flex;gap:6px;flex-shrink:0}}
+  .nav-btn{{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:6px;
+    background:var(--bg3);color:var(--text2);cursor:pointer;font-size:11px;
+    font-family:inherit;transition:all .15s;text-align:center}}
+  .nav-btn:hover{{border-color:var(--accent);color:var(--accent)}}
+  .nav-label{{padding:8px 16px 4px;font-size:9px;font-weight:700;color:var(--text3);
+    text-transform:uppercase;letter-spacing:.12em}}
+  .nav-link{{display:flex;align-items:center;justify-content:space-between;
+    padding:7px 16px;font-size:12px;color:var(--text2);text-decoration:none;
+    border-left:2px solid transparent;transition:all .15s}}
+  .nav-link:hover{{color:var(--accent);border-left-color:var(--accent);
+    background:rgba(249,115,22,.06)}}
+  .nav-count{{font-size:10px;background:var(--bg3);border:1px solid var(--border);
+    border-radius:99px;padding:1px 7px;color:var(--text3);font-weight:500}}
+
+  /* ── Main ── */
+  main{{flex:1;padding:32px 40px;min-width:0;max-width:1200px}}
+
+  /* ── Header ── */
+  .report-header{{margin-bottom:28px}}
+  .report-title{{font-size:28px;font-weight:800;margin-bottom:10px;
+    background:linear-gradient(135deg,#fafafa 40%,#f97316);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}}
+  .report-meta{{display:flex;gap:10px;flex-wrap:wrap}}
+  .meta-pill{{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+    background:var(--bg3);border:1px solid var(--border);border-radius:99px;
+    font-size:11px;color:var(--text2)}}
+  .meta-pill strong{{color:var(--accent)}}
+
+  /* ── Sections collapsibles ── */
+  details.section{{margin-bottom:20px;scroll-margin-top:16px;
+    border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}}
+  details.section > summary.section-header{{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 18px;cursor:pointer;list-style:none;
+    background:var(--bg3);border-bottom:1px solid transparent;
+    user-select:none;transition:background .15s}}
+  details.section > summary.section-header::-webkit-details-marker{{display:none}}
+  details.section > summary:hover{{background:var(--bg2)}}
+  details.section[open] > summary{{border-bottom-color:var(--border)}}
+  .section-arrow{{color:var(--accent);font-size:9px;display:inline-block;
+    transition:transform .2s;flex-shrink:0}}
+  details.section[open] > summary .section-arrow{{transform:rotate(90deg)}}
+  details.section > summary h2{{font-size:13px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--text2);flex:1}}
+  .section-count{{font-size:10px;background:rgba(249,115,22,.12);color:var(--accent);
+    border:1px solid rgba(249,115,22,.25);border-radius:99px;padding:2px 10px;
+    font-weight:600;flex-shrink:0}}
+
+  /* ── Cards collapsibles dans la section ── */
+  .cards{{display:flex;flex-direction:column;gap:0;padding:12px;gap:8px}}
+  details.card{{background:var(--bg2);border:1px solid var(--border);
+    border-radius:8px;overflow:hidden;transition:border-color .2s}}
+  details.card:hover{{border-color:var(--border2)}}
+  details.card[open]{{border-color:var(--border2)}}
+  details.card > summary.card-title{{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;cursor:pointer;list-style:none;
+    font-size:12px;font-weight:600;color:var(--text2);
+    background:var(--bg3);user-select:none;transition:color .15s;
+    border-bottom:1px solid transparent}}
+  details.card > summary.card-title::-webkit-details-marker{{display:none}}
+  details.card > summary:hover{{color:var(--text)}}
+  details.card[open] > summary{{border-bottom-color:var(--border)}}
+  .card-arrow{{font-size:8px;color:var(--text3);display:inline-block;
+    transition:transform .2s;flex-shrink:0}}
+  details.card[open] > summary .card-arrow{{transform:rotate(90deg)}}
+
+  /* ── Contenu des cards (pre) ── */
+  pre.card-data{{
+    padding:14px 16px;
+    font-size:11.5px;font-family:'JetBrains Mono','Courier New',monospace;
+    color:var(--text);white-space:pre-wrap;word-break:break-word;
+    line-height:1.7;
+    /* PAS de max-height — tout le contenu est visible */
+    overflow-x:auto;
+    scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+  }}
+  pre.card-data::-webkit-scrollbar{{height:4px}}
+  pre.card-data::-webkit-scrollbar-thumb{{background:var(--border2);border-radius:99px}}
+
+  /* ── Footer ── */
+  .report-footer{{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);
+    font-size:11px;color:var(--text3);text-align:center}}
+
+  @media print{{
+    nav{{display:none}}
+    main{{padding:16px;max-width:100%}}
+    details.section,details.card{{border:1px solid #ccc}}
+    details.section > summary,details.card > summary{{background:#f5f5f5;color:#333}}
+    pre.card-data{{color:#111;font-size:10px}}
+  }}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-title">NiTriTe</div>
+    <div class="nav-brand-sub">Rapport de sauvegarde</div>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="document.querySelectorAll('details').forEach(d=>d.open=true)">Tout ouvrir</button>
+    <button class="nav-btn" onclick="document.querySelectorAll('details').forEach(d=>d.open=false)">Tout fermer</button>
+  </div>
+  <div class="nav-label">Catégories</div>
+  {nav_links}
+</nav>
+
+<main>
+  <div class="report-header">
+    <div class="report-title">Rapport de Sauvegarde</div>
+    <div class="report-meta">
+      <div class="meta-pill">📅 Date&nbsp;<strong>{ts}</strong></div>
+      <div class="meta-pill">📦 Éléments&nbsp;<strong>{total}</strong></div>
+      <div class="meta-pill">🛡 NiTriTe&nbsp;<strong>v26.36</strong></div>
+    </div>
+  </div>
+
+  {sections}
+
+  <div class="report-footer">
+    Généré par NiTriTe &mdash; {ts} &mdash; {total} éléments exportés
+  </div>
+</main>
+
 </body></html>"#,
-        ts = html_escape(&m.timestamp),
-        total = m.total_items,
-        rows = rows
+        ts        = html_escape(&m.timestamp),
+        total     = m.total_items,
+        nav_links = nav_links,
+        sections  = sections,
     )
 }
 
@@ -410,9 +622,59 @@ fn collect_installed_apps() -> Result<String, NiTriTeError> {
 }
 
 fn collect_drivers() -> Result<String, NiTriTeError> {
-    let output = Command::new("driverquery").args(["/v", "/fo", "csv"]).creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let script = r#"
+$cats = @{
+    'Bluetooth'    = 'Bluetooth'
+    'Net'          = 'Cartes Reseau'
+    'Display'      = 'Affichage / GPU'
+    'DiskDrive'    = 'Disques / SSD'
+    'USB'          = 'Controleurs USB'
+    'AudioEndpoint'= 'Audio'
+    'Media'        = 'Multimedia'
+    'MEDIA'        = 'Multimedia'
+    'HDC'          = 'Controleurs disque'
+    'SCSIAdapter'  = 'Controleurs SCSI / NVMe'
+    'Mouse'        = 'Souris'
+    'Keyboard'     = 'Clavier'
+    'HIDClass'     = 'Peripheriques HID'
+    'Camera'       = 'Cameras'
+    'System'       = 'Systeme'
+    'Processor'    = 'Processeur'
+    'Battery'      = 'Batterie'
+    'Monitor'      = 'Ecrans'
+    'PrintQueue'   = 'Imprimantes'
+    'Biometric'    = 'Biometrique'
+    'UCM'          = 'USB Type-C'
 }
+$all = Get-WmiObject Win32_PnPSignedDriver -ErrorAction SilentlyContinue |
+    Where-Object { $_.DeviceName -and $_.DeviceName.Trim() -ne '' -and $_.DriverVersion } |
+    Group-Object DeviceClass | Sort-Object Name
+
+foreach ($group in $all) {
+    $cat = if ($cats[$group.Name]) { $cats[$group.Name] }
+           elseif ($group.Name)    { $group.Name }
+           else                    { 'Autres' }
+    Write-Output ""
+    Write-Output "=== $cat ($($group.Count) pilote(s)) ==="
+    foreach ($drv in ($group.Group | Sort-Object DeviceName)) {
+        Write-Output "  Peripherique : $($drv.DeviceName)"
+        if ($drv.Manufacturer -and $drv.Manufacturer -ne $drv.DeviceName) {
+            Write-Output "  Fabricant    : $($drv.Manufacturer)"
+        }
+        Write-Output "  Version      : $($drv.DriverVersion)"
+        if ($drv.DriverDate -and $drv.DriverDate.Length -ge 8) {
+            try {
+                $df = [datetime]::ParseExact($drv.DriverDate.Substring(0,8),'yyyyMMdd',$null)
+                Write-Output "  Date         : $($df.ToString('dd/MM/yyyy'))"
+            } catch {}
+        }
+        Write-Output ""
+    }
+}
+"#;
+    run_ps_temp(script)
+}
+
 
 fn collect_network_config() -> Result<String, NiTriTeError> {
     let output = Command::new("ipconfig").arg("/all").creation_flags(0x08000000).output()?;
@@ -420,10 +682,24 @@ fn collect_network_config() -> Result<String, NiTriTeError> {
 }
 
 fn collect_startup() -> Result<String, NiTriTeError> {
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command", "Get-CimInstance Win32_StartupCommand | ConvertTo-Json"])
-        .creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let script = r#"
+$items = Get-CimInstance Win32_StartupCommand -ErrorAction SilentlyContinue |
+    Sort-Object Location, Name
+
+$prev_loc = ""
+foreach ($item in $items) {
+    if ($item.Location -ne $prev_loc) {
+        Write-Output ""
+        Write-Output "=== $($item.Location) ==="
+        $prev_loc = $item.Location
+    }
+    Write-Output "  Nom         : $($item.Name)"
+    Write-Output "  Commande    : $($item.Command)"
+    Write-Output "  Utilisateur : $($item.User)"
+    Write-Output ""
+}
+"#;
+    run_ps_temp(script)
 }
 
 fn collect_env_vars() -> Result<String, NiTriTeError> {
@@ -454,10 +730,72 @@ fn collect_browser_bookmarks(browser_subpath: &str) -> Result<String, NiTriTeErr
 }
 
 fn collect_windows_license() -> Result<String, NiTriTeError> {
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command", "(Get-WmiObject SoftwareLicensingProduct | Where-Object { $_.PartialProductKey } | Select-Object Name, Description, PartialProductKey) | ConvertTo-Json"])
+    // Méthode 1 : clé OEM gravée dans le BIOS/UEFI (laptops OEM)
+    let oem_out = Command::new("powershell")
+        .args(["-NoProfile", "-Command",
+            "$k=(Get-WmiObject SoftwareLicensingService -EA SilentlyContinue).OA3xOriginalProductKey; if($k -and $k.Trim().Length -gt 0){$k.Trim()} else {''}"])
         .creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let oem_key = String::from_utf8_lossy(&oem_out.stdout).trim().to_string();
+
+    // Méthode 2 : décode DigitalProductId depuis le registre (fonctionne retail, volume, KMS/Massgrave)
+    let decode_script = concat!(
+        "$m='BCDFGHJKMPQRTVWXY2346789';",
+        "$d=Get-ItemPropertyValue 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' -Name DigitalProductId -EA SilentlyContinue;",
+        "if($d -and $d.Count -ge 67){",
+          "$k=$d[52..66]; $r='';",
+          "for($i=24;$i -ge 0;$i--){",
+            "$n=0;",
+            "for($j=14;$j -ge 0;$j--){$n=$n*256 -bxor $k[$j];$k[$j]=[math]::Floor($n/24);$n=$n%24};",
+            "$r=$m[$n]+$r;",
+            "if((24-$i)%5 -eq 0 -and $i -ne 0 -and $i -ne 24){$r='-'+$r}",
+          "};",
+          "$r",
+        "}else{''}"
+    );
+    let reg_out = Command::new("powershell")
+        .args(["-NoProfile", "-Command", decode_script])
+        .creation_flags(0x08000000).output()?;
+    let reg_key = String::from_utf8_lossy(&reg_out.stdout).trim().to_string();
+
+    // Méthode 3 : slmgr /dli — statut lisible (fonctionne avec Massgrave HWID/KMS38)
+    let slmgr_out = Command::new("cscript")
+        .args(["//nologo", "C:\\Windows\\System32\\slmgr.vbs", "/dli"])
+        .creation_flags(0x08000000).output();
+    let slmgr = if let Ok(o) = slmgr_out {
+        String::from_utf8_lossy(&o.stdout).trim().to_string()
+    } else { String::new() };
+
+    // Méthode 4 : informations WMI (canal, clé partielle)
+    let wmi_out = Command::new("powershell")
+        .args(["-NoProfile", "-Command",
+            "Get-WmiObject SoftwareLicensingProduct -EA SilentlyContinue | Where-Object {$_.PartialProductKey -and $_.Name -like '*Windows*'} | Select-Object -First 1 | ForEach-Object { \"Edition         : \" + $_.Name; \"Cle partielle   : ...\" + $_.PartialProductKey; \"Canal           : \" + $_.LicenseFamily; \"Statut          : \" + $(switch($_.LicenseStatus){0{'Non licence'} 1{'ACTIVE'} 2{'Grace period'} 3{'Modifie (tampered)'} 4{'Notification'} 5{'Grace etendue'} default{'Inconnu'}}) }"])
+        .creation_flags(0x08000000).output()?;
+    let wmi = String::from_utf8_lossy(&wmi_out.stdout).trim().to_string();
+
+    let mut r = String::new();
+    r.push_str("╔══════════════════════════════════════╗\n");
+    r.push_str("║     LICENCE WINDOWS — INFORMATIONS   ║\n");
+    r.push_str("╚══════════════════════════════════════╝\n\n");
+
+    if !oem_key.is_empty() {
+        r.push_str(&format!("Cle OEM (BIOS)  : {}\n", oem_key));
+    }
+    if !reg_key.is_empty() && reg_key != "DigitalProductId introuvable" {
+        r.push_str(&format!("Cle registre    : {}\n", reg_key));
+    }
+    if oem_key.is_empty() && (reg_key.is_empty() || reg_key == "DigitalProductId introuvable") {
+        r.push_str("Cle produit     : Non disponible (activation par hardware ID ou KMS)\n");
+    }
+    if !wmi.is_empty() {
+        r.push('\n');
+        r.push_str(&wmi);
+        r.push('\n');
+    }
+    if !slmgr.is_empty() {
+        r.push_str("\n─── Détail complet (slmgr) ───\n");
+        r.push_str(&slmgr);
+    }
+    Ok(r)
 }
 
 fn collect_bitlocker_keys() -> Result<String, NiTriTeError> {
@@ -468,11 +806,83 @@ fn collect_bitlocker_keys() -> Result<String, NiTriTeError> {
 }
 
 fn collect_office_license() -> Result<String, NiTriTeError> {
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command",
-            "Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Office\\*\\*\\Registration\\*' -ErrorAction SilentlyContinue | Select-Object ProductName, DigitalProductID | ConvertTo-Json; cscript //nologo 'C:\\Program Files\\Microsoft Office\\Office16\\OSPP.VBS' /dstatus 2>$null"])
+    // Méthode 1 : DigitalProductId dans les chemins MSI classiques
+    let decode_script = concat!(
+        "$m='BCDFGHJKMPQRTVWXY2346789';",
+        "$paths=@('HKLM:\\SOFTWARE\\Microsoft\\Office\\*\\Registration','HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Office\\*\\Registration');",
+        "$found=$false;",
+        "foreach($p in $paths){",
+          "Get-ChildItem $p -EA SilentlyContinue | ForEach-Object {",
+            "$reg=Get-ItemProperty $_.PSPath -EA SilentlyContinue;",
+            "$name=if($reg.ProductName){$reg.ProductName}else{'Microsoft Office'};",
+            "$dpid=$reg.DigitalProductID;",
+            "if($dpid -and $dpid.Count -ge 67){",
+              "$k=$dpid[52..66]; $r='';",
+              "for($i=24;$i -ge 0;$i--){",
+                "$n=0;",
+                "for($j=14;$j -ge 0;$j--){$n=$n*256 -bxor $k[$j];$k[$j]=[math]::Floor($n/24);$n=$n%24};",
+                "$r=$m[$n]+$r;",
+                "if((24-$i)%5 -eq 0 -and $i -ne 0 -and $i -ne 24){$r='-'+$r}",
+              "};",
+              "\"Produit  : $name\";\"Cle      : $r\";'';$found=$true",
+            "}",
+          "}",
+        "};",
+        "if(-not $found){'(Aucune cle MSI trouvee — voir section Click-to-Run ci-dessous)'}"
+    );
+    let reg_out = Command::new("powershell")
+        .args(["-NoProfile", "-Command", decode_script])
         .creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let reg_keys = String::from_utf8_lossy(&reg_out.stdout).trim().to_string();
+
+    // Méthode 2 : Click-to-Run / Office 365 / Massgrave
+    let c2r_out = Command::new("powershell")
+        .args(["-NoProfile", "-Command", concat!(
+            "$c2r=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Office\\ClickToRun\\Configuration' -EA SilentlyContinue;",
+            "if($c2r){",
+              "\"Produit C2R    : \" + $c2r.ProductReleaseIds;",
+              "\"Canal          : \" + $c2r.CDNBaseUrl;",
+              "\"Version        : \" + $c2r.VersionToReport;",
+              "$lic=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Office\\ClickToRun\\REGISTRY\\MACHINE\\SOFTWARE\\Microsoft\\Office\\16.0\\Common\\Licensing' -EA SilentlyContinue;",
+              "if($lic.LastAcknowledgedLicenseToken){'Licence token  : presente (abonnement/KMS actif)'}",
+            "}else{'(Office Click-to-Run non detecte)'}"
+        )])
+        .creation_flags(0x08000000).output()?;
+    let c2r = String::from_utf8_lossy(&c2r_out.stdout).trim().to_string();
+
+    // Méthode 3 : OSPP.VBS statut d'activation
+    let ospp_dirs = [
+        r"C:\Program Files\Microsoft Office\Office16",
+        r"C:\Program Files (x86)\Microsoft Office\Office16",
+        r"C:\Program Files\Microsoft Office\Office15",
+    ];
+    let mut ospp_status = String::new();
+    for dir in &ospp_dirs {
+        let vbs = format!("{}\\OSPP.VBS", dir);
+        if std::path::Path::new(&vbs).exists() {
+            if let Ok(o) = Command::new("cscript")
+                .args(["//nologo", &vbs, "/dstatus"])
+                .creation_flags(0x08000000).output()
+            {
+                let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+                if !s.is_empty() { ospp_status = s; break; }
+            }
+        }
+    }
+
+    let mut r = String::new();
+    r.push_str("╔══════════════════════════════════════╗\n");
+    r.push_str("║     LICENCE OFFICE — INFORMATIONS    ║\n");
+    r.push_str("╚══════════════════════════════════════╝\n\n");
+    r.push_str("─── Clé produit (registre MSI) ───\n");
+    r.push_str(&reg_keys);
+    r.push_str("\n\n─── Office Click-to-Run / Office 365 ───\n");
+    r.push_str(&c2r);
+    if !ospp_status.is_empty() {
+        r.push_str("\n\n─── Statut d'activation (OSPP) ───\n");
+        r.push_str(&ospp_status);
+    }
+    Ok(r)
 }
 
 fn collect_installed_fonts() -> Result<String, NiTriTeError> {
@@ -484,11 +894,43 @@ fn collect_installed_fonts() -> Result<String, NiTriTeError> {
 }
 
 fn collect_scheduled_tasks() -> Result<String, NiTriTeError> {
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command",
-            "Get-ScheduledTask | Where-Object {$_.State -ne 'Disabled'} | Select-Object TaskName, TaskPath, State, Description | ConvertTo-Json"])
-        .creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let script = r#"
+$tasks = Get-ScheduledTask -ErrorAction SilentlyContinue |
+    Where-Object { $_.State -ne 'Disabled' -and $_.TaskPath -notmatch '\\Microsoft\\' } |
+    Sort-Object TaskPath, TaskName
+
+$prev_path = ""
+foreach ($t in $tasks) {
+    $path = if ($t.TaskPath -and $t.TaskPath -ne '\') { $t.TaskPath.TrimEnd('\') } else { "Racine" }
+    if ($path -ne $prev_path) {
+        Write-Output ""
+        Write-Output "=== Dossier : $path ==="
+        $prev_path = $path
+    }
+    $etat = switch ($t.State) {
+        'Ready'   { 'Pret' }
+        'Running' { 'En cours' }
+        'Queued'  { 'En attente' }
+        default   { $t.State }
+    }
+    Write-Output "  Tache       : $($t.TaskName)"
+    Write-Output "  Etat        : $etat"
+    if ($t.Description -and $t.Description.Trim() -ne '') {
+        $desc = $t.Description.Trim() -replace '\r?\n', ' '
+        if ($desc.Length -gt 120) { $desc = $desc.Substring(0,120) + '...' }
+        Write-Output "  Description : $desc"
+    }
+    # Déclencheur simplifié
+    $trig = $t.Triggers | Select-Object -First 1
+    if ($trig) {
+        $type = $trig.CimClass.CimClassName -replace 'MSFT_Task','` -replace 'Trigger',''
+        Write-Output "  Declencheur : $type"
+    }
+    Write-Output ""
+}
+if (-not $tasks) { Write-Output "Aucune tache planifiee active (hors Microsoft) trouvee." }
+"#;
+    run_ps_temp(script)
 }
 
 fn collect_windows_features() -> Result<String, NiTriTeError> {
@@ -500,9 +942,24 @@ fn collect_windows_features() -> Result<String, NiTriTeError> {
 }
 
 fn collect_folder_sizes() -> Result<String, NiTriTeError> {
+    // Sortie directement formatée en Mo/Go — pas de JSON brut
+    let script = concat!(
+        "Get-ChildItem C:\\ -Directory -EA SilentlyContinue",
+        " | ForEach-Object {",
+        "   $bytes = (Get-ChildItem $_.FullName -Recurse -EA SilentlyContinue | Measure-Object Length -Sum).Sum;",
+        "   $bytes = if($bytes){[long]$bytes}else{0};",
+        "   $taille = if($bytes -ge 1073741824){ \"{0:N2} Go\" -f ($bytes/1GB) }",
+        "             elseif($bytes -ge 1048576){ \"{0:N0} Mo\" -f ($bytes/1MB) }",
+        "             elseif($bytes -ge 1024){ \"{0:N0} Ko\" -f ($bytes/1KB) }",
+        "             else{ \"$bytes o\" };",
+        "   [PSCustomObject]@{Dossier=$_.Name; Taille=$taille; TailleBytes=$bytes}",
+        " }",
+        " | Sort-Object TailleBytes -Descending",
+        " | Select-Object -First 30",
+        " | ForEach-Object { \"{0,-40} {1}\" -f $_.Dossier, $_.Taille }"
+    );
     let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command",
-            "Get-ChildItem C:\\ -Directory -ErrorAction SilentlyContinue | ForEach-Object { $size = (Get-ChildItem $_.FullName -Recurse -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum; [PSCustomObject]@{Folder=$_.Name; SizeMB=[math]::Round($size/1MB,1)} } | Sort-Object SizeMB -Descending | Select-Object -First 30 | ConvertTo-Json"])
+        .args(["-NoProfile", "-Command", script])
         .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
@@ -521,12 +978,175 @@ fn collect_desktop_files() -> Result<String, NiTriTeError> {
     Ok(files.join("\n"))
 }
 
+fn collect_system_components() -> Result<String, NiTriTeError> {
+    let script = r#"
+# === SYSTEME ===
+$cs = Get-WmiObject Win32_ComputerSystem -EA SilentlyContinue
+$os = Get-WmiObject Win32_OperatingSystem -EA SilentlyContinue
+Write-Output "=== INFORMATIONS SYSTEME ==="
+if ($cs) {
+    Write-Output "  Fabricant PC    : $($cs.Manufacturer)"
+    Write-Output "  Modele PC       : $($cs.Model)"
+    Write-Output "  Nom machine     : $($cs.Name)"
+}
+if ($os) {
+    Write-Output "  Systeme         : $($os.Caption) $($os.OSArchitecture)"
+    Write-Output "  Build           : $($os.BuildNumber)"
+}
+Write-Output ""
+
+# === CPU ===
+$cpu = Get-WmiObject Win32_Processor -EA SilentlyContinue | Select-Object -First 1
+Write-Output "=== PROCESSEUR (CPU) ==="
+if ($cpu) {
+    Write-Output "  Modele          : $($cpu.Name.Trim())"
+    Write-Output "  Coeurs          : $($cpu.NumberOfCores)"
+    Write-Output "  Threads         : $($cpu.NumberOfLogicalProcessors)"
+    $ghz = [math]::Round($cpu.MaxClockSpeed / 1000.0, 2)
+    Write-Output "  Frequence       : $($cpu.MaxClockSpeed) MHz ($ghz GHz)"
+    if ($cpu.L2CacheSize -gt 0) {
+        $l2 = [math]::Round($cpu.L2CacheSize / 1024.0, 1)
+        Write-Output "  Cache L2        : $l2 Mo"
+    }
+    if ($cpu.L3CacheSize -gt 0) {
+        $l3 = [math]::Round($cpu.L3CacheSize / 1024.0, 1)
+        Write-Output "  Cache L3        : $l3 Mo"
+    }
+    Write-Output "  Socket          : $($cpu.SocketDesignation)"
+    $arch = switch ($cpu.Architecture) { 0 { 'x86' } 9 { 'x64 (AMD64)' } 12 { 'ARM64' } default { $cpu.Architecture } }
+    Write-Output "  Architecture    : $arch"
+}
+Write-Output ""
+
+# === GPU ===
+Write-Output "=== CARTE(S) GRAPHIQUE(S) ==="
+$gpus = Get-WmiObject Win32_VideoController -EA SilentlyContinue
+foreach ($gpu in $gpus) {
+    Write-Output "  Modele          : $($gpu.Name)"
+    if ($gpu.AdapterRAM -and $gpu.AdapterRAM -gt 0) {
+        $mb = [math]::Round($gpu.AdapterRAM / 1MB)
+        $vram = if ($mb -ge 1024) { "$([math]::Round($mb/1024.0,1)) Go" } else { "$mb Mo" }
+        Write-Output "  VRAM            : $vram"
+    }
+    Write-Output "  Version pilote  : $($gpu.DriverVersion)"
+    if ($gpu.CurrentHorizontalResolution) {
+        Write-Output "  Resolution      : $($gpu.CurrentHorizontalResolution) x $($gpu.CurrentVerticalResolution)"
+    }
+    Write-Output ""
+}
+
+# === RAM ===
+Write-Output "=== MEMOIRE RAM ==="
+$ramList = Get-WmiObject Win32_PhysicalMemory -EA SilentlyContinue
+$ramTotal = ($ramList | Measure-Object Capacity -Sum).Sum
+if ($ramTotal) {
+    Write-Output "  Total           : $([math]::Round($ramTotal/1GB,1)) Go"
+}
+foreach ($stick in $ramList) {
+    $slot = if ($stick.DeviceLocator) { $stick.DeviceLocator } else { 'Slot inconnu' }
+    $cap  = [math]::Round($stick.Capacity / 1GB, 1)
+    $type = switch ($stick.SMBIOSMemoryType) {
+        26 { 'DDR4' } 34 { 'DDR5' } 24 { 'DDR3' } 21 { 'DDR2' } 20 { 'DDR' } default { 'RAM' }
+    }
+    $speed = if ($stick.ConfiguredClockSpeed -gt 0) { $stick.ConfiguredClockSpeed }
+             elseif ($stick.Speed -gt 0) { $stick.Speed } else { 0 }
+    $speedStr = if ($speed -gt 0) { " @ $speed MHz" } else { '' }
+    Write-Output "  $slot          : $cap Go $type$speedStr"
+}
+Write-Output ""
+
+# === STOCKAGE ===
+Write-Output "=== STOCKAGE (SSD / HDD) ==="
+# Essai Get-PhysicalDisk (Storage module), repli sur Win32_DiskDrive
+$disks = $null
+try { $disks = Get-PhysicalDisk -ErrorAction Stop } catch {}
+if ($disks) {
+    foreach ($d in ($disks | Sort-Object DeviceId)) {
+        $type = switch ($d.MediaType) {
+            'SSD' { 'SSD' } 'HDD' { 'Disque dur (HDD)' } 'SCM' { 'Storage Class Memory' } default { $d.MediaType }
+        }
+        $size = if ($d.Size -ge 1GB) { "$([math]::Round($d.Size/1GB,1)) Go" } else { "$([math]::Round($d.Size/1MB,0)) Mo" }
+        Write-Output "  $($d.FriendlyName)"
+        Write-Output "    Type            : $type"
+        Write-Output "    Capacite        : $size"
+        Write-Output "    Sante           : $($d.HealthStatus)"
+        Write-Output ""
+    }
+} else {
+    foreach ($d in (Get-WmiObject Win32_DiskDrive -EA SilentlyContinue | Sort-Object Index)) {
+        $size = if ($d.Size -ge 1GB) { "$([math]::Round($d.Size/1GB,1)) Go" } else { "$([math]::Round($d.Size/1MB,0)) Mo" }
+        Write-Output "  $($d.Model)"
+        Write-Output "    Interface       : $($d.InterfaceType)"
+        Write-Output "    Capacite        : $size"
+        Write-Output ""
+    }
+}
+
+# === CARTE MERE ===
+Write-Output "=== CARTE MERE ==="
+$mb = Get-WmiObject Win32_BaseBoard -EA SilentlyContinue
+if ($mb) {
+    Write-Output "  Fabricant       : $($mb.Manufacturer)"
+    Write-Output "  Modele          : $($mb.Product)"
+    $sn = if ($mb.SerialNumber -and $mb.SerialNumber -notmatch 'Default|None|To Be|N/A|^\s*$') { $mb.SerialNumber } else { 'Non disponible' }
+    Write-Output "  Numero de serie : $sn"
+}
+Write-Output ""
+
+# === BIOS ===
+Write-Output "=== BIOS / UEFI ==="
+$bios = Get-WmiObject Win32_BIOS -EA SilentlyContinue
+if ($bios) {
+    Write-Output "  Fabricant       : $($bios.Manufacturer)"
+    Write-Output "  Version         : $($bios.SMBIOSBIOSVersion)"
+    if ($bios.ReleaseDate -and $bios.ReleaseDate.Length -ge 8) {
+        try {
+            $bd = [datetime]::ParseExact($bios.ReleaseDate.Substring(0,8), 'yyyyMMdd', $null)
+            Write-Output "  Date            : $($bd.ToString('dd/MM/yyyy'))"
+        } catch {}
+    }
+}
+"#;
+    run_ps_temp(script)
+}
+
 fn collect_wifi_passwords() -> Result<String, NiTriTeError> {
-    let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command",
-            "(netsh wlan show profiles) | Select-String ':(.+)$' | ForEach-Object { $name = $_.Matches.Groups[1].Value.Trim(); $pass = (netsh wlan show profile name=\"$name\" key=clear 2>$null | Select-String 'Key Content\\s+:\\s+(.+)'); if($pass) { \"$name : $($pass.Matches.Groups[1].Value)\" } else { \"$name : (pas de mot de passe)\" } }"])
-        .creation_flags(0x08000000).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    let script = r#"
+$raw = netsh wlan show profiles 2>$null
+if (-not $raw) {
+    Write-Output "Wi-Fi desactive ou aucun profil sauvegarde."
+    return
+}
+$profiles = @()
+foreach ($line in $raw) {
+    if ($line -match 'All User Profile\s*:\s*(.+)' -or $line -match 'User Profile\s*:\s*(.+)') {
+        $profiles += $Matches[1].Trim()
+    }
+}
+if ($profiles.Count -eq 0) {
+    Write-Output "Aucun profil WiFi sauvegarde."
+    return
+}
+foreach ($name in $profiles) {
+    $detail = netsh wlan show profile name="$name" key=clear 2>$null
+    $passLine = $detail | Where-Object { $_ -match 'Key Content\s*:\s*(.+)' }
+    Write-Output "Reseau       : $name"
+    if ($passLine) {
+        $pw = ($passLine -replace '.*Key Content\s*:\s*', '').Trim()
+        Write-Output "Mot de passe : $pw"
+    } else {
+        Write-Output "Mot de passe : (aucun / reseau ouvert ou securise autrement)"
+    }
+    # Infos supplementaires
+    $auth = $detail | Where-Object { $_ -match 'Authentication\s*:\s*(.+)' }
+    if ($auth) {
+        $a = ($auth -replace '.*Authentication\s*:\s*', '').Trim()
+        Write-Output "Securite     : $a"
+    }
+    Write-Output ""
+}
+"#;
+    run_ps_temp(script)
 }
 
 fn collect_registry_export() -> Result<String, NiTriTeError> {
@@ -539,9 +1159,23 @@ fn collect_registry_export() -> Result<String, NiTriTeError> {
 }
 
 fn collect_suspicious_processes() -> Result<String, NiTriTeError> {
+    // Sortie formatée directement (plus besoin de json_to_readable pour ce collecteur)
+    let script = concat!(
+        "Get-Process -EA SilentlyContinue",
+        " | Where-Object { $_.Path -and $_.Path -notmatch 'Windows|Microsoft|System32|SysWOW64|Program Files' }",
+        " | ForEach-Object {",
+        "   $mem = $_.WorkingSet64;",
+        "   $memStr = if($mem -ge 1073741824){ \"{0:N2} Go\" -f ($mem/1GB) }",
+        "             elseif($mem -ge 1048576){ \"{0:N0} Mo\" -f ($mem/1MB) }",
+        "             else{ \"{0:N0} Ko\" -f ($mem/1KB) };",
+        "   [PSCustomObject]@{Processus=$_.ProcessName; PID=$_.Id; Memoire=$memStr; Chemin=$_.Path}",
+        " }",
+        " | Sort-Object {$_.Memoire} -Descending",
+        " | Select-Object -First 30",
+        " | ForEach-Object { \"$($_.Processus) (PID $($_.PID)) — $($_.Memoire)`n  Chemin : $($_.Chemin)\n\" }"
+    );
     let output = Command::new("powershell")
-        .args(["-NoProfile", "-Command",
-            "Get-Process | Where-Object { $_.Path -and $_.Path -notmatch 'Windows|Microsoft|System32|SysWOW64|Program Files' } | Select-Object ProcessName, Id, Path, @{N='MemMB';E={[math]::Round($_.WorkingSet64/1MB,1)}} | Sort-Object MemMB -Descending | Select-Object -First 30 | ConvertTo-Json"])
+        .args(["-NoProfile", "-Command", script])
         .creation_flags(0x08000000).output()?;
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
@@ -558,14 +1192,72 @@ fn format_size(bytes: u64) -> String {
     }
 }
 
-/// Convertit du JSON en texte lisible pour les formats .txt et .md
+// Champs PowerShell internes à ignorer
+const PS_SKIP: &[&str] = &[
+    "PSPath","PSParentPath","PSChildName","PSProvider",
+    "PSComputerName","RunspaceId","PSShowComputerName",
+];
+
+// Traduction des clés techniques → labels lisibles
+fn friendly_label(k: &str) -> &str {
+    match k {
+        "Name"|"TaskName"|"DisplayName"   => "Nom",
+        "ProductName"                      => "Produit",
+        "Description"                      => "Description",
+        "State"                            => "Etat",
+        "Status"                           => "Statut",
+        "Path"|"TaskPath"|"FullName"       => "Chemin",
+        "Id"|"ProcessId"                   => "PID",
+        "ProcessName"                      => "Processus",
+        "SizeMB"|"SizeGB"                  => "Taille",
+        "Folder"|"Dossier"                 => "Dossier",
+        "LicenseStatus"                    => "Statut licence",
+        "PartialProductKey"                => "Cle partielle",
+        "LicenseFamily"                    => "Canal",
+        "MemMB"                            => "Memoire",
+        "Username"|"UserName"              => "Utilisateur",
+        "Version"|"DisplayVersion"         => "Version",
+        "Publisher"|"InstallLocation"      => "Editeur",
+        "InstallDate"                      => "Date installation",
+        "FeatureName"                      => "Fonctionnalite",
+        "MountPoint"                       => "Lecteur",
+        "VolumeStatus"                     => "Statut volume",
+        "EncryptionPercentage"             => "Chiffrement (%)",
+        "KeyProtector"                     => "Protecteur cle",
+        "MemoryMB"                         => "Memoire",
+        other                              => other,
+    }
+}
+
+// Formate une valeur numérique selon le nom de la clé (Mo, Go, %)
+fn fmt_numeric(k: &str, n: &serde_json::Number) -> Option<String> {
+    let kl = k.to_lowercase();
+    let f = n.as_f64()?;
+    if kl.ends_with("mb") || kl == "sizemb" || kl == "memmb" || kl == "memorymb" {
+        return Some(if f >= 1024.0 {
+            format!("{:.2} Go", f / 1024.0)
+        } else {
+            format!("{:.0} Mo", f)
+        });
+    }
+    if kl.ends_with("gb") || kl == "sizegb" {
+        return Some(format!("{:.2} Go", f));
+    }
+    if kl.contains("bytes") || (kl.contains("size") && !kl.contains("mb") && !kl.contains("gb")) {
+        if let Some(u) = n.as_u64() { return Some(format_size(u)); }
+    }
+    if kl.contains("percent") { return Some(format!("{}%", f)); }
+    None
+}
+
+/// Convertit du JSON en texte lisible pour un non-informaticien
 fn json_to_readable(s: &str) -> String {
     let trimmed = s.trim();
     if !trimmed.starts_with('{') && !trimmed.starts_with('[') {
         return s.to_string();
     }
     match serde_json::from_str::<serde_json::Value>(trimmed) {
-        Ok(v) => fmt_val(&v, 0),
+        Ok(v)  => fmt_val(&v, 0),
         Err(_) => s.to_string(),
     }
 }
@@ -573,34 +1265,40 @@ fn json_to_readable(s: &str) -> String {
 fn fmt_val(v: &serde_json::Value, depth: usize) -> String {
     let pad = "  ".repeat(depth);
     match v {
-        serde_json::Value::Array(arr) => arr
-            .iter()
-            .enumerate()
-            .map(|(i, item)| match item {
-                serde_json::Value::Object(_) | serde_json::Value::Array(_) => {
-                    format!("{}[{}]\n{}", pad, i + 1, fmt_val(item, depth))
+        serde_json::Value::Array(arr) => {
+            arr.iter().enumerate().map(|(i, item)| {
+                match item {
+                    serde_json::Value::Object(_) | serde_json::Value::Array(_) => {
+                        format!("{}── Entrée {} ──\n{}", pad, i + 1, fmt_val(item, depth))
+                    }
+                    _ => fmt_val(item, depth),
                 }
-                _ => fmt_val(item, depth),
-            })
-            .collect::<Vec<_>>()
-            .join("\n"),
-        serde_json::Value::Object(map) => map
-            .iter()
-            .filter(|(_, v)| !v.is_null())
-            .map(|(k, v)| {
-                let val = match v {
-                    serde_json::Value::String(s) => s.clone(),
-                    serde_json::Value::Bool(b) => b.to_string(),
-                    serde_json::Value::Number(n) => n.to_string(),
-                    other => fmt_val(other, depth + 1),
-                };
-                format!("{}  {:<32} {}", pad, format!("{}:", k), val)
-            })
-            .collect::<Vec<_>>()
-            .join("\n"),
+            }).collect::<Vec<_>>().join("\n\n")
+        }
+        serde_json::Value::Object(map) => {
+            map.iter()
+                .filter(|(k, v)| !v.is_null() && !PS_SKIP.contains(&k.as_str()))
+                .map(|(k, v)| {
+                    let label = friendly_label(k);
+                    let val = match v {
+                        serde_json::Value::String(s) if s.is_empty() => return String::new(),
+                        serde_json::Value::String(s) => s.clone(),
+                        serde_json::Value::Bool(b) => if *b { "Oui".into() } else { "Non".into() },
+                        serde_json::Value::Number(n) => {
+                            fmt_numeric(k, n).unwrap_or_else(|| n.to_string())
+                        }
+                        other => fmt_val(other, depth + 1),
+                    };
+                    if val.is_empty() { return String::new(); }
+                    format!("{}  {:<26} {}", pad, format!("{}:", label), val)
+                })
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
         serde_json::Value::String(s) => format!("{}{}", pad, s),
-        serde_json::Value::Null => format!("{}(null)", pad),
-        _ => format!("{}{}", pad, v),
+        serde_json::Value::Null       => String::new(),
+        _                             => format!("{}{}", pad, v),
     }
 }
 

@@ -13,7 +13,7 @@ import { useNotificationStore } from "@/stores/notifications";
 import {
   Bot, Send, Terminal, Play, CheckCircle, XCircle, RefreshCw,
   Cpu, MessageSquare, Settings, FolderOpen, Square, Download,
-  Zap, Server, Package,
+  Zap, Server, Package, History, Trash2, Plus, Clock,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -22,7 +22,7 @@ const notify = useNotificationStore();
 const backend = ref<"llamacpp" | "ollama">("llamacpp");
 
 // ─── Catalogue modèles ─────────────────────────────────────────────────────────
-interface CatalogEntry { id: string; name: string; description: string; size_gb: number; url: string; filename: string; recommended: boolean }
+interface CatalogEntry { id: string; name: string; description: string; size_gb: number; ram_gb: number; vram_gb: number; url: string; filename: string; recommended: boolean }
 const catalog = ref<CatalogEntry[]>([]);
 
 // ─── llama.cpp portable ────────────────────────────────────────────────────────
@@ -151,6 +151,63 @@ async function loadOllamaModels() {
   ollamaModelsLoading.value = false;
 }
 
+// ─── Historique conversations (localStorage) ───────────────────────────────────
+interface Conversation {
+  id: string;
+  title: string;
+  created_at: string;
+  model: string;
+  messages: ChatMessage[];
+}
+
+const conversations   = ref<Conversation[]>([]);
+const showHistory     = ref(false);
+const currentConvId   = ref<string | null>(null);
+
+function loadConversations() {
+  try { conversations.value = JSON.parse(localStorage.getItem("nitrite_ai_conversations") ?? "[]"); }
+  catch { conversations.value = []; }
+}
+
+function persistConversations() {
+  localStorage.setItem("nitrite_ai_conversations", JSON.stringify(conversations.value.slice(0, 50)));
+}
+
+function saveCurrentConversation() {
+  if (!messages.value.length) return;
+  const title = messages.value.find(m => m.role === "user")?.content.slice(0, 50) ?? "Conversation";
+  if (currentConvId.value) {
+    const idx = conversations.value.findIndex(c => c.id === currentConvId.value);
+    if (idx >= 0) { conversations.value[idx].messages = [...messages.value]; persistConversations(); return; }
+  }
+  const id = Date.now().toString();
+  currentConvId.value = id;
+  conversations.value.unshift({
+    id, title, created_at: new Date().toLocaleString("fr-FR"),
+    model: activeModel.value, messages: [...messages.value],
+  });
+  persistConversations();
+}
+
+function loadConversation(conv: Conversation) {
+  messages.value = [...conv.messages];
+  currentConvId.value = conv.id;
+  showHistory.value = false;
+  scrollChat();
+}
+
+function deleteConversation(id: string) {
+  conversations.value = conversations.value.filter(c => c.id !== id);
+  if (currentConvId.value === id) { currentConvId.value = null; }
+  persistConversations();
+}
+
+function newConversation() {
+  if (messages.value.length) saveCurrentConversation();
+  messages.value = [];
+  currentConvId.value = null;
+}
+
 // ─── Chat ──────────────────────────────────────────────────────────────────────
 const systemPromptOptions = [
   { value: "assistant_it", label: "Assistant IT" },
@@ -205,6 +262,7 @@ async function sendMessage() {
       history: history.length ? history : null,
     });
     messages.value.push({ role: "assistant", content: response, command: extractCommand(response) ?? undefined });
+    saveCurrentConversation();
   } catch (err: any) {
     const hint = backend.value === "llamacpp" ? "Vérifiez que le serveur est démarré." : "Lancez `ollama serve`.";
     messages.value.push({ role: "assistant", content: `⚠ Erreur IA.\n\n${hint}\n\nDétail : ${String(err)}` });
@@ -239,6 +297,7 @@ onMounted(async () => {
   catalog.value = await invoke<CatalogEntry[]>("ai_model_catalog").catch(() => []);
   await detectServer();
   await Promise.all([scanGgufModels(), checkLlamacppStatus(), checkOllamaStatus(), loadOllamaModels()]);
+  loadConversations();
 });
 onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 </script>
@@ -327,7 +386,15 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
                       <NBadge v-if="entry.recommended" variant="warning" style="font-size:9px;margin-left:4px">★ Recommandé</NBadge>
                     </div>
                     <div class="catalog-desc">{{ entry.description }}</div>
-                    <div class="catalog-size">{{ fmtSize(entry.size_gb) }}</div>
+                    <div class="catalog-meta">
+                      <span class="catalog-size">{{ fmtSize(entry.size_gb) }}</span>
+                      <span class="meta-sep">·</span>
+                      <span class="catalog-ram">RAM {{ entry.ram_gb }} GB</span>
+                      <template v-if="entry.vram_gb > 0">
+                        <span class="meta-sep">·</span>
+                        <span class="catalog-vram">VRAM {{ entry.vram_gb }} GB</span>
+                      </template>
+                    </div>
                   </div>
                   <div class="catalog-action">
                     <NProgress v-if="modelDlProgress(entry) && !modelDlProgress(entry).done"
@@ -418,7 +485,15 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
           <div class="section-header">
             <MessageSquare :size="15" /><span>Conversation</span>
             <span v-if="activeModel" style="margin-left:8px;font-size:11px;color:var(--text-muted)">{{ activeModel }}</span>
-            <NButton v-if="messages.length" variant="secondary" size="sm" @click="clearChat" style="margin-left:auto">Effacer</NButton>
+            <div style="margin-left:auto;display:flex;gap:6px">
+              <NButton variant="ghost" size="sm" @click="showHistory = true">
+                <History :size="13" /> ({{ conversations.length }})
+              </NButton>
+              <NButton variant="ghost" size="sm" @click="newConversation" title="Nouvelle conversation">
+                <Plus :size="13" />
+              </NButton>
+              <NButton v-if="messages.length" variant="secondary" size="sm" @click="clearChat">Effacer</NButton>
+            </div>
           </div>
         </template>
         <div ref="chatRef" class="chat-messages">
@@ -469,6 +544,33 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
       </NCard>
     </div>
   </div>
+
+  <!-- Modal historique conversations -->
+  <NModal :open="showHistory" @close="showHistory = false" title="Historique des conversations">
+    <div v-if="conversations.length === 0" style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">
+      <History :size="32" style="opacity:.3;margin-bottom:10px" />
+      <p>Aucune conversation sauvegardée.<br>Démarrez une conversation pour qu'elle apparaisse ici.</p>
+    </div>
+    <div v-else style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto">
+      <div v-for="c in conversations" :key="c.id" class="conv-item" :class="{ 'conv-active': c.id === currentConvId }">
+        <div class="conv-info" @click="loadConversation(c)" style="cursor:pointer;flex:1">
+          <div class="conv-title">{{ c.title }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <span style="font-size:10px;color:var(--text-muted)"><Clock :size="10" style="display:inline" /> {{ c.created_at }}</span>
+            <NBadge variant="neutral" style="font-size:9px">{{ c.messages.length }} msgs</NBadge>
+            <span v-if="c.model" style="font-size:10px;color:var(--text-muted)">· {{ c.model.split('/').pop() }}</span>
+          </div>
+        </div>
+        <NButton variant="danger" size="sm" @click.stop="deleteConversation(c.id)"><Trash2 :size="12" /></NButton>
+      </div>
+    </div>
+    <template #footer>
+      <NButton variant="ghost" @click="conversations = []; persistConversations()" style="margin-right:auto;color:var(--danger)">
+        <Trash2 :size="13" /> Tout supprimer
+      </NButton>
+      <NButton variant="ghost" @click="showHistory = false">Fermer</NButton>
+    </template>
+  </NModal>
 </template>
 
 <style scoped>
@@ -508,7 +610,11 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 .catalog-info { flex:1; min-width:0; }
 .catalog-name { font-size:12px; font-weight:600; display:flex; align-items:center; }
 .catalog-desc { font-size:11px; color:var(--text-muted); margin-top:2px; line-height:1.4; }
-.catalog-size { font-size:11px; color:var(--accent-primary); font-weight:500; margin-top:3px; font-family:monospace; }
+.catalog-meta { display:flex; align-items:center; gap:5px; margin-top:4px; flex-wrap:wrap; }
+.catalog-size { font-size:11px; color:var(--accent-primary); font-weight:500; font-family:monospace; }
+.catalog-ram { font-size:10px; color:var(--text-muted); font-weight:500; }
+.catalog-vram { font-size:10px; color:#a78bfa; font-weight:600; }
+.meta-sep { font-size:10px; color:var(--border-hover); }
 .catalog-action { flex-shrink:0; }
 
 /* Server status */
@@ -546,4 +652,11 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 .chat-input-area { display:flex; gap:8px; align-items:flex-end; padding-top:12px; margin-top:12px; border-top:1px solid var(--border); }
 .chat-input { flex:1; padding:10px 12px; background:var(--bg-primary); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--text-primary); font-family:inherit; font-size:13px; resize:none; outline:none; }
 .chat-input:focus { border-color:var(--accent-primary); }
+
+/* Historique conversations */
+.conv-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); transition:border-color .15s; }
+.conv-item:hover { border-color:var(--accent-muted); }
+.conv-item.conv-active { border-color:var(--accent-primary); background:color-mix(in srgb,var(--accent-primary) 6%,var(--bg-secondary)); }
+.conv-info { flex:1; min-width:0; }
+.conv-title { font-size:12px; font-weight:500; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 </style>

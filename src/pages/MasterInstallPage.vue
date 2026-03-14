@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -240,7 +241,7 @@ async function installSelection() {
 
 onMounted(async () => {
   try {
-    const result = await invoke<any[]>("get_apps");
+    const result = await cachedInvoke<any[]>("get_apps");
     apps.value = result.map((a: any) => ({ ...a, checked: false, installed: false }));
   } catch {
     notifications.warning("Impossible de charger la base de données");

@@ -177,3 +177,17 @@
 .animate-heartbeat {
   animation: heartbeat 1.5s ease-in-out infinite;
 }
+
+/* ── Accessibilité : désactiver les animations si l'OS le demande ────────────
+   Respecte le paramètre "Réduire les animations" de Windows / macOS.
+   Améliore aussi les performances sur machines peu puissantes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

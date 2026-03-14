@@ -7,10 +7,12 @@ import NTabs from "@/components/ui/NTabs.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NDropdown from "@/components/ui/NDropdown.vue";
+import NInput from "@/components/ui/NInput.vue";
+import NModal from "@/components/ui/NModal.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Terminal, Play, Shield, FileCode,
-  Code, Trash2, ScrollText, FolderOpen, Save, RefreshCw,
+  Code, Trash2, ScrollText, FolderOpen, Save, RefreshCw, BookOpen, Clock,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -143,10 +145,44 @@ async function executeBuiltinScript(script: BuiltinScript) {
   }
 }
 
-// --- Custom script ---
+// --- Custom script + bibliothèque localStorage ---
 const customScript = ref("");
 const customType = ref("cmd");
 const customRunning = ref(false);
+const customName = ref("");
+
+interface SavedScript { id: string; name: string; type: string; content: string; created_at: string }
+const savedScripts = ref<SavedScript[]>([]);
+const showLibrary = ref(false);
+
+function loadLibrary() {
+  try { savedScripts.value = JSON.parse(localStorage.getItem("nitrite_custom_scripts") ?? "[]"); }
+  catch { savedScripts.value = []; }
+}
+function persistLibrary() { localStorage.setItem("nitrite_custom_scripts", JSON.stringify(savedScripts.value)); }
+
+function saveToLibrary() {
+  if (!customScript.value.trim()) { notify.warning("Script vide", "Entrez un script avant de sauvegarder."); return; }
+  const id = Date.now().toString();
+  const name = customName.value.trim() || `Script ${savedScripts.value.length + 1}`;
+  savedScripts.value.unshift({ id, name, type: customType.value, content: customScript.value, created_at: new Date().toLocaleString("fr-FR") });
+  persistLibrary();
+  notify.success("Sauvegardé", `"${name}" ajouté à la bibliothèque`);
+  customName.value = "";
+}
+
+function loadFromLibrary(s: SavedScript) {
+  customScript.value = s.content;
+  customType.value = s.type;
+  customName.value = s.name;
+  showLibrary.value = false;
+  notify.info("Script chargé", s.name);
+}
+
+function deleteFromLibrary(id: string) {
+  savedScripts.value = savedScripts.value.filter(s => s.id !== id);
+  persistLibrary();
+}
 
 const typeOptions = [
   { value: "cmd", label: "CMD" },
@@ -257,6 +293,7 @@ async function runScriptFile() {
 onMounted(() => {
   loadScripts();
   setupListener();
+  loadLibrary();
 });
 
 onUnmounted(() => {
@@ -335,37 +372,62 @@ onUnmounted(() => {
           <template #header>
             <div class="section-header">
               <Code :size="16" />
-              <span>Script personnalise</span>
+              <span>Script personnalisé</span>
+              <div style="margin-left:auto;display:flex;gap:6px">
+                <NButton variant="ghost" size="sm" @click="showLibrary = true">
+                  <BookOpen :size="13" /> Bibliothèque ({{ savedScripts.length }})
+                </NButton>
+              </div>
             </div>
           </template>
 
           <div class="custom-script">
             <div class="custom-top">
-              <NDropdown
-                :options="typeOptions"
-                v-model="customType"
-                placeholder="Type"
-              />
-              <NButton
-                variant="primary"
-                size="sm"
-                :loading="customRunning"
-                :disabled="customRunning || !customScript.trim()"
-                @click="executeCustomScript"
-              >
-                <Play :size="14" />
-                Executer
+              <NInput v-model="customName" placeholder="Nom du script (optionnel)..." style="flex:1" />
+              <NDropdown :options="typeOptions" v-model="customType" placeholder="Type" />
+              <NButton variant="secondary" size="sm" @click="saveToLibrary" title="Sauvegarder dans la bibliothèque">
+                <Save :size="13" />
+              </NButton>
+              <NButton variant="primary" size="sm" :loading="customRunning" :disabled="customRunning || !customScript.trim()" @click="executeCustomScript">
+                <Play :size="14" /> Exécuter
               </NButton>
             </div>
             <textarea
               v-model="customScript"
               class="custom-textarea"
               placeholder="Entrez votre script ici..."
-              rows="6"
+              rows="8"
               spellcheck="false"
             ></textarea>
           </div>
         </NCard>
+
+        <!-- Modal bibliothèque -->
+        <NModal :open="showLibrary" @close="showLibrary = false" title="Bibliothèque de scripts">
+          <div v-if="savedScripts.length === 0" style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">
+            <BookOpen :size="32" style="opacity:.3;margin-bottom:10px" />
+            <p>Aucun script sauvegardé.<br>Créez un script et cliquez <strong>Sauvegarder</strong>.</p>
+          </div>
+          <div v-else style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+            <div v-for="s in savedScripts" :key="s.id" class="lib-item">
+              <div class="lib-info">
+                <span class="lib-name">{{ s.name }}</span>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+                  <NBadge :variant="s.type === 'powershell' ? 'accent' : 'info'" style="font-size:10px">{{ s.type }}</NBadge>
+                  <span style="font-size:10px;color:var(--text-muted)"><Clock :size="10" style="display:inline" /> {{ s.created_at }}</span>
+                </div>
+                <pre class="lib-preview">{{ s.content.slice(0, 80) }}{{ s.content.length > 80 ? '...' : '' }}</pre>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <NButton variant="primary" size="sm" @click="loadFromLibrary(s)"><Play :size="12" /> Charger</NButton>
+                <NButton variant="danger" size="sm" @click="deleteFromLibrary(s.id)"><Trash2 :size="12" /></NButton>
+              </div>
+            </div>
+          </div>
+          <template #footer>
+            <NButton variant="ghost" @click="showLibrary = false">Fermer</NButton>
+          </template>
+        </NModal>
 
         <!-- Script File Browser -->
         <NCard>
@@ -696,5 +758,20 @@ onUnmounted(() => {
   border-radius: 99px;
   border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
   animation: heartbeat 1s ease-in-out infinite;
+}
+
+/* Bibliothèque de scripts */
+.lib-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-secondary); transition: border-color .15s;
+}
+.lib-item:hover { border-color: var(--accent-primary); }
+.lib-info { flex: 1; min-width: 0; }
+.lib-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.lib-preview {
+  margin-top: 6px; font-family: "JetBrains Mono", monospace; font-size: 11px;
+  color: var(--text-muted); background: var(--bg-tertiary); padding: 6px 8px;
+  border-radius: 4px; white-space: pre-wrap; word-break: break-all; max-height: 48px; overflow: hidden;
 }
 </style>

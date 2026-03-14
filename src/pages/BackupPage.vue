@@ -89,6 +89,8 @@ const backupItems = ref<BackupItem[]>([
   { id: "vscode_extensions", label: "Extensions VSCode", description: "code --list-extensions — liste des extensions VS Code", checked: false },
   { id: "wsl_config", label: "Config WSL", description: "Liste distros WSL + copie de .wslconfig", checked: false },
   { id: "powershell_profile", label: "Profil PowerShell", description: "Copie du profil PowerShell utilisateur ($PROFILE)", checked: false },
+  // Composants matériels
+  { id: "system_components", label: "Composants PC", description: "CPU, GPU, RAM, SSD/HDD, Carte mère, BIOS — rapport complet du matériel", checked: true },
   // Materiel & autres
   { id: "power_plans", label: "Plans d'alimentation", description: "Export de tous les plans d'alimentation (powercfg /export)", checked: false },
   { id: "printer_config", label: "Imprimantes", description: "Liste des imprimantes installes et leurs pilotes", checked: false },
