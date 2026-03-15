@@ -983,6 +983,197 @@ async fn scan_all_deleted_files() -> Result<Vec<system::data_recovery::Recovered
         .map_err(|e| NiTriTeError::System(e.to_string()))
 }
 
+// === Gestionnaire de Partitions ===
+
+#[tauri::command]
+async fn get_disks_smart() -> Result<Vec<system::partition::DiskSmartInfo>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::partition::get_disks_smart)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn get_partition_list() -> Result<Vec<system::partition::PartitionDetail>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::partition::get_partition_list)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn format_partition_cmd(letter: String, fs: String, label: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::format_partition(letter, fs, label))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn assign_drive_letter_cmd(disk_index: u32, part_index: u32, letter: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::assign_drive_letter(disk_index, part_index, letter))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn create_partition_cmd(disk_index: u32, size_mb: Option<u32>) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::create_partition(disk_index, size_mb))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn delete_partition_cmd(disk_index: u32, part_index: u32) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::delete_partition(disk_index, part_index))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn initialize_disk_cmd(disk_index: u32, style: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::initialize_disk(disk_index, style))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+// === Shadow Copy Gestion ===
+
+#[tauri::command]
+async fn create_shadow_copy_cmd(volume: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::create_shadow_copy(volume))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn delete_shadow_copy_cmd(shadow_id: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::data_recovery::delete_shadow_copy(shadow_id))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn open_in_explorer(path: String) -> Result<(), NiTriTeError> {
+    system::data_recovery::open_in_explorer(path)
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn get_ntfs_drives() -> Result<Vec<String>, NiTriTeError> {
+    tokio::task::spawn_blocking(system::data_recovery::get_ntfs_drives)
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+// === Récupération avancée (image disque, surface test, scan MFT, rapport) ===
+
+#[tauri::command]
+async fn create_disk_image_cmd(
+    disk_index: u32,
+    output_path: String,
+    window: tauri::Window,
+) -> Result<system::advanced_recovery::DiskImageResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::advanced_recovery::create_disk_image(disk_index, output_path, &window)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn surface_test_volume_cmd(
+    drive_letter: String,
+    window: tauri::Window,
+) -> Result<system::advanced_recovery::SurfaceTestResult, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::advanced_recovery::surface_test_volume(drive_letter, &window)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn deep_mft_scan_advanced_cmd(
+    drive: String,
+) -> Result<Vec<system::advanced_recovery::DeepMftFile>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::advanced_recovery::deep_mft_scan_advanced(drive))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
+#[tauri::command]
+async fn generate_recovery_report_cmd(
+    title: String,
+    files_json: String,
+    output_path: String,
+) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::advanced_recovery::generate_recovery_report(title, files_json, output_path)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))?
+    .map_err(NiTriTeError::System)
+}
+
+// === Partition avancé (resize, MBR, lost partitions) ===
+
+#[tauri::command]
+async fn get_partition_resize_limits_cmd(
+    disk_index: u32,
+    part_index: u32,
+) -> Result<system::partition::PartitionSizeLimits, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::partition::get_partition_resize_limits(disk_index, part_index)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))?
+    .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn resize_partition_cmd(
+    disk_index: u32,
+    part_index: u32,
+    new_size_mb: u64,
+) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || {
+        system::partition::resize_partition_ps(disk_index, part_index, new_size_mb)
+    })
+    .await
+    .map_err(|e| NiTriTeError::System(e.to_string()))?
+    .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn backup_mbr_cmd(disk_index: u32, output_path: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::backup_mbr(disk_index, output_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn restore_mbr_cmd(disk_index: u32, mbr_path: String) -> Result<String, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::restore_mbr(disk_index, mbr_path))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))?
+        .map_err(NiTriTeError::System)
+}
+
+#[tauri::command]
+async fn scan_lost_partitions_cmd(
+    disk_index: u32,
+) -> Result<Vec<system::partition::LostPartition>, NiTriTeError> {
+    tokio::task::spawn_blocking(move || system::partition::scan_lost_partitions(disk_index))
+        .await
+        .map_err(|e| NiTriTeError::System(e.to_string()))
+}
+
 // === Save content to arbitrary path (dialog-driven export) ===
 
 #[tauri::command]
@@ -2753,6 +2944,30 @@ pub fn run() {
             backup_user_folders,
             compare_shadow_with_current,
             scan_all_deleted_files,
+            // Partitions & SMART
+            get_disks_smart,
+            get_partition_list,
+            format_partition_cmd,
+            assign_drive_letter_cmd,
+            create_partition_cmd,
+            delete_partition_cmd,
+            initialize_disk_cmd,
+            // Shadow Copy gestion
+            create_shadow_copy_cmd,
+            delete_shadow_copy_cmd,
+            open_in_explorer,
+            get_ntfs_drives,
+            // Récupération avancée
+            create_disk_image_cmd,
+            surface_test_volume_cmd,
+            deep_mft_scan_advanced_cmd,
+            generate_recovery_report_cmd,
+            // Partition avancé
+            get_partition_resize_limits_cmd,
+            resize_partition_cmd,
+            backup_mbr_cmd,
+            restore_mbr_cmd,
+            scan_lost_partitions_cmd,
             // Extended Info
             get_bios_info,
             get_battery_extended,

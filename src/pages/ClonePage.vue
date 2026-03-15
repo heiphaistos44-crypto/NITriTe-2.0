@@ -6,10 +6,11 @@ import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import { useNotificationStore } from "@/stores/notifications";
+import PartitionManagerTab from "@/components/recovery/PartitionManagerTab.vue";
 import {
   Copy, HardDrive, RefreshCw, Play, AlertTriangle,
   CheckCircle, XCircle, Server, Cpu, Shield,
-  Info, ChevronRight,
+  Info, ChevronRight, Layers,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
@@ -25,7 +26,7 @@ interface DiskInfo {
 interface CloneProgress { step: string; percent: number; message: string; }
 interface CloneResult { success: boolean; method: string; message: string; duration_secs: number; }
 
-type Tab = "image" | "robocopy";
+type Tab = "image" | "robocopy" | "partitions";
 const activeTab = ref<Tab>("image");
 const disks = ref<DiskInfo[]>([]);
 const loadingDisks = ref(false);
@@ -171,6 +172,14 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
         </div>
         <ChevronRight :size="14" class="method-arrow" :class="{ active: activeTab === 'robocopy' }" />
       </div>
+      <div class="method-card" :class="{ selected: activeTab === 'partitions' }" @click="activeTab = 'partitions'">
+        <div class="method-icon method-icon-green"><Layers :size="20" /></div>
+        <div class="method-info">
+          <span class="method-name">Partitions &amp; SMART</span>
+          <span class="method-desc">Gestionnaire de partitions — format, création, santé disque</span>
+        </div>
+        <ChevronRight :size="14" class="method-arrow" :class="{ active: activeTab === 'partitions' }" />
+      </div>
     </div>
 
     <!-- Toolbar -->
@@ -308,8 +317,13 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
         </div>
       </div>
 
+      <!-- ══ PARTITIONS & SMART ══ -->
+      <template v-if="activeTab === 'partitions'">
+        <PartitionManagerTab />
+      </template>
+
       <!-- Avertissements & Bonnes Pratiques -->
-      <div class="checklist-card">
+      <div v-if="activeTab !== 'partitions'" class="checklist-card">
         <p class="checklist-title">⚡ Bonnes Pratiques</p>
         <div class="checklist">
           <div class="checklist-item">☑ Fermez toutes les applications avant de lancer le clonage</div>
@@ -321,7 +335,7 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
       </div>
 
       <!-- Disques détectés -->
-      <div v-if="disks.length > 0" class="disks-section">
+      <div v-if="disks.length > 0 && activeTab !== 'partitions'" class="disks-section">
         <p class="section-label">Disques détectés</p>
         <div v-for="disk in disks" :key="disk.index" class="disk-card">
           <div class="disk-header">
@@ -399,7 +413,7 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
 .prereq-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
 
 /* Méthodes */
-.methods-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.methods-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 @media (max-width: 700px) { .methods-row { grid-template-columns: 1fr; } }
 .method-card {
   display: flex; align-items: center; gap: 14px; padding: 14px 16px;
@@ -419,6 +433,7 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
 }
 .method-icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 4px 12px rgba(59,130,246,.35); }
 .method-icon-orange { background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 4px 12px rgba(249,115,22,.35); }
+.method-icon-green  { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 4px 12px rgba(34,197,94,.35); }
 .method-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .method-name { font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
 .method-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--success-muted); color: var(--success); }

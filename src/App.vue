@@ -235,7 +235,7 @@ onMounted(async () => {
           <img :src="logoUrl" class="splash-logo" alt="NiTriTe" />
           <div class="splash-brand-text">
             <div class="splash-title">NiTriTe</div>
-            <div class="splash-version">v26.36.0</div>
+            <div class="splash-version">v26.41.0</div>
           </div>
         </div>
 

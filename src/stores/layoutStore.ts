@@ -6,6 +6,12 @@ export type SidebarMode = "icons-only" | "icons-text";
 export type SidebarWidth = "compact" | "normal" | "large";
 export type UIDensity = "compact" | "normal" | "spacious";
 export type ContentMaxWidth = "full" | "1400px" | "1200px" | "960px";
+export type TabStyle =
+  | "underline" | "pills" | "cards" | "minimal" | "bordered"
+  | "neon" | "gradient" | "chip" | "block" | "retro";
+export type GroupNavStyle =
+  | "sidebar" | "top-pills" | "compact" | "flat"
+  | "accordion" | "split" | "floating" | "rail";
 
 export type LayoutPresetId =
   | "default" | "minimal" | "compact" | "wide" | "developer"
@@ -23,6 +29,8 @@ export interface LayoutState {
   contentMaxWidth: ContentMaxWidth;
   contentPadding: number;
   fontSize: number;
+  tabStyle: TabStyle;
+  groupNavStyle: GroupNavStyle;
   activePreset: LayoutPresetId | "custom";
 }
 
@@ -33,6 +41,30 @@ export interface LayoutPreset {
   emoji: string;
   state: Omit<LayoutState, "activePreset">;
 }
+
+export const TAB_STYLE_LABELS: Record<TabStyle, string> = {
+  underline: "Souligné",
+  pills:     "Pilules",
+  cards:     "Cartes",
+  minimal:   "Minimal",
+  bordered:  "Bordé",
+  neon:      "Néon",
+  gradient:  "Gradient",
+  chip:      "Chips",
+  block:     "Blocs",
+  retro:     "Rétro",
+};
+
+export const GROUP_NAV_STYLE_LABELS: Record<GroupNavStyle, string> = {
+  sidebar:    "Sidebar",
+  "top-pills":"Barre haut",
+  compact:    "Compact",
+  flat:       "Plat",
+  accordion:  "Accordéon",
+  split:      "Double col.",
+  floating:   "Flottant",
+  rail:       "Rail",
+};
 
 const SIDEBAR_WIDTHS: Record<SidebarWidth, number> = {
   compact: 48,
@@ -50,7 +82,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "normal", sidebarMode: "icons-text",
       headerVisible: true, density: "normal", contentMaxWidth: "full",
-      contentPadding: 24, fontSize: 13,
+      contentPadding: 24, fontSize: 13, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -61,7 +93,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "normal", contentMaxWidth: "full",
-      contentPadding: 20, fontSize: 13,
+      contentPadding: 20, fontSize: 13, tabStyle: "minimal", groupNavStyle: "sidebar",
     },
   },
   {
@@ -72,7 +104,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "normal", sidebarMode: "icons-text",
       headerVisible: true, density: "compact", contentMaxWidth: "1400px",
-      contentPadding: 14, fontSize: 12,
+      contentPadding: 14, fontSize: 12, tabStyle: "pills", groupNavStyle: "compact",
     },
   },
   {
@@ -83,7 +115,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "large", sidebarMode: "icons-text",
       headerVisible: true, density: "spacious", contentMaxWidth: "full",
-      contentPadding: 32, fontSize: 14,
+      contentPadding: 32, fontSize: 14, tabStyle: "cards", groupNavStyle: "sidebar",
     },
   },
   {
@@ -94,7 +126,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "normal", sidebarMode: "icons-text",
       headerVisible: false, density: "compact", contentMaxWidth: "full",
-      contentPadding: 16, fontSize: 12,
+      contentPadding: 16, fontSize: 12, tabStyle: "minimal", groupNavStyle: "flat",
     },
   },
 
@@ -107,7 +139,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "large", sidebarMode: "icons-text",
       headerVisible: true, density: "normal", contentMaxWidth: "1400px",
-      contentPadding: 28, fontSize: 14,
+      contentPadding: 28, fontSize: 14, tabStyle: "bordered", groupNavStyle: "sidebar",
     },
   },
   {
@@ -118,7 +150,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "spacious", contentMaxWidth: "1200px",
-      contentPadding: 36, fontSize: 14,
+      contentPadding: 36, fontSize: 14, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -129,7 +161,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "spacious", contentMaxWidth: "960px",
-      contentPadding: 40, fontSize: 15,
+      contentPadding: 40, fontSize: 15, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -140,7 +172,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "spacious", contentMaxWidth: "full",
-      contentPadding: 48, fontSize: 16,
+      contentPadding: 48, fontSize: 16, tabStyle: "cards", groupNavStyle: "top-pills",
     },
   },
 
@@ -153,7 +185,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "compact", contentMaxWidth: "1400px",
-      contentPadding: 18, fontSize: 12,
+      contentPadding: 18, fontSize: 12, tabStyle: "pills", groupNavStyle: "compact",
     },
   },
   {
@@ -164,7 +196,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "normal", sidebarMode: "icons-text",
       headerVisible: false, density: "compact", contentMaxWidth: "full",
-      contentPadding: 12, fontSize: 11,
+      contentPadding: 12, fontSize: 11, tabStyle: "retro", groupNavStyle: "flat",
     },
   },
   {
@@ -175,7 +207,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "compact", contentMaxWidth: "full",
-      contentPadding: 10, fontSize: 11,
+      contentPadding: 10, fontSize: 11, tabStyle: "block", groupNavStyle: "rail",
     },
   },
 
@@ -188,7 +220,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "spacious", contentMaxWidth: "full",
-      contentPadding: 32, fontSize: 14,
+      contentPadding: 32, fontSize: 14, tabStyle: "cards", groupNavStyle: "top-pills",
     },
   },
   {
@@ -199,7 +231,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "large", sidebarMode: "icons-text",
       headerVisible: true, density: "spacious", contentMaxWidth: "full",
-      contentPadding: 36, fontSize: 15,
+      contentPadding: 36, fontSize: 15, tabStyle: "neon", groupNavStyle: "floating",
     },
   },
   {
@@ -210,7 +242,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "spacious", contentMaxWidth: "1200px",
-      contentPadding: 48, fontSize: 15,
+      contentPadding: 48, fontSize: 15, tabStyle: "minimal", groupNavStyle: "sidebar",
     },
   },
 
@@ -223,7 +255,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "spacious", contentMaxWidth: "960px",
-      contentPadding: 56, fontSize: 16,
+      contentPadding: 56, fontSize: 16, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -234,7 +266,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "spacious", contentMaxWidth: "1200px",
-      contentPadding: 44, fontSize: 15,
+      contentPadding: 44, fontSize: 15, tabStyle: "bordered", groupNavStyle: "sidebar",
     },
   },
 
@@ -247,7 +279,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "compact", contentMaxWidth: "full",
-      contentPadding: 12, fontSize: 12,
+      contentPadding: 12, fontSize: 12, tabStyle: "pills", groupNavStyle: "compact",
     },
   },
   {
@@ -258,7 +290,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "normal", contentMaxWidth: "full",
-      contentPadding: 20, fontSize: 13,
+      contentPadding: 20, fontSize: 13, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -269,7 +301,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "normal", contentMaxWidth: "full",
-      contentPadding: 20, fontSize: 13,
+      contentPadding: 20, fontSize: 13, tabStyle: "underline", groupNavStyle: "sidebar",
     },
   },
   {
@@ -280,7 +312,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "normal", sidebarMode: "icons-text",
       headerVisible: false, density: "compact", contentMaxWidth: "full",
-      contentPadding: 14, fontSize: 12,
+      contentPadding: 14, fontSize: 12, tabStyle: "chip", groupNavStyle: "accordion",
     },
   },
 
@@ -293,7 +325,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "large", sidebarMode: "icons-text",
       headerVisible: true, density: "normal", contentMaxWidth: "1400px",
-      contentPadding: 40, fontSize: 14,
+      contentPadding: 40, fontSize: 14, tabStyle: "bordered", groupNavStyle: "sidebar",
     },
   },
   {
@@ -304,7 +336,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: true, density: "compact", contentMaxWidth: "960px",
-      contentPadding: 16, fontSize: 13,
+      contentPadding: 16, fontSize: 13, tabStyle: "gradient", groupNavStyle: "split",
     },
   },
   {
@@ -315,7 +347,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "left", sidebarWidth: "large", sidebarMode: "icons-text",
       headerVisible: true, density: "spacious", contentMaxWidth: "full",
-      contentPadding: 48, fontSize: 15,
+      contentPadding: 48, fontSize: 15, tabStyle: "cards", groupNavStyle: "sidebar",
     },
   },
   {
@@ -326,7 +358,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     state: {
       sidebarPosition: "right", sidebarWidth: "compact", sidebarMode: "icons-only",
       headerVisible: false, density: "normal", contentMaxWidth: "full",
-      contentPadding: 24, fontSize: 14,
+      contentPadding: 24, fontSize: 14, tabStyle: "pills", groupNavStyle: "top-pills",
     },
   },
 ];
@@ -335,6 +367,8 @@ const STORAGE_KEY = "nitrite-layout";
 
 const DEFAULT_STATE: LayoutState = {
   ...LAYOUT_PRESETS[0].state,
+  tabStyle: "underline",
+  groupNavStyle: "sidebar",
   activePreset: "default",
 };
 
@@ -406,6 +440,8 @@ export const useLayoutStore = defineStore("layout", () => {
       root.style.setProperty(k, v as string);
     }
     document.body.style.fontSize = `${state.value.fontSize}px`;
+    root.setAttribute("data-tab-style", state.value.tabStyle ?? "underline");
+    root.setAttribute("data-nav-style", state.value.groupNavStyle ?? "sidebar");
   }
 
   watch(cssVars, applyToDocument);

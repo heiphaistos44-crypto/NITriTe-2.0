@@ -45,6 +45,7 @@ const DiagTabPerfHistory   = defineAsyncComponent(() => import("@/components/dia
 const DiagTabScan          = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabScan.vue"));
 const DiagTabDriverUpdater = defineAsyncComponent(() => import("@/components/diagnostic/DiagTabDriverUpdater.vue"));
 import { useNotificationStore } from "@/stores/notifications";
+import { useLayoutStore } from "@/stores/layoutStore";
 import {
   Monitor, Cpu, MemoryStick, HardDrive, Globe, Headphones,
   Usb, Battery, Package, Play, Zap, Printer, Key,
@@ -55,6 +56,18 @@ import {
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
+const layoutStore = useLayoutStore();
+
+// ── Accordion nav ──────────────────────────────────────────────────────────
+const collapsedGroups = ref<Set<string>>(new Set());
+function toggleGroup(groupId: string) {
+  if (collapsedGroups.value.has(groupId)) {
+    collapsedGroups.value.delete(groupId);
+  } else {
+    collapsedGroups.value.add(groupId);
+  }
+  collapsedGroups.value = new Set(collapsedGroups.value); // trigger reactivity
+}
 
 // ============= Types =============
 interface SysInfo { os: any; cpu: any; ram: any; gpus: any[]; disks: any[]; motherboard: any; }
@@ -986,7 +999,7 @@ async function exportMd() {
     </div>
 
     <!-- Layout principal -->
-    <div class="diag-layout">
+    <div class="diag-layout" :data-nav="layoutStore.state.groupNavStyle">
 
       <!-- Panneau navigation latéral -->
       <nav class="diag-sidenav">
@@ -1001,24 +1014,33 @@ async function exportMd() {
             v-for="group in GROUPS"
             :key="group.id"
             class="sidenav-group"
-            :class="{ 'sidenav-group--active': isGroupActive(group.id) }"
+            :class="{
+              'sidenav-group--active': isGroupActive(group.id),
+              'sidenav-group--collapsed': collapsedGroups.has(group.id),
+            }"
           >
             <template v-if="visibleTabsForGroup(group.id).length > 0">
-              <div class="sidenav-group-label">
+              <div
+                class="sidenav-group-label"
+                @click="toggleGroup(group.id)"
+              >
                 <component :is="group.icon" :size="11" />
                 {{ group.label }}
                 <span class="sidenav-group-count">{{ visibleTabsForGroup(group.id).length }}</span>
               </div>
-              <button
-                v-for="tab in visibleTabsForGroup(group.id)"
-                :key="tab.id"
-                class="sidenav-item"
-                :class="{ active: activeTab === tab.id }"
-                @click="activeTab = tab.id"
-              >
-                <component :is="tab.icon" :size="14" class="sidenav-item-icon" />
-                <span class="sidenav-item-label">{{ tab.label }}</span>
-              </button>
+              <div class="sidenav-items-wrapper">
+                <button
+                  v-for="tab in visibleTabsForGroup(group.id)"
+                  :key="tab.id"
+                  class="sidenav-item"
+                  :class="{ active: activeTab === tab.id }"
+                  :title="tab.label"
+                  @click="activeTab = tab.id"
+                >
+                  <component :is="tab.icon" :size="14" class="sidenav-item-icon" />
+                  <span class="sidenav-item-label">{{ tab.label }}</span>
+                </button>
+              </div>
             </template>
           </div>
         </div>

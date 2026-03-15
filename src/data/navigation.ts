@@ -38,7 +38,7 @@ export const navigationSections: NavSection[] = [
     ],
   },
   {
-    title: "Avancé",
+    title: "Avancé (BETA)",
     items: [
       { id: "clone", label: "Clonage Système", icon: "copy", route: "/clone" },
       { id: "data-recovery", label: "Récupération Données", icon: "database", route: "/data-recovery" },

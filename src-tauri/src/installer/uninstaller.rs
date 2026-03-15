@@ -245,7 +245,14 @@ foreach ($base in $fsPaths) {{
     Get-ChildItem $base -ErrorAction SilentlyContinue | ForEach-Object {{
         if (Match-Kw $_.Name) {{
             $fp = $_.FullName.ToLower()
-            $isSys = ($fp -like "*\windows\*") -or ($fp -like "*\system32\*") -or ($fp.Length -lt 15)
+            # Protection : exclut chemins système critiques
+            $isSys = ($fp -like "*\windows\*") -or
+                     ($fp -like "*\system32\*") -or
+                     ($fp -like "*\syswow64\*") -or
+                     ($fp -like "*\microsoft\windows\*") -or
+                     ($fp -like "*\microsoft\windows defender\*") -or
+                     ($fp -like "*\programdata\microsoft\windows\*") -or
+                     ($fp.Length -lt 20)
             if (-not $isSys) {{ $found += "📁 $($_.FullName)" }}
         }}
     }}
@@ -257,7 +264,23 @@ foreach ($rp in $regPaths) {{
     Get-ChildItem $rp -ErrorAction SilentlyContinue | ForEach-Object {{
         if (Match-Kw $_.PSChildName) {{
             $n = $_.PSChildName.ToLower()
-            $isSys = ($n -eq 'microsoft') -or ($n -eq 'windows') -or ($n -eq 'classes') -or ($n -like 'wow6432*')
+            # Blocklist étendue — ne jamais toucher aux clés système critiques
+            $isSys = ($n -eq 'microsoft') -or ($n -eq 'windows') -or
+                     ($n -eq 'classes') -or ($n -like 'wow6432*') -or
+                     ($n -eq 'policies') -or ($n -eq 'drivers') -or
+                     ($n -eq 'system') -or ($n -like 'system*') -or
+                     ($n -eq 'currentcontrolset') -or ($n -eq 'currentversion') -or
+                     ($n -eq 'hardware') -or ($n -eq 'security') -or
+                     ($n -eq 'sam') -or ($n -eq 'bcd00000000') -or
+                     ($n -eq 'services') -or ($n -like 'net*') -or
+                     ($n -eq 'run') -or ($n -like 'run*') -or
+                     ($n -eq 'explorer') -or ($n -eq 'shell') -or
+                     ($n -eq 'fonts') -or ($n -eq 'internet settings') -or
+                     ($n -like 'directx*') -or ($n -like 'opencl*') -or
+                     ($n -like 'vulkan*') -or ($n -like 'opengl*') -or
+                     # Protège HKLM pour les entrées Microsoft/Windows natives
+                     ($rp -like 'HKLM:*' -and $_.PSPath -like '*\Microsoft\*') -or
+                     ($rp -like 'HKLM:*' -and $_.PSPath -like '*\Windows*')
             if (-not $isSys) {{ $found += "🔑 $($_.PSPath)" }}
         }}
     }}
@@ -314,10 +337,60 @@ pub fn delete_residuals(paths: Vec<String>) -> ResidualCleanResult {
     let ps = format!(r#"
 $items = '{}' | ConvertFrom-Json
 $ok = 0; $fail = 0
+
+# ── Garde de sécurité : refuse de supprimer tout chemin système critique ──
+function Is-SafeToDelete($item) {{
+    # Chemins fichiers/dossiers interdits
+    $sysFS = @(
+        'C:\Windows\', 'C:\windows\',
+        '\System32\', '\SysWOW64\', '\system32\', '\syswow64\',
+        'C:\Program Files\Common Files\',
+        'C:\Program Files (x86)\Common Files\',
+        'C:\ProgramData\Microsoft\Windows\',
+        '\AppData\Roaming\Microsoft\Windows\',
+        '\AppData\Local\Microsoft\Windows\',
+        'C:\Users\Default\', 'C:\Users\Public\',
+        'C:\ProgramData\Microsoft\Windows Defender\'
+    )
+    # Clés registre interdites
+    $sysReg = @(
+        'HKLM:\SOFTWARE\Microsoft\',
+        'HKLM:\SOFTWARE\Classes\',
+        'HKLM:\SOFTWARE\Policies\',
+        'HKLM:\SYSTEM\',
+        'HKLM:\SAM\',
+        'HKLM:\SECURITY\',
+        'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\',
+        'HKCU:\SOFTWARE\Microsoft\Windows NT\',
+        'HKCU:\SOFTWARE\Classes\'
+    )
+    if ($item -like '📁 *' -or $item -like '🔗 *') {{
+        $raw = if ($item -like '📁 Menu: *') {{ $item.Substring(9) }} else {{ $item.Substring(3) }}
+        # Longueur minimum : évite les chemins racine trop courts
+        if ($raw.Length -lt 12) {{ return $false }}
+        foreach ($p in $sysFS) {{ if ($raw -like "*$p*") {{ return $false }} }}
+        return $true
+    }}
+    if ($item -like '🔑 *') {{
+        $path = $item.Substring(3)
+        if ($path.Length -lt 20) {{ return $false }}
+        foreach ($p in $sysReg) {{ if ($path -like "$p*") {{ return $false }} }}
+        return $true
+    }}
+    if ($item -like '🚀 *') {{ return $true }}  # Entrées Run : toujours safe
+    return $false
+}}
+
 foreach ($item in $items) {{
+    # Vérification sécurité avant toute suppression
+    if (-not (Is-SafeToDelete $item)) {{
+        Write-Warning "SKIP (protégé): $item"
+        $fail++
+        continue
+    }}
     try {{
         if ($item -like '📁 Menu: *') {{
-            $path = $item.Substring(10)
+            $path = $item.Substring(9)
             Remove-Item $path -Recurse -Force -ErrorAction Stop; $ok++
         }} elseif ($item -like '📁 *') {{
             $path = $item.Substring(3)

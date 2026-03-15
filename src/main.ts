@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import App from "./App.vue";
 import router from "./router";
 import "./assets/styles/main.css";
+import "./assets/styles/tab-styles.css";
 import "./assets/diagnostic.css";
 
 const pinia = createPinia();

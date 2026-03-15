@@ -7,14 +7,50 @@ import NSpinner from "@/components/ui/NSpinner.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import RecoveryTabDisk from "@/components/recovery/RecoveryTabDisk.vue";
 import RecoveryShadowCompare from "@/components/recovery/RecoveryShadowCompare.vue";
+import DiskImagerTab from "@/components/recovery/DiskImagerTab.vue";
 import {
   Database, RefreshCw, RotateCcw, Clock, Trash2,
   FileText, CheckCircle, XCircle, Folder, Search,
   Save, CheckSquare, Square, FolderOpen, HardDrive, GitCompare, Filter,
-  Shield, Lightbulb,
+  Shield, Lightbulb, Plus,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
+
+// ── NTFS drives dynamiques ─────────────────────────────────────────────────────
+const ntfsDrives = ref<string[]>([]);
+async function loadNtfsDrives() {
+  try { ntfsDrives.value = await invoke<string[]>("get_ntfs_drives"); } catch { /* silencieux */ }
+}
+
+// ── Shadow Copy create/delete ──────────────────────────────────────────────────
+const createShadowVolume = ref("C:");
+const creatingShadow = ref(false);
+
+async function createShadow() {
+  creatingShadow.value = true;
+  try {
+    const id = await invoke<string>("create_shadow_copy_cmd", { volume: createShadowVolume.value });
+    notify.success("Shadow copy créée", `ID : ${id}`);
+    await loadShadows();
+  } catch (e: any) { notify.error("Erreur création", String(e)); }
+  creatingShadow.value = false;
+}
+
+async function deleteShadow(s: ShadowCopy) {
+  try {
+    await invoke<string>("delete_shadow_copy_cmd", { shadowId: s.id });
+    notify.success("Shadow copy supprimée", "");
+    shadows.value = shadows.value.filter(x => x.id !== s.id);
+    if (selectedShadow.value?.id === s.id) { selectedShadow.value = null; shadowFiles.value = []; }
+  } catch (e: any) { notify.error("Erreur suppression", String(e)); }
+}
+
+// ── Ouvrir dossier restauration ────────────────────────────────────────────────
+async function openRestoreFolder(path: string) {
+  try { await invoke("open_in_explorer", { path }); }
+  catch (e: any) { notify.error("Erreur", String(e)); }
+}
 
 interface ShadowCopy {
   id: string; volume: string; creation_time: string;
@@ -26,8 +62,42 @@ interface RecoveredFile {
 interface RestoreResult { success: boolean; message: string; restored_path: string; }
 interface BatchRestoreResult { success: boolean; restored_count: number; failed_count: number; message: string; }
 
-type Tab = "shadow" | "recycle" | "mft" | "backup" | "disk";
+type Tab = "shadow" | "recycle" | "mft" | "backup" | "disk" | "image" | "rapport";
 const activeTab = ref<Tab>("shadow");
+
+// ── Image disque / Deep scan / Rapport ────────────────────────────────────────
+interface DeepMftFile { name: string; path: string; size_bytes: number; modified: string; extension: string; is_deleted: boolean; source: string; }
+const deepFiles = ref<DeepMftFile[]>([]);
+const deepDrive = ref("C:");
+const scanningDeep = ref(false);
+const reportPath = ref("");
+const generatingReport = ref(false);
+
+async function runDeepScan() {
+  scanningDeep.value = true; deepFiles.value = [];
+  try {
+    deepFiles.value = await invoke<DeepMftFile[]>("deep_mft_scan_advanced_cmd", { drive: deepDrive.value });
+  } catch (e: any) { notify.error("Erreur scan MFT", String(e)); }
+  scanningDeep.value = false;
+}
+async function makeReport() {
+  if (deepFiles.value.length === 0) { notify.warning("Aucun fichier", "Lancez d'abord un scan."); return; }
+  generatingReport.value = true;
+  try {
+    const outPath = `C:\\NiTriTe\\rapport_recovery_${Date.now()}.html`;
+    const path = await invoke<string>("generate_recovery_report_cmd", {
+      title: "Rapport de Récupération Nitrite",
+      filesJson: JSON.stringify(deepFiles.value),
+      outputPath: outPath,
+    });
+    reportPath.value = path;
+    notify.success("Rapport généré", path);
+  } catch (e: any) { notify.error("Erreur rapport", String(e)); }
+  generatingReport.value = false;
+}
+async function openReport() {
+  if (reportPath.value) await invoke("open_in_explorer", { path: reportPath.value.split("\\").slice(0, -1).join("\\") }).catch(() => {});
+}
 
 // ── Shadow Copies ─────────────────────────────────────────────
 const shadows = ref<ShadowCopy[]>([]);
@@ -329,7 +399,27 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
 }
 
-onMounted(loadShadows);
+// ── Dossier custom backup ──────────────────────────────────────────────────────
+const customFolder = ref("");
+const addingCustom = ref(false);
+
+async function pickCustomFolder() {
+  const { open } = await import("@tauri-apps/plugin-dialog");
+  const dir = await open({ directory: true, multiple: false, title: "Ajouter un dossier personnalisé" });
+  if (dir) customFolder.value = dir as string;
+}
+function addCustomFolder() {
+  const f = customFolder.value.trim();
+  if (!f) return;
+  if (!userFolders.value.some(x => x.path === f)) {
+    userFolders.value = [...userFolders.value, { name: f.split(/[\\/]/).pop() || f, path: f, size_mb: 0, shadow_relative: "" }];
+  }
+  selectedFolders.value.add(f);
+  selectedFolders.value = new Set(selectedFolders.value);
+  customFolder.value = "";
+}
+
+onMounted(() => { loadShadows(); loadNtfsDrives(); });
 </script>
 
 <template>
@@ -378,6 +468,12 @@ onMounted(loadShadows);
       <button class="tab-btn" :class="{ active: activeTab === 'disk' }" @click="activeTab = 'disk'">
         <HardDrive :size="14" /> Récupération Disque
       </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'image' }" @click="activeTab = 'image'">
+        <Database :size="14" /> Image Disque
+      </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'rapport' }" @click="activeTab = 'rapport'">
+        <FileText :size="14" /> Rapport
+      </button>
     </div>
 
     <!-- ══ SHADOW COPIES ══ -->
@@ -385,6 +481,13 @@ onMounted(loadShadows);
       <div class="toolbar">
         <NButton variant="ghost" size="sm" :loading="loadingShadows" @click="loadShadows">
           <RefreshCw :size="13" /> Actualiser
+        </NButton>
+        <select v-model="createShadowVolume" class="drive-select-sm">
+          <option v-for="d in ntfsDrives" :key="d" :value="d">{{ d }}</option>
+          <option v-if="ntfsDrives.length === 0" value="C:">C:</option>
+        </select>
+        <NButton variant="ghost" size="sm" :loading="creatingShadow" @click="createShadow">
+          <Plus :size="13" /> Créer snapshot
         </NButton>
         <span class="count">{{ shadows.length }} point(s) de restauration trouvé(s)</span>
       </div>
@@ -413,6 +516,9 @@ onMounted(loadShadows);
               </div>
               <NButton variant="primary" size="sm" @click="browseShadow(s)">
                 <Folder :size="12" /> Parcourir
+              </NButton>
+              <NButton variant="ghost" size="sm" style="color:var(--danger)" title="Supprimer" @click.stop="deleteShadow(s)">
+                <Trash2 :size="12" />
               </NButton>
             </div>
           </div>
@@ -490,6 +596,9 @@ onMounted(loadShadows);
               @click="batchRestore"
             >
               <RotateCcw :size="12" /> Restaurer la sélection ({{ selectedFiles.size }})
+            </NButton>
+            <NButton variant="ghost" size="sm" @click="openRestoreFolder(restoreTarget)">
+              <FolderOpen :size="12" /> Ouvrir dossier
             </NButton>
             <span v-if="extFilter" class="count">{{ filteredShadowFiles.length }} / {{ shadowFiles.length }} fichier(s)</span>
           </div>
@@ -596,7 +705,7 @@ onMounted(loadShadows);
       <div class="toolbar">
         <label class="drive-label">Lecteur :</label>
         <select v-model="mftDrive" class="drive-select-sm">
-          <option v-for="d in ['C','D','E','F','G']" :key="d" :value="d">{{ d }}:</option>
+          <option v-for="d in (ntfsDrives.length ? ntfsDrives.map(x => x.replace(':','')) : ['C','D','E','F','G'])" :key="d" :value="d">{{ d }}:</option>
         </select>
         <NButton variant="primary" size="sm" :loading="loadingMft" @click="scanMft">
           <Search :size="13" /> Scanner
@@ -660,6 +769,13 @@ onMounted(loadShadows);
           </div>
         </div>
 
+        <!-- Dossier personnalisé -->
+        <div class="custom-folder-row">
+          <input v-model="customFolder" class="target-input-lg" placeholder="Ajouter un dossier personnalisé..." @keydown.enter="addCustomFolder" />
+          <NButton variant="ghost" size="sm" @click="pickCustomFolder"><FolderOpen :size="13" /></NButton>
+          <NButton variant="ghost" size="sm" :disabled="!customFolder.trim()" @click="addCustomFolder"><Plus :size="13" /> Ajouter</NButton>
+        </div>
+
         <!-- Destination -->
         <p class="section-label">Destination</p>
         <div class="target-row">
@@ -690,20 +806,73 @@ onMounted(loadShadows);
         </div>
 
         <!-- Bouton lancer -->
-        <NButton
-          variant="primary"
-          :disabled="!backupTarget || selectedFolders.size === 0 || backingUp"
-          :loading="backingUp"
-          @click="startProfileBackup"
-        >
-          <Save :size="14" /> Lancer la sauvegarde ({{ selectedFolders.size }} dossier(s))
-        </NButton>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <NButton
+            variant="primary"
+            :disabled="!backupTarget || selectedFolders.size === 0 || backingUp"
+            :loading="backingUp"
+            @click="startProfileBackup"
+          >
+            <Save :size="14" /> Lancer la sauvegarde ({{ selectedFolders.size }} dossier(s))
+          </NButton>
+          <NButton v-if="backupResult?.success && backupTarget" variant="ghost" size="sm" @click="openRestoreFolder(backupTarget)">
+            <FolderOpen :size="13" /> Ouvrir destination
+          </NButton>
+        </div>
       </div>
     </div>
 
     <!-- ══ RÉCUPÉRATION DISQUE ══ -->
     <div v-if="activeTab === 'disk'" class="tab-content">
       <RecoveryTabDisk />
+    </div>
+
+    <!-- ══ IMAGE DISQUE ══ -->
+    <div v-if="activeTab === 'image'" class="tab-content">
+      <DiskImagerTab />
+    </div>
+
+    <!-- ══ RAPPORT ══ -->
+    <div v-if="activeTab === 'rapport'" class="tab-content">
+      <div class="rapport-toolbar">
+        <select v-model="deepDrive" class="drive-select-sm">
+          <option v-for="d in ntfsDrives" :key="d" :value="d">{{ d }}</option>
+          <option v-if="ntfsDrives.length === 0" value="C:">C:</option>
+        </select>
+        <NButton variant="primary" size="sm" :loading="scanningDeep" @click="runDeepScan">
+          <Search :size="13" /> Scanner fichiers supprimés
+        </NButton>
+        <NButton variant="secondary" size="sm" :loading="generatingReport" :disabled="deepFiles.length === 0" @click="makeReport">
+          <FileText :size="13" /> Générer rapport HTML
+        </NButton>
+        <NButton v-if="reportPath" variant="ghost" size="sm" @click="openReport">
+          <FolderOpen :size="13" /> Ouvrir
+        </NButton>
+        <span class="count" v-if="deepFiles.length > 0">{{ deepFiles.length }} fichier(s) trouvé(s)</span>
+      </div>
+
+      <div v-if="scanningDeep" class="loading-state"><NSpinner :size="20" /><span>Scan MFT en cours...</span></div>
+      <div v-else-if="deepFiles.length === 0" class="empty">
+        <FileText :size="28" />
+        <p>Aucun fichier scanné</p>
+        <p class="hint">Sélectionnez un volume et lancez le scan pour détecter les fichiers supprimés</p>
+      </div>
+      <div v-else class="mft-table">
+        <div class="mft-row hdr">
+          <span>Nom</span><span>Chemin</span><span>Taille</span><span>Source</span><span>Statut</span>
+        </div>
+        <div v-for="f in deepFiles" :key="f.path" class="mft-row">
+          <span class="mft-name">{{ f.name }}</span>
+          <span class="mft-path">{{ f.path }}</span>
+          <span class="mft-size">{{ f.size_bytes > 0 ? formatSize(f.size_bytes) : '—' }}</span>
+          <span class="mft-source">{{ f.source }}</span>
+          <span :style="{ color: f.is_deleted ? 'var(--danger)' : 'var(--success)' }">{{ f.is_deleted ? 'Supprimé' : 'Actif' }}</span>
+        </div>
+      </div>
+      <div v-if="reportPath" class="report-path-box">
+        <CheckCircle :size="13" style="color:var(--success)" />
+        Rapport généré : <code>{{ reportPath }}</code>
+      </div>
     </div>
   </div>
 </template>
@@ -868,6 +1037,7 @@ onMounted(loadShadows);
 .target-row { display: flex; gap: 8px; align-items: center; }
 .target-input-lg { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-tertiary); color: var(--text-primary); font-family: monospace; font-size: 12px; outline: none; transition: border-color 0.15s; }
 .target-input-lg:focus { border-color: var(--accent-primary); }
+.custom-folder-row { display: flex; gap: 6px; align-items: center; }
 .progress-section { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); }
 .progress-header { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
 .result-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: var(--radius-lg); border: 1px solid; }
@@ -876,4 +1046,7 @@ onMounted(loadShadows);
 .result-title { font-weight: 700; font-size: 13px; }
 .result-msg { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
 .result-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: monospace; }
+.rapport-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.report-path-box { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: var(--radius-md); font-size: 12px; color: var(--text-muted); }
+.report-path-box code { font-family: monospace; color: var(--success); }
 </style>

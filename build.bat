@@ -1,14 +1,14 @@
 @echo off
 setlocal EnableDelayedExpansion
-title Nitrite Build v26.32.0
+title Nitrite Build v26.44.0
 echo ============================================================
-echo   Nitrite 2.0 - Build Production v26.32.0
+echo   Nitrite 2.0 - Build Production v26.44.0
 echo   (UAC: requireAdministrator)
 echo ============================================================
 echo.
 cd /d "%~dp0"
 
-set VERSION=26.32.0
+set VERSION=26.44.0
 set EXE_SRC=src-tauri\target\release\nitrite.exe
 set OUT_DIR=release
 set MAKENSIS=%LOCALAPPDATA%\tauri\NSIS\makensis.exe
@@ -56,8 +56,8 @@ if not exist "node_modules" (
     echo      node_modules present.
 )
 
-echo --- Verification TypeScript...
-call npx vue-tsc --noEmit
+echo --- Verification TypeScript (729 apps portables + catalogue complet)...
+call npx tsc --noEmit
 if %ERRORLEVEL% neq 0 ( echo [ERREUR] Erreurs TypeScript. & pause & exit /b 1 )
 
 echo --- Preparation dossier release...

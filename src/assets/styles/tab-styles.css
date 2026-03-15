@@ -1,0 +1,566 @@
+/* ============================================================
+   TAB STYLES — Transformations globales via data-tab-style
+   Appliqué sur <html data-tab-style="..."> par layoutStore
+   ============================================================ */
+
+/* ── 1. UNDERLINE (défaut) ──────────────────────────────────── */
+html[data-tab-style="underline"] .tabs .tab-btn,
+html:not([data-tab-style]) .tabs .tab-btn {
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 7px 14px;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+html[data-tab-style="underline"] .tabs .tab-btn.active,
+html:not([data-tab-style]) .tabs .tab-btn.active {
+  border-bottom-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: transparent;
+}
+html[data-tab-style="underline"] .tabs .tab-btn:hover:not(.active),
+html:not([data-tab-style]) .tabs .tab-btn:hover:not(.active) {
+  border-bottom-color: var(--border-hover);
+  background: transparent;
+}
+
+/* ── 2. PILLS ───────────────────────────────────────────────── */
+html[data-tab-style="pills"] .tabs {
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  border-bottom: none !important;
+}
+html[data-tab-style="pills"] .tabs .tab-btn {
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+html[data-tab-style="pills"] .tabs .tab-btn.active {
+  background: var(--bg-elevated);
+  color: var(--accent-primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+html[data-tab-style="pills"] .tabs .tab-btn:hover:not(.active) {
+  background: var(--bg-secondary);
+}
+
+/* ── 3. CARDS ───────────────────────────────────────────────── */
+html[data-tab-style="cards"] .tabs {
+  gap: 6px;
+  border-bottom: none !important;
+  align-items: flex-end;
+}
+html[data-tab-style="cards"] .tabs .tab-btn {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--bg-tertiary);
+  padding: 6px 16px;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+html[data-tab-style="cards"] .tabs .tab-btn.active {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+  color: var(--accent-primary);
+  box-shadow: inset 0 -2px 0 var(--accent-primary);
+}
+html[data-tab-style="cards"] .tabs .tab-btn:hover:not(.active) {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+/* ── 4. MINIMAL ─────────────────────────────────────────────── */
+html[data-tab-style="minimal"] .tabs {
+  gap: 0;
+  border-bottom: none !important;
+}
+html[data-tab-style="minimal"] .tabs .tab-btn {
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  font-size: 0.9em;
+  color: var(--text-muted);
+  transition: color 0.12s;
+}
+html[data-tab-style="minimal"] .tabs .tab-btn.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+html[data-tab-style="minimal"] .tabs .tab-btn.active::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: var(--accent-primary);
+  margin-top: 2px;
+  border-radius: 2px;
+}
+html[data-tab-style="minimal"] .tabs .tab-btn:hover:not(.active) {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+/* ── 5. BORDERED ────────────────────────────────────────────── */
+html[data-tab-style="bordered"] .tabs {
+  gap: 4px;
+  border-bottom: none !important;
+}
+html[data-tab-style="bordered"] .tabs .tab-btn {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 5px 14px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+html[data-tab-style="bordered"] .tabs .tab-btn.active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(249, 115, 22, 0.06);
+}
+html[data-tab-style="bordered"] .tabs .tab-btn:hover:not(.active) {
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
+}
+
+/* ── 6. NEON ────────────────────────────────────────────────── */
+html[data-tab-style="neon"] .tabs {
+  gap: 2px;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.15) !important;
+  padding-bottom: 0;
+}
+html[data-tab-style="neon"] .tabs .tab-btn {
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 7px 14px;
+  margin-bottom: -1px;
+  color: var(--text-muted);
+  transition: color 0.15s, border-color 0.15s, text-shadow 0.15s;
+}
+html[data-tab-style="neon"] .tabs .tab-btn.active {
+  border-bottom-color: var(--accent-primary);
+  color: var(--accent-primary);
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.7), 0 0 16px rgba(249, 115, 22, 0.3);
+}
+html[data-tab-style="neon"] .tabs .tab-btn.active::before {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px 2px rgba(249, 115, 22, 0.6);
+  border-radius: 2px;
+}
+html[data-tab-style="neon"] .tabs .tab-btn {
+  position: relative;
+}
+html[data-tab-style="neon"] .tabs .tab-btn:hover:not(.active) {
+  color: var(--text-secondary);
+  border-bottom-color: rgba(249, 115, 22, 0.3);
+}
+
+/* ── 7. GRADIENT ────────────────────────────────────────────── */
+html[data-tab-style="gradient"] .tabs {
+  gap: 4px;
+  border-bottom: none !important;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+html[data-tab-style="gradient"] .tabs .tab-btn {
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  padding: 5px 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+html[data-tab-style="gradient"] .tabs .tab-btn.active {
+  background: linear-gradient(135deg, var(--accent-primary), #e05a00);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
+  font-weight: 600;
+}
+html[data-tab-style="gradient"] .tabs .tab-btn:hover:not(.active) {
+  background: rgba(249, 115, 22, 0.08);
+  color: var(--accent-primary);
+}
+
+/* ── 8. CHIP ────────────────────────────────────────────────── */
+html[data-tab-style="chip"] .tabs {
+  gap: 5px;
+  flex-wrap: wrap;
+  border-bottom: none !important;
+  padding: 4px 0;
+}
+html[data-tab-style="chip"] .tabs .tab-btn {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  padding: 3px 12px 3px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+html[data-tab-style="chip"] .tabs .tab-btn::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+html[data-tab-style="chip"] .tabs .tab-btn.active {
+  border-color: var(--accent-primary);
+  background: rgba(249, 115, 22, 0.1);
+  color: var(--accent-primary);
+}
+html[data-tab-style="chip"] .tabs .tab-btn.active::before {
+  background: var(--accent-primary);
+  box-shadow: 0 0 5px rgba(249, 115, 22, 0.7);
+}
+html[data-tab-style="chip"] .tabs .tab-btn:hover:not(.active) {
+  border-color: var(--border-hover);
+  background: var(--bg-elevated);
+}
+
+/* ── 9. BLOCK ───────────────────────────────────────────────── */
+html[data-tab-style="block"] .tabs {
+  gap: 0;
+  border-bottom: none !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  padding: 0;
+}
+html[data-tab-style="block"] .tabs .tab-btn {
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  padding: 6px 16px;
+  font-weight: 500;
+  flex: 1;
+  text-align: center;
+  transition: background 0.15s, color 0.15s;
+}
+html[data-tab-style="block"] .tabs .tab-btn:last-child {
+  border-right: none;
+}
+html[data-tab-style="block"] .tabs .tab-btn.active {
+  background: var(--accent-primary);
+  color: #fff;
+  font-weight: 600;
+}
+html[data-tab-style="block"] .tabs .tab-btn:hover:not(.active) {
+  background: rgba(249, 115, 22, 0.07);
+  color: var(--accent-primary);
+}
+
+/* ── 10. RETRO ──────────────────────────────────────────────── */
+html[data-tab-style="retro"] .tabs {
+  gap: 4px;
+  border-bottom: 1px solid var(--accent-primary) !important;
+  padding-bottom: 0;
+  font-family: "Courier New", Consolas, monospace;
+}
+html[data-tab-style="retro"] .tabs .tab-btn {
+  border-radius: 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  padding: 5px 12px;
+  font-family: inherit;
+  font-size: 0.85em;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.12s;
+}
+html[data-tab-style="retro"] .tabs .tab-btn.active {
+  border-color: var(--accent-primary);
+  border-bottom-color: var(--bg-secondary);
+  background: var(--bg-secondary);
+  color: var(--accent-primary);
+  margin-bottom: -1px;
+  position: relative;
+}
+html[data-tab-style="retro"] .tabs .tab-btn.active::before {
+  content: ">";
+  margin-right: 4px;
+  opacity: 0.7;
+}
+html[data-tab-style="retro"] .tabs .tab-btn:hover:not(.active) {
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+/* ============================================================
+   GROUP NAV STYLES — Transformations via data-nav
+   Appliqué sur .diag-layout[data-nav="..."]
+   ============================================================ */
+
+/* ── 1. SIDEBAR (défaut — pas de surcharge nécessaire) ──────── */
+
+/* ── 2. TOP-PILLS ───────────────────────────────────────────── */
+.diag-layout[data-nav="top-pills"] {
+  flex-direction: column;
+  gap: 10px;
+}
+.diag-layout[data-nav="top-pills"] .diag-sidenav {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+.diag-layout[data-nav="top-pills"] .diag-sidenav-filter { display: none; }
+.diag-layout[data-nav="top-pills"] .sidenav-group { display: contents; }
+.diag-layout[data-nav="top-pills"] .sidenav-group-label { display: none; }
+.diag-layout[data-nav="top-pills"] .sidenav-scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  overflow: visible;
+}
+.diag-layout[data-nav="top-pills"] .sidenav-item {
+  width: auto;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  font-size: 11.5px;
+}
+.diag-layout[data-nav="top-pills"] .sidenav-item.active {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+.diag-layout[data-nav="top-pills"] .sidenav-item:hover:not(.active) {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+}
+.diag-layout[data-nav="top-pills"] .diag-content-area { width: 100%; }
+
+/* ── 3. COMPACT (icônes seules + tooltip) ───────────────────── */
+.diag-layout[data-nav="compact"] .diag-sidenav { width: 44px; }
+.diag-layout[data-nav="compact"] .diag-sidenav-filter { display: none; }
+.diag-layout[data-nav="compact"] .sidenav-group-label { display: none; }
+.diag-layout[data-nav="compact"] .sidenav-item {
+  padding: 8px 0;
+  justify-content: center;
+  position: relative;
+}
+.diag-layout[data-nav="compact"] .sidenav-item-label { display: none; }
+.diag-layout[data-nav="compact"] .sidenav-item::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 999;
+  color: var(--text-primary);
+}
+.diag-layout[data-nav="compact"] .sidenav-item:hover::after { opacity: 1; }
+
+/* ── 4. FLAT (liste dense sans titres de groupes) ───────────── */
+.diag-layout[data-nav="flat"] .sidenav-group-label { display: none; }
+.diag-layout[data-nav="flat"] .sidenav-group { margin-bottom: 0; }
+.diag-layout[data-nav="flat"] .sidenav-item {
+  padding: 5px 10px;
+  border-radius: 0;
+}
+.diag-layout[data-nav="flat"] .sidenav-item.active {
+  background: var(--bg-tertiary);
+  border-left: 2px solid var(--accent-primary);
+  padding-left: 8px;
+}
+.diag-layout[data-nav="flat"] .sidenav-item:hover:not(.active) {
+  background: rgba(255,255,255,0.03);
+}
+.diag-layout[data-nav="flat"] .sidenav-scroll { padding: 4px 0; }
+
+/* ── 5. ACCORDION ───────────────────────────────────────────── */
+/* Les groupes repliés masquent leurs items via .sidenav-group--collapsed */
+.diag-layout[data-nav="accordion"] .sidenav-group-label {
+  cursor: pointer;
+  user-select: none;
+  padding: 7px 12px 7px 10px;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.diag-layout[data-nav="accordion"] .sidenav-group-label::after {
+  content: "▾";
+  margin-left: auto;
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+.diag-layout[data-nav="accordion"] .sidenav-group-label:hover {
+  background: var(--bg-tertiary);
+}
+.diag-layout[data-nav="accordion"] .sidenav-group--collapsed .sidenav-group-label::after {
+  transform: rotate(-90deg);
+}
+.diag-layout[data-nav="accordion"] .sidenav-group--collapsed .sidenav-items-wrapper {
+  display: none;
+}
+.sidenav-items-wrapper { display: contents; }
+.diag-layout[data-nav="accordion"] .sidenav-items-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 6. SPLIT (deux colonnes dans la sidebar) ───────────────── */
+.diag-layout[data-nav="split"] .diag-sidenav { width: 280px; }
+.diag-layout[data-nav="split"] .sidenav-scroll {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 6px 4px;
+}
+.diag-layout[data-nav="split"] .sidenav-group {
+  grid-column: 1 / -1;
+}
+.diag-layout[data-nav="split"] .sidenav-group-label {
+  grid-column: 1 / -1;
+  font-size: 9.5px;
+  padding: 5px 8px 3px;
+}
+.diag-layout[data-nav="split"] .sidenav-item {
+  padding: 4px 8px;
+  font-size: 11.5px;
+  border-radius: var(--radius-sm);
+}
+.diag-layout[data-nav="split"] .sidenav-item:hover {
+  background: var(--bg-tertiary);
+}
+
+/* ── 7. FLOATING (sidebar avec ombre et léger détachement) ───── */
+.diag-layout[data-nav="floating"] .diag-sidenav {
+  border-radius: var(--radius-xl);
+  border-color: var(--border-hover);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.4),
+    0 2px 8px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  background: var(--bg-elevated);
+  margin: 4px 0;
+}
+.diag-layout[data-nav="floating"] .sidenav-group-label {
+  padding: 6px 14px 3px;
+}
+.diag-layout[data-nav="floating"] .sidenav-item {
+  padding: 5px 14px 5px 16px;
+  border-radius: var(--radius-sm);
+  margin: 0 4px;
+  width: calc(100% - 8px);
+}
+.diag-layout[data-nav="floating"] .sidenav-item.active {
+  background: rgba(249, 115, 22, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.25);
+}
+.diag-layout[data-nav="floating"] .sidenav-item:hover:not(.active) {
+  background: rgba(255,255,255,0.05);
+}
+
+/* ── 8. RAIL (ultra minimal — icône + point coloré) ─────────── */
+.diag-layout[data-nav="rail"] .diag-sidenav {
+  width: 52px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.diag-layout[data-nav="rail"] .diag-sidenav-filter { display: none; }
+.diag-layout[data-nav="rail"] .sidenav-group-label { display: none; }
+.diag-layout[data-nav="rail"] .sidenav-group { margin-bottom: 0; }
+.diag-layout[data-nav="rail"] .sidenav-scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+}
+.diag-layout[data-nav="rail"] .sidenav-item {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  position: relative;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.diag-layout[data-nav="rail"] .sidenav-item-label { display: none; }
+.diag-layout[data-nav="rail"] .sidenav-item.active {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.35);
+  color: var(--accent-primary);
+}
+.diag-layout[data-nav="rail"] .sidenav-item.active::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  background: var(--accent-primary);
+  border-radius: 3px 0 0 3px;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+}
+.diag-layout[data-nav="rail"] .sidenav-item:hover:not(.active) {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+}
+.diag-layout[data-nav="rail"] .sidenav-item::before {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 999;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.diag-layout[data-nav="rail"] .sidenav-item:hover::before { opacity: 1; }

@@ -3,8 +3,8 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import {
   useThemeEditorStore, PRESET_THEMES, THEME_VAR_GROUPS, PRESET_THEME_GROUPS,
 } from "@/stores/themeEditor";
-import { useLayoutStore, LAYOUT_PRESETS } from "@/stores/layoutStore";
-import type { LayoutPresetId, SidebarPosition, SidebarMode, SidebarWidth, UIDensity, ContentMaxWidth } from "@/stores/layoutStore";
+import { useLayoutStore, LAYOUT_PRESETS, TAB_STYLE_LABELS, GROUP_NAV_STYLE_LABELS } from "@/stores/layoutStore";
+import type { LayoutPresetId, SidebarPosition, SidebarMode, SidebarWidth, UIDensity, ContentMaxWidth, TabStyle, GroupNavStyle } from "@/stores/layoutStore";
 import { useNotificationStore } from "@/stores/notifications";
 import ThemePreview from "@/components/theme/ThemePreview.vue";
 import {
@@ -298,6 +298,50 @@ const currentPresetId = computed(() =>
                   />
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Navigation & Onglets -->
+          <div class="te-section">
+            <div class="te-section-title"><Layout :size="13" /> Navigation &amp; Onglets</div>
+            <div class="te-vars-list">
+
+              <!-- Style des onglets -->
+              <div class="te-var-row">
+                <label class="te-var-label">Style onglets</label>
+                <div class="te-btn-group te-btn-group--wrap">
+                  <button
+                    v-for="(label, key) in TAB_STYLE_LABELS" :key="key"
+                    class="te-seg-btn"
+                    :class="{ active: layoutStore.state.tabStyle === key }"
+                    @click="layoutStore.setField('tabStyle', key as TabStyle)"
+                  >{{ label }}</button>
+                </div>
+              </div>
+
+              <!-- Style nav groupes -->
+              <div class="te-var-row">
+                <label class="te-var-label">Navigation groupes</label>
+                <div class="te-btn-group te-btn-group--wrap">
+                  <button
+                    v-for="(label, key) in GROUP_NAV_STYLE_LABELS" :key="key"
+                    class="te-seg-btn"
+                    :class="{ active: layoutStore.state.groupNavStyle === key }"
+                    @click="layoutStore.setField('groupNavStyle', key as GroupNavStyle)"
+                  >{{ label }}</button>
+                </div>
+              </div>
+
+              <!-- Prévisualisation style onglets -->
+              <div class="te-var-row te-nav-preview">
+                <label class="te-var-label">Aperçu</label>
+                <div class="te-tabs-preview" :data-preview-tab="layoutStore.state.tabStyle">
+                  <button class="tp-tab tp-tab--active">Système</button>
+                  <button class="tp-tab">Réseau</button>
+                  <button class="tp-tab">Stockage</button>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -768,4 +812,86 @@ const currentPresetId = computed(() =>
   overflow: hidden;
   padding: 10px;
 }
+
+/* ── Navigation & Onglets section ──────────────────────────── */
+.te-btn-group--wrap {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Preview mini tabs */
+.te-nav-preview { flex-direction: column; align-items: flex-start; gap: 6px; }
+.te-nav-preview .te-var-label { margin-bottom: 0; }
+.te-tabs-preview {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+}
+.tp-tab {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.tp-tab--active { color: var(--text-primary); font-weight: 600; }
+
+/* Underline preview */
+.te-tabs-preview[data-preview-tab="underline"] { padding: 4px 4px 0; border-bottom: 1px solid var(--border); }
+.te-tabs-preview[data-preview-tab="underline"] .tp-tab { border-radius: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.te-tabs-preview[data-preview-tab="underline"] .tp-tab--active { border-bottom-color: var(--accent-primary); color: var(--accent-primary); }
+
+/* Pills preview */
+.te-tabs-preview[data-preview-tab="pills"] { border-bottom: none; border-radius: var(--radius-lg); gap: 4px; }
+.te-tabs-preview[data-preview-tab="pills"] .tp-tab { border-radius: var(--radius-md); }
+.te-tabs-preview[data-preview-tab="pills"] .tp-tab--active { background: var(--bg-elevated); color: var(--accent-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+/* Cards preview */
+.te-tabs-preview[data-preview-tab="cards"] { border-bottom: none; align-items: flex-end; padding: 4px 4px 0; }
+.te-tabs-preview[data-preview-tab="cards"] .tp-tab { border: 1px solid var(--border); border-bottom: none; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: var(--bg-tertiary); }
+.te-tabs-preview[data-preview-tab="cards"] .tp-tab--active { background: var(--bg-secondary); border-color: var(--border-hover); color: var(--accent-primary); box-shadow: inset 0 -2px 0 var(--accent-primary); }
+
+/* Minimal preview */
+.te-tabs-preview[data-preview-tab="minimal"] { border-bottom: none; padding: 2px; gap: 0; }
+.te-tabs-preview[data-preview-tab="minimal"] .tp-tab { font-size: 10.5px; }
+.te-tabs-preview[data-preview-tab="minimal"] .tp-tab--active { color: var(--text-primary); font-weight: 700; }
+
+/* Bordered preview */
+.te-tabs-preview[data-preview-tab="bordered"] { border-bottom: none; gap: 4px; }
+.te-tabs-preview[data-preview-tab="bordered"] .tp-tab { border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.te-tabs-preview[data-preview-tab="bordered"] .tp-tab--active { border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(249,115,22,0.06); }
+
+/* Neon preview */
+.te-tabs-preview[data-preview-tab="neon"] { padding: 4px 4px 0; border-bottom: 1px solid rgba(249,115,22,0.2); }
+.te-tabs-preview[data-preview-tab="neon"] .tp-tab { border-radius: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.te-tabs-preview[data-preview-tab="neon"] .tp-tab--active { border-bottom-color: var(--accent-primary); color: var(--accent-primary); text-shadow: 0 0 8px rgba(249,115,22,0.7); }
+
+/* Gradient preview */
+.te-tabs-preview[data-preview-tab="gradient"] { border-bottom: none; gap: 4px; border-radius: var(--radius-lg); }
+.te-tabs-preview[data-preview-tab="gradient"] .tp-tab { border-radius: var(--radius-md); }
+.te-tabs-preview[data-preview-tab="gradient"] .tp-tab--active { background: linear-gradient(135deg, var(--accent-primary), #e05a00); color: #fff; box-shadow: 0 2px 8px rgba(249,115,22,0.4); }
+
+/* Chip preview */
+.te-tabs-preview[data-preview-tab="chip"] { border-bottom: none; gap: 5px; padding: 4px 2px; }
+.te-tabs-preview[data-preview-tab="chip"] .tp-tab { border-radius: 999px; border: 1px solid var(--border); background: var(--bg-secondary); padding: 2px 8px 2px 6px; font-size: 10.5px; }
+.te-tabs-preview[data-preview-tab="chip"] .tp-tab--active { border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(249,115,22,0.1); }
+
+/* Block preview */
+.te-tabs-preview[data-preview-tab="block"] { border-bottom: none; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; padding: 0; gap: 0; }
+.te-tabs-preview[data-preview-tab="block"] .tp-tab { border-radius: 0; border-right: 1px solid var(--border); flex: 1; text-align: center; }
+.te-tabs-preview[data-preview-tab="block"] .tp-tab:last-child { border-right: none; }
+.te-tabs-preview[data-preview-tab="block"] .tp-tab--active { background: var(--accent-primary); color: #fff; }
+
+/* Retro preview */
+.te-tabs-preview[data-preview-tab="retro"] { padding: 4px 4px 0; border-bottom: 1px solid var(--accent-primary); font-family: monospace; gap: 4px; }
+.te-tabs-preview[data-preview-tab="retro"] .tp-tab { border-radius: 0; border: 1px solid transparent; border-bottom: none; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-family: monospace; }
+.te-tabs-preview[data-preview-tab="retro"] .tp-tab--active { border-color: var(--accent-primary); border-bottom-color: var(--bg-tertiary); background: var(--bg-tertiary); color: var(--accent-primary); margin-bottom: -1px; }
 </style>

@@ -1003,3 +1003,57 @@ pub fn backup_user_folders(
         folders_count: succeeded,
     }
 }
+
+// ════════════════════════════════════════════════════════
+//  Shadow Copy — Création & Suppression
+// ════════════════════════════════════════════════════════
+
+/// Crée une nouvelle Shadow Copy VSS sur le volume indiqué (ex: "C:")
+pub fn create_shadow_copy(volume: String) -> Result<String, String> {
+    let v = volume.trim_end_matches('\\').trim_end_matches(':');
+    let vol_path = format!("{}:\\", v.to_uppercase());
+    let ps = format!(
+        r#"$r = (Get-WmiObject -List Win32_ShadowCopy).Create('{}', 'ClientAccessible'); if ($r.ReturnValue -eq 0) {{ 'OK:' + $r.ShadowID }} else {{ 'ERR:Code ' + $r.ReturnValue }}"#,
+        vol_path
+    );
+    match run_ps(&ps) {
+        Some(t) if t.trim().starts_with("OK:") => Ok(t.trim()[3..].to_string()),
+        Some(t) => Err(t.trim().trim_start_matches("ERR:").to_string()),
+        None => Err("Erreur PowerShell".into()),
+    }
+}
+
+/// Supprime une Shadow Copy par son ID VSS
+pub fn delete_shadow_copy(shadow_id: String) -> Result<String, String> {
+    let ps = format!(
+        r#"$s = Get-WmiObject Win32_ShadowCopy | Where-Object {{ $_.ID -eq '{}' }}; if ($s) {{ $s.Delete(); 'OK' }} else {{ 'ERR:Shadow copy introuvable' }}"#,
+        shadow_id.replace('\'', "''")
+    );
+    match run_ps(&ps) {
+        Some(t) if t.trim() == "OK" => Ok("Shadow copy supprimée".into()),
+        Some(t) => Err(t.trim().trim_start_matches("ERR:").to_string()),
+        None => Err("Erreur PowerShell".into()),
+    }
+}
+
+/// Ouvre un dossier dans l'Explorateur Windows
+pub fn open_in_explorer(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    { let _ = path; Err("Non supporté hors Windows".into()) }
+}
+
+/// Retourne les lettres des volumes NTFS connectés (ex: ["C:", "D:"])
+pub fn get_ntfs_drives() -> Vec<String> {
+    let ps = r#"Get-WmiObject Win32_LogicalDisk -ErrorAction SilentlyContinue | Where-Object { $_.FileSystem -eq 'NTFS' } | Select-Object -ExpandProperty DeviceID"#;
+    run_ps(ps)
+        .map(|t| t.lines().map(|l| l.trim().to_string()).filter(|l| !l.is_empty()).collect())
+        .unwrap_or_default()
+}
