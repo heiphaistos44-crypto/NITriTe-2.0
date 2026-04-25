@@ -13,7 +13,7 @@ pub fn init_logger() {
     std::mem::forget(_guard);
 
     tracing_subscriber::registry()
-        .with(EnvFilter::new("info,nitrite_lib=debug"))
+        .with(EnvFilter::new("info,nitrite_lib=debug,tao=error,wry=error"))
         .with(fmt::layer().with_writer(non_blocking).with_ansi(false))
         .with(fmt::layer().with_writer(std::io::stdout))
         .init();

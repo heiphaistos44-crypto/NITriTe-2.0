@@ -14,6 +14,20 @@ pub struct GeneratedScript {
     pub app_count: usize,
 }
 
+/// Valide un identifiant de paquet (winget/choco) : alphanumeric + . - _
+fn safe_pkg_id(id: &str) -> bool {
+    !id.is_empty() && id.len() <= 200
+        && id.chars().all(|c| c.is_alphanumeric() || c == '.' || c == '-' || c == '_')
+}
+
+/// Nettoie un nom d'app pour l'affichage dans echo (supprime chars dangereux batch)
+fn safe_display_name(name: &str) -> String {
+    name.chars()
+        .filter(|c| c.is_alphanumeric() || " .-_()[]".contains(*c))
+        .take(80)
+        .collect()
+}
+
 /// Génère un script de déploiement (.bat ou .ps1) à partir d'une liste d'apps
 #[tauri::command]
 pub fn generate_deploy_script(apps: Vec<AppEntry>, format: String) -> GeneratedScript {
@@ -46,14 +60,17 @@ fn generate_batch(apps: &[AppEntry]) -> String {
     ];
 
     for app in apps {
+        let display = safe_display_name(&app.name);
         if let Some(wid) = &app.winget_id {
-            lines.push(format!("echo [WinGet] Installation de {}...", app.name));
+            if !safe_pkg_id(wid) { continue; }
+            lines.push(format!("echo [WinGet] Installation de {}...", display));
             lines.push(format!(
                 "winget install --id {} --silent --accept-package-agreements --accept-source-agreements",
                 wid
             ));
         } else if let Some(cid) = &app.choco_id {
-            lines.push(format!("echo [Choco] Installation de {}...", app.name));
+            if !safe_pkg_id(cid) { continue; }
+            lines.push(format!("echo [Choco] Installation de {}...", display));
             lines.push(format!("choco install {} -y", cid));
         }
         lines.push("".to_string());
@@ -74,14 +91,17 @@ fn generate_powershell(apps: &[AppEntry]) -> String {
     ];
 
     for app in apps {
+        let display = safe_display_name(&app.name);
         if let Some(wid) = &app.winget_id {
-            lines.push(format!("Write-Host '[WinGet] {}...' -ForegroundColor Yellow", app.name));
+            if !safe_pkg_id(wid) { continue; }
+            lines.push(format!("Write-Host '[WinGet] {}...' -ForegroundColor Yellow", display));
             lines.push(format!(
                 "winget install --id {} --silent --accept-package-agreements --accept-source-agreements",
                 wid
             ));
         } else if let Some(cid) = &app.choco_id {
-            lines.push(format!("Write-Host '[Choco] {}...' -ForegroundColor Yellow", app.name));
+            if !safe_pkg_id(cid) { continue; }
+            lines.push(format!("Write-Host '[Choco] {}...' -ForegroundColor Yellow", display));
             lines.push(format!("choco install {} -y", cid));
         }
         lines.push("".to_string());

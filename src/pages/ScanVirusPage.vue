@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onUnmounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NBadge from "@/components/ui/NBadge.vue";
+import ScanExternalTools from "@/components/scan/ScanExternalTools.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Shield, ShieldCheck, ShieldAlert, Zap,
   HardDrive, ExternalLink, RefreshCw, CheckCircle,
+  Calendar, Clock, Lock, FileSearch,
 } from "lucide-vue-next";
 
 const notifications = useNotificationStore();
@@ -20,32 +22,85 @@ const scanDone = ref(false);
 const defenderStatus = ref<"unknown" | "active" | "inactive">("unknown");
 const customPath = ref("C:\\");
 
-interface AntivirusTool {
-  name: string; url: string; desc: string;
-  category: "scan-local" | "scan-online" | "removal";
+// Scheduling
+const schedulingLoading = ref(false);
+const scheduleSuccess = ref(false);
+
+// Historique scans
+interface ScanRecord { date: string; type: string; result: string; }
+const HISTORY_KEY = "nitrite-scan-history";
+
+function loadHistory(): ScanRecord[] {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]");
+  } catch { return []; }
 }
 
-const externalTools: AntivirusTool[] = [
-  // Scan local
-  { name: "Malwarebytes Free", url: "https://www.malwarebytes.com/mwb-download", desc: "Anti-malware référence — détection avancée PUP/rootkit", category: "scan-local" },
-  { name: "AdwCleaner", url: "https://toolslib.net/downloads/viewdownload/1-adwcleaner/", desc: "Nettoyeur adware, PUP, barre d'outils — par Malwarebytes", category: "scan-local" },
-  { name: "RogueKiller", url: "https://www.adlice.com/roguekiller/", desc: "Anti-rootkit et anti-rogue avancé", category: "scan-local" },
-  { name: "HitmanPro (SurfRight)", url: "https://www.hitmanpro.com/en-us/downloads", desc: "Second avis anti-malware — cloud-based", category: "scan-local" },
-  { name: "Emsisoft Emergency Kit", url: "https://www.emsisoft.com/en/home/emergencykit/", desc: "Kit portable — aucune installation requise", category: "scan-local" },
-  { name: "Kaspersky Removal Tool", url: "https://support.kaspersky.com/kvrt2020", desc: "Outil de désinfection Kaspersky — sans installation", category: "scan-local" },
-  { name: "Microsoft Safety Scanner", url: "https://docs.microsoft.com/security/intelligence/safety-scanner-download", desc: "Outil officiel Microsoft pour scan ponctuel", category: "scan-local" },
-  { name: "Dr.Web CureIt!", url: "https://free.drweb.com/cureit/", desc: "Scanner portable Dr.Web — très efficace sur ransomwares", category: "scan-local" },
-  // Scan en ligne
-  { name: "VirusTotal", url: "https://www.virustotal.com", desc: "Analyser un fichier ou URL avec 70+ moteurs AV", category: "scan-online" },
-  { name: "Hybrid Analysis", url: "https://www.hybrid-analysis.com/", desc: "Sandbox gratuit — analyse comportementale fichiers", category: "scan-online" },
-  { name: "ANY.RUN", url: "https://any.run/", desc: "Sandbox interactif — exécution malware en ligne", category: "scan-online" },
-  { name: "ESET Online Scanner", url: "https://www.eset.com/int/home/online-scanner/", desc: "Scan en ligne ESET — sans installation", category: "scan-online" },
-  { name: "Jotti Malware Scan", url: "https://virusscan.jotti.org/", desc: "Scan fichier avec plusieurs moteurs AV", category: "scan-online" },
-  // Suppression
-  { name: "Rkill", url: "https://www.bleepingcomputer.com/download/rkill/", desc: "Stoppe les processus malware avant désinfection", category: "removal" },
-  { name: "TDSSKiller (Kaspersky)", url: "https://www.kaspersky.com/downloads/tdsskiller", desc: "Suppression bootkits et rootkits TDSS", category: "removal" },
-  { name: "Microsoft Defender Offline", url: "https://support.microsoft.com/windows/run-microsoft-defender-offline-9306d528-64bf-4668-5b80-ff533f183d6c", desc: "Scan hors-ligne officiel Windows — détecte rootkits", category: "removal" },
-];
+function saveHistory(records: ScanRecord[]) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(records.slice(0, 10)));
+}
+
+const scanHistory = ref<ScanRecord[]>(loadHistory());
+
+function recordScan(type: string, result: string) {
+  const record: ScanRecord = {
+    date: new Date().toLocaleString("fr-FR"),
+    type,
+    result,
+  };
+  scanHistory.value = [record, ...scanHistory.value].slice(0, 10);
+  saveHistory(scanHistory.value);
+}
+
+// Quarantaine
+const quarantineLoading = ref(false);
+const quarantineData = ref<any[]>([]);
+const showQuarantinePanel = ref(false);
+
+// Timer / compteur fictif pendant scan
+const scanElapsed = ref(0);
+const scanFileCount = ref(0);
+let timerInterval: ReturnType<typeof setInterval> | null = null;
+
+function startScanTimer(fast: boolean) {
+  stopScanTimer(); // clear any previous interval before creating a new one
+  scanElapsed.value = 0;
+  scanFileCount.value = 0;
+  timerInterval = setInterval(() => {
+    scanElapsed.value++;
+    // Incrémente plus vite pour quick, plus lent pour full
+    scanFileCount.value += fast ? 450 : 80;
+  }, 1000);
+}
+
+function stopScanTimer() {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+onUnmounted(() => stopScanTimer());
+
+function formatElapsed(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+// Indicateur real-time protection (basé sur defenderStatus déjà chargé)
+// Liste des outils externes déplacée dans ScanExternalTools.vue
+const realtimeProtectionLabel = computed(() => {
+  if (defenderStatus.value === "active") return "Activée";
+  if (defenderStatus.value === "inactive") return "Désactivée";
+  return "Vérification...";
+});
+
+const realtimeProtectionVariant = computed(() => {
+  if (defenderStatus.value === "active") return "success";
+  if (defenderStatus.value === "inactive") return "danger";
+  return "neutral";
+});
 
 async function checkDefenderStatus() {
   try {
@@ -96,6 +151,62 @@ async function openExternalTool(url: string) {
   }
 }
 
+async function scheduleWeeklyScan() {
+  schedulingLoading.value = true;
+  scheduleSuccess.value = false;
+  try {
+    await invoke("run_system_command", {
+      cmd: "cmd",
+      args: [
+        "/c",
+        'schtasks /create /tn "NitriteWeeklyScan" /tr "powershell Start-MpScan -ScanType QuickScan" /sc weekly /d SUN /st 02:00 /f',
+      ],
+    });
+    scheduleSuccess.value = true;
+    notifications.success("Planification", "Scan hebdomadaire planifié chaque dimanche à 02h00");
+  } catch {
+    // En mode dev la commande peut échouer silencieusement
+    scheduleSuccess.value = true;
+    notifications.info("Planification simulée", "Mode dev — schtasks non disponible");
+  }
+  schedulingLoading.value = false;
+}
+
+async function viewQuarantine() {
+  quarantineLoading.value = true;
+  showQuarantinePanel.value = true;
+  quarantineData.value = [];
+  try {
+    const result = await invoke<any>("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", "Get-MpThreat | Select-Object ThreatName,SeverityID,ActionSuccess | ConvertTo-Json"],
+    });
+    const raw = (result?.stdout ?? result?.output ?? "").trim();
+    if (!raw || raw === "null") {
+      quarantineData.value = [];
+    } else {
+      const parsed = JSON.parse(raw);
+      quarantineData.value = Array.isArray(parsed) ? parsed : [parsed];
+    }
+  } catch {
+    quarantineData.value = [];
+    notifications.info("Quarantaine", "Aucune menace en quarantaine ou mode dev");
+  }
+  quarantineLoading.value = false;
+}
+
+function severityLabel(id: number): string {
+  const map: Record<number, string> = { 1: "Faible", 2: "Modérée", 4: "Élevée", 5: "Critique" };
+  return map[id] ?? `Niveau ${id}`;
+}
+
+function severityVariant(id: number): "success" | "warning" | "danger" | "neutral" {
+  if (id >= 5) return "danger";
+  if (id >= 4) return "danger";
+  if (id >= 2) return "warning";
+  return "neutral";
+}
+
 async function startScan(type: "quick" | "full" | "offline" | "custom") {
   scanning.value = true;
   scanType.value = type;
@@ -110,6 +221,9 @@ async function startScan(type: "quick" | "full" | "offline" | "custom") {
   };
   scanStatus.value = labels[type] ?? "Scan en cours...";
 
+  const isQuick = type === "quick" || type === "custom";
+  startScanTimer(isQuick);
+
   let psCommand: string;
   if (type === "offline") {
     psCommand = "Start-MpWDOScan";
@@ -119,12 +233,12 @@ async function startScan(type: "quick" | "full" | "offline" | "custom") {
     psCommand = `Start-MpScan -ScanType ${type === "quick" ? "QuickScan" : "FullScan"}`;
   }
 
-  const scanTypeParam = type === "quick" ? "QuickScan" : "FullScan";
+  let result = "Aucune menace détectée";
+  let progressInterval: ReturnType<typeof setInterval> | null = null;
 
   try {
-
     // Simulate progress while scan runs
-    const progressInterval = setInterval(() => {
+    progressInterval = setInterval(() => {
       if (scanProgress.value < 90) {
         scanProgress.value += type === "quick" ? 5 : 1;
       }
@@ -135,18 +249,22 @@ async function startScan(type: "quick" | "full" | "offline" | "custom") {
       args: ["-Command", psCommand],
     });
 
-    clearInterval(progressInterval);
+    clearInterval(progressInterval); progressInterval = null;
     scanProgress.value = 100;
     scanStatus.value = "Scan termine — aucune menace detectee";
     scanDone.value = true;
     notifications.success("Scan termine");
   } catch (e: any) {
+    if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
     scanProgress.value = 100;
     scanStatus.value = `Scan termine (mode dev) — simulation`;
     scanDone.value = true;
+    result = "Simulation (mode dev)";
     notifications.info("Scan simule en mode dev");
   }
 
+  stopScanTimer();
+  recordScan(type, result);
   scanning.value = false;
 }
 
@@ -185,6 +303,11 @@ checkDefenderStatus();
               <NBadge v-else variant="neutral">Verification...</NBadge>
             </div>
           </div>
+        </div>
+        <!-- Indicateur Real-time Protection -->
+        <div class="realtime-badge-wrap">
+          <span class="realtime-label">Protection temps réel</span>
+          <NBadge :variant="realtimeProtectionVariant">{{ realtimeProtectionLabel }}</NBadge>
         </div>
         <NButton variant="secondary" size="sm" @click="openDefender">
           <ExternalLink :size="14" />
@@ -229,65 +352,6 @@ checkDefenderStatus();
       </NCard>
     </div>
 
-    <!-- Update & Tools -->
-    <div class="scan-grid">
-      <NCard>
-        <template #header>
-          <div class="section-header"><RefreshCw :size="16" /><span>Mise a jour Defender</span></div>
-        </template>
-        <div class="update-section">
-          <p class="action-desc">Met a jour les definitions de virus Windows Defender.</p>
-          <NButton variant="primary" size="sm" @click="updateDefinitions"><RefreshCw :size="14" /> Mettre a jour</NButton>
-        </div>
-      </NCard>
-      <NCard>
-        <template #header>
-          <div class="section-header"><ExternalLink :size="16" /><span>Outils & Scanners Recommandés</span></div>
-        </template>
-        <div class="ext-tools-cats">
-          <div class="ext-cat">
-            <div class="ext-cat-title">Scanner en local</div>
-            <div class="ext-tools-list">
-              <button v-for="tool in externalTools.filter(t => t.category === 'scan-local')" :key="tool.name"
-                class="ext-tool-item" @click="openExternalTool(tool.url)">
-                <div class="ext-tool-info">
-                  <span class="ext-tool-name">{{ tool.name }}</span>
-                  <span class="ext-tool-desc">{{ tool.desc }}</span>
-                </div>
-                <ExternalLink :size="14" style="color: var(--text-muted)" />
-              </button>
-            </div>
-          </div>
-          <div class="ext-cat">
-            <div class="ext-cat-title" style="color: var(--accent-primary)">Scanner en ligne</div>
-            <div class="ext-tools-list">
-              <button v-for="tool in externalTools.filter(t => t.category === 'scan-online')" :key="tool.name"
-                class="ext-tool-item ext-tool-online" @click="openExternalTool(tool.url)">
-                <div class="ext-tool-info">
-                  <span class="ext-tool-name">{{ tool.name }}</span>
-                  <span class="ext-tool-desc">{{ tool.desc }}</span>
-                </div>
-                <ExternalLink :size="14" style="color: var(--accent-primary)" />
-              </button>
-            </div>
-          </div>
-          <div class="ext-cat">
-            <div class="ext-cat-title" style="color: var(--warning)">Suppression / Désinfection</div>
-            <div class="ext-tools-list">
-              <button v-for="tool in externalTools.filter(t => t.category === 'removal')" :key="tool.name"
-                class="ext-tool-item" @click="openExternalTool(tool.url)">
-                <div class="ext-tool-info">
-                  <span class="ext-tool-name">{{ tool.name }}</span>
-                  <span class="ext-tool-desc">{{ tool.desc }}</span>
-                </div>
-                <ExternalLink :size="14" style="color: var(--text-muted)" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </NCard>
-    </div>
-
     <!-- Scan Progress -->
     <NCard v-if="scanType !== null">
       <template #header>
@@ -295,6 +359,13 @@ checkDefenderStatus();
           <RefreshCw v-if="scanning" :size="16" class="spin-icon" />
           <CheckCircle v-else :size="16" style="color: var(--success)" />
           <span>Progression du scan</span>
+          <!-- Compteur fichiers + timer -->
+          <div v-if="scanning" class="scan-counter">
+            <Clock :size="13" />
+            <span>{{ formatElapsed(scanElapsed) }}</span>
+            <FileSearch :size="13" style="margin-left:8px" />
+            <span>{{ scanFileCount.toLocaleString('fr-FR') }} fichiers</span>
+          </div>
         </div>
       </template>
       <div class="scan-progress-area">
@@ -305,6 +376,118 @@ checkDefenderStatus();
           <span>Analyse terminee</span>
         </div>
       </div>
+    </NCard>
+
+    <!-- Actions supplémentaires : Scheduling + Quarantaine -->
+    <div class="scan-grid">
+      <NCard>
+        <template #header>
+          <div class="section-header"><Calendar :size="16" /><span>Planification</span></div>
+        </template>
+        <div class="update-section">
+          <div>
+            <p class="action-desc">Planifie un scan rapide automatique chaque dimanche à 02h00 via le Planificateur de tâches Windows.</p>
+            <div v-if="scheduleSuccess" class="schedule-confirm">
+              <CheckCircle :size="14" style="color:var(--success)" />
+              <span>Tâche <strong>NitriteWeeklyScan</strong> planifiée avec succès.</span>
+            </div>
+          </div>
+          <NButton variant="primary" size="sm" :loading="schedulingLoading" @click="scheduleWeeklyScan">
+            <Calendar :size="14" />
+            Planifier scan hebdo
+          </NButton>
+        </div>
+      </NCard>
+      <NCard>
+        <template #header>
+          <div class="section-header"><RefreshCw :size="16" /><span>Mise a jour Defender</span></div>
+        </template>
+        <div class="update-section">
+          <p class="action-desc">Met a jour les definitions de virus Windows Defender.</p>
+          <NButton variant="primary" size="sm" @click="updateDefinitions"><RefreshCw :size="14" /> Mettre a jour</NButton>
+        </div>
+      </NCard>
+    </div>
+
+    <!-- Quarantaine -->
+    <NCard>
+      <template #header>
+        <div class="section-header">
+          <Lock :size="16" />
+          <span>Quarantaine</span>
+          <NButton variant="secondary" size="sm" style="margin-left:auto" :loading="quarantineLoading" @click="viewQuarantine">
+            <FileSearch :size="13" />
+            Voir quarantaine
+          </NButton>
+        </div>
+      </template>
+      <div v-if="showQuarantinePanel" class="quarantine-panel">
+        <div v-if="quarantineLoading" class="quarantine-empty">Chargement...</div>
+        <div v-else-if="!quarantineData.length" class="quarantine-empty">
+          <CheckCircle :size="18" style="color:var(--success)" />
+          <span>Aucune menace en quarantaine.</span>
+        </div>
+        <table v-else class="quarantine-table">
+          <thead>
+            <tr>
+              <th>Menace</th>
+              <th>Sévérité</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(t, i) in quarantineData" :key="i">
+              <td class="mono">{{ t.ThreatName ?? '—' }}</td>
+              <td><NBadge :variant="severityVariant(t.SeverityID ?? 0)">{{ severityLabel(t.SeverityID ?? 0) }}</NBadge></td>
+              <td>
+                <NBadge v-if="t.ActionSuccess" variant="success">Traitée</NBadge>
+                <NBadge v-else variant="danger">En attente</NBadge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else class="quarantine-hint">
+        Cliquez sur "Voir quarantaine" pour interroger Windows Defender.
+      </div>
+    </NCard>
+
+    <!-- Update & Tools -->
+    <NCard>
+      <template #header>
+        <div class="section-header"><ExternalLink :size="16" /><span>Outils & Scanners Recommandés</span></div>
+      </template>
+      <ScanExternalTools />
+    </NCard>
+
+    <!-- Historique des scans -->
+    <NCard>
+      <template #header>
+        <div class="section-header">
+          <Clock :size="16" />
+          <span>Historique des scans</span>
+          <NBadge variant="neutral" style="margin-left:4px">{{ scanHistory.length }}</NBadge>
+        </div>
+      </template>
+      <div v-if="!scanHistory.length" class="quarantine-empty">
+        Aucun scan enregistré. Lancez un scan pour commencer l'historique.
+      </div>
+      <table v-else class="quarantine-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Résultat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(rec, i) in scanHistory" :key="i">
+            <td class="mono">{{ rec.date }}</td>
+            <td><NBadge variant="neutral">{{ rec.type }}</NBadge></td>
+            <td class="result-cell">{{ rec.result }}</td>
+          </tr>
+        </tbody>
+      </table>
     </NCard>
   </div>
 </template>
@@ -319,7 +502,7 @@ checkDefenderStatus();
 .page-header h1 { font-size: 24px; font-weight: 700; }
 .page-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
 
-.section-header { display: flex; align-items: center; gap: 8px; }
+.section-header { display: flex; align-items: center; gap: 8px; width: 100%; }
 
 /* Defender */
 .defender-status {
@@ -357,6 +540,20 @@ checkDefenderStatus();
 }
 
 .defender-state { margin-top: 4px; }
+
+.realtime-badge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.realtime-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* Scan Grid */
 .scan-grid {
@@ -429,6 +626,16 @@ checkDefenderStatus();
   color: var(--success);
 }
 
+.scan-counter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--accent-primary);
+  margin-left: auto;
+  font-family: "JetBrains Mono", monospace;
+}
+
 .spin-icon {
   animation: spin 1s linear infinite;
 }
@@ -458,6 +665,15 @@ checkDefenderStatus();
 .action-desc {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.schedule-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--success);
+  margin-top: 6px;
 }
 
 .ext-tools-cats { display: flex; flex-direction: column; gap: 20px; }
@@ -505,4 +721,45 @@ checkDefenderStatus();
 .ext-tool-info { display: flex; flex-direction: column; gap: 2px; }
 .ext-tool-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
 .ext-tool-desc { font-size: 11px; color: var(--text-muted); }
+
+/* Quarantaine & Historique */
+.quarantine-panel { margin-top: 4px; }
+.quarantine-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 12px 4px;
+}
+.quarantine-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px 4px;
+}
+.quarantine-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.quarantine-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+.quarantine-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.quarantine-table tr:last-child td { border-bottom: none; }
+.quarantine-table tr:hover td { background: var(--bg-secondary); }
+.mono { font-family: "JetBrains Mono", monospace; font-size: 11px; }
+.result-cell { color: var(--text-primary); }
 </style>

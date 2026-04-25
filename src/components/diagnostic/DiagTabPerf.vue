@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { invoke } from "@/utils/invoke";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import { RefreshCw, Cpu, HardDrive, Wifi, Activity } from "lucide-vue-next";
 
@@ -12,18 +13,28 @@ interface PerfSnapshot {
   handle_count: number; thread_count: number; process_count: number; uptime_hours: number;
 }
 
-const data = ref<PerfSnapshot | null>(null);
-const loading = ref(true);
-const error = ref("");
+const MAX_HISTORY = 30;
+
+const data        = ref<PerfSnapshot | null>(null);
+const loading     = ref(true);
+const error       = ref("");
 const autoRefresh = ref(false);
 let timer: ReturnType<typeof setInterval> | null = null;
+
+// Historique sparkline
+const cpuHistory = ref<number[]>([]);
+const ramHistory = ref<number[]>([]);
 
 async function load() {
   loading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await invoke<PerfSnapshot>("get_perf_snapshot");
     error.value = "";
+    // Store history
+    if (data.value) {
+      cpuHistory.value = [...cpuHistory.value, data.value.cpu_percent].slice(-MAX_HISTORY);
+      ramHistory.value = [...ramHistory.value, data.value.ram_percent].slice(-MAX_HISTORY);
+    }
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
 }
@@ -44,6 +55,44 @@ function uptimeStr(h: number) {
   return `${h.toFixed(1)} h`;
 }
 
+// Sparkline SVG generator
+function sparklinePath(values: number[], w = 160, h = 32): string {
+  if (values.length < 2) return "";
+  const max = Math.max(...values, 1);
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w;
+    const y = h - (v / max) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  return `M ${pts.join(" L ")}`;
+}
+
+function sparklineArea(values: number[], w = 160, h = 32): string {
+  if (values.length < 2) return "";
+  const max = Math.max(...values, 1);
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w;
+    const y = h - (v / max) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const first = `${(0).toFixed(1)},${h}`;
+  const last  = `${w.toFixed(1)},${h}`;
+  return `M ${first} L ${pts.join(" L ")} L ${last} Z`;
+}
+
+const cpuAvg = computed(() =>
+  cpuHistory.value.length ? Math.round(cpuHistory.value.reduce((a, b) => a + b, 0) / cpuHistory.value.length) : 0
+);
+const cpuPeak = computed(() =>
+  cpuHistory.value.length ? Math.round(Math.max(...cpuHistory.value)) : 0
+);
+const ramAvg = computed(() =>
+  ramHistory.value.length ? Math.round(ramHistory.value.reduce((a, b) => a + b, 0) / ramHistory.value.length) : 0
+);
+const ramPeak = computed(() =>
+  ramHistory.value.length ? Math.round(Math.max(...ramHistory.value)) : 0
+);
+
 onMounted(load);
 onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
@@ -62,7 +111,7 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
       <div class="perf-banner-icon"><Activity :size="22" /></div>
       <div class="perf-banner-body">
         <div class="perf-banner-title">Performances en temps réel</div>
-        <div class="perf-banner-desc">CPU · RAM · I/O Disques · Réseau</div>
+        <div class="perf-banner-desc">CPU · RAM · I/O Disques · Réseau · Historique {{ cpuHistory.length }}/{{ 30 }} pts</div>
       </div>
       <div class="perf-actions">
         <button class="diag-btn diag-btn-primary" @click="load" :disabled="loading">
@@ -75,12 +124,17 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
       </div>
     </div>
 
-    <!-- CPU + RAM big cards -->
+    <!-- CPU + RAM big cards with sparklines -->
     <div class="perf-duo">
+      <!-- CPU -->
       <div class="perf-metric-card">
         <div class="pmc-header">
           <Cpu :size="15" class="pmc-icon" />
           <span class="pmc-title">Processeur</span>
+          <div class="pmc-stats">
+            <span class="pmc-stat">Moy <strong>{{ cpuAvg }}%</strong></span>
+            <span class="pmc-stat">Pic <strong :style="{color:pctColor(cpuPeak)}">{{ cpuPeak }}%</strong></span>
+          </div>
         </div>
         <div class="pmc-val" :style="{ color: pctColor(data.cpu_percent) }">
           {{ data.cpu_percent.toFixed(1) }}<span class="pmc-unit">%</span>
@@ -88,18 +142,50 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
         <div class="pmc-bar-track">
           <div class="pmc-bar-fill" :style="{ width: data.cpu_percent + '%', background: pctColor(data.cpu_percent) }" />
         </div>
+        <!-- Sparkline -->
+        <div v-if="cpuHistory.length >= 2" class="spark-wrap">
+          <svg viewBox="0 0 160 32" width="100%" height="32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="cpu-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" :stop-color="pctColor(data.cpu_percent)" stop-opacity="0.3"/>
+                <stop offset="100%" :stop-color="pctColor(data.cpu_percent)" stop-opacity="0.02"/>
+              </linearGradient>
+            </defs>
+            <path :d="sparklineArea(cpuHistory)" fill="url(#cpu-grad)" />
+            <path :d="sparklinePath(cpuHistory)" :stroke="pctColor(data.cpu_percent)" stroke-width="1.5" fill="none" />
+          </svg>
+        </div>
       </div>
+
+      <!-- RAM -->
       <div class="perf-metric-card">
         <div class="pmc-header">
           <HardDrive :size="15" class="pmc-icon" />
           <span class="pmc-title">Mémoire RAM</span>
           <span class="pmc-sub">{{ data.ram_used_gb.toFixed(1) }} / {{ data.ram_total_gb.toFixed(1) }} GB</span>
+          <div class="pmc-stats">
+            <span class="pmc-stat">Moy <strong>{{ ramAvg }}%</strong></span>
+            <span class="pmc-stat">Pic <strong :style="{color:pctColor(ramPeak)}">{{ ramPeak }}%</strong></span>
+          </div>
         </div>
         <div class="pmc-val" :style="{ color: pctColor(data.ram_percent) }">
           {{ data.ram_percent.toFixed(1) }}<span class="pmc-unit">%</span>
         </div>
         <div class="pmc-bar-track">
           <div class="pmc-bar-fill" :style="{ width: data.ram_percent + '%', background: pctColor(data.ram_percent) }" />
+        </div>
+        <!-- Sparkline -->
+        <div v-if="ramHistory.length >= 2" class="spark-wrap">
+          <svg viewBox="0 0 160 32" width="100%" height="32" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ram-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" :stop-color="pctColor(data.ram_percent)" stop-opacity="0.3"/>
+                <stop offset="100%" :stop-color="pctColor(data.ram_percent)" stop-opacity="0.02"/>
+              </linearGradient>
+            </defs>
+            <path :d="sparklineArea(ramHistory)" fill="url(#ram-grad)" />
+            <path :d="sparklinePath(ramHistory)" :stroke="pctColor(data.ram_percent)" stroke-width="1.5" fill="none" />
+          </svg>
         </div>
       </div>
     </div>
@@ -126,7 +212,7 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
         <div class="perf-io-metrics">
           <span class="perf-io-chip io-read">↓ {{ d.read_mb.toFixed(2) }} MB/s</span>
           <span class="perf-io-chip io-write">↑ {{ d.write_mb.toFixed(2) }} MB/s</span>
-          <span class="perf-io-chip io-queue">Q: {{ d.queue_length.toFixed(1) }}</span>
+          <span class="perf-io-chip io-queue" :class="{ 'io-queue-warn': d.queue_length > 5 }">Q: {{ d.queue_length.toFixed(1) }}</span>
         </div>
       </div>
     </div>
@@ -167,14 +253,18 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
 /* CPU / RAM big cards */
 .perf-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .perf-metric-card { background: var(--bg-secondary); border: 1px solid var(--border-hover); border-radius: 14px; padding: 18px 20px; }
-.pmc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.pmc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .pmc-icon { color: var(--text-secondary); }
 .pmc-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .pmc-sub { font-size: 11px; color: var(--text-secondary); margin-left: auto; }
+.pmc-stats { display: flex; gap: 8px; margin-left: auto; }
+.pmc-stat { font-size: 10px; color: var(--text-muted); }
+.pmc-stat strong { font-size: 11px; }
 .pmc-val { font-size: 36px; font-weight: 800; line-height: 1; margin-bottom: 12px; }
 .pmc-unit { font-size: 20px; font-weight: 600; opacity: .7; }
 .pmc-bar-track { height: 8px; background: var(--bg-elevated); border-radius: 99px; overflow: hidden; border: 1px solid var(--border-hover); }
 .pmc-bar-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+.spark-wrap { margin-top: 10px; border-radius: 4px; overflow: hidden; }
 
 /* I/O rows */
 .perf-io-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -186,6 +276,7 @@ onUnmounted(() => { if (timer) clearInterval(timer); });
 .io-read  { background: rgba(34,197,94,.1);  color: #22c55e; border: 1px solid rgba(34,197,94,.2); }
 .io-write { background: rgba(59,130,246,.1); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
 .io-queue { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-hover); }
+.io-queue-warn { background: rgba(249,115,22,.1); color: var(--warning); border-color: rgba(249,115,22,.3); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }

@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { CheckCircle, AlertTriangle, XCircle, ShieldCheck, ShieldOff, Shield, Key, RefreshCw } from "lucide-vue-next";
+import { ref } from "vue";
+import { invoke } from "@/utils/invoke";
+import { CheckCircle, AlertTriangle, XCircle, ShieldCheck, ShieldOff, Shield, Key, RefreshCw, Zap, Download } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NCollapse from "@/components/ui/NCollapse.vue";
+import { useNotificationStore } from "@/stores/notifications";
 
 const props = defineProps<{
   tab: string;
@@ -11,8 +15,98 @@ const props = defineProps<{
   updatesHistory: any[];
 }>();
 
+const emit = defineEmits<{ refresh: [] }>();
+const notify = useNotificationStore();
+
+const togglingDefender  = ref(false);
+const togglingFirewall  = ref(false);
+const updatingDefs      = ref(false);
+
 function secIcon(ok: boolean) { return ok ? CheckCircle : AlertTriangle; }
 function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
+
+function secureScore(): number {
+  if (!props.securityInfo) return 0;
+  const s = props.securityInfo;
+  const checks = [
+    s.secure_boot?.includes("Activé"),
+    s.tpm_enabled, s.uac_enabled,
+    s.firewall_private, s.firewall_public,
+    s.windows_defender_realtime,
+    s.smartscreen_enabled, s.lsa_protection,
+    s.vbs_enabled,
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+}
+
+function scoreVariant(pct: number): "success"|"warning"|"danger" {
+  if (pct >= 80) return "success";
+  if (pct >= 50) return "warning";
+  return "danger";
+}
+
+async function toggleDefender(enable: boolean) {
+  togglingDefender.value = true;
+  try {
+    await invoke("toggle_defender_realtime", { enable });
+    notify.success(`Defender ${enable ? "activé" : "désactivé"}`, "Protection temps réel modifiée");
+    emit("refresh");
+  } catch (e: any) {
+    notify.error("Erreur Defender", String(e));
+  } finally { togglingDefender.value = false; }
+}
+
+async function enableFirewall() {
+  togglingFirewall.value = true;
+  try {
+    await invoke("enable_firewall_all_profiles");
+    notify.success("Pare-feu activé", "Tous les profils ont été activés");
+    emit("refresh");
+  } catch (e: any) {
+    notify.error("Erreur Pare-feu", String(e));
+  } finally { togglingFirewall.value = false; }
+}
+
+async function updateDefenderDefs() {
+  updatingDefs.value = true;
+  notify.info("Mise à jour Defender", "Téléchargement des définitions...");
+  try {
+    const r = await invoke<string>("update_defender_signatures");
+    notify.success("Defender mis à jour", r);
+    emit("refresh");
+  } catch (e: any) {
+    notify.error("Erreur mise à jour", String(e));
+  } finally { updatingDefs.value = false; }
+}
+
+async function fixIssue(action: string) {
+  try {
+    switch (action) {
+      case 'enable_firewall':
+        await enableFirewall();
+        break;
+      case 'enable_defender':
+        await toggleDefender(true);
+        break;
+      case 'update_defender':
+        await updateDefenderDefs();
+        break;
+      case 'run_sfc':
+        await invoke('run_repair_command', { repairType: 'sfc' });
+        notify.info("SFC lancé", "Vérification des fichiers système en cours...");
+        break;
+      case 'run_dism':
+        await invoke('run_repair_command', { repairType: 'dism_restore' });
+        notify.info("DISM lancé", "Restauration de l'image système en cours...");
+        break;
+      case 'settings_activation':
+        await invoke('open_url', { url: 'ms-settings:windowsdefender' });
+        break;
+    }
+  } catch (e: any) {
+    notify.error("Action échouée", String(e));
+  }
+}
 </script>
 
 <template>
@@ -25,12 +119,45 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
         <!-- Score global -->
         <div class="card-block" style="background:linear-gradient(135deg,#1a1a2e,var(--bg-tertiary));border:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <component :is="[securityInfo.secure_boot.includes('Activé'),securityInfo.tpm_enabled,securityInfo.uac_enabled,securityInfo.firewall_private,securityInfo.windows_defender_realtime].filter(Boolean).length >= 4 ? ShieldCheck : ShieldOff"
-              :size="40" :style="{color: [securityInfo.secure_boot.includes('Activé'),securityInfo.tpm_enabled,securityInfo.uac_enabled,securityInfo.firewall_private,securityInfo.windows_defender_realtime].filter(Boolean).length >= 4 ? 'var(--success)' : 'var(--warning)'}" />
-            <div>
+            <component :is="secureScore() >= 80 ? ShieldCheck : ShieldOff"
+              :size="40" :style="{color: secureScore() >= 80 ? 'var(--success)' : secureScore() >= 50 ? 'var(--warning)' : 'var(--danger)'}" />
+            <div style="flex:1">
               <div style="font-size:18px;font-weight:700">Posture de sécurité Windows</div>
               <div class="muted" style="font-size:12px">{{ securityInfo.antivirus_name }} — {{ securityInfo.antivirus_state }}</div>
             </div>
+            <!-- Score numérique -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+              <span style="font-size:28px;font-weight:900;line-height:1" :style="{color: secureScore()>=80?'var(--success)':secureScore()>=50?'var(--warning)':'var(--danger)'}">{{ secureScore() }}</span>
+              <NBadge :variant="scoreVariant(secureScore())" size="sm">/ 100</NBadge>
+            </div>
+          </div>
+          <!-- Barre de score -->
+          <div style="height:4px;background:var(--bg-secondary);border-radius:99px;margin-top:12px;overflow:hidden">
+            <div :style="{width:secureScore()+'%',height:'100%',borderRadius:'99px',background:secureScore()>=80?'var(--success)':secureScore()>=50?'var(--warning)':'var(--danger)',transition:'width .5s ease'}"></div>
+          </div>
+        </div>
+
+        <!-- Actions rapides sécurité -->
+        <div class="sec-quick-actions">
+          <div class="sec-action-group">
+            <span class="sec-action-label">Windows Defender</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <NButton v-if="!securityInfo.windows_defender_realtime" variant="primary" size="sm" :loading="togglingDefender" @click="toggleDefender(true)">
+                <Zap :size="12" /> Activer la protection
+              </NButton>
+              <NButton v-else variant="ghost" size="sm" :loading="togglingDefender" @click="toggleDefender(false)">
+                <Zap :size="12" /> Désactiver
+              </NButton>
+              <NButton variant="secondary" size="sm" :loading="updatingDefs" @click="updateDefenderDefs">
+                <Download :size="12" /> Mettre à jour définitions
+              </NButton>
+            </div>
+          </div>
+          <div v-if="!securityInfo.firewall_private || !securityInfo.firewall_public" class="sec-action-group">
+            <span class="sec-action-label">Pare-feu Windows</span>
+            <NButton variant="primary" size="sm" :loading="togglingFirewall" @click="enableFirewall">
+              <Shield :size="12" /> Activer tous les profils
+            </NButton>
           </div>
         </div>
 
@@ -75,6 +202,9 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
               <component :is="secIcon(securityInfo.windows_defender_realtime)" :size="14" :class="secClass(securityInfo.windows_defender_realtime)" />
               <span>Windows Defender (Protection temps réel)</span>
               <span class="mono">{{ securityInfo.windows_defender_realtime ? 'Actif' : 'INACTIF ⚠' }}</span>
+              <NButton v-if="!securityInfo.windows_defender_realtime" variant="warning" size="sm" :loading="togglingDefender" @click="fixIssue('enable_defender')" style="margin-left:8px">
+                Activer
+              </NButton>
             </div>
             <div class="diag-badge-row">
               <CheckCircle :size="14" class="ic-ok" />
@@ -103,16 +233,25 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
               <component :is="secIcon(securityInfo.firewall_domain)" :size="14" :class="secClass(securityInfo.firewall_domain)" />
               <span>Profil Domaine</span>
               <span class="mono">{{ securityInfo.firewall_domain ? 'Activé' : 'DÉSACTIVÉ' }}</span>
+              <NButton v-if="!securityInfo.firewall_domain" variant="warning" size="sm" :loading="togglingFirewall" @click="fixIssue('enable_firewall')" style="margin-left:8px">
+                Activer
+              </NButton>
             </div>
             <div class="diag-badge-row">
               <component :is="secIcon(securityInfo.firewall_private)" :size="14" :class="secClass(securityInfo.firewall_private)" />
               <span>Profil Privé</span>
               <span class="mono">{{ securityInfo.firewall_private ? 'Activé' : 'DÉSACTIVÉ' }}</span>
+              <NButton v-if="!securityInfo.firewall_private" variant="warning" size="sm" :loading="togglingFirewall" @click="fixIssue('enable_firewall')" style="margin-left:8px">
+                Activer
+              </NButton>
             </div>
             <div class="diag-badge-row">
               <component :is="secIcon(securityInfo.firewall_public)" :size="14" :class="secClass(securityInfo.firewall_public)" />
               <span>Profil Public</span>
               <span class="mono">{{ securityInfo.firewall_public ? 'Activé' : 'DÉSACTIVÉ' }}</span>
+              <NButton v-if="!securityInfo.firewall_public" variant="warning" size="sm" :loading="togglingFirewall" @click="fixIssue('enable_firewall')" style="margin-left:8px">
+                Activer
+              </NButton>
             </div>
           </div>
         </NCollapse>
@@ -136,6 +275,9 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
               <component :is="secIcon(securityInfo.smartscreen_enabled)" :size="14" :class="secClass(securityInfo.smartscreen_enabled)" />
               <span>Windows SmartScreen</span>
               <span class="mono">{{ securityInfo.smartscreen_enabled ? 'Activé' : 'Désactivé' }}</span>
+              <NButton v-if="!securityInfo.smartscreen_enabled" variant="ghost" size="sm" @click="fixIssue('settings_activation')" style="margin-left:8px">
+                Ouvrir Paramètres
+              </NButton>
             </div>
             <div class="diag-badge-row">
               <component :is="securityInfo.windows_hello ? CheckCircle : XCircle" :size="14" :class="securityInfo.windows_hello ? 'ic-ok' : 'muted'" />
@@ -245,3 +387,13 @@ function secClass(ok: boolean) { return ok ? "ic-ok" : "ic-warn"; }
     </div>
   </template>
 </template>
+
+<style scoped>
+.sec-quick-actions {
+  display:flex; flex-direction:column; gap:10px; padding:12px 14px;
+  background:var(--bg-secondary); border:1px solid var(--border);
+  border-radius:var(--radius-md); margin-bottom:4px;
+}
+.sec-action-group { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.sec-action-label { font-size:12px; font-weight:600; color:var(--text-secondary); min-width:160px; }
+</style>

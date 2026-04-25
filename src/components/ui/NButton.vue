@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-vue-next";
 
 const props = withDefaults(
   defineProps<{
-    variant?: "primary" | "secondary" | "ghost" | "danger" | "success";
+    variant?: "primary" | "secondary" | "ghost" | "danger" | "success" | "warning";
     size?: "sm" | "md" | "lg";
     loading?: boolean;
     disabled?: boolean;
@@ -143,6 +143,17 @@ const classes = computed(() => [
 }
 .n-btn--success:hover:not(:disabled) {
   box-shadow: var(--success-glow), 0 4px 12px rgba(34,197,94,.3);
+  transform: translateY(-1px);
+}
+
+/* === Warning === */
+.n-btn--warning {
+  background: linear-gradient(135deg, var(--warning), #d97706);
+  color: white;
+  box-shadow: 0 2px 10px rgba(245,158,11,.22), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.n-btn--warning:hover:not(:disabled) {
+  box-shadow: 0 0 16px rgba(245,158,11,.4), 0 4px 12px rgba(245,158,11,.3);
   transform: translateY(-1px);
 }
 </style>

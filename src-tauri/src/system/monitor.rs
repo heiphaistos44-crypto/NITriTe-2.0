@@ -68,6 +68,14 @@ pub fn start_monitoring(
     running: Arc<AtomicBool>,
     interval_ms: u64,
 ) {
+    // Guard : si déjà actif, on ne spawne pas un second thread
+    if running
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return;
+    }
+
     // GPU + temperature data shared between polling thread and main monitoring thread
     let gpu_shared: Arc<Mutex<Vec<GpuData>>> = Arc::new(Mutex::new(Vec::new()));
     let gpu_shared_writer = gpu_shared.clone();
@@ -103,8 +111,6 @@ pub fn start_monitoring(
         // Compteur de ticks : refresh processus tous les 5 ticks seulement
         // (ex: interval 1s → refresh processus toutes les 5s au lieu de chaque seconde)
         let mut tick: u8 = 0;
-
-        running.store(true, Ordering::SeqCst);
 
         while running.load(Ordering::SeqCst) {
             sys.refresh_cpu_usage();

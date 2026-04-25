@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { invokeRaw as invoke } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import { useNotificationStore } from "@/stores/notifications";
@@ -32,7 +33,6 @@ async function compare() {
   if (!livePath.value.trim()) { notify.error("Chemin manquant", "Saisissez le dossier actuel à comparer."); return; }
   loading.value = true; files.value = []; done.value = false;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     files.value = await invoke<ComparedFile[]>("compare_shadow_with_current", {
       devicePath: props.devicePath,
       subPath: props.subPath,
@@ -49,7 +49,6 @@ async function restoreFile(f: ComparedFile) {
   if (!f.shadow_path) return;
   const targetDir = livePath.value || "C:\\NiTriTe\\Restaurés";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const r = await invoke<{ success: boolean; message: string; restored_path: string }>("restore_from_shadow", {
       sourcePath: f.shadow_path,
       targetFolder: targetDir,

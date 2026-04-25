@@ -242,11 +242,23 @@ pub async fn get_ram_detailed() -> Result<RamDetailed, String> {
             }
         }).collect();
         let used = slots.len();
-        let total_slots = wmi_con().ok()
-            .and_then(|w| w.raw_query::<WmiMemoryArray>("SELECT * FROM Win32_PhysicalMemoryArray").ok())
-            .and_then(|v| v.into_iter().next())
-            .and_then(|m| m.MemoryDevices)
-            .map(|n| n as usize).unwrap_or(used);
+        // Get total slots: PowerShell for accuracy (BIOS may report theoretical max vs real count)
+        let total_slots = {
+            let ps_count: Option<usize> = std::process::Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command",
+                    "(Get-WmiObject Win32_PhysicalMemoryArray | Measure-Object -Property MemoryDevices -Sum).Sum"])
+                .creation_flags(0x08000000)
+                .output()
+                .ok()
+                .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse::<usize>().ok());
+            let raw = ps_count.unwrap_or_else(|| wmi_con().ok()
+                .and_then(|w| w.raw_query::<WmiMemoryArray>("SELECT * FROM Win32_PhysicalMemoryArray").ok())
+                .map(|v| v.into_iter().filter_map(|m| m.MemoryDevices).map(|n| n as usize).sum::<usize>())
+                .unwrap_or(used)).max(used);
+            // Le BIOS rapporte parfois le max du chipset (ex: 8) au lieu des slots physiques réels.
+            // Si le total dépasse 2× les slots occupés sur un système avec ≤4 sticks, on corrige.
+            if raw > used * 2 && used > 0 && used <= 4 { used } else { raw }
+        };
         Ok(RamDetailed { total_slots, used_slots: used, total_capacity_gb: total, slots })
     }).await.map_err(|e| e.to_string())?
 }
@@ -505,7 +517,8 @@ $licStatus = { param($code) switch ($code) {
 } }
 $allProducts = Get-WmiObject -Query "SELECT Name,LicenseStatus,PartialProductKey,LicenseFamily,Description FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL" -ErrorAction SilentlyContinue
 $win = $allProducts | Where-Object { $_.Name -like "*Windows*" } | Sort-Object LicenseStatus | Select-Object -First 1
-$office = $allProducts | Where-Object { $_.Name -like "*Office*" -or $_.Name -like "*Microsoft 365*" -or $_.Name -like "*Visio*" -or $_.Name -like "*Project*" } | Sort-Object LicenseStatus | Select-Object -First 1
+# Office : requête séparée sans filtre PartialProductKey (Ohook/KMS n'en a pas)
+$office = Get-WmiObject -Query "SELECT Name,LicenseStatus,PartialProductKey FROM SoftwareLicensingProduct WHERE (Name LIKE '%Office%' OR Name LIKE '%Microsoft 365%' OR Name LIKE '%Visio%' OR Name LIKE '%Project%')" -ErrorAction SilentlyContinue | Sort-Object LicenseStatus | Select-Object -First 1
 
 # Décodage clé complète : OA3 (OEM UEFI) en priorité, sinon DigitalProductId
 function Get-FullKey {
@@ -641,5 +654,46 @@ pub async fn get_installed_updates() -> Result<Vec<InstalledUpdate>, String> {
             installed_on: u.InstalledOn.unwrap_or_default(),
             installed_by: u.InstalledBy.unwrap_or_default(),
         }).collect())
+    }).await.map_err(|e| e.to_string())?
+}
+
+/// Retourne les infos BitLocker de tous les volumes (pour l'export diagnostic).
+#[tauri::command]
+pub async fn get_bitlocker_report() -> Result<String, String> {
+    tokio::task::spawn_blocking(|| {
+        #[cfg(target_os = "windows")]
+        {
+            use std::process::Command;
+            use std::os::windows::process::CommandExt;
+            let script = r#"
+$vols = Get-BitLockerVolume -ErrorAction SilentlyContinue
+if (-not $vols) { "Aucun volume BitLocker détecté ou module non disponible."; exit }
+foreach ($v in $vols) {
+    $mount = $v.MountPoint
+    $status = $v.VolumeStatus
+    $pct = $v.EncryptionPercentage
+    $prot = $v.ProtectionStatus
+    Write-Output "Volume : $mount | Statut : $status | Chiffrement : $pct% | Protection : $prot"
+    foreach ($kp in $v.KeyProtector) {
+        $type = $kp.KeyProtectorType
+        $rp = if ($kp.RecoveryPassword) { $kp.RecoveryPassword } else { "—" }
+        Write-Output "  Protecteur : $type | Clé récupération : $rp"
+    }
+}
+"#;
+            let tmp = std::env::temp_dir().join("nitrite_bde.ps1");
+            let full = format!("$OutputEncoding=[System.Text.Encoding]::UTF8;[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;\n{}", script);
+            let _ = std::fs::write(&tmp, full.as_bytes());
+            let out = Command::new("powershell")
+                .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", tmp.to_str().unwrap_or("")])
+                .creation_flags(0x08000000)
+                .output()
+                .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+                .unwrap_or_else(|e| format!("Erreur: {}", e));
+            let _ = std::fs::remove_file(&tmp);
+            Ok(out)
+        }
+        #[cfg(not(target_os = "windows"))]
+        { Ok("BitLocker non disponible hors Windows.".to_string()) }
     }).await.map_err(|e| e.to_string())?
 }

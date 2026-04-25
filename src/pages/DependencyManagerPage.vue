@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import { listen } from "@tauri-apps/api/event";
 import { useNotificationStore } from "@/stores/notifications";
 import NButton from "@/components/ui/NButton.vue";
@@ -10,20 +10,26 @@ import NBadge from "@/components/ui/NBadge.vue";
 import NInput from "@/components/ui/NInput.vue";
 import {
   Package, RefreshCw, Download, CheckCircle, XCircle,
-  Search, AlertTriangle, ExternalLink, Layers,
+  Search, AlertTriangle, ExternalLink, Layers, FlaskConical,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
 interface Dependency {
-  id:          string;
-  name:        string;
-  category:    string;
-  description: string;
-  installed:   boolean;
-  version:     string;
-  winget_id:   string;
-  install_url: string;
+  id:                  string;
+  name:                string;
+  category:            string;
+  description:         string;
+  installed:           boolean;
+  version:             string;
+  recommended_version?: string;
+  winget_id:           string;
+  install_url:         string;
+  download_url?:       string;
+  required?:           boolean;
+  test_command?:       string;
+  cmd?:                string;
+  test_args?:          string[];
 }
 
 interface DepsProgress { checked: number; total: number; item: Dependency; done: boolean; }
@@ -37,6 +43,14 @@ const filterText    = ref("");
 const selectedCat   = ref("Tous");
 const lastChecked   = ref<string | null>(null);
 
+// Filtre Requises/Optionnelles/Toutes
+type RequiredFilter = "Toutes" | "Requises" | "Optionnelles";
+const requiredFilter = ref<RequiredFilter>("Toutes");
+
+// Test post-installation
+const testingDep    = ref<string | null>(null);
+const testResults   = ref<Record<string, "ok" | "fail" | "pending">>({});
+
 let unlistenDeps: (() => void) | null = null;
 
 const categories = computed(() => {
@@ -46,6 +60,14 @@ const categories = computed(() => {
 
 const filtered = computed(() => {
   let list = deps.value;
+
+  // Filtre requis/optionnel
+  if (requiredFilter.value === "Requises") {
+    list = list.filter(d => d.required !== false);
+  } else if (requiredFilter.value === "Optionnelles") {
+    list = list.filter(d => d.required === false);
+  }
+
   if (selectedCat.value !== "Tous") list = list.filter(d => d.category === selectedCat.value);
   if (filterText.value.trim()) {
     const q = filterText.value.toLowerCase();
@@ -60,17 +82,24 @@ const stats = computed(() => ({
   missing:   deps.value.filter(d => !d.installed).length,
 }));
 
+// Vérifie si la version correspond à la version recommandée
+function versionMatch(dep: Dependency): "ok" | "mismatch" | "unknown" {
+  if (!dep.installed || !dep.version) return "unknown";
+  if (!dep.recommended_version) return "unknown";
+  return dep.version === dep.recommended_version ? "ok" : "mismatch";
+}
+
 async function checkAll() {
   deps.value = [];
   scanChecked.value = 0;
   loading.value = true;
+  testResults.value = {};
 
   if (unlistenDeps) { unlistenDeps(); unlistenDeps = null; }
   unlistenDeps = await listen<DepsProgress>("deps:progress", (ev) => {
     const p = ev.payload;
     scanChecked.value = p.checked;
     scanTotal.value   = p.total;
-    // Ajouter ou mettre à jour la dépendance dans la liste
     const idx = deps.value.findIndex(d => d.id === p.item.id);
     if (idx >= 0) deps.value[idx] = p.item;
     else deps.value.push(p.item);
@@ -80,36 +109,72 @@ async function checkAll() {
     }
   });
 
-  // Fire-and-forget — l'UI reste navigable
   invoke("scan_dependencies_stream").catch(() => { loading.value = false; });
 }
 
 async function installDep(dep: Dependency) {
-  if (!dep.winget_id && !dep.install_url) {
-    notify.warning(dep.name, "Pas d'ID winget — installez manuellement.");
+  if (!dep.winget_id && !dep.install_url && !dep.download_url) {
+    // Fallback : recherche Google
+    const googleUrl = `https://www.google.com/search?q=download+${encodeURIComponent(dep.name)}`;
+    await invoke("open_url", { url: googleUrl }).catch(() => window.open(googleUrl, "_blank"));
+    notify.info(dep.name, "Aucune source d'installation — recherche Google ouverte.");
     return;
   }
   if (!dep.winget_id) {
-    // Ouvrir URL manuelle
-    await invoke("open_url", { url: dep.install_url });
+    // Fallback vers download_url ou install_url
+    const url = dep.download_url ?? dep.install_url;
+    await invoke("open_url", { url }).catch(() => window.open(url, "_blank"));
     return;
   }
   installing.value = dep.id;
   notify.info(dep.name, "Installation via WinGet en cours...");
   try {
-    const msg = await invoke<string>("install_dependency", { wingetId: dep.winget_id });
+    const msg = await invokeRaw<string>("install_dependency", { wingetId: dep.winget_id });
     notify.success(dep.name, msg);
-    // Re-vérifier cette dépendance
     await checkAll();
   } catch (e: any) {
     notify.error(dep.name, String(e));
+    // Fallback manuel si WinGet échoue
+    if (dep.download_url) {
+      notify.info(dep.name, "Échec WinGet — ouverture du lien de téléchargement manuel.");
+      await invoke("open_url", { url: dep.download_url }).catch(() => window.open(dep.download_url, "_blank"));
+    } else {
+      const googleUrl = `https://www.google.com/search?q=download+${encodeURIComponent(dep.name)}`;
+      notify.info(dep.name, "Recherche manuelle ouverte.");
+      await invoke("open_url", { url: googleUrl }).catch(() => window.open(googleUrl, "_blank"));
+    }
   }
   installing.value = null;
 }
 
+async function testDep(dep: Dependency) {
+  if (!dep.test_command && !dep.cmd) return;
+  testingDep.value = dep.id;
+  testResults.value[dep.id] = "pending";
+  try {
+    await invoke("run_system_command", {
+      cmd: dep.cmd ?? "cmd",
+      args: dep.test_args ?? ["/c", dep.test_command ?? "echo ok"],
+    });
+    testResults.value[dep.id] = "ok";
+    notify.success(dep.name, "Test réussi");
+  } catch {
+    testResults.value[dep.id] = "fail";
+    notify.error(dep.name, "Test échoué");
+  }
+  testingDep.value = null;
+}
+
 async function openUrl(url: string) {
   if (!url) return;
-  await invoke("open_url", { url });
+  await invoke("open_url", { url }).catch(() => {});
+}
+
+function openManualDownload(dep: Dependency) {
+  const url = dep.download_url
+    ? dep.download_url
+    : `https://www.google.com/search?q=download+${encodeURIComponent(dep.name)}`;
+  invoke("open_url", { url }).catch(() => window.open(url, "_blank"));
 }
 
 onMounted(checkAll);
@@ -124,11 +189,19 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
         <h1><Package :size="22" style="margin-right:10px;vertical-align:middle;color:var(--accent-primary)" />Gestionnaire de Dépendances</h1>
         <p class="page-subtitle">Vérifiez et installez les outils essentiels pour votre environnement</p>
       </div>
-      <NButton variant="primary" :disabled="loading" @click="checkAll">
-        <NSpinner v-if="loading" :size="14" />
-        <RefreshCw v-else :size="14" />
-        {{ loading ? "Vérification..." : "Tout vérifier" }}
-      </NButton>
+      <div style="display:flex;gap:8px;align-items:center">
+        <!-- Re-scanner -->
+        <NButton variant="secondary" :disabled="loading" @click="checkAll">
+          <NSpinner v-if="loading" :size="14" />
+          <RefreshCw v-else :size="14" />
+          Re-scanner
+        </NButton>
+        <NButton variant="primary" :disabled="loading" @click="checkAll">
+          <NSpinner v-if="loading" :size="14" />
+          <RefreshCw v-else :size="14" />
+          {{ loading ? "Vérification..." : "Tout vérifier" }}
+        </NButton>
+      </div>
     </div>
 
     <!-- Progression streaming -->
@@ -171,6 +244,16 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
         <NInput v-model="filterText" placeholder="Rechercher..." style="max-width:240px">
           <template #prefix><Search :size="14" /></template>
         </NInput>
+
+        <!-- Filtre Requises/Optionnelles/Toutes -->
+        <div class="cat-pills">
+          <button v-for="opt in (['Toutes', 'Requises', 'Optionnelles'] as const)" :key="opt"
+            :class="['cat-pill', { active: requiredFilter === opt }]"
+            @click="requiredFilter = opt">
+            {{ opt }}
+          </button>
+        </div>
+
         <div class="cat-pills">
           <button v-for="cat in categories" :key="cat"
             :class="['cat-pill', { active: selectedCat === cat }]"
@@ -204,19 +287,34 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
                 <XCircle v-else :size="16" class="ic-err" />
               </td>
               <td>
-                <div class="dep-name">{{ dep.name }}</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div class="dep-name">{{ dep.name }}</div>
+                  <NBadge v-if="dep.required === false" variant="neutral" style="font-size:9px">Optionnel</NBadge>
+                  <NBadge v-else-if="dep.required === true" variant="warning" style="font-size:9px">Requis</NBadge>
+                </div>
                 <div class="dep-desc">{{ dep.description }}</div>
               </td>
               <td>
                 <NBadge variant="neutral" style="font-size:10px">{{ dep.category }}</NBadge>
               </td>
               <td class="cell-version">
-                <span v-if="dep.installed && dep.version" class="version-text">{{ dep.version }}</span>
+                <template v-if="dep.installed && dep.version">
+                  <span class="version-text">{{ dep.version }}</span>
+                  <!-- Badge version mismatch -->
+                  <template v-if="versionMatch(dep) === 'ok'">
+                    <NBadge variant="success" style="font-size:9px;margin-left:4px">Recommandée</NBadge>
+                  </template>
+                  <template v-else-if="versionMatch(dep) === 'mismatch'">
+                    <NBadge variant="warning" style="font-size:9px;margin-left:4px" :title="`Recommandée : ${dep.recommended_version}`">
+                      v{{ dep.recommended_version }} dispo
+                    </NBadge>
+                  </template>
+                </template>
                 <span v-else-if="dep.installed" class="muted">—</span>
                 <NBadge v-else variant="danger" style="font-size:10px">Non installé</NBadge>
               </td>
               <td class="cell-action">
-                <div v-if="!dep.installed" style="display:flex;gap:6px;align-items:center">
+                <div v-if="!dep.installed" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
                   <NButton v-if="dep.winget_id" variant="primary" size="sm"
                     :disabled="installing === dep.id"
                     @click="installDep(dep)">
@@ -224,13 +322,25 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
                     <Download v-else :size="12" />
                     {{ installing === dep.id ? 'Installation...' : 'Installer' }}
                   </NButton>
-                  <NButton v-if="dep.install_url" variant="ghost" size="sm"
-                    @click="openUrl(dep.install_url)">
+                  <!-- Fallback manuel -->
+                  <NButton variant="ghost" size="sm" @click="openManualDownload(dep)">
                     <ExternalLink :size="12" />
+                    {{ dep.download_url ? 'Télécharger' : 'Rechercher' }}
                   </NButton>
                 </div>
-                <div v-else style="display:flex;gap:6px;align-items:center">
+                <div v-else style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
                   <span class="ok-text">Installé</span>
+                  <!-- Bouton Tester -->
+                  <NButton v-if="dep.test_command || dep.cmd" variant="secondary" size="sm"
+                    :disabled="testingDep === dep.id"
+                    @click="testDep(dep)">
+                    <NSpinner v-if="testingDep === dep.id" :size="12" />
+                    <FlaskConical v-else :size="12" />
+                    Tester
+                  </NButton>
+                  <!-- Résultat du test -->
+                  <NBadge v-if="testResults[dep.id] === 'ok'" variant="success" style="font-size:10px">OK</NBadge>
+                  <NBadge v-else-if="testResults[dep.id] === 'fail'" variant="danger" style="font-size:10px">FAIL</NBadge>
                   <NButton v-if="dep.install_url" variant="ghost" size="sm"
                     @click="openUrl(dep.install_url)">
                     <ExternalLink :size="12" />
@@ -252,7 +362,8 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
         <AlertTriangle :size="14" style="color:var(--warning);flex-shrink:0;margin-top:1px" />
         <span>Les installations via <strong>WinGet</strong> s'exécutent silencieusement en arrière-plan.
           Relancez une vérification après quelques instants pour confirmer.
-          Pour les outils sans ID WinGet (Scoop, Chocolatey), cliquez sur <ExternalLink :size="11" style="vertical-align:middle" /> pour accéder à la page officielle.</span>
+          Pour les outils sans ID WinGet (Scoop, Chocolatey), cliquez sur <ExternalLink :size="11" style="vertical-align:middle" /> pour accéder à la page officielle.
+          En cas d'échec WinGet, un lien de téléchargement manuel ou une recherche Google sera ouvert automatiquement.</span>
       </div>
     </template>
   </div>
@@ -298,7 +409,7 @@ onUnmounted(() => { if (unlistenDeps) unlistenDeps(); });
 .dep-desc { font-size:11px;color:var(--text-muted);margin-top:2px; }
 .cell-version { font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-muted); }
 .version-text { color:var(--success);font-weight:500; }
-.cell-action { width:160px; }
+.cell-action { width:200px; }
 .ok-text { font-size:12px;color:var(--success);font-weight:500; }
 .ic-ok { color:var(--success); }
 .ic-err { color:var(--danger); }

@@ -42,7 +42,7 @@ function healthVariant(h: string) {
           storageKey="diag-storage-disks"
           defaultOpen
         >
-          <div v-for="(d, i) in storageList" :key="i" class="card-block">
+          <div v-for="(d, i) in storageList" :key="d.serial_number || d.model + i" class="card-block">
             <!-- En-tête disque -->
             <div class="block-title">
               <HardDrive :size="16" style="color:var(--accent)" />
@@ -72,7 +72,7 @@ function healthVariant(h: string) {
                 <template v-if="!smartForDisk(d.model)">
                   <span class="muted" style="font-size:12px;font-style:italic">Données SMART non associées à ce disque</span>
                 </template>
-                <template v-for="smart in (smartForDisk(d.model) ? [smartForDisk(d.model)!] : [])" :key="0">
+                <template v-else v-for="smart in [smartForDisk(d.model)].filter(s => s !== null)" :key="`smart-${d.serial_number || d.model}`">
                   <div class="info-grid">
                     <div class="info-row">
                       <span>État SMART</span>

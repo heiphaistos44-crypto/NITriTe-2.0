@@ -11,6 +11,7 @@ export interface Toast {
 
 export const useNotificationStore = defineStore("notifications", () => {
   const toasts = ref<Toast[]>([]);
+  const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   function addToast(toast: Omit<Toast, "id">) {
     const id = crypto.randomUUID();
@@ -18,11 +19,14 @@ export const useNotificationStore = defineStore("notifications", () => {
     toasts.value.push(entry);
 
     const duration = toast.duration ?? 5000;
-    setTimeout(() => removeToast(id), duration);
+    const timer = setTimeout(() => removeToast(id), duration);
+    timers.set(id, timer);
     return id;
   }
 
   function removeToast(id: string) {
+    const timer = timers.get(id);
+    if (timer !== undefined) { clearTimeout(timer); timers.delete(id); }
     toasts.value = toasts.value.filter((t) => t.id !== id);
   }
 

@@ -54,12 +54,12 @@ pub fn run_in_shell(shell_id: &str, command: &str, _timeout_secs: u64) -> Result
         "cmd" => ("cmd".to_string(), vec!["/C".to_string(), command.to_string()]),
         "powershell" => ("powershell".to_string(), vec![
             "-NoProfile".to_string(),
-            "-ExecutionPolicy".to_string(), "Bypass".to_string(),
+            "-ExecutionPolicy".to_string(), "RemoteSigned".to_string(),
             "-Command".to_string(), command.to_string(),
         ]),
         "pwsh" => ("pwsh".to_string(), vec![
             "-NoProfile".to_string(),
-            "-ExecutionPolicy".to_string(), "Bypass".to_string(),
+            "-ExecutionPolicy".to_string(), "RemoteSigned".to_string(),
             "-Command".to_string(), command.to_string(),
         ]),
         "gitbash" => {

@@ -15,8 +15,7 @@ export function useClipboard() {
       }, 2000);
 
       return true;
-    } catch (e) {
-      console.error("[useClipboard] copy failed:", e);
+    } catch {
       copied.value = false;
       return false;
     }

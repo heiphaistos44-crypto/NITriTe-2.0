@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted, defineAsyncComponent } from "vue";
+import { invoke } from "@/utils/invoke";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
+const DllScannerTab = defineAsyncComponent(() => import("@/components/uninstaller/DllScannerTab.vue"));
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import { useNotificationStore } from "@/stores/notifications";
@@ -10,8 +11,11 @@ import {
   Trash2, Search, RefreshCw, CheckSquare, Square,
   CheckCircle, XCircle, AlertTriangle, Package,
   ChevronUp, ChevronDown, Eye, X, FolderOpen,
-  RotateCcw, Archive,
+  RotateCcw, Archive, ShieldCheck, AlertOctagon,
+  ExternalLink, Lightbulb, Library,
 } from "lucide-vue-next";
+
+const mainTab = ref<'apps' | 'dll'>('apps');
 
 const notify = useNotificationStore();
 
@@ -19,27 +23,156 @@ interface InstalledApp {
   name: string; version: string; publisher: string;
   uninstall_string: string; source: string;
   install_size_kb: number; install_date: string;
+  registry_key?: string;
 }
 
 interface UninstallJob {
   app: InstalledApp;
   status: "pending" | "running" | "done" | "error";
   message: string;
-  residuals: string[];      // résidus trouvés (pas encore supprimés)
-  residualsHandled: boolean; // true quand l'utilisateur a agi sur les résidus
+  residuals: string[];
+  residualsHandled: boolean;
+  keepAppData: boolean;
 }
 
 interface ResidualCleanResult {
   success: boolean; deleted_count: number; failed_count: number; message: string;
 }
 
+// ─── Restore point avant désinstall ─────────────────────────────────────────
+const LS_RESTORE = "nitrite-uninstall-restore";
+const createRestoreBeforeUninstall = ref(localStorage.getItem(LS_RESTORE) === "true");
+
+function toggleRestore() {
+  createRestoreBeforeUninstall.value = !createRestoreBeforeUninstall.value;
+  localStorage.setItem(LS_RESTORE, String(createRestoreBeforeUninstall.value));
+}
+
+async function doCreateRestorePoint() {
+  try {
+    await invoke("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", "Checkpoint-Computer -Description 'NitritePreUninstall' -RestorePointType 'MODIFY_SETTINGS'"],
+    });
+    notify.success("Point de restauration créé", "NitritePreUninstall");
+  } catch {
+    notify.warning("Point de restauration", "Impossible de créer (droits admin requis ?)");
+  }
+}
+
+// ─── Undo last uninstall ─────────────────────────────────────────────────────
+const LS_LAST_UNINSTALL = "nitrite-last-uninstall";
+interface LastUninstall { name: string; date: string; }
+function loadLastUninstall(): LastUninstall | null {
+  try { const v = localStorage.getItem(LS_LAST_UNINSTALL); return v ? JSON.parse(v) : null; }
+  catch { return null; }
+}
+const lastUninstall = ref<LastUninstall | null>(loadLastUninstall());
+
+function isUndoVisible(): boolean {
+  if (!lastUninstall.value) return false;
+  const diff = Date.now() - new Date(lastUninstall.value.date).getTime();
+  return diff < 10 * 60 * 1000; // 10 minutes
+}
+
+function saveLastUninstall(name: string) {
+  const entry: LastUninstall = { name, date: new Date().toISOString() };
+  lastUninstall.value = entry;
+  localStorage.setItem(LS_LAST_UNINSTALL, JSON.stringify(entry));
+}
+
+async function undoLastUninstall() {
+  try {
+    await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "ms-settings:appsfeatures"] });
+    notify.success("Paramètres ouverts", "Réinstallez l'application depuis le Microsoft Store ou son installeur d'origine.");
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+}
+
+// ─── Force remove ────────────────────────────────────────────────────────────
+const forceRemoveApp = ref<InstalledApp | null>(null);
+const forceRemoveConfirm = ref(0); // 0 = idle, 1 = 1er clic, 2 = 2e clic = exécute
+const forceRemoving = ref(false);
+
+function startForceRemove(app: InstalledApp) {
+  forceRemoveApp.value = app;
+  forceRemoveConfirm.value = 1;
+}
+
+async function confirmForceRemove() {
+  if (!forceRemoveApp.value) return;
+  if (forceRemoveConfirm.value === 1) {
+    forceRemoveConfirm.value = 2;
+    return;
+  }
+  const app = forceRemoveApp.value;
+  forceRemoving.value = true;
+  const regKey = app.registry_key ?? app.name;
+  try {
+    await invoke("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", `Remove-Item -Path (Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${regKey}').PSPath -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${regKey}' -Recurse -Force -ErrorAction SilentlyContinue`],
+    });
+    notify.success("Suppression forcée", `${app.name} retiré du registre`);
+    apps.value = apps.value.filter(a => a.name !== app.name);
+    saveLastUninstall(app.name);
+  } catch (e: any) {
+    notify.error("Suppression forcée échouée", String(e));
+  }
+  forceRemoving.value = false;
+  forceRemoveApp.value = null;
+  forceRemoveConfirm.value = 0;
+}
+
+function cancelForceRemove() {
+  forceRemoveApp.value = null;
+  forceRemoveConfirm.value = 0;
+}
+
+// ─── Post-uninstall tips ─────────────────────────────────────────────────────
+const showCleanupTips = ref(false);
+const cleanupTipsApp = ref("");
+
+function showTips(appName: string) {
+  cleanupTipsApp.value = appName;
+  showCleanupTips.value = true;
+}
+
+// ─── App list & state ────────────────────────────────────────────────────────
 const apps = ref<InstalledApp[]>([]);
 const loading = ref(false);
 const search = ref("");
 const selected = ref<Set<string>>(new Set());
 const filterPublisher = ref("");
+const filterCat = ref<string>("all");
 
-// B — Tri
+type AppCat = "system" | "microsoft" | "driver" | "redist" | "user";
+const CAT_LABELS: Record<AppCat, string> = { system:"Système Windows", microsoft:"Microsoft", driver:"Pilotes", redist:"Redistributables", user:"Applications" };
+const CAT_COLORS: Record<AppCat, string> = { system:"#ef4444", microsoft:"#3b82f6", driver:"#f59e0b", redist:"#8b5cf6", user:"#22c55e" };
+
+const SYSTEM_PUBS = ["microsoft windows","windows embedded","microsoft corporation"];
+const DRIVER_PUBS = ["intel","amd","nvidia","realtek","qualcomm","broadcom","marvell","mediatek","asus","dell","hp","lenovo","gigabyte","asrock","logitech","corsair","razer","steelseries","creative","sound blaster","epson","canon","brother","sharp","konica"];
+const REDIST_NAMES = ["visual c++","microsoft .net","directx","windows sdk","vcredist","msvc","java ","jre ","jdk ","openal","webview2","redistributable","runtime","framework","cumulative"];
+const SYSTEM_NAMES = ["windows ","microsoft windows","windows media","windows powershell","microsoft edge","cortana","xbox","microsoft store","windows security","windows defender"];
+
+function appCategory(app: InstalledApp): AppCat {
+  const n = app.name.toLowerCase();
+  const p = (app.publisher || "").toLowerCase();
+  if (SYSTEM_NAMES.some(s => n.startsWith(s))) return "system";
+  if (REDIST_NAMES.some(s => n.includes(s))) return "redist";
+  if (SYSTEM_PUBS.includes(p) && (n.includes("windows") || n.includes("microsoft"))) return "system";
+  if (DRIVER_PUBS.some(s => p.includes(s)) && (n.includes("driver") || n.includes("pilote") || n.includes("firmware") || n.includes("chipset"))) return "driver";
+  if (p.includes("microsoft") || p === "microsoft corporation") return "microsoft";
+  return "user";
+}
+
+// Per-app keep-appdata preference (map: app.name → boolean)
+const keepAppDataMap = ref<Record<string, boolean>>({});
+function toggleKeepAppData(name: string) {
+  keepAppDataMap.value[name] = !keepAppDataMap.value[name];
+}
+
 type SortKey = "name" | "publisher" | "size" | "date" | "version";
 const sortKey = ref<SortKey>("name");
 const sortDir = ref<"asc" | "desc">("asc");
@@ -48,7 +181,6 @@ function setSort(key: SortKey) {
   else { sortKey.value = key; sortDir.value = "asc"; }
 }
 
-// C — Preview résidus (avant uninstall)
 const previewApp = ref<InstalledApp | null>(null);
 const previewItems = ref<string[]>([]);
 const loadingPreview = ref(false);
@@ -65,18 +197,27 @@ const uninstalling = ref(false);
 const progress = ref(0);
 const currentStep = ref("");
 const showResults = ref(false);
-
-// Résidus en cours de traitement
 const handlingResiduals = ref<Record<string, boolean>>({});
 const extractTarget = ref("C:\\NiTriTe\\Résidus");
+const minSizeMb = ref(0);
 
 const filtered = computed(() => {
   const q = search.value.toLowerCase();
   const pub = filterPublisher.value.toLowerCase();
+  const minKb = minSizeMb.value * 1024;
   return apps.value.filter(a =>
     a.name.toLowerCase().includes(q) &&
-    (pub === "" || a.publisher.toLowerCase().includes(pub))
+    (pub === "" || a.publisher.toLowerCase().includes(pub)) &&
+    (minKb === 0 || (a.install_size_kb ?? 0) >= minKb) &&
+    (filterCat.value === "all" || appCategory(a) === filterCat.value)
   );
+});
+
+const totalSelectedSizeMb = computed(() => {
+  const total = apps.value
+    .filter(a => selected.value.has(a.name))
+    .reduce((acc, a) => acc + (a.install_size_kb ?? 0), 0);
+  return total >= 1024 ? `${(total / 1024).toFixed(0)} Mo` : `${total} Ko`;
 });
 
 const sorted = computed(() => {
@@ -123,12 +264,16 @@ async function startUninstall() {
   const toUninstall = apps.value.filter(a => selected.value.has(a.name));
   if (!toUninstall.length) return;
 
-  jobs.value = toUninstall.map(a => ({ app: a, status: "pending", message: "", residuals: [], residualsHandled: false }));
+  if (createRestoreBeforeUninstall.value) await doCreateRestorePoint();
+
+  jobs.value = toUninstall.map(a => ({
+    app: a, status: "pending", message: "", residuals: [], residualsHandled: false,
+    keepAppData: keepAppDataMap.value[a.name] ?? false,
+  }));
   uninstalling.value = true;
   progress.value = 0;
   showResults.value = false;
   previewApp.value = null;
-
 
   for (let i = 0; i < jobs.value.length; i++) {
     const job = jobs.value[i];
@@ -142,11 +287,18 @@ async function startUninstall() {
       });
       job.status = result.success ? "done" : "error";
       job.message = result.message;
-      job.residuals = result.residuals_found ?? [];
-      // On retire de la liste seulement si désinstallation réussie
+
+      // Filtrer les résidus AppData si l'utilisateur veut les conserver
+      const rawResiduals = result.residuals_found ?? [];
+      job.residuals = job.keepAppData
+        ? rawResiduals.filter(r => !r.toLowerCase().includes("appdata"))
+        : rawResiduals;
+
       if (result.success) {
         apps.value = apps.value.filter(a => a.name !== job.app.name);
         selected.value.delete(job.app.name);
+        saveLastUninstall(job.app.name);
+        showTips(job.app.name);
       }
     } catch (e: any) {
       job.status = "error";
@@ -206,6 +358,37 @@ function formatSize(kb: number) {
   return `${(kb / 1024).toFixed(1)} Mo`;
 }
 
+function sourceLabel(src: string) {
+  if (!src) return "";
+  if (src.toLowerCase().includes("hkcu")) return "User";
+  if (src.toLowerCase().includes("store") || src.toLowerCase().includes("appx")) return "Store";
+  return "Sys";
+}
+
+function selectByPublisher(pub: string) {
+  if (!pub) return;
+  filtered.value.filter(a => a.publisher === pub).forEach(a => selected.value.add(a.name));
+  selected.value = new Set(selected.value);
+}
+
+async function exportCsv() {
+  const rows = ["Nom,Version,Editeur,Taille,Installé le,Source"];
+  for (const a of sorted.value) {
+    const esc = (s: string) => `"${(s || "").replace(/"/g, '""')}"`;
+    rows.push([esc(a.name), esc(a.version), esc(a.publisher), formatSize(a.install_size_kb), esc(a.install_date), esc(a.source)].join(","));
+  }
+  const csv = rows.join("\r\n");
+  try {
+    const { save } = await import("@tauri-apps/plugin-dialog");
+    const { writeTextFile } = await import("@tauri-apps/plugin-fs");
+    const path = await save({ filters: [{ name: "CSV", extensions: ["csv"] }], defaultPath: "applications.csv" });
+    if (path) { await writeTextFile(path, csv); notify.success("Export CSV", path); }
+  } catch {
+    await navigator.clipboard.writeText(csv);
+    notify.success("Copié", "CSV copié dans le presse-papier");
+  }
+}
+
 onMounted(loadApps);
 </script>
 
@@ -213,6 +396,82 @@ onMounted(loadApps);
   <div class="uninstaller-page">
     <DiagBanner :icon="Trash2" title="Désinstallateur Propre"
       desc="Désinstallation silencieuse automatique — registre nettoyé, fichiers purgés" color="red" />
+
+    <!-- ═══ Sélecteur d'onglet principal ═══ -->
+    <div class="main-tabs">
+      <button class="main-tab" :class="{ active: mainTab === 'apps' }" @click="mainTab = 'apps'">
+        <Package :size="14" /> Applications
+      </button>
+      <button class="main-tab" :class="{ active: mainTab === 'dll' }" @click="mainTab = 'dll'">
+        <Library :size="14" /> DLL / Bibliothèques
+      </button>
+    </div>
+
+    <!-- ═══ Onglet DLL ═══ -->
+    <Suspense v-if="mainTab === 'dll'"><DllScannerTab /></Suspense>
+
+    <!-- ═══ Contenu onglet Applications ═══ -->
+    <template v-if="mainTab === 'apps'">
+    <!-- Bandeau options sécurité -->
+    <div class="safety-bar">
+      <!-- Restore point -->
+      <label class="checkbox-row" @click="toggleRestore">
+        <span class="custom-check" :class="{ checked: createRestoreBeforeUninstall }">
+          <svg v-if="createRestoreBeforeUninstall" width="10" height="10" viewBox="0 0 12 12">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <ShieldCheck :size="13" style="color:var(--success);flex-shrink:0" />
+        <span class="checkbox-label">Créer un point de restauration avant désinstallation</span>
+      </label>
+
+      <!-- Undo last uninstall -->
+      <div v-if="isUndoVisible()" class="undo-banner">
+        <RotateCcw :size="13" style="color:var(--accent-primary)" />
+        <span>Dernière désinstallation : <strong>{{ lastUninstall?.name }}</strong></span>
+        <NButton variant="ghost" size="sm" @click="undoLastUninstall">
+          <ExternalLink :size="12" /> Annuler (ouvrir Paramètres)
+        </NButton>
+      </div>
+    </div>
+
+    <!-- Force Remove Dialog -->
+    <div v-if="forceRemoveApp" class="force-remove-dialog">
+      <div class="force-remove-inner">
+        <AlertOctagon :size="18" style="color:var(--danger);flex-shrink:0" />
+        <div class="force-remove-content">
+          <p class="force-remove-title">Suppression forcée — <strong>{{ forceRemoveApp.name }}</strong></p>
+          <p class="force-remove-desc">
+            Cette action supprime directement la clé de registre Windows sans passer par le désinstalleur officiel.
+            L'application peut laisser des fichiers orphelins. <strong>Non réversible.</strong>
+          </p>
+          <div class="force-remove-actions">
+            <NButton v-if="forceRemoveConfirm < 2" variant="danger" size="sm" @click="confirmForceRemove" :loading="forceRemoving">
+              {{ forceRemoveConfirm === 1 ? "Confirmer — supprimer définitivement ?" : "Forcer la suppression" }}
+            </NButton>
+            <NButton v-else variant="danger" size="sm" :loading="forceRemoving" @click="confirmForceRemove">
+              Exécuter maintenant
+            </NButton>
+            <NButton variant="ghost" size="sm" @click="cancelForceRemove"><X :size="12" /> Annuler</NButton>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post-uninstall Tips -->
+    <div v-if="showCleanupTips" class="tips-panel">
+      <div class="tips-header">
+        <Lightbulb :size="14" style="color:#f59e0b" />
+        <span class="tips-title">Nettoyage recommandé après désinstallation de <strong>{{ cleanupTipsApp }}</strong></span>
+        <button class="close-btn" @click="showCleanupTips = false"><X :size="14" /></button>
+      </div>
+      <ul class="tips-list">
+        <li><CheckCircle :size="11" class="tip-ic" /> <strong>Redémarrez</strong> le PC pour finaliser la suppression et libérer les DLL verrouillées.</li>
+        <li><CheckCircle :size="11" class="tip-ic" /> <strong>Vérifiez les résidus</strong> dans <code>%AppData%</code>, <code>%LocalAppData%</code> et <code>%ProgramData%</code>.</li>
+        <li><CheckCircle :size="11" class="tip-ic" /> <strong>Videz la Corbeille</strong> pour récupérer l'espace disque définitivement.</li>
+        <li><CheckCircle :size="11" class="tip-ic" /> Utilisez l'onglet <strong>Nettoyage</strong> pour purger les fichiers temporaires restants.</li>
+      </ul>
+    </div>
 
     <!-- Toolbar -->
     <div class="toolbar">
@@ -225,13 +484,44 @@ onMounted(loadApps);
       </div>
       <div class="toolbar-right">
         <span class="apps-count">{{ apps.length }} apps</span>
+        <div class="size-filter-wrap">
+          <span class="size-filter-label">Min</span>
+          <select v-model.number="minSizeMb" class="size-filter-select">
+            <option :value="0">Toutes</option>
+            <option :value="10">10 Mo+</option>
+            <option :value="50">50 Mo+</option>
+            <option :value="100">100 Mo+</option>
+            <option :value="500">500 Mo+</option>
+            <option :value="1024">1 Go+</option>
+          </select>
+        </div>
+        <NButton variant="ghost" size="sm" @click="exportCsv" title="Exporter la liste en CSV">
+          ↓ CSV
+        </NButton>
         <NButton variant="ghost" size="sm" :loading="loading" @click="loadApps">
           <RefreshCw :size="13" /> Actualiser
         </NButton>
-        <NButton variant="danger" size="sm" :disabled="selectedCount === 0 || uninstalling" @click="startUninstall">
-          <Trash2 :size="13" /> Désinstaller ({{ selectedCount }})
+        <NButton variant="danger" size="sm" :disabled="selectedCount === 0 || uninstalling" @click="startUninstall"
+          :title="`Libérer ~${totalSelectedSizeMb}`">
+          <Trash2 :size="13" /> Désinstaller ({{ selectedCount }}) · {{ totalSelectedSizeMb }}
         </NButton>
       </div>
+    </div>
+
+    <!-- Filtres catégories -->
+    <div class="cat-filter-row">
+      <button class="cat-pill" :class="{active: filterCat==='all'}" @click="filterCat='all'">
+        Tout ({{ apps.length }})
+      </button>
+      <button v-for="(label, cat) in CAT_LABELS" :key="cat"
+        class="cat-pill" :class="{active: filterCat===cat}"
+        :style="filterCat===cat ? {borderColor: CAT_COLORS[cat as AppCat], color: CAT_COLORS[cat as AppCat], background: CAT_COLORS[cat as AppCat]+'18'} : {}"
+        @click="filterCat = cat"
+        :title="cat==='system'?'⚠ Applications système Windows — ne pas désinstaller':cat==='microsoft'?'Applications Microsoft':cat==='driver'?'Pilotes matériels':cat==='redist'?'Redistribuables (C++, .NET, Java...)':'Applications utilisateur'"
+      >
+        <span v-if="cat==='system'" style="font-size:10px">⚠</span>
+        {{ label }} ({{ apps.filter(a => appCategory(a) === cat).length }})
+      </button>
     </div>
 
     <!-- Progress -->
@@ -247,7 +537,6 @@ onMounted(loadApps);
         <button class="close-btn" @click="showResults = false; jobs = []"><X :size="14" /></button>
       </div>
 
-      <!-- Extraction target global -->
       <div v-if="pendingResiduals.length > 0" class="extract-global-row">
         <label class="small-label">Dossier d'extraction :</label>
         <input v-model="extractTarget" class="extract-input" />
@@ -255,38 +544,27 @@ onMounted(loadApps);
       </div>
 
       <div v-for="job in jobs" :key="job.app.name" class="job-block" :class="job.status">
-        <!-- En-tête du job -->
         <div class="job-row">
           <CheckCircle v-if="job.status === 'done'"  :size="14" class="ic-success" />
           <XCircle     v-else-if="job.status === 'error'" :size="14" class="ic-error" />
           <NSpinner    v-else :size="14" />
           <span class="job-name">{{ job.app.name }}</span>
           <span class="job-msg">{{ job.message }}</span>
+          <span v-if="job.keepAppData" class="keep-appdata-tag">AppData conservée</span>
         </div>
 
-        <!-- Résidus trouvés -->
         <div v-if="job.residuals.length > 0 && !job.residualsHandled" class="residuals-block">
           <div class="residuals-header">
             <AlertTriangle :size="12" style="color:#d97706;flex-shrink:0" />
             <span class="res-label">{{ job.residuals.length }} résidu(s) détecté(s) :</span>
             <div class="res-actions">
-              <NButton
-                variant="danger" size="sm"
-                :loading="!!handlingResiduals[job.app.name]"
-                @click="deleteJobResiduals(job)"
-              >
+              <NButton variant="danger" size="sm" :loading="!!handlingResiduals[job.app.name]" @click="deleteJobResiduals(job)">
                 <Trash2 :size="11" /> Supprimer définitivement
               </NButton>
-              <NButton
-                variant="ghost" size="sm"
-                :loading="!!handlingResiduals[job.app.name]"
-                @click="extractJobResiduals(job)"
-              >
+              <NButton variant="ghost" size="sm" :loading="!!handlingResiduals[job.app.name]" @click="extractJobResiduals(job)">
                 <Archive :size="11" /> Extraire puis supprimer
               </NButton>
-              <NButton variant="ghost" size="sm" @click="job.residualsHandled = true">
-                Ignorer
-              </NButton>
+              <NButton variant="ghost" size="sm" @click="job.residualsHandled = true">Ignorer</NButton>
             </div>
           </div>
           <div class="residuals-list">
@@ -356,7 +634,10 @@ onMounted(loadApps);
               <ChevronUp v-if="sortKey==='date'&&sortDir==='asc'" :size="11" class="sort-ic"/>
               <ChevronDown v-if="sortKey==='date'&&sortDir==='desc'" :size="11" class="sort-ic"/>
             </th>
+            <th class="col-source">Source</th>
+            <th class="col-keep">AppData</th>
             <th class="col-preview"></th>
+            <th class="col-force"></th>
           </tr>
         </thead>
         <tbody>
@@ -369,14 +650,46 @@ onMounted(loadApps);
               <CheckSquare v-if="selected.has(app.name)" :size="14" style="color:var(--accent-primary)" />
               <Square v-else :size="14" style="color:var(--text-muted)" />
             </td>
-            <td class="col-name"><span class="app-icon"><Package :size="13" /></span>{{ app.name }}</td>
+            <td class="col-name">
+              <span class="app-icon"><Package :size="13" /></span>
+              {{ app.name }}
+              <span class="cat-badge" :style="{ background: CAT_COLORS[appCategory(app)]+'22', color: CAT_COLORS[appCategory(app)], borderColor: CAT_COLORS[appCategory(app)]+'55' }"
+                :title="appCategory(app)==='system'?'⚠ Composant système — ne pas désinstaller':appCategory(app)==='redist'?'Redistribuable (C++, .NET, Java...)':CAT_LABELS[appCategory(app)]">
+                {{ appCategory(app) === 'system' ? '⚠ Système' : appCategory(app) === 'redist' ? 'Redist' : CAT_LABELS[appCategory(app)] }}
+              </span>
+            </td>
             <td class="col-version">{{ app.version || '—' }}</td>
-            <td class="col-publisher">{{ app.publisher || '—' }}</td>
+            <td class="col-publisher" @click.stop="selectByPublisher(app.publisher)" :title="`Sélectionner tous : ${app.publisher}`" style="cursor:pointer">{{ app.publisher || '—' }}</td>
             <td class="col-size">{{ formatSize(app.install_size_kb) }}</td>
             <td class="col-date">{{ app.install_date || '—' }}</td>
+            <td class="col-source" @click.stop>
+              <span v-if="app.source" class="src-badge" :class="sourceLabel(app.source).toLowerCase()">{{ sourceLabel(app.source) }}</span>
+            </td>
+            <!-- Conserver AppData -->
+            <td class="col-keep" @click.stop>
+              <button
+                class="keep-btn"
+                :class="{ active: keepAppDataMap[app.name] }"
+                :title="keepAppDataMap[app.name] ? 'AppData conservée' : 'Conserver les données utilisateur'"
+                @click="toggleKeepAppData(app.name)"
+              >
+                <Archive :size="12" />
+              </button>
+            </td>
             <td class="col-preview" @click.stop>
               <button class="preview-btn" @click="showPreview(app)" title="Voir les résidus potentiels">
                 <Eye :size="13" />
+              </button>
+            </td>
+            <!-- Force remove -->
+            <td class="col-force" @click.stop>
+              <button
+                v-if="!app.uninstall_string"
+                class="force-btn"
+                title="Forcer la suppression (pas de désinstalleur détecté)"
+                @click="startForceRemove(app)"
+              >
+                <AlertOctagon :size="12" />
               </button>
             </td>
           </tr>
@@ -391,88 +704,8 @@ onMounted(loadApps);
       <p>Aucune application détectée</p>
       <NButton variant="ghost" @click="loadApps"><RefreshCw :size="13" /> Réessayer</NButton>
     </div>
+    </template><!-- fin apps -->
   </div>
 </template>
 
-<style scoped>
-.uninstaller-page { display: flex; flex-direction: column; gap: 12px; height: 100%; }
-
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-.toolbar-right { display: flex; align-items: center; gap: 8px; }
-.search-wrap { position: relative; flex: 1; max-width: 320px; }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-.search-input, .filter-input { padding: 7px 12px 7px 32px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-tertiary); color: var(--text-primary); font-family: inherit; font-size: 12px; width: 100%; outline: none; transition: border-color 0.15s; }
-.filter-input { padding-left: 12px; max-width: 200px; }
-.search-input:focus, .filter-input:focus { border-color: var(--accent-primary); }
-.apps-count { font-size: 11px; color: var(--text-muted); font-family: "JetBrains Mono", monospace; }
-
-.progress-bar { display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); }
-.progress-header { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
-
-/* ══ Résultats ══ */
-.results-panel { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border); }
-.results-header { display: flex; align-items: center; gap: 8px; }
-.results-title { flex: 1; font-size: 13px; font-weight: 700; color: var(--text-primary); }
-.close-btn { background: none; border: none; cursor: pointer; padding: 2px; color: var(--text-muted); border-radius: var(--radius-sm); }
-.close-btn:hover { color: var(--text-primary); }
-
-.extract-global-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border); }
-.small-label { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
-.extract-input { flex: 1; padding: 5px 9px; font-size: 11px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: monospace; outline: none; }
-
-.job-block { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: var(--radius-md); background: var(--bg-tertiary); border-left: 3px solid var(--border); }
-.job-block.done  { border-left-color: var(--success); }
-.job-block.error { border-left-color: var(--danger); }
-.job-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.job-name { font-weight: 600; flex-shrink: 0; color: var(--text-primary); }
-.job-msg { color: var(--text-muted); font-size: 11px; }
-.ic-success { color: var(--success); flex-shrink: 0; }
-.ic-error   { color: var(--danger);  flex-shrink: 0; }
-
-.residuals-block { display: flex; flex-direction: column; gap: 6px; }
-.residuals-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.res-label { font-size: 11px; color: #d97706; font-weight: 600; flex-shrink: 0; }
-.res-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.residuals-list { max-height: 100px; overflow-y: auto; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 6px 10px; display: flex; flex-direction: column; gap: 1px; }
-.residual-item { font-size: 10px; font-family: monospace; color: var(--text-secondary); }
-.res-done { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--success); }
-
-/* C — Preview avant uninstall */
-.preview-panel { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--bg-secondary); border: 1px solid #d97706; border-radius: var(--radius-lg); }
-.preview-header { display: flex; align-items: center; gap: 8px; }
-.preview-title { flex: 1; font-size: 13px; color: var(--text-primary); }
-.preview-loading { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
-.preview-empty { font-size: 12px; color: var(--text-muted); }
-.preview-list { max-height: 120px; overflow-y: auto; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; }
-.preview-hint { font-size: 11px; color: var(--text-muted); font-style: italic; }
-
-.loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; color: var(--text-muted); font-size: 13px; }
-
-.apps-table-wrap { flex: 1; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-secondary); }
-.apps-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.apps-table th { position: sticky; top: 0; background: var(--bg-tertiary); padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); z-index: 1; }
-.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-.sortable:hover { color: var(--text-primary); }
-.sort-ic { vertical-align: middle; margin-left: 3px; }
-
-.app-row { border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
-.app-row:hover { background: var(--bg-tertiary); }
-.app-row.selected { background: var(--accent-muted); }
-.app-row td { padding: 7px 12px; color: var(--text-primary); vertical-align: middle; }
-.col-check { width: 36px; text-align: center; }
-.col-name { min-width: 200px; }
-.col-version { width: 100px; color: var(--text-muted) !important; font-family: "JetBrains Mono", monospace; }
-.col-publisher { color: var(--text-secondary) !important; }
-.col-size { width: 80px; color: var(--text-muted) !important; font-family: "JetBrains Mono", monospace; text-align: right; }
-.col-date { width: 100px; color: var(--text-muted) !important; font-family: "JetBrains Mono", monospace; }
-.col-preview { width: 36px; text-align: center; }
-.app-icon { display: inline-flex; color: var(--text-muted); margin-right: 6px; vertical-align: middle; }
-
-.preview-btn { background: none; border: 1px solid var(--border); cursor: pointer; padding: 3px 6px; border-radius: var(--radius-sm); color: var(--text-muted); transition: all 0.1s; display: flex; align-items: center; }
-.preview-btn:hover { border-color: #d97706; color: #d97706; }
-
-.check-all { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px; }
-.no-results { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; }
-.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; color: var(--text-muted); font-size: 13px; }
-</style>
+<style scoped src="./UninstallerPage.css"></style>

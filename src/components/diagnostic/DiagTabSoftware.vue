@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { Search, Package, Terminal, Plus, Trash2 } from "lucide-vue-next";
+import { invoke } from "@/utils/invoke";
+import { Search, Package, Terminal, Plus, Trash2, Download, Loader2 } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
+import { useNotificationStore } from "@/stores/notifications";
+
+const notify = useNotificationStore();
 
 const props = defineProps<{
   tab: string;
@@ -75,6 +78,42 @@ function mbStr(v: number): string {
   return v >= 1024 ? `${(v / 1024).toFixed(1)} GB` : `${v.toFixed(0)} MB`;
 }
 
+const uninstallingName = ref<string | null>(null);
+const confirmUninstall = ref<string | null>(null);
+
+async function uninstallSoftware(name: string) {
+  if (confirmUninstall.value !== name) {
+    confirmUninstall.value = name;
+    return;
+  }
+  confirmUninstall.value = null;
+  uninstallingName.value = name;
+  try {
+    const r = await invoke<string>("quick_uninstall_software", { name });
+    notify.success("Désinstallation lancée", r);
+    emit("refresh");
+  } catch (e: any) {
+    notify.error("Erreur désinstallation", String(e));
+  } finally {
+    uninstallingName.value = null;
+  }
+}
+
+function exportSoftwareCsv() {
+  const rows = [
+    "#,Nom,Version,Éditeur,Date installation,Taille (MB)",
+    ...filteredSoftware.value.map((s, i) =>
+      `${i+1},"${s.name}","${s.version||''}","${s.publisher||''}","${s.install_date||''}",${s.estimated_size_mb||0}`
+    )
+  ].join("\n");
+  const blob = new Blob([rows], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `logiciels_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  notify.success("Export CSV", `${filteredSoftware.value.length} logiciels exportés`);
+}
+
 const topBySize = computed(() =>
   [...props.softwareList].filter(s => s.estimated_size_mb > 0)
     .sort((a, b) => b.estimated_size_mb - a.estimated_size_mb).slice(0, 10)
@@ -120,7 +159,7 @@ const byPublisher = computed(() => {
       </div>
 
       <p class="diag-section-label">Top 10 plus volumineux</p>
-      <div v-for="(s, i) in topBySize" :key="i" class="list-row">
+      <div v-for="(s, i) in topBySize" :key="`top-${s.name}-${s.publisher}`" class="list-row">
         <span class="muted" style="min-width:20px;font-size:11px">{{ i + 1 }}.</span>
         <span class="list-name">{{ s.name }}</span>
         <span class="muted" style="font-size:11px">{{ s.publisher || "—" }}</span>
@@ -134,18 +173,42 @@ const byPublisher = computed(() => {
         </NBadge>
       </div>
 
-      <p class="diag-section-label">Liste complète</p>
+      <!-- Confirmation désinstall banner -->
+      <div v-if="confirmUninstall" class="uninstall-confirm-banner">
+        <Trash2 :size="14" style="color:var(--danger);flex-shrink:0" />
+        <span>Désinstaller <strong>{{ confirmUninstall }}</strong> ? Cette action est irréversible.</span>
+        <button class="conf-btn conf-btn-danger" @click="uninstallSoftware(confirmUninstall)">Confirmer</button>
+        <button class="conf-btn" @click="confirmUninstall = null">Annuler</button>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <p class="diag-section-label" style="margin:0">Liste complète</p>
+        <button class="export-btn" @click="exportSoftwareCsv" title="Exporter CSV">
+          <Download :size="13" /> CSV
+        </button>
+      </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>#</th><th>Nom</th><th>Version</th><th>Éditeur</th><th>Date install.</th><th>Taille</th></tr></thead>
+          <thead><tr><th>#</th><th>Nom</th><th>Version</th><th>Éditeur</th><th>Date install.</th><th>Taille</th><th>Action</th></tr></thead>
           <tbody>
-            <tr v-for="(s, i) in filteredSoftware.slice(0, 300)" :key="i">
+            <tr v-for="(s, i) in filteredSoftware.slice(0, 300)" :key="`sw-${s.name}-${s.publisher}`" :class="{ 'uninstall-row': confirmUninstall === s.name }">
               <td class="muted">{{ i + 1 }}</td>
               <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.name }}</td>
               <td><code>{{ s.version || "—" }}</code></td>
               <td class="muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.publisher || "—" }}</td>
               <td class="muted">{{ s.install_date || "—" }}</td>
               <td>{{ s.estimated_size_mb > 0 ? mbStr(s.estimated_size_mb) : "—" }}</td>
+              <td>
+                <button
+                  class="uninstall-btn"
+                  :disabled="uninstallingName === s.name"
+                  :title="confirmUninstall === s.name ? 'Cliquer pour confirmer' : 'Désinstaller'"
+                  @click="uninstallSoftware(s.name)"
+                >
+                  <Loader2 v-if="uninstallingName === s.name" :size="11" class="spin" />
+                  <Trash2 v-else :size="11" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -203,7 +266,7 @@ const byPublisher = computed(() => {
         <table class="data-table">
           <thead><tr><th>Variable</th><th>Valeur</th><th>Portée</th><th>Actions</th></tr></thead>
           <tbody>
-            <tr v-for="(e, i) in filteredEnv" :key="i">
+            <tr v-for="e in filteredEnv" :key="`env-${e.name}-${e.var_type}`">
               <td><code style="font-size:11px">{{ e.name }}</code></td>
               <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:12px;color:var(--text-secondary)">
                 {{ e.value }}
@@ -223,6 +286,35 @@ const byPublisher = computed(() => {
 </template>
 
 <style scoped>
+.uninstall-confirm-banner {
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:10px 14px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--radius-md); font-size:12px; margin-bottom:12px;
+}
+.uninstall-confirm-banner span { flex:1; }
+.conf-btn {
+  padding:4px 12px; border:1px solid var(--border); border-radius:var(--radius-sm);
+  background:var(--bg-tertiary); color:var(--text-secondary); font-size:11px; cursor:pointer;
+}
+.conf-btn-danger { background:rgba(239,68,68,.12); color:var(--danger); border-color:rgba(239,68,68,.3); }
+.conf-btn-danger:hover { background:rgba(239,68,68,.2); }
+.uninstall-row td { background:rgba(239,68,68,.04) !important; }
+.uninstall-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; border-radius:4px; border:1px solid rgba(239,68,68,.3);
+  background:rgba(239,68,68,.08); color:#ef4444; cursor:pointer; transition:all .15s;
+}
+.uninstall-btn:hover:not(:disabled) { background:rgba(239,68,68,.2); }
+.uninstall-btn:disabled { opacity:.4; cursor:not-allowed; }
+.export-btn {
+  display:inline-flex; align-items:center; gap:5px; padding:3px 10px;
+  border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary);
+  color:var(--text-muted); font-size:11px; cursor:pointer; transition:all .15s;
+}
+.export-btn:hover { color:var(--accent-primary); border-color:var(--accent-primary); }
+@keyframes spin { to { transform:rotate(360deg); } }
+.spin { animation:spin .8s linear infinite; }
+
 .env-del-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 20px; height: 20px; border-radius: 4px;

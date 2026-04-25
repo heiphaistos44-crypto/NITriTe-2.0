@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
-import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import RecoveryTabDisk from "@/components/recovery/RecoveryTabDisk.vue";
 import RecoveryShadowCompare from "@/components/recovery/RecoveryShadowCompare.vue";
 import DiskImagerTab from "@/components/recovery/DiskImagerTab.vue";
+import RecoveryTabMft from "@/components/recovery/RecoveryTabMft.vue";
+import RecoveryTabBackup from "@/components/recovery/RecoveryTabBackup.vue";
 import {
   Database, RefreshCw, RotateCcw, Clock, Trash2,
-  FileText, CheckCircle, XCircle, Folder, Search,
+  FileText, CheckCircle, Folder, Search,
   Save, CheckSquare, Square, FolderOpen, HardDrive, GitCompare, Filter,
   Shield, Lightbulb, Plus,
 } from "lucide-vue-next";
@@ -20,7 +21,8 @@ const notify = useNotificationStore();
 // ── NTFS drives dynamiques ─────────────────────────────────────────────────────
 const ntfsDrives = ref<string[]>([]);
 async function loadNtfsDrives() {
-  try { ntfsDrives.value = await invoke<string[]>("get_ntfs_drives"); } catch { /* silencieux */ }
+  try { ntfsDrives.value = await invoke<string[]>("get_ntfs_drives"); }
+  catch { notify.warning("Lecteurs NTFS", "Impossible de lister les lecteurs NTFS disponibles."); }
 }
 
 // ── Shadow Copy create/delete ──────────────────────────────────────────────────
@@ -107,6 +109,9 @@ const shadowFiles = ref<RecoveredFile[]>([]);
 const browsingPath = ref(""); // chemin UNC complet courant, ou "" pour la racine
 const pathStack = ref<string[]>([]); // chemins UNC complets pour le fil d'Ariane
 // Affichage lisible du chemin (sans le préfixe \\?\GLOBALROOT\Device\ShadowCopyX)
+interface UserFolder { name: string; path: string; shadow_relative: string }
+const userFolders = ref<UserFolder[]>([]);
+
 const browsingDisplay = computed(() => {
   if (!browsingPath.value) return "Racine";
   const parts = browsingPath.value.split("\\").filter(Boolean);
@@ -121,18 +126,54 @@ const searchMode = ref(false);
 const batchRestoring = ref(false);
 const extFilter = ref(""); // E — filtre par extension (ex: ".jpg,.png")
 const showCompare = ref(false); // F — panneau comparaison
+const showDeletedOnly = ref(false); // G — seulement fichiers supprimés
+const shadowSortKey = ref<"name" | "size" | "date">("name");
+const shadowSortDir = ref<"asc" | "desc">("asc");
 
-// E — fichiers filtrés par extension
+function setShadowSort(key: "name" | "size" | "date") {
+  if (shadowSortKey.value === key) shadowSortDir.value = shadowSortDir.value === "asc" ? "desc" : "asc";
+  else { shadowSortKey.value = key; shadowSortDir.value = "asc"; }
+}
+
+// E — fichiers filtrés par extension + supprimés seulement
 const filteredShadowFiles = computed(() => {
-  if (!extFilter.value.trim()) return shadowFiles.value;
+  let files = shadowFiles.value;
+  if (showDeletedOnly.value) files = files.filter(f => f.is_dir || f.source === "deleted" || f.deleted_date);
+  if (!extFilter.value.trim()) return files;
   const exts = extFilter.value.toLowerCase().split(",").map(e => e.trim()).filter(Boolean);
-  return shadowFiles.value.filter(f => {
+  return files.filter(f => {
     if (f.is_dir) return true;
     const dot = f.name.lastIndexOf(".");
     const ext = dot >= 0 ? f.name.slice(dot).toLowerCase() : "";
     return exts.some(e => e === ext || e === ext.slice(1));
   });
 });
+
+// Tri des fichiers
+const sortedShadowFiles = computed(() => {
+  const list = [...filteredShadowFiles.value];
+  const dir = shadowSortDir.value === "asc" ? 1 : -1;
+  list.sort((a, b) => {
+    if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;
+    switch (shadowSortKey.value) {
+      case "name": return dir * a.name.localeCompare(b.name);
+      case "size": return dir * (a.size_bytes - b.size_bytes);
+      case "date": return dir * a.deleted_date.localeCompare(b.deleted_date);
+    }
+  });
+  return list;
+});
+
+// Taille totale sélectionnée
+const totalSelectedBytes = computed(() =>
+  shadowFiles.value.filter(f => selectedFiles.value.has(f.path)).reduce((a, f) => a + f.size_bytes, 0)
+);
+function formatSizeShort(b: number) {
+  if (b >= 1_073_741_824) return `${(b / 1_073_741_824).toFixed(1)} Go`;
+  if (b >= 1_048_576) return `${(b / 1_048_576).toFixed(1)} Mo`;
+  if (b >= 1024) return `${(b / 1024).toFixed(0)} Ko`;
+  return `${b} o`;
+}
 
 async function loadShadows() {
   loadingShadows.value = true; shadows.value = [];
@@ -287,106 +328,7 @@ async function restoreRecycle(file: RecoveredFile) {
   }
 }
 
-// ── Journal MFT (suppressions récentes) ──────────────────────
-const mftFiles = ref<RecoveredFile[]>([]);
-const loadingMft = ref(false);
-const mftDrive = ref("C");
 
-async function scanMft() {
-  loadingMft.value = true; mftFiles.value = [];
-  try {
-    mftFiles.value = await invoke<RecoveredFile[]>("scan_deleted_files", { drive: mftDrive.value });
-  } catch (e: any) {
-    notify.error("Erreur scan MFT", String(e));
-  }
-  loadingMft.value = false;
-}
-
-// G — Scan tous lecteurs NTFS
-async function scanAllMft() {
-  loadingMft.value = true; mftFiles.value = [];
-  try {
-    mftFiles.value = await invoke<RecoveredFile[]>("scan_all_deleted_files");
-  } catch (e: any) {
-    notify.error("Erreur scan global", String(e));
-  }
-  loadingMft.value = false;
-}
-
-// ── Sauvegarde Profil ──────────────────────────────────────
-interface UserFolder { name: string; path: string; size_mb: number; shadow_relative: string; }
-interface BackupResult { success: boolean; message: string; duration_secs: number; folders_count: number; }
-
-const userFolders = ref<UserFolder[]>([]);
-const loadingFolders = ref(false);
-const selectedFolders = ref<Set<string>>(new Set());
-const backupTarget = ref("");
-const backingUp = ref(false);
-const backupProgress = ref(0);
-const backupProgressMsg = ref("");
-const backupResult = ref<BackupResult | null>(null);
-
-async function loadUserFolders(force = false) {
-  if (!force && userFolders.value.length > 0) return;
-  loadingFolders.value = true;
-  try {
-    userFolders.value = await invoke<UserFolder[]>("get_user_profile_folders");
-    // Sélection par défaut : Documents + Bureau (uniquement au premier chargement)
-    if (force || selectedFolders.value.size === 0) {
-      selectedFolders.value = new Set(
-        userFolders.value.filter(f => ["Documents", "Bureau"].includes(f.name)).map(f => f.path)
-      );
-    }
-  } catch (e: any) {
-    notify.error("Erreur profil", String(e));
-  }
-  loadingFolders.value = false;
-}
-
-function toggleFolder(path: string) {
-  if (selectedFolders.value.has(path)) selectedFolders.value.delete(path);
-  else selectedFolders.value.add(path);
-  selectedFolders.value = new Set(selectedFolders.value);
-}
-
-async function pickBackupTarget() {
-  const { open } = await import("@tauri-apps/plugin-dialog");
-  const dir = await open({ directory: true, multiple: false, title: "Choisir le dossier de destination" });
-  if (dir) backupTarget.value = dir as string;
-}
-
-async function startProfileBackup() {
-  if (!backupTarget.value || selectedFolders.value.size === 0) return;
-  backingUp.value = true;
-  backupResult.value = null;
-  backupProgress.value = 5;
-  backupProgressMsg.value = "Démarrage de la sauvegarde...";
-
-  const { listen } = await import("@tauri-apps/api/event");
-  const unlisten = await listen<{ folder: string; percent: number; message: string }>(
-    "backup-profile-progress", ev => {
-      backupProgress.value = ev.payload.percent;
-      backupProgressMsg.value = ev.payload.message;
-    }
-  );
-  try {
-    backupResult.value = await invoke<BackupResult>("backup_user_folders", {
-      folders: Array.from(selectedFolders.value),
-      target: backupTarget.value,
-    });
-    if (backupResult.value.success) notify.success("Sauvegarde terminée", backupResult.value.message);
-    else notify.error("Échec", backupResult.value.message);
-  } catch (e: any) {
-    notify.error("Erreur sauvegarde", String(e));
-  }
-  unlisten();
-  backingUp.value = false;
-}
-
-function formatSize_mb(mb: number) {
-  if (mb < 1024) return `${mb} Mo`;
-  return `${(mb / 1024).toFixed(1)} Go`;
-}
 
 function formatDate(raw: string) {
   if (!raw) return "—";
@@ -397,26 +339,6 @@ function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} o`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
   return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
-}
-
-// ── Dossier custom backup ──────────────────────────────────────────────────────
-const customFolder = ref("");
-const addingCustom = ref(false);
-
-async function pickCustomFolder() {
-  const { open } = await import("@tauri-apps/plugin-dialog");
-  const dir = await open({ directory: true, multiple: false, title: "Ajouter un dossier personnalisé" });
-  if (dir) customFolder.value = dir as string;
-}
-function addCustomFolder() {
-  const f = customFolder.value.trim();
-  if (!f) return;
-  if (!userFolders.value.some(x => x.path === f)) {
-    userFolders.value = [...userFolders.value, { name: f.split(/[\\/]/).pop() || f, path: f, size_mb: 0, shadow_relative: "" }];
-  }
-  selectedFolders.value.add(f);
-  selectedFolders.value = new Set(selectedFolders.value);
-  customFolder.value = "";
 }
 
 onMounted(() => { loadShadows(); loadNtfsDrives(); });
@@ -460,9 +382,8 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'mft' }" @click="activeTab = 'mft'">
         <Search :size="14" /> Journal NTFS
-        <span v-if="mftFiles.length > 0" class="tab-badge">{{ mftFiles.length }}</span>
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'backup' }" @click="activeTab = 'backup'; loadUserFolders()">
+      <button class="tab-btn" :class="{ active: activeTab === 'backup' }" @click="activeTab = 'backup'">
         <Save :size="14" /> Sauvegarde Profil
       </button>
       <button class="tab-btn" :class="{ active: activeTab === 'disk' }" @click="activeTab = 'disk'">
@@ -545,10 +466,26 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
               <NButton v-if="searchMode" variant="ghost" size="sm" @click="browseShadow(selectedShadow!, browsingPath)">
                 ✕ Effacer
               </NButton>
-              <!-- E — Filtre extension -->
+              <!-- G — Supprimés seulement -->
+              <button class="ext-preset-btn" :class="{ active: showDeletedOnly }"
+                @click="showDeletedOnly = !showDeletedOnly" title="Afficher seulement les fichiers supprimés">🗑</button>
+              <!-- E — Filtre extension + raccourcis type -->
               <div class="ext-filter-wrap">
                 <Filter :size="12" class="ext-icon" />
                 <input v-model="extFilter" class="ext-input" placeholder=".jpg,.docx…" title="Filtrer par extension" />
+              </div>
+              <div class="ext-presets">
+                <button class="ext-preset-btn" :class="{ active: extFilter === '.jpg,.jpeg,.png,.gif,.bmp,.webp,.heic' }"
+                  @click="extFilter = extFilter === '.jpg,.jpeg,.png,.gif,.bmp,.webp,.heic' ? '' : '.jpg,.jpeg,.png,.gif,.bmp,.webp,.heic'" title="Images">🖼</button>
+                <button class="ext-preset-btn" :class="{ active: extFilter === '.mp4,.mkv,.avi,.mov,.wmv,.m4v' }"
+                  @click="extFilter = extFilter === '.mp4,.mkv,.avi,.mov,.wmv,.m4v' ? '' : '.mp4,.mkv,.avi,.mov,.wmv,.m4v'" title="Vidéos">🎬</button>
+                <button class="ext-preset-btn" :class="{ active: extFilter === '.mp3,.flac,.wav,.ogg,.aac,.m4a' }"
+                  @click="extFilter = extFilter === '.mp3,.flac,.wav,.ogg,.aac,.m4a' ? '' : '.mp3,.flac,.wav,.ogg,.aac,.m4a'" title="Musique">🎵</button>
+                <button class="ext-preset-btn" :class="{ active: extFilter === '.doc,.docx,.pdf,.xls,.xlsx,.ppt,.pptx,.txt,.odt' }"
+                  @click="extFilter = extFilter === '.doc,.docx,.pdf,.xls,.xlsx,.ppt,.pptx,.txt,.odt' ? '' : '.doc,.docx,.pdf,.xls,.xlsx,.ppt,.pptx,.txt,.odt'" title="Documents">📄</button>
+                <button class="ext-preset-btn" :class="{ active: extFilter === '.zip,.rar,.7z,.tar,.gz' }"
+                  @click="extFilter = extFilter === '.zip,.rar,.7z,.tar,.gz' ? '' : '.zip,.rar,.7z,.tar,.gz'" title="Archives">📦</button>
+                <button v-if="extFilter" class="ext-preset-btn ext-clear" @click="extFilter = ''" title="Effacer filtre">✕</button>
               </div>
               <!-- F — Comparaison -->
               <NButton variant="ghost" size="sm" @click="showCompare = !showCompare">
@@ -582,12 +519,13 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
           />
 
           <!-- Actions batch -->
-          <div class="batch-bar" v-if="filteredShadowFiles.length > 0">
+          <div class="batch-bar" v-if="sortedShadowFiles.length > 0">
             <label class="check-all" @click="toggleAllFiles">
               <CheckSquare v-if="selectedFiles.size > 0 && selectedFiles.size === filteredShadowFiles.filter(f => !f.is_dir).length" :size="14" />
               <Square v-else :size="14" />
               <span>{{ selectedFiles.size > 0 ? `${selectedFiles.size} sélectionné(s)` : 'Tout sélectionner' }}</span>
             </label>
+            <span v-if="selectedFiles.size > 0" class="total-sel-size">{{ formatSizeShort(totalSelectedBytes) }}</span>
             <NButton
               v-if="selectedFiles.size > 0"
               variant="primary"
@@ -595,12 +533,12 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
               :loading="batchRestoring"
               @click="batchRestore"
             >
-              <RotateCcw :size="12" /> Restaurer la sélection ({{ selectedFiles.size }})
+              <RotateCcw :size="12" /> Restaurer ({{ selectedFiles.size }})
             </NButton>
             <NButton variant="ghost" size="sm" @click="openRestoreFolder(restoreTarget)">
               <FolderOpen :size="12" /> Ouvrir dossier
             </NButton>
-            <span v-if="extFilter" class="count">{{ filteredShadowFiles.length }} / {{ shadowFiles.length }} fichier(s)</span>
+            <span v-if="extFilter || showDeletedOnly" class="count">{{ filteredShadowFiles.length }} / {{ shadowFiles.length }} fichier(s)</span>
           </div>
 
           <div v-if="loadingBrowse || isSearching" class="loading-state"><NSpinner :size="16" /><span>{{ isSearching ? 'Recherche...' : 'Chargement...' }}</span></div>
@@ -609,10 +547,20 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
           </div>
           <div v-else class="files-table">
             <div class="file-row header-row">
-              <span></span><span>Nom</span><span>Taille</span><span>Modifié</span><span></span>
+              <span></span>
+              <span class="sortable-col" @click="setShadowSort('name')">
+                Nom <span class="sort-arrow">{{ shadowSortKey==='name' ? (shadowSortDir==='asc'?'↑':'↓') : '' }}</span>
+              </span>
+              <span class="sortable-col" @click="setShadowSort('size')">
+                Taille <span class="sort-arrow">{{ shadowSortKey==='size' ? (shadowSortDir==='asc'?'↑':'↓') : '' }}</span>
+              </span>
+              <span class="sortable-col" @click="setShadowSort('date')">
+                Modifié <span class="sort-arrow">{{ shadowSortKey==='date' ? (shadowSortDir==='asc'?'↑':'↓') : '' }}</span>
+              </span>
+              <span></span>
             </div>
             <div
-              v-for="f in filteredShadowFiles" :key="f.path"
+              v-for="f in sortedShadowFiles" :key="f.path"
               class="file-row"
               :class="{ 'is-dir': f.is_dir, 'is-selected': selectedFiles.has(f.path) }"
             >
@@ -693,133 +641,12 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
 
     <!-- ══ JOURNAL MFT ══ -->
     <div v-if="activeTab === 'mft'" class="tab-content">
-      <div class="info-banner">
-        <Search :size="14" />
-        <div>
-          <strong>Journal NTFS (USN)</strong> — Le système de fichiers NTFS enregistre toutes les opérations récentes dans un journal interne.
-          Cet outil scanne ce journal pour retrouver les noms des fichiers récemment supprimés.
-          <br><em style="font-size:11px;opacity:.8">⚠ Le journal ne contient que les métadonnées (nom, date). Pour récupérer le contenu, utilisez Recuva ou TestDisk.</em>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <label class="drive-label">Lecteur :</label>
-        <select v-model="mftDrive" class="drive-select-sm">
-          <option v-for="d in (ntfsDrives.length ? ntfsDrives.map(x => x.replace(':','')) : ['C','D','E','F','G'])" :key="d" :value="d">{{ d }}:</option>
-        </select>
-        <NButton variant="primary" size="sm" :loading="loadingMft" @click="scanMft">
-          <Search :size="13" /> Scanner
-        </NButton>
-        <NButton variant="ghost" size="sm" :loading="loadingMft" @click="scanAllMft">
-          <Database :size="13" /> Tous les lecteurs NTFS
-        </NButton>
-        <span class="count">{{ mftFiles.length }} entrée(s)</span>
-      </div>
-
-      <div v-if="loadingMft" class="loading-state"><NSpinner :size="20" /><span>Lecture du journal NTFS...</span></div>
-      <div v-else-if="mftFiles.length === 0 && !loadingMft" class="empty">
-        <Database :size="28" /><p>Lancez le scan pour voir les suppressions récentes</p>
-      </div>
-      <div v-else class="files-table files-table-mft">
-        <div class="file-row-mft header-row">
-          <span>Nom du fichier</span><span>Date suppression</span><span>Source</span>
-        </div>
-        <div v-for="f in mftFiles" :key="f.path" class="file-row-mft">
-          <span class="file-name"><FileText :size="12" /> {{ f.name }}</span>
-          <span class="file-date">{{ formatDate(f.deleted_date) }}</span>
-          <span class="file-source badge-muted">Journal MFT</span>
-        </div>
-      </div>
-      <p class="hint-note">💡 Pour récupérer ces fichiers, utilisez Recuva ou TestDisk (disponibles dans l'installeur).</p>
+      <RecoveryTabMft />
     </div>
 
     <!-- ══ SAUVEGARDE PROFIL ══ -->
     <div v-if="activeTab === 'backup'" class="tab-content">
-      <div class="info-banner">
-        <Save :size="14" />
-        <span>Sauvegardes vos dossiers utilisateur (Documents, Bureau, Images…) vers un disque externe ou un autre emplacement. Utilise Robocopy en mode backup pour contourner les restrictions d'accès.</span>
-      </div>
-
-      <!-- Sélection dossiers -->
-      <div class="toolbar">
-        <NButton variant="ghost" size="sm" :loading="loadingFolders" @click="loadUserFolders(true)">
-          <RefreshCw :size="13" /> Actualiser les dossiers
-        </NButton>
-        <span class="count">{{ userFolders.length }} dossier(s) détecté(s)</span>
-      </div>
-
-      <div v-if="loadingFolders" class="loading-state"><NSpinner :size="20" /><span>Lecture du profil...</span></div>
-      <div v-else class="folders-section">
-        <p class="section-label">Dossiers à sauvegarder</p>
-        <div class="folders-grid">
-          <div
-            v-for="f in userFolders"
-            :key="f.path"
-            class="folder-card"
-            :class="{ selected: selectedFolders.has(f.path) }"
-            @click="toggleFolder(f.path)"
-          >
-            <CheckSquare v-if="selectedFolders.has(f.path)" :size="15" class="ic-check" />
-            <Square v-else :size="15" class="ic-uncheck" />
-            <Folder :size="20" class="folder-icon" />
-            <div class="folder-info">
-              <span class="folder-name">{{ f.name }}</span>
-              <span class="folder-size">{{ formatSize_mb(f.size_mb) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dossier personnalisé -->
-        <div class="custom-folder-row">
-          <input v-model="customFolder" class="target-input-lg" placeholder="Ajouter un dossier personnalisé..." @keydown.enter="addCustomFolder" />
-          <NButton variant="ghost" size="sm" @click="pickCustomFolder"><FolderOpen :size="13" /></NButton>
-          <NButton variant="ghost" size="sm" :disabled="!customFolder.trim()" @click="addCustomFolder"><Plus :size="13" /> Ajouter</NButton>
-        </div>
-
-        <!-- Destination -->
-        <p class="section-label">Destination</p>
-        <div class="target-row">
-          <input v-model="backupTarget" class="target-input-lg" placeholder="Chemin de destination (ex: D:\Sauvegardes\Profil)" />
-          <NButton variant="ghost" size="sm" @click="pickBackupTarget">
-            <FolderOpen :size="13" /> Parcourir
-          </NButton>
-        </div>
-
-        <!-- Progression -->
-        <div v-if="backingUp || backupProgress > 0" class="progress-section">
-          <div class="progress-header">
-            <NSpinner v-if="backingUp" :size="14" />
-            <span>{{ backupProgressMsg }}</span>
-          </div>
-          <NProgress :value="backupProgress" showLabel size="lg" />
-        </div>
-
-        <!-- Résultat -->
-        <div v-if="backupResult" class="result-card" :class="backupResult.success ? 'success' : 'error'">
-          <CheckCircle v-if="backupResult.success" :size="18" />
-          <XCircle v-else :size="18" />
-          <div>
-            <p class="result-title">{{ backupResult.success ? 'Sauvegarde terminée' : 'Échec de la sauvegarde' }}</p>
-            <p class="result-msg">{{ backupResult.message }}</p>
-            <p class="result-meta">{{ backupResult.folders_count }} dossier(s) · {{ Math.floor(backupResult.duration_secs / 60) }}min {{ backupResult.duration_secs % 60 }}s</p>
-          </div>
-        </div>
-
-        <!-- Bouton lancer -->
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <NButton
-            variant="primary"
-            :disabled="!backupTarget || selectedFolders.size === 0 || backingUp"
-            :loading="backingUp"
-            @click="startProfileBackup"
-          >
-            <Save :size="14" /> Lancer la sauvegarde ({{ selectedFolders.size }} dossier(s))
-          </NButton>
-          <NButton v-if="backupResult?.success && backupTarget" variant="ghost" size="sm" @click="openRestoreFolder(backupTarget)">
-            <FolderOpen :size="13" /> Ouvrir destination
-          </NButton>
-        </div>
-      </div>
+      <RecoveryTabBackup />
     </div>
 
     <!-- ══ RÉCUPÉRATION DISQUE ══ -->
@@ -877,176 +704,4 @@ onMounted(() => { loadShadows(); loadNtfsDrives(); });
   </div>
 </template>
 
-<style scoped>
-.recovery-page { display: flex; flex-direction: column; gap: 14px; }
-
-/* Hero */
-.recovery-hero {
-  display: flex; align-items: center; gap: 16px; padding: 18px 22px;
-  background: linear-gradient(135deg, var(--bg-secondary), color-mix(in srgb, var(--success) 5%, var(--bg-secondary)));
-  border: 1px solid var(--border); border-radius: var(--radius-xl); position: relative; overflow: hidden;
-}
-.recovery-hero::before {
-  content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--success) 10%, transparent), transparent 70%);
-  pointer-events: none;
-}
-.hero-icon-wrap { flex-shrink: 0; }
-.hero-icon {
-  width: 48px; height: 48px; border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--success), color-mix(in srgb, var(--success) 70%, var(--info)));
-  display: flex; align-items: center; justify-content: center; color: white;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--success) 35%, transparent);
-  animation: float-rec 3s ease-in-out infinite;
-}
-@keyframes float-rec { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-.hero-text { flex: 1; }
-.hero-title { font-size: 20px; font-weight: 800; color: var(--text-primary); }
-.hero-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-
-/* How card */
-.how-card {
-  padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); border-left: 3px solid var(--info);
-}
-.how-title { font-size: 12px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:6px; margin-bottom:10px; }
-.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 8px; }
-.how-item { display:flex; align-items:flex-start; gap:10px; font-size:12px; color:var(--text-secondary); }
-.how-num { min-width:22px; height:22px; border-radius:50%; background:var(--accent-muted); color:var(--accent-primary); font-weight:700; font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-
-/* Tabs */
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.tab-btn {
-  display: flex; align-items: center; gap: 7px; padding: 9px 14px;
-  border-radius: var(--radius-md); border: 1.5px solid var(--border);
-  background: var(--bg-tertiary); cursor: pointer; font-family: inherit;
-  font-size: 13px; color: var(--text-secondary); transition: all 0.15s; position: relative;
-}
-.tab-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
-.tab-btn.active { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--bg-secondary); }
-.tab-badge { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--accent-muted); color: var(--accent-primary); min-width: 18px; text-align: center; }
-.tab-badge-warn { background: var(--warning-muted); color: var(--warning); }
-
-/* Recycle banner */
-.recycle-info-banner {
-  display:flex; align-items:center; gap:8px; padding:10px 14px;
-  background: var(--success-muted); color: var(--success); border: 1px solid color-mix(in srgb,var(--success) 30%,transparent);
-  border-radius: var(--radius-md); font-size:12px; margin-bottom:8px;
-}
-
-/* Shadow icon */
-.shadow-icon { width:32px; height:32px; border-radius:var(--radius-md); background:var(--accent-muted); display:flex; align-items:center; justify-content:center; color:var(--accent-primary); flex-shrink:0; }
-.shadow-meta-row { display:flex; align-items:center; gap:6px; }
-.shadow-provider { font-size:10px; color:var(--text-muted); font-family:monospace; }
-
-.tab-content { display: flex; flex-direction: column; gap: 12px; }
-.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.count { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-
-.info-banner {
-  display: flex; gap: 8px; align-items: flex-start; padding: 10px 14px;
-  border-radius: var(--radius-md); font-size: 12px; line-height: 1.5;
-  background: var(--info-muted); color: var(--info); border: 1px solid var(--info);
-}
-
-.loading-state { display: flex; align-items: center; gap: 10px; padding: 20px; font-size: 13px; color: var(--text-muted); }
-.empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px; color: var(--text-muted); font-size: 13px; }
-.empty-small { padding: 16px; text-align: center; font-size: 12px; color: var(--text-muted); }
-.hint { font-size: 11px; text-align: center; }
-
-/* Shadows */
-.shadows-list { display: flex; flex-direction: column; gap: 6px; }
-.shadow-card {
-  padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md);
-  background: var(--bg-secondary); cursor: pointer; transition: border-color 0.15s;
-}
-.shadow-card.selected { border-color: var(--accent-primary); }
-.shadow-header { display: flex; align-items: center; gap: 10px; }
-.shadow-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.shadow-date { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.shadow-vol { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-
-/* File browser */
-.file-browser { display: flex; flex-direction: column; gap: 8px; background: var(--bg-secondary); border: 1px solid var(--accent-primary); border-radius: var(--radius-lg); padding: 12px; margin-top: 4px; }
-.browser-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.browser-title { font-weight: 700; font-size: 13px; color: var(--accent-primary); }
-.restore-target-row { display: flex; align-items: center; gap: 8px; }
-.target-label { font-size: 11px; color: var(--text-muted); }
-.target-input { padding: 4px 8px; font-size: 11px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: monospace; width: 280px; }
-.browse-shortcuts { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid var(--border); }
-
-/* Extension filter */
-.ext-filter-wrap { display: flex; align-items: center; gap: 4px; }
-.ext-icon { color: var(--text-muted); flex-shrink: 0; }
-.ext-input { width: 90px; padding: 5px 7px; font-size: 11px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: monospace; outline: none; transition: border-color 0.15s; }
-.ext-input:focus { border-color: var(--accent-primary); }
-/* Search bar */
-.search-row { display: flex; align-items: center; gap: 6px; flex: 1; }
-.search-input { flex: 1; padding: 6px 10px; font-size: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-family: inherit; outline: none; transition: border-color 0.15s; }
-.search-input:focus { border-color: var(--accent-primary); }
-
-/* Breadcrumb */
-.breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; font-size: 12px; }
-.crumb { background: none; border: none; padding: 2px 6px; cursor: pointer; color: var(--accent-primary); font-family: inherit; font-size: 12px; border-radius: var(--radius-sm); transition: background 0.12s; }
-.crumb:hover { background: var(--bg-tertiary); }
-.crumb.current { color: var(--text-primary); font-weight: 600; cursor: default; }
-.crumb-sep { color: var(--text-muted); }
-.search-info { font-size: 12px; color: var(--text-secondary); padding: 4px 0; }
-.batch-bar { display: flex; align-items: center; gap: 12px; padding: 6px 4px; border-bottom: 1px solid var(--border); }
-.check-all { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-secondary); user-select: none; }
-
-/* Files table */
-.files-table { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-.file-row { display: grid; grid-template-columns: 24px 1fr 70px 130px 90px; align-items: center; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
-.file-row:last-child { border-bottom: none; }
-.header-row { background: var(--bg-tertiary); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
-.file-row.is-dir { background: color-mix(in srgb, var(--accent-primary) 4%, transparent); }
-.file-row.is-selected { background: color-mix(in srgb, var(--accent-primary) 8%, transparent); }
-.file-check { display: flex; align-items: center; justify-content: center; }
-.chk { cursor: pointer; color: var(--text-muted); transition: color 0.1s; }
-.chk:hover, .chk.on { color: var(--accent-primary); }
-.file-name { display: flex; align-items: center; gap: 6px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-size, .file-date { color: var(--text-muted); font-family: monospace; }
-.file-source { font-size: 10px; }
-.badge-muted { background: var(--bg-elevated); color: var(--text-muted); padding: 2px 6px; border-radius: 4px; }
-/* Corbeille / MFT simples (pas de checkbox) */
-.file-row-simple { display: grid; grid-template-columns: 1fr 80px 150px 90px; align-items: center; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
-.file-row-simple:last-child { border-bottom: none; }
-.file-row-mft { display: grid; grid-template-columns: 1fr 160px 100px; align-items: center; gap: 8px; padding: 5px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
-.file-row-mft:last-child { border-bottom: none; }
-
-/* MFT */
-.drive-label { font-size: 12px; color: var(--text-secondary); }
-.drive-select-sm { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-tertiary); color: var(--text-primary); font-family: inherit; font-size: 12px; }
-.hint-note { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
-
-/* Sauvegarde Profil */
-.folders-section { display: flex; flex-direction: column; gap: 14px; }
-.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
-.folders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.folder-card { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-secondary); cursor: pointer; transition: all 0.15s; user-select: none; }
-.folder-card:hover { border-color: var(--text-muted); background: var(--bg-tertiary); }
-.folder-card.selected { border-color: var(--accent-primary); background: var(--accent-muted); }
-.ic-check { color: var(--accent-primary); flex-shrink: 0; }
-.ic-uncheck { color: var(--text-muted); flex-shrink: 0; }
-.folder-icon { color: var(--accent-primary); flex-shrink: 0; }
-.folder-card:not(.selected) .folder-icon { color: var(--text-muted); }
-.folder-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-.folder-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
-.folder-size { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-.target-row { display: flex; gap: 8px; align-items: center; }
-.target-input-lg { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-tertiary); color: var(--text-primary); font-family: monospace; font-size: 12px; outline: none; transition: border-color 0.15s; }
-.target-input-lg:focus { border-color: var(--accent-primary); }
-.custom-folder-row { display: flex; gap: 6px; align-items: center; }
-.progress-section { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); }
-.progress-header { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
-.result-card { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: var(--radius-lg); border: 1px solid; }
-.result-card.success { background: var(--success-muted); border-color: var(--success); color: var(--success); }
-.result-card.error { background: var(--danger-muted); border-color: var(--danger); color: var(--danger); }
-.result-title { font-weight: 700; font-size: 13px; }
-.result-msg { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
-.result-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-family: monospace; }
-.rapport-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.report-path-box { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 14px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: var(--radius-md); font-size: 12px; color: var(--text-muted); }
-.report-path-box code { font-family: monospace; color: var(--success); }
-</style>
+<style scoped src="./DataRecoveryPage.css"></style>

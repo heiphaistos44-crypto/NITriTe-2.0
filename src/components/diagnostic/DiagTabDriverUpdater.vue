@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { invokeRaw as invoke } from "@/utils/invoke";
+import { useNotificationStore } from "@/stores/notifications";
+const notify = useNotificationStore();
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
-import { HardDrive, Search, Download, AlertTriangle, CheckCircle, FolderOpen } from "lucide-vue-next";
+import { HardDrive, Search, Download, AlertTriangle, CheckCircle, FolderOpen, Zap } from "lucide-vue-next";
 
 interface HardwareDevice {
   name: string; device_id: string; hardware_ids: string[]; compatible_ids: string[];
@@ -59,11 +62,21 @@ const matchedByDevice = computed(() => {
 });
 
 // ─── Actions ───────────────────────────────────────────────────────────────────
+async function launchSdi() {
+  try {
+    (window as any).__nitrite_sdi_active = true;
+    setTimeout(() => { (window as any).__nitrite_sdi_active = false; }, 60000);
+    await invoke("launch_sdi");
+  } catch (e) {
+    (window as any).__nitrite_sdi_active = false;
+    notify.error("SDI introuvable", String(e));
+  }
+}
+
 async function loadDevices() {
   devicesLoading.value = true;
   devices.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     devices.value = await invoke<HardwareDevice[]>("get_hardware_devices");
   } catch {}
   finally { devicesLoading.value = false; }
@@ -85,7 +98,6 @@ async function runScan() {
   scanResult.value = null;
   selectedMatches.value = new Set();
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     // Collect all hardware IDs from loaded devices
     const allIds: string[] = [];
     for (const d of devices.value) {
@@ -100,14 +112,13 @@ async function runScan() {
     for (const m of scanResult.value?.matches ?? []) {
       selectedMatches.value.add(m.device_id);
     }
-  } catch (e) { console.error(e); }
+  } catch (e) { notify.error("Scan drivers échoué", String(e)); }
   finally { scanLoading.value = false; }
 }
 
 async function installDriver(match: DriverMatch) {
   installing.value = match.device_id;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     const result = await invoke<InstallResult>("install_driver", { infPath: match.inf_path });
     installResults.value[match.device_id] = result;
   } catch {}
@@ -126,7 +137,6 @@ async function installSelected() {
 async function checkProblems() {
   problemsLoading.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     problemDevices.value = await invoke<string[]>("check_driver_updates_winupdate");
   } catch {}
   finally { problemsLoading.value = false; }
@@ -166,6 +176,9 @@ function errLabel(code: number) {
         Compatible avec les packs de drivers extraits (SDIO / DriverPack Solution / manuel).
         Scanne les fichiers <code>.inf</code> pour trouver les pilotes correspondants à votre matériel.
       </p>
+      <button @click="launchSdi" style="margin-top:10px;padding:6px 14px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+        <Zap :size="13" /> Snappy Driver Installer
+      </button>
     </div>
 
     <!-- Étape 1 : Scanner le matériel -->
@@ -288,7 +301,7 @@ function errLabel(code: number) {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <span style="font-size:11px;font-weight:600">Pilotes disponibles :</span>
             <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
-              <input type="checkbox" :checked="selectedMatches.size===scanResult.matches.length" @change="e=>{if((e.target as any).checked){scanResult!.matches.forEach(m=>selectedMatches.add(m.device_id))}else{selectedMatches.clear()}}" />
+              <input type="checkbox" :checked="selectedMatches.size===scanResult.matches.length" @change="e=>{if((e.target as HTMLInputElement).checked){scanResult!.matches.forEach(m=>selectedMatches.add(m.device_id))}else{selectedMatches.clear()}}" />
               Tout sélectionner
             </label>
           </div>

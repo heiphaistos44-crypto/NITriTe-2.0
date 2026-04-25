@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
-import NBadge from "@/components/ui/NBadge.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { useNotificationStore } from "@/stores/notifications";
+import BrowserCleanupCard from "@/components/optimizations/BrowserCleanupCard.vue";
+import StartupProgramsCard from "@/components/optimizations/StartupProgramsCard.vue";
+import TurboModePage from "@/pages/TurboModePage.vue";
 import {
   Trash2, FileX, HardDrive, RefreshCw,
-  Rocket, CheckCircle, Play, XCircle,
-  Globe, CheckSquare, Square,
-  Shield, Wifi, Zap, AlertCircle, Settings,
+  Rocket, CheckCircle, Play, AlertCircle,
+  Shield, Wifi, Zap,
 } from "lucide-vue-next";
+
+type MainTab = "optimizations" | "turbo";
+const mainTab = ref<MainTab>("optimizations");
 
 const notify = useNotificationStore();
 
@@ -33,9 +37,11 @@ async function emptyRecycleBin() {
     const result = await invoke<{ message: string }>("empty_recycle_bin");
     recycleBin.value = { loading: false, done: true, message: result.message };
     notify.success("Corbeille videe", result.message);
+    logAction("Vider la corbeille", true);
   } catch (e: any) {
     recycleBin.value = { loading: false, done: true, message: "Corbeille videe (demo)" };
     notify.info("Mode dev", "Simulation : corbeille videe");
+    logAction("Vider la corbeille", false);
   }
 }
 
@@ -45,9 +51,11 @@ async function cleanTempFiles() {
     const result = await invoke<{ files_deleted: number; space_freed: string; message: string }>("clean_temp_files");
     tempFiles.value = { loading: false, done: true, message: result.message };
     notify.success("Nettoyage termine", result.message);
+    logAction("Nettoyer fichiers temp", true);
   } catch {
     tempFiles.value = { loading: false, done: true, message: "247 fichiers supprimes, 1.2 GB liberes (demo)" };
     notify.info("Mode dev", "Simulation : fichiers temp nettoyes");
+    logAction("Nettoyer fichiers temp", false);
   }
 }
 
@@ -57,107 +65,39 @@ async function runDiskCleanup() {
     const result = await invoke<{ message: string }>("run_disk_cleanup");
     diskCleanup.value = { loading: false, done: true, message: result.message };
     notify.success("Nettoyage disque", result.message);
+    logAction("Nettoyage de disque", true);
   } catch {
     diskCleanup.value = { loading: false, done: true, message: "Nettoyage de disque termine (demo)" };
     notify.info("Mode dev", "Simulation : nettoyage disque effectue");
+    logAction("Nettoyage de disque", false);
   }
 }
 
-// --- Startup programs ---
-interface StartupProgram {
-  name: string;
-  command: string;
-  location: string;
-  user: string;
+// === Historique des actions ===
+const actionHistory = ref<Array<{ action: string; timestamp: string; success: boolean }>>([]);
+const showHistory = ref(false);
+
+function logAction(actionLabel: string, success: boolean) {
+  actionHistory.value.unshift({
+    action: actionLabel,
+    timestamp: new Date().toLocaleString('fr-FR'),
+    success,
+  });
+  if (actionHistory.value.length > 50) actionHistory.value.pop();
+  localStorage.setItem('nitrite-optim-history', JSON.stringify(actionHistory.value.slice(0, 50)));
 }
 
-const startupPrograms = ref<StartupProgram[]>([]);
-const startupLoading = ref(true);
-
-async function loadStartupPrograms() {
-  startupLoading.value = true;
+function loadActionHistory() {
   try {
-    startupPrograms.value = await invoke<StartupProgram[]>("get_startup_programs");
-  } catch {
-    startupPrograms.value = [
-      { name: "Discord", command: "C:\\Users\\User\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
-      { name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" /silentlaunch", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
-      { name: "OneDrive", command: "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background", location: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Utilisateur" },
-      { name: "SecurityHealth", command: "C:\\Windows\\System32\\SecurityHealthSystray.exe", location: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Systeme" },
-      { name: "RealTek Audio", command: "C:\\Program Files\\Realtek\\Audio\\HDA\\RtkNGUI64.exe -s", location: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", user: "Systeme" },
-    ];
-  } finally {
-    startupLoading.value = false;
-  }
+    const raw = localStorage.getItem('nitrite-optim-history');
+    actionHistory.value = raw ? JSON.parse(raw) : [];
+  } catch { actionHistory.value = []; }
 }
 
-async function disableProgram(prog: StartupProgram) {
-  try {
-    await invoke("disable_startup_program", { name: prog.name, location: prog.location });
-    notify.success(`${prog.name} desactive du demarrage`);
-    await loadStartupPrograms();
-  } catch (e: any) {
-    notify.error(e?.toString() || `Impossible de desactiver ${prog.name}`);
-  }
+function clearActionHistory() {
+  actionHistory.value = [];
+  localStorage.removeItem('nitrite-optim-history');
 }
-
-// --- Browser Cleanup ---
-interface BrowserCache {
-  id: string;
-  name: string;
-  detected: boolean;
-  cache_size_mb: number;
-  selected: boolean;
-}
-
-const browsers = ref<BrowserCache[]>([]);
-const browsersLoading = ref(false);
-const cleaningBrowsers = ref(false);
-const cleanResult = ref<{ freed: number; deleted: number } | null>(null);
-
-async function loadBrowserCaches() {
-  browsersLoading.value = true;
-  cleanResult.value = null;
-  try {
-    const data = await invoke<any[]>("get_browser_cache_sizes");
-    browsers.value = data
-      .filter((b: any) => b.detected)
-      .map((b: any) => ({ ...b, selected: true }));
-  } catch {
-    browsers.value = [
-      { id: "chrome", name: "Google Chrome", detected: true, cache_size_mb: 245.3, selected: true },
-      { id: "edge", name: "Microsoft Edge", detected: true, cache_size_mb: 128.7, selected: true },
-      { id: "firefox", name: "Mozilla Firefox", detected: true, cache_size_mb: 89.2, selected: true },
-    ];
-  } finally {
-    browsersLoading.value = false;
-  }
-}
-
-async function cleanSelectedBrowsers() {
-  const selected = browsers.value.filter(b => b.selected).map(b => b.id);
-  if (selected.length === 0) {
-    notify.warning("Selectionnez au moins un navigateur");
-    return;
-  }
-  cleaningBrowsers.value = true;
-  try {
-    const results = await invoke<any[]>("clean_browser_cache", { browserIds: selected });
-    const totalFreed = results.reduce((sum: number, r: any) => sum + r.freed_mb, 0);
-    const totalDeleted = results.reduce((sum: number, r: any) => sum + r.files_deleted, 0);
-    cleanResult.value = { freed: totalFreed, deleted: totalDeleted };
-    notify.success("Nettoyage termine", `${totalFreed.toFixed(1)} MB liberes, ${totalDeleted} fichiers supprimes`);
-    await loadBrowserCaches();
-  } catch (e: any) {
-    notify.error(e?.toString() || "Erreur nettoyage navigateurs");
-  } finally {
-    cleaningBrowsers.value = false;
-  }
-}
-
-const totalBrowserCache = computed(() =>
-  browsers.value.reduce((sum, b) => sum + b.cache_size_mb, 0)
-);
 
 // === Debloat ===
 interface DebloatResult { action: string; success: boolean; message: string; }
@@ -257,18 +197,16 @@ async function runDebloat(btn: DebloatBtn) {
     } else {
       btn.result = res as DebloatResult;
     }
-    if (btn.result.success) notify.success(btn.label, btn.result.message);
-    else notify.warning(btn.label, btn.result.message);
+    if (btn.result.success) { notify.success(btn.label, btn.result.message); logAction(btn.label, true); }
+    else { notify.warning(btn.label, btn.result.message); logAction(btn.label, false); }
   } catch (e: any) {
     btn.result = { action: btn.label, success: false, message: e?.toString() ?? "Erreur" };
     notify.error(btn.label);
+    logAction(btn.label, false);
   } finally { btn.loading = false; }
 }
 
-onMounted(() => {
-  loadStartupPrograms();
-  loadBrowserCaches();
-});
+onMounted(loadActionHistory);
 </script>
 
 <template>
@@ -277,9 +215,48 @@ onMounted(() => {
     <DiagBanner
       :icon="Rocket"
       title="Optimisations Système"
-      desc="Nettoyage, débloatware, réseau et gestion des programmes au démarrage"
+      desc="Nettoyage, débloatware, réseau, démarrage et mode turbo"
       color="orange"
     />
+
+    <!-- Onglets principaux -->
+    <div class="main-tabs">
+      <button class="main-tab" :class="{ active: mainTab === 'optimizations' }" @click="mainTab = 'optimizations'">
+        <Zap :size="14" /> Optimisations
+      </button>
+      <button class="main-tab" :class="{ active: mainTab === 'turbo' }" @click="mainTab = 'turbo'">
+        <Rocket :size="14" /> Mode Turbo
+      </button>
+    </div>
+
+    <!-- Contenu Mode Turbo -->
+    <TurboModePage v-if="mainTab === 'turbo'" style="padding:0" />
+
+    <!-- Contenu Optimisations -->
+    <template v-if="mainTab === 'optimizations'">
+
+    <!-- Historique des optimisations -->
+    <NCard v-if="actionHistory.length > 0">
+      <template #header>
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer;width:100%" @click="showHistory = !showHistory">
+          <span style="font-size:13px;font-weight:600">Historique des actions ({{ actionHistory.length }})</span>
+          <span style="margin-left:auto;color:var(--text-muted)">{{ showHistory ? '▲' : '▼' }}</span>
+          <button @click.stop="clearActionHistory()"
+            style="font-size:11px;padding:2px 8px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text-muted);cursor:pointer;margin-left:8px">
+            Effacer
+          </button>
+        </div>
+      </template>
+      <div v-if="showHistory" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">
+        <div v-for="(h, i) in actionHistory" :key="i"
+          style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;font-size:12px"
+          :style="{ background: h.success ? 'rgba(34,197,94,.05)' : 'rgba(239,68,68,.05)' }">
+          <span :style="{ color: h.success ? 'var(--success)' : 'var(--danger)' }">{{ h.success ? '✓' : '✕' }}</span>
+          <span style="flex:1">{{ h.action }}</span>
+          <span style="color:var(--text-muted);font-size:11px">{{ h.timestamp }}</span>
+        </div>
+      </div>
+    </NCard>
 
     <!-- Section: Actions rapides -->
     <div class="diag-section-label">
@@ -367,69 +344,9 @@ onMounted(() => {
 
     <!-- Section: Navigateurs -->
     <div class="diag-section-label">
-      <Globe :size="13" />
-      Caches Navigateurs
+      <Zap :size="13" /> Caches Navigateurs
     </div>
-
-    <!-- Browser Cache Cleanup -->
-    <NCard>
-      <template #header>
-        <div class="section-header">
-          <Globe :size="16" style="color: var(--accent-primary)" />
-          <span>Caches Navigateurs</span>
-          <span v-if="!browsersLoading && browsers.length > 0" class="cache-total">
-            {{ totalBrowserCache.toFixed(1) }} MB detectes
-          </span>
-          <NButton variant="secondary" size="sm" :loading="browsersLoading" @click="loadBrowserCaches" style="margin-left: auto">
-            <RefreshCw :size="14" />
-          </NButton>
-        </div>
-      </template>
-
-      <div v-if="browsersLoading" class="loading-state">
-        <NSpinner :size="24" />
-        <p>Detection des navigateurs...</p>
-      </div>
-
-      <div v-else-if="browsers.length === 0" class="empty-state">
-        Aucun navigateur detecte avec du cache.
-      </div>
-
-      <div v-else>
-        <div class="browser-list">
-          <button
-            v-for="b in browsers"
-            :key="b.id"
-            class="browser-item"
-            :class="{ selected: b.selected }"
-            @click="b.selected = !b.selected"
-          >
-            <component :is="b.selected ? CheckSquare : Square" :size="18" class="browser-check" />
-            <div class="browser-info">
-              <span class="browser-name">{{ b.name }}</span>
-              <span class="browser-size">{{ b.cache_size_mb.toFixed(1) }} MB</span>
-            </div>
-          </button>
-        </div>
-
-        <div class="browser-actions">
-          <div v-if="cleanResult" class="clean-result">
-            <CheckCircle :size="14" style="color: var(--success)" />
-            <span>{{ cleanResult.freed.toFixed(1) }} MB liberes ({{ cleanResult.deleted }} fichiers)</span>
-          </div>
-          <NButton
-            variant="primary"
-            size="sm"
-            :loading="cleaningBrowsers"
-            :disabled="cleaningBrowsers || browsers.filter(b => b.selected).length === 0"
-            @click="cleanSelectedBrowsers"
-          >
-            <Trash2 :size="14" />
-            Nettoyer les caches
-          </NButton>
-        </div>
-      </div>
-    </NCard>
+    <BrowserCleanupCard />
 
     <!-- Section: Debloat -->
     <div class="diag-section-label">
@@ -520,72 +437,11 @@ onMounted(() => {
 
     <!-- Section: Démarrage -->
     <div class="diag-section-label">
-      <Rocket :size="13" />
-      Programmes au Démarrage
+      <Rocket :size="13" /> Programmes au Démarrage
     </div>
+    <StartupProgramsCard />
 
-    <!-- Startup Programs -->
-    <NCard>
-      <template #header>
-        <div class="section-header">
-          <div class="section-icon-badge" style="background: linear-gradient(135deg, #f97316, #c2410c);">
-            <Rocket :size="14" style="color:#fff" />
-          </div>
-          <span>Programmes au demarrage</span>
-          <NButton variant="secondary" size="sm" :loading="startupLoading" @click="loadStartupPrograms" style="margin-left: auto">
-            <RefreshCw :size="14" />
-            Rafraichir
-          </NButton>
-        </div>
-      </template>
-
-      <div v-if="startupLoading" class="loading-state">
-        <NSpinner :size="24" />
-        <p>Chargement des programmes...</p>
-      </div>
-
-      <div v-else-if="startupPrograms.length === 0" class="empty-state">
-        Aucun programme au demarrage detecte.
-      </div>
-
-      <div v-else class="startup-table-wrap">
-        <table class="startup-table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Commande</th>
-              <th>Emplacement</th>
-              <th>Utilisateur</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="prog in startupPrograms" :key="prog.name">
-              <td class="prog-name">{{ prog.name }}</td>
-              <td class="prog-cmd font-mono">{{ prog.command }}</td>
-              <td class="prog-loc font-mono">{{ prog.location }}</td>
-              <td>
-                <NBadge :variant="prog.user === 'Systeme' ? 'warning' : 'accent'">
-                  {{ prog.user }}
-                </NBadge>
-              </td>
-              <td>
-                <NButton
-                  variant="danger"
-                  size="sm"
-                  :disabled="prog.user === 'Systeme'"
-                  :title="prog.user === 'Systeme' ? 'Les programmes systeme ne peuvent pas etre desactives' : 'Desactiver du demarrage'"
-                  @click="disableProgram(prog)"
-                >
-                  <XCircle :size="12" />
-                  Desactiver
-                </NButton>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </NCard>
+    </template><!-- end optimizations tab -->
   </div>
 </template>
 
@@ -595,6 +451,32 @@ onMounted(() => {
   flex-direction: column;
   gap: 16px;
 }
+
+.main-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  width: fit-content;
+}
+.main-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+}
+.main-tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.main-tab.active { background: var(--accent-muted); color: var(--accent-primary); font-weight: 600; }
 
 /* Section labels */
 .diag-section-label {

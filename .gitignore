@@ -36,3 +36,28 @@ desktop.ini
 .idea/
 *.suo
 *.user
+
+# --- Secrets & config locale ---
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+secrets/
+
+# --- Temp & cache ---
+*.tmp
+*.bak
+*.swp
+*~
+tmp/
+temp/
+.tmp/
+
+# --- Fichiers parasites ---
+null
+undefined
+NUL
+
+# --- Drivers lourds SDI (> 100 MB, limite GitHub) ---
+src-tauri/update/

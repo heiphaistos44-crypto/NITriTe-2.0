@@ -105,8 +105,9 @@ try {
 "#;
     #[cfg(target_os = "windows")]
     {
+        let ps_utf8 = format!("$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {}", ps);
         let o = Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", ps])
+            .args(["-NoProfile", "-NonInteractive", "-Command", &ps_utf8])
             .creation_flags(0x08000000)
             .output();
         if let Ok(o) = o {

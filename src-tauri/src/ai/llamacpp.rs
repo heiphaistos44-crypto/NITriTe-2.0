@@ -2,12 +2,10 @@
 /// 100% portable : aucune installation requise. Téléchargement automatique intégré.
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::Child;
+use tokio::process::Child;
 use crate::error::NiTriTeError;
 use tokio::io::AsyncWriteExt;
 
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
 
 // ─── Catalogue des modèles recommandés ────────────────────────────────────────
 
@@ -414,8 +412,9 @@ fn extract_all_zip(zip_path: &str, dest_dir: &str) -> Result<(), String> {
 
 // ─── Gestion du serveur ────────────────────────────────────────────────────────
 
+/// Lance llama-server.exe et retourne un handle tokio::process::Child (non-bloquant).
 pub fn start_server(server_path: &str, model_path: &str, port: u16) -> Result<Child, String> {
-    let mut cmd = std::process::Command::new(server_path);
+    let mut cmd = tokio::process::Command::new(server_path);
     cmd.args([
         "--model", model_path,
         "--port", &port.to_string(),

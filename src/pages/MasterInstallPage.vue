@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -8,6 +8,8 @@ import NProgress from "@/components/ui/NProgress.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NTabs from "@/components/ui/NTabs.vue";
+import NModal from "@/components/ui/NModal.vue";
+import NSpinner from "@/components/ui/NSpinner.vue";
 import { useNotificationStore } from "@/stores/notifications";
 import {
   Download, CheckSquare, Square, Package,
@@ -15,13 +17,22 @@ import {
   FileText, Music, Video, Wrench, RefreshCw,
   Cpu, HardDrive, Monitor, Printer, Archive,
   Bot, Users, Cloud, Star, Lock, Play,
-  ChevronDown, ChevronRight, Layers, FileCode,
+  ChevronDown, ChevronRight, Layers, FileCode, Eye,
 } from "lucide-vue-next";
 
 const notifications = useNotificationStore();
 const search = ref("");
 const installing = ref(false);
 const exportingScript = ref(false);
+
+// ── Dry run ────────────────────────────────────────────────────
+const showDryRun = ref(false);
+const dryRunApps = computed(() => apps.value.filter(a => a.checked && !a.installed));
+
+// ── Résumé installation ────────────────────────────────────────
+interface InstallResult { name: string; success: boolean; message: string }
+const showSummary = ref(false);
+const installResults = ref<InstallResult[]>([]);
 
 // Profils prédéfinis
 interface Profile { id: string; label: string; icon: any; color: string; wingetIds: string[] }
@@ -168,6 +179,17 @@ function applyProfile(profile: Profile) {
   else notifications.success(`Profil "${profile.label}" : ${matched} app(s) sélectionnée(s)`);
 }
 
+function allCatChecked(catId: string): boolean {
+  const catApps = apps.value.filter(a => a.category === catId && !a.installed);
+  return catApps.length > 0 && catApps.every(a => a.checked);
+}
+
+function toggleSelectCategory(catId: string) {
+  const catApps = apps.value.filter(a => a.category === catId && !a.installed);
+  const allChecked = catApps.every(a => a.checked);
+  catApps.forEach(a => (a.checked = !allChecked));
+}
+
 async function exportDeployScript() {
   const selected = apps.value.filter((a) => a.checked && !a.installed && a.winget_id);
   if (!selected.length) { notifications.warning("Aucune app avec WinGet ID sélectionnée"); return; }
@@ -176,6 +198,15 @@ async function exportDeployScript() {
     "@echo off",
     ":: Script de déploiement généré par NiTriTe",
     `:: ${new Date().toLocaleString("fr-FR")}`,
+    "",
+    ":: Vérification des droits administrateur",
+    "NET SESSION >nul 2>&1",
+    "IF %ERRORLEVEL% NEQ 0 (",
+    "    echo ERREUR : Ce script doit etre execute en tant qu'administrateur.",
+    "    echo Clic droit sur le fichier ^> Executer en tant qu'administrateur.",
+    "    pause",
+    "    exit /b 1",
+    ")",
     "",
     "echo === Installation des logiciels ===",
     "",
@@ -191,7 +222,6 @@ async function exportDeployScript() {
     await invoke("save_export_file", { filename: "deploy_nitrite.bat", content });
     notifications.success("Script exporté", "deploy_nitrite.bat");
   } catch {
-    // fallback: clipboard
     try {
       await navigator.clipboard.writeText(content);
       notifications.info("Script copié dans le presse-papier");
@@ -210,6 +240,7 @@ async function installSelection() {
   installing.value = true;
   installTotal.value = selected.length;
   installIndex.value = 0;
+  installResults.value = [];
 
   for (const app of selected) {
     installIndex.value++;
@@ -221,6 +252,7 @@ async function installSelection() {
         appId: app.id,
         wingetId: app.winget_id ?? undefined,
       });
+      installResults.value.push({ name: app.name, success: result.success, message: result.message });
       if (!result.success) {
         notifications.warning(`${app.name}: ${result.message}`);
       } else {
@@ -229,6 +261,7 @@ async function installSelection() {
       app.installed = true;
       app.checked = false;
     } catch (e: any) {
+      installResults.value.push({ name: app.name, success: false, message: e?.toString() ?? "Erreur inconnue" });
       notifications.error(`Échec: ${app.name}`, e?.toString());
     }
   }
@@ -236,7 +269,7 @@ async function installSelection() {
   installing.value = false;
   currentApp.value = "";
   installProgress.value = 0;
-  notifications.success("Installation terminée", `${installIndex.value} application(s) traitée(s)`);
+  showSummary.value = true;
 }
 
 onMounted(async () => {
@@ -267,6 +300,15 @@ onMounted(async () => {
         <NButton variant="ghost" size="sm" @click="deselectAll">
           <Square :size="14" />
           Tout déselectionner
+        </NButton>
+        <NButton
+          variant="ghost"
+          size="sm"
+          :disabled="selectedCount === 0"
+          @click="showDryRun = true"
+        >
+          <Eye :size="14" />
+          Prévisualiser
         </NButton>
         <NButton
           variant="ghost"
@@ -329,6 +371,20 @@ onMounted(async () => {
     <!-- Search -->
     <NSearchBar v-model="search" placeholder="Rechercher une application..." />
 
+    <!-- Barre progression globale visible pendant install -->
+    <NCard v-if="installing" class="progress-card">
+      <div class="install-progress-global">
+        <div class="install-status-row">
+          <NSpinner :size="14" />
+          <span class="install-label">
+            Installation de <strong>{{ currentApp }}</strong>
+          </span>
+          <NBadge variant="info">{{ installIndex }}/{{ installTotal }}</NBadge>
+        </div>
+        <NProgress :value="installProgress" :max="100" size="lg" :show-label="true" :glow="true" />
+      </div>
+    </NCard>
+
     <!-- Category Tabs -->
     <NTabs :tabs="categoryTabs" v-model="activeCategory" wrap>
       <template #default>
@@ -346,8 +402,8 @@ onMounted(async () => {
                   <span>{{ getCategoryInfo(catId as string).label }}</span>
                   <NBadge variant="neutral">{{ catApps.length }}</NBadge>
                   <span class="spacer" />
-                  <button class="select-cat-btn" @click.stop="selectCategory(catId as string)">
-                    Tout sélectionner
+                  <button class="select-cat-btn" @click.stop="toggleSelectCategory(catId as string)">
+                    {{ allCatChecked(catId as string) ? 'Tout déselectionner' : 'Tout sélectionner' }}
                   </button>
                   <component
                     :is="collapsedCategories.has(catId as string) ? ChevronRight : ChevronDown"
@@ -384,6 +440,48 @@ onMounted(async () => {
       </template>
     </NTabs>
   </div>
+
+  <!-- Modal Dry Run -->
+  <NModal :open="showDryRun" @close="showDryRun = false" title="Prévisualisation — Apps sélectionnées">
+    <div v-if="dryRunApps.length === 0" style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">
+      Aucune application sélectionnée.
+    </div>
+    <div v-else style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto">
+      <div v-for="app in dryRunApps" :key="app.id" class="dryrun-item">
+        <div class="dryrun-name">{{ app.name }}</div>
+        <code v-if="app.winget_id" class="dryrun-cmd">
+          winget install --id {{ app.winget_id }} --silent ...
+        </code>
+        <span v-else class="dryrun-nowinget">Pas de WinGet ID — sera ignoré</span>
+      </div>
+    </div>
+    <template #footer>
+      <NBadge variant="neutral" style="margin-right:auto">{{ dryRunApps.length }} app(s)</NBadge>
+      <NButton variant="ghost" @click="showDryRun = false">Fermer</NButton>
+    </template>
+  </NModal>
+
+  <!-- Modal Résumé installation -->
+  <NModal :open="showSummary" @close="showSummary = false" title="Résumé de l'installation">
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto">
+      <div v-for="r in installResults" :key="r.name" class="summary-item" :class="r.success ? 'summary-ok' : 'summary-fail'">
+        <span class="summary-status">{{ r.success ? '✓' : '✗' }}</span>
+        <div class="summary-info">
+          <span class="summary-name">{{ r.name }}</span>
+          <span v-if="!r.success" class="summary-msg">{{ r.message }}</span>
+        </div>
+      </div>
+    </div>
+    <template #footer>
+      <NBadge variant="success" style="margin-right:auto">
+        {{ installResults.filter(r => r.success).length }} succès
+      </NBadge>
+      <NBadge v-if="installResults.some(r => !r.success)" variant="danger">
+        {{ installResults.filter(r => !r.success).length }} échec(s)
+      </NBadge>
+      <NButton variant="primary" @click="showSummary = false" style="margin-left:8px">Fermer</NButton>
+    </template>
+  </NModal>
 </template>
 
 <style scoped>
@@ -509,6 +607,29 @@ onMounted(async () => {
 }
 
 .empty-icon { opacity: 0.3; }
+
+/* ── Progression globale ──────────────────────────── */
+.progress-card { border-color: var(--accent-muted); }
+.install-progress-global { display: flex; flex-direction: column; gap: 10px; }
+.install-status-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.install-label { flex: 1; color: var(--text-secondary); }
+
+/* ── Dry run ──────────────────────────────────────── */
+.dryrun-item { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-tertiary); }
+.dryrun-name { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.dryrun-cmd { font-size: 11px; color: var(--accent-primary); font-family: "JetBrains Mono", monospace; display: block; white-space: pre-wrap; word-break: break-all; }
+.dryrun-nowinget { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+/* ── Résumé ───────────────────────────────────────── */
+.summary-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+.summary-ok { background: color-mix(in srgb, var(--success) 8%, var(--bg-secondary)); border-color: color-mix(in srgb, var(--success) 30%, var(--border)); }
+.summary-fail { background: color-mix(in srgb, var(--danger) 8%, var(--bg-secondary)); border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); }
+.summary-status { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.summary-ok .summary-status { color: var(--success); }
+.summary-fail .summary-status { color: var(--danger); }
+.summary-info { display: flex; flex-direction: column; gap: 2px; }
+.summary-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+.summary-msg { font-size: 11px; color: var(--danger); font-family: "JetBrains Mono", monospace; }
 
 .profiles-grid {
   display: grid;

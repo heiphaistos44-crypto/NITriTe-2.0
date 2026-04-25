@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { Search, X, ArrowRight, FileText, Layout, Zap } from "lucide-vue-next";
 import Fuse from "fuse.js";
@@ -10,8 +10,16 @@ const emit = defineEmits<{ "update:modelValue": [v: boolean] }>();
 const router = useRouter();
 
 const query = ref("");
+const debouncedQuery = ref("");
 const inputEl = ref<HTMLInputElement | null>(null);
 const selectedIndex = ref(0);
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+watch(query, (val) => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => { debouncedQuery.value = val; }, 300);
+});
+onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer); });
 
 const fuse = new Fuse(SEARCH_INDEX, {
   keys: [
@@ -27,7 +35,7 @@ const fuse = new Fuse(SEARCH_INDEX, {
 });
 
 const results = computed<SearchEntry[]>(() => {
-  const q = query.value.trim();
+  const q = debouncedQuery.value.trim();
   if (!q) return SEARCH_INDEX;
   return fuse.search(q).map((r) => r.item);
 });
@@ -48,6 +56,7 @@ const flatResults = computed(() => results.value);
 watch(() => props.modelValue, (open) => {
   if (open) {
     query.value = "";
+    debouncedQuery.value = "";
     selectedIndex.value = 0;
     nextTick(() => inputEl.value?.focus());
   }
@@ -179,8 +188,8 @@ function isSelected(entry: SearchEntry) {
   inset: 0;
   z-index: 9000;
   background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px) saturate(0.8);
-  -webkit-backdrop-filter: blur(10px) saturate(0.8);
+  backdrop-filter: blur(8px) saturate(0.95);
+  -webkit-backdrop-filter: blur(8px) saturate(0.95);
   display: flex;
   justify-content: center;
   padding-top: 10vh;

@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import type { MonitorData } from "@/types/system";
 
 const isTauri = (): boolean => "__TAURI_INTERNALS__" in window;
@@ -48,7 +49,6 @@ export function useSystemMonitor(intervalMs: number = 2000) {
 
     try {
       const { listen } = await import("@tauri-apps/api/event");
-      const { invoke } = await import("@tauri-apps/api/core");
 
       unlisten = await listen<MonitorData>("system-monitor", (event) => {
         monitorData.value = event.payload;
@@ -56,8 +56,7 @@ export function useSystemMonitor(intervalMs: number = 2000) {
 
       await invoke("start_monitoring", { interval_ms: intervalMs });
       isConnected.value = true;
-    } catch (e) {
-      console.error("[useSystemMonitor] start failed:", e);
+    } catch {
       isConnected.value = false;
     }
   }
@@ -71,13 +70,6 @@ export function useSystemMonitor(intervalMs: number = 2000) {
     if (unlisten) {
       unlisten();
       unlisten = null;
-    }
-
-    if (isTauri()) {
-      try {
-        const { invoke } = await import("@tauri-apps/api/core");
-        await invoke("stop_monitoring");
-      } catch (_) {}
     }
 
     isConnected.value = false;

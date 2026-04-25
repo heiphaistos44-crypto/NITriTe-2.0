@@ -23,6 +23,9 @@ pub struct StorageItem {
     pub media_type: String,
     pub interface_type: String,
     pub health: String,
+    pub power_on_hours: u32,
+    pub power_on_count: u32,
+    pub rpm: u32,
 }
 
 #[derive(Debug, Default)]
@@ -33,8 +36,11 @@ pub struct ScanSupplement {
     pub bitlocker_volumes: Vec<BitlockerVolume>,
     pub motherboard: String,
     pub ram_detail: String,
+    pub ram_slots: Vec<String>,
     pub cpu_threads: u32,
     pub cpu_frequency_ghz: f64,
+    pub cpu_socket: String,
+    pub cpu_l3_mb: u32,
     pub storage_items: Vec<StorageItem>,
     pub monitors_detail: String,
 }
@@ -151,12 +157,28 @@ try {
     $out.RAM = "$count barrette(s) — $([math]::Round($total,0)) GB $type-$speed"
 } catch { $out.RAM = "" }
 
-# === CPU threads + fréquence ===
+# === CPU threads + fréquence + socket + cache L3 ===
 try {
     $cpu = Get-WmiObject Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
     $out.CpuThreads = [int]$cpu.NumberOfLogicalProcessors
     $out.CpuGhz = [math]::Round($cpu.MaxClockSpeed / 1000.0, 2)
-} catch { $out.CpuThreads = 0; $out.CpuGhz = 0.0 }
+    $out.CpuSocket = if ($cpu.SocketDesignation) { [string]$cpu.SocketDesignation } else { "" }
+    $l3kb = if ($cpu.L3CacheSize -and [long]$cpu.L3CacheSize -gt 0) { [long]$cpu.L3CacheSize } else { 0 }
+    $out.CpuL3MB = [math]::Round($l3kb / 1024, 0)
+} catch { $out.CpuThreads = 0; $out.CpuGhz = 0.0; $out.CpuSocket = ""; $out.CpuL3MB = 0 }
+
+# === RAM par slot ===
+try {
+    $slotList = @()
+    Get-WmiObject Win32_PhysicalMemory -ErrorAction SilentlyContinue | ForEach-Object {
+        $t = switch ($_.SMBIOSMemoryType) { 24 { "DDR3" } 26 { "DDR4" } 34 { "DDR5" } default { "DDR" } }
+        $gb = [math]::Round($_.Capacity / 1GB, 0)
+        $speed = if ($_.Speed) { "-$($_.Speed)" } else { "" }
+        $slot = if ($_.DeviceLocator) { $_.DeviceLocator } else { "Slot?" }
+        $slotList += "$slot : $gb GB $t$speed"
+    }
+    $out.RamSlots = $slotList
+} catch { $out.RamSlots = @() }
 
 # === Écrans ===
 try {
@@ -168,18 +190,30 @@ try {
     }
 } catch { $out.Monitors = "" }
 
-# === Stockage physique ===
+# === Stockage physique + SMART ===
 try {
     $disks = Get-PhysicalDisk -ErrorAction SilentlyContinue
     $out.Storage = @($disks | ForEach-Object {
-        $bus = [string]$_.BusType
+        $disk = $_
+        $rel = $null
+        try { $rel = $disk | Get-StorageReliabilityCounter -ErrorAction SilentlyContinue } catch {}
+        $bus = [string]$disk.BusType
         $iface = switch ($bus) { "NVMe" { "NVMe" } "SATA" { "SATA" } "SAS" { "SAS" } "USB" { "USB" } default { $bus } }
-        $mt = [string]$_.MediaType
+        $mt = [string]$disk.MediaType
         if ($mt -eq "Unspecified" -or $mt -eq "") {
-            $n = ([string]$_.FriendlyName).ToLower()
+            $n = ([string]$disk.FriendlyName).ToLower()
             $mt = if ($n -match "nvme|ssd") { "SSD" } elseif ($n -match "hdd|hard") { "HDD" } else { "Inconnu" }
         }
-        @{ model=[string]$_.FriendlyName; size=[math]::Round($_.Size / 1e9, 0); type=$mt; iface=$iface; health=[string]$_.HealthStatus }
+        @{
+            model  = [string]$disk.FriendlyName
+            size   = [math]::Round($disk.Size / 1e9, 0)
+            type   = $mt
+            iface  = $iface
+            health = [string]$disk.HealthStatus
+            hours  = if ($rel -and $rel.PowerOnHours) { [int]$rel.PowerOnHours } else { 0 }
+            count  = if ($rel -and $rel.StartStopCycleCount) { [int]$rel.StartStopCycleCount } else { 0 }
+            rpm    = if ($disk.SpindleSpeed -and [int]$disk.SpindleSpeed -gt 0) { [int]$disk.SpindleSpeed } else { 0 }
+        }
     })
 } catch { $out.Storage = @() }
 
@@ -219,7 +253,14 @@ $out | ConvertTo-Json -Depth 4 -Compress
                     media_type: s["type"].as_str().unwrap_or("").to_string(),
                     interface_type: s["iface"].as_str().unwrap_or("").to_string(),
                     health: s["health"].as_str().unwrap_or("").to_string(),
+                    power_on_hours: s["hours"].as_u64().unwrap_or(0) as u32,
+                    power_on_count: s["count"].as_u64().unwrap_or(0) as u32,
+                    rpm: s["rpm"].as_u64().unwrap_or(0) as u32,
                 }).collect()
+            }).unwrap_or_default();
+
+            let ram_slots = v["RamSlots"].as_array().map(|a| {
+                a.iter().filter_map(|s| s.as_str().map(|x| x.to_string())).collect()
             }).unwrap_or_default();
 
             return ScanSupplement {
@@ -229,8 +270,11 @@ $out | ConvertTo-Json -Depth 4 -Compress
                 bitlocker_volumes: bitlocker,
                 motherboard: v["Mobo"].as_str().unwrap_or("").to_string(),
                 ram_detail: v["RAM"].as_str().unwrap_or("").to_string(),
+                ram_slots,
                 cpu_threads: v["CpuThreads"].as_u64().unwrap_or(0) as u32,
                 cpu_frequency_ghz: v["CpuGhz"].as_f64().unwrap_or(0.0),
+                cpu_socket: v["CpuSocket"].as_str().unwrap_or("").to_string(),
+                cpu_l3_mb: v["CpuL3MB"].as_u64().unwrap_or(0) as u32,
                 storage_items,
                 monitors_detail: v["Monitors"].as_str().unwrap_or("").to_string(),
             };

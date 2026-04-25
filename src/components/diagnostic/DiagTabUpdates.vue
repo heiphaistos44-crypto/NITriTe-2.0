@@ -1,38 +1,46 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import { listen } from "@tauri-apps/api/event";
 import { useNotificationStore } from "@/stores/notifications";
+import { useExportData } from '@/composables/useExportData';
 
 const notify = useNotificationStore();
-import { RefreshCw, Download, CheckCircle, AlertTriangle, Package } from "lucide-vue-next";
+const { exportCSV } = useExportData();
+import { RefreshCw, Download, CheckCircle, AlertTriangle, Package, Zap } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NCollapse from "@/components/ui/NCollapse.vue";
 
-const props = defineProps<{ updatesHistory: any[] }>();
+interface InstalledUpdate { title: string; hotfix_id: string; description: string; installed_on: string; installed_by: string; }
+interface PendingUpdate   { title: string; kb_ids: string; severity: string; size_mb: number; is_downloaded: boolean; }
+interface WingetPackage   { name: string; id: string; version: string; available: string; source: string; }
+interface ChocoPackage    { name: string; current_version: string; available_version: string; pinned: boolean; }
+interface ScoopPackage    { name: string; installed: string; available: string; }
+
+const props = defineProps<{ updatesHistory: InstalledUpdate[] }>();
 
 // === État local ===
 const scanningWU    = ref(false);
-const pendingWU     = ref<any[]>([]);
+const pendingWU     = ref<PendingUpdate[]>([]);
 const wuScanned     = ref(false);
 const triggeringWU  = ref(false);
 const wuMessage     = ref("");
 
-const wingetList    = ref<any[]>([]);
+const wingetList    = ref<WingetPackage[]>([]);
 const wingetLoading = ref(false);
 const wingetUpgrading = ref(false);
 const wingetMsg     = ref("");
 const wingetOk      = ref(false);
 
-const chocoList     = ref<any[]>([]);
+const chocoList     = ref<ChocoPackage[]>([]);
 const chocoLoading  = ref(false);
 const chocoInstalled = ref(false);
 const chocoUpgrading = ref(false);
 const chocoMsg      = ref("");
 
-const scoopList     = ref<any[]>([]);
+const scoopList     = ref<ScoopPackage[]>([]);
 const scoopLoading  = ref(false);
 const scoopInstalled = ref(false);
 const scoopUpgrading = ref(false);
@@ -43,13 +51,13 @@ let scoopUnlisten: (() => void) | null = null;
 // === Windows Update ===
 async function scanWU() {
   scanningWU.value = true; wuScanned.value = false; wuMessage.value = "";
-  try { pendingWU.value = await invoke("scan_pending_windows_updates"); }
+  try { pendingWU.value = await invokeRaw("scan_pending_windows_updates"); }
   catch { pendingWU.value = []; }
   wuScanned.value = true; scanningWU.value = false;
 }
 async function triggerWU() {
   triggeringWU.value = true;
-  try { wuMessage.value = await invoke("trigger_windows_update"); }
+  try { wuMessage.value = await invokeRaw("trigger_windows_update"); }
   catch { wuMessage.value = "Erreur lors du déclenchement"; }
   triggeringWU.value = false;
 }
@@ -66,7 +74,7 @@ async function loadWinget() {
 async function upgradeWinget() {
   wingetUpgrading.value = true; wingetMsg.value = "Mise à jour en cours...";
   try {
-    await invoke("upgrade_all");
+    await invokeRaw("upgrade_all");
     wingetMsg.value = "Mise à jour winget terminée ✓";
     await loadWinget();
   } catch (e: any) { wingetMsg.value = "Erreur : " + e; }
@@ -85,7 +93,7 @@ async function loadChoco() {
 async function upgradeChoco() {
   chocoUpgrading.value = true; chocoMsg.value = "Mise à jour en cours...";
   try {
-    const r: any = await invoke("upgrade_chocolatey_all");
+    const r: any = await invokeRaw("upgrade_chocolatey_all");
     chocoMsg.value = r?.success ? `${r.upgraded_count} paquet(s) mis à jour ✓` : `Erreur : ${r?.error || "inconnue"}`;
     await loadChoco();
   } catch (e: any) { chocoMsg.value = "Erreur : " + e; }
@@ -114,7 +122,7 @@ async function upgradeScoop() {
     loadScoop();
   });
   try {
-    await invoke("upgrade_scoop_all");
+    await invokeRaw("upgrade_scoop_all");
   } catch (e: any) {
     scoopMsg.value = "Erreur : " + e;
     scoopUpgrading.value = false;
@@ -128,7 +136,6 @@ const scoopInstallMsg  = ref("");
 
 async function installWinget() {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("open_url", { url: "ms-windows-store://pdp/?productid=9NBLGGH4NNS1" });
   } catch (e: any) {
     notify.error("Impossible d'ouvrir le Microsoft Store", String(e));
@@ -139,8 +146,7 @@ async function installChoco() {
   chocoInstalling.value = true;
   chocoInstallMsg.value = "Installation Chocolatey en cours (droits admin requis)...";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
-    const msg = await invoke<string>("install_package_manager", { manager: "chocolatey" });
+    const msg = await invokeRaw<string>("install_package_manager", { manager: "chocolatey" });
     chocoInstallMsg.value = msg || "Chocolatey installé — relancez l'outil pour le détecter.";
     setTimeout(() => loadChoco(), 6000);
   } catch (e: any) {
@@ -154,8 +160,7 @@ async function installScoop() {
   scoopInstalling.value = true;
   scoopInstallMsg.value = "Installation Scoop en cours (peut prendre 30s)...";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
-    const msg = await invoke<string>("install_package_manager", { manager: "scoop" });
+    const msg = await invokeRaw<string>("install_package_manager", { manager: "scoop" });
     scoopInstallMsg.value = msg || "Scoop installé — relancez l'outil pour le détecter.";
     setTimeout(() => loadScoop(), 6000);
   } catch (e: any) {
@@ -163,6 +168,47 @@ async function installScoop() {
     notify.error("Installation Scoop échouée", String(e));
   }
   scoopInstalling.value = false;
+}
+
+// Filtres historique KB
+const histSearch = ref('');
+const histYearFilter = ref('');
+const histSortDesc = ref(true);
+
+const filteredHistory = computed(() => {
+  let list = props.updatesHistory || [];
+  if (histSearch.value) {
+    const q = histSearch.value.toLowerCase();
+    list = list.filter(u =>
+      u.hotfix_id.toLowerCase().includes(q) ||
+      u.description.toLowerCase().includes(q)
+    );
+  }
+  if (histYearFilter.value) {
+    list = list.filter(u => u.installed_on.includes(histYearFilter.value));
+  }
+  if (histSortDesc.value) {
+    list = [...list].sort((a, b) =>
+      new Date(b.installed_on || 0).getTime() - new Date(a.installed_on || 0).getTime()
+    );
+  }
+  return list;
+});
+
+const histYears = computed(() => {
+  const years = new Set<string>();
+  (props.updatesHistory || []).forEach(u => {
+    const m = (u.installed_on || '').match(/20\d\d/);
+    if (m) years.add(m[0]);
+  });
+  return [...years].sort().reverse();
+});
+
+function exportHistory() {
+  exportCSV((props.updatesHistory || []).map(u => ({
+    KB: u.hotfix_id, Description: u.description,
+    InstalleLe: u.installed_on, Par: u.installed_by || '',
+  })), 'historique-mises-a-jour-' + new Date().toISOString().slice(0, 10));
 }
 
 function severityVariant(s: string) {
@@ -175,9 +221,28 @@ function severityVariant(s: string) {
 
 onMounted(() => { loadWinget(); loadChoco(); loadScoop(); });
 onUnmounted(() => { if (scoopUnlisten) scoopUnlisten(); });
+
+async function launchSdi() {
+  try {
+    (window as any).__nitrite_sdi_active = true;
+    setTimeout(() => { (window as any).__nitrite_sdi_active = false; }, 60000);
+    await invoke("launch_sdi");
+    notify.success("Snappy Driver Installer lancé");
+  } catch (e) {
+    (window as any).__nitrite_sdi_active = false;
+    notify.error("SDI introuvable", String(e));
+  }
+}
 </script>
 
 <template>
+  <!-- ===== Snappy Driver ===== -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <NButton variant="secondary" size="sm" @click="launchSdi" title="Lancer Snappy Driver Installer">
+      <Zap :size="13" /> Snappy Driver Installer
+    </NButton>
+  </div>
+
   <!-- ===== Windows Update ===== -->
   <NCollapse title="Windows Update — Mises à jour disponibles" storageKey="diag-updates-wu" :defaultOpen="true">
     <div class="card-block">
@@ -252,10 +317,10 @@ onUnmounted(() => { if (scoopUnlisten) scoopUnlisten(); });
             <thead><tr><th>Nom</th><th>ID</th><th>Installé</th><th>Disponible</th></tr></thead>
             <tbody>
               <tr v-for="(p, i) in wingetList.slice(0, 50)" :key="i">
-                <td>{{ p.name || p.Name || "—" }}</td>
-                <td><code style="font-size:10px">{{ p.id || p.Id || "—" }}</code></td>
-                <td class="muted" style="font-size:11px">{{ p.version || p.Version || "—" }}</td>
-                <td><NBadge variant="info" style="font-size:10px">{{ p.available || p.Available || "—" }}</NBadge></td>
+                <td>{{ p.name || "—" }}</td>
+                <td><code style="font-size:10px">{{ p.id || "—" }}</code></td>
+                <td class="muted" style="font-size:11px">{{ p.version || "—" }}</td>
+                <td><NBadge variant="info" style="font-size:10px">{{ p.available || "—" }}</NBadge></td>
               </tr>
             </tbody>
           </table>
@@ -296,9 +361,9 @@ onUnmounted(() => { if (scoopUnlisten) scoopUnlisten(); });
             <thead><tr><th>Paquet</th><th>Installé</th><th>Disponible</th></tr></thead>
             <tbody>
               <tr v-for="(p, i) in chocoList" :key="i">
-                <td><Package :size="12" style="margin-right:4px;opacity:.6" />{{ typeof p === 'string' ? p.split('|')[0] : (p.name || p) }}</td>
-                <td class="muted" style="font-size:11px">{{ typeof p === 'string' ? p.split('|')[1] : (p.current_version || "—") }}</td>
-                <td><NBadge variant="info" style="font-size:10px">{{ typeof p === 'string' ? p.split('|')[2] : (p.available_version || "—") }}</NBadge></td>
+                <td><Package :size="12" style="margin-right:4px;opacity:.6" />{{ p.name || "—" }}</td>
+                <td class="muted" style="font-size:11px">{{ p.current_version || "—" }}</td>
+                <td><NBadge variant="info" style="font-size:10px">{{ p.available_version || "—" }}</NBadge></td>
               </tr>
             </tbody>
           </table>
@@ -390,18 +455,36 @@ onUnmounted(() => { if (scoopUnlisten) scoopUnlisten(); });
   <!-- ===== Historique KB ===== -->
   <NCollapse :title="'Historique des mises à jour installées — ' + updatesHistory.length" storageKey="diag-updates-history" :defaultOpen="false">
     <div v-if="!updatesHistory.length" class="diag-empty">Chargement de l'historique...</div>
-    <div v-else class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>KB ID</th><th>Description</th><th>Installé le</th><th>Par</th></tr></thead>
-        <tbody>
-          <tr v-for="(u, i) in updatesHistory.slice(0, 200)" :key="i">
-            <td><code>{{ u.hotfix_id }}</code></td>
-            <td>{{ u.description }}</td>
-            <td class="muted">{{ u.installed_on }}</td>
-            <td class="muted">{{ u.installed_by || "—" }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else class="card-block">
+      <!-- Filtres historique -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <input v-model="histSearch" placeholder="Rechercher KB, description..."
+          style="flex:1;min-width:180px;padding:5px 10px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px" />
+        <select v-model="histYearFilter"
+          style="padding:5px 8px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px">
+          <option value="">Toutes les années</option>
+          <option v-for="y in histYears" :key="y" :value="y">{{ y }}</option>
+        </select>
+        <button @click="histSortDesc = !histSortDesc"
+          style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer">
+          Tri: {{ histSortDesc ? 'Plus récent ↓' : 'Plus ancien ↑' }}
+        </button>
+        <NButton variant="ghost" size="sm" @click="exportHistory">↓ CSV</NButton>
+        <span class="muted" style="font-size:11px">{{ filteredHistory.length }} / {{ (props.updatesHistory||[]).length }}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>KB ID</th><th>Description</th><th>Installé le</th><th>Par</th></tr></thead>
+          <tbody>
+            <tr v-for="(u, i) in filteredHistory.slice(0, 300)" :key="i">
+              <td><code>{{ u.hotfix_id }}</code></td>
+              <td>{{ u.description }}</td>
+              <td class="muted">{{ u.installed_on }}</td>
+              <td class="muted">{{ u.installed_by || "—" }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </NCollapse>
 </template>

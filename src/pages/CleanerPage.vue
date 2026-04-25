@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { listen } from "@tauri-apps/api/event";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
@@ -8,7 +8,7 @@ import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSkeleton from "@/components/ui/NSkeleton.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Trash2, RefreshCw, Search, FileText, CheckSquare, Square, HardDrive, Zap } from "lucide-vue-next";
+import { Trash2, RefreshCw, Search, FileText, CheckSquare, Square, HardDrive, Zap, Shield, RotateCcw, ChevronDown, ChevronRight, Eye } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
@@ -32,6 +32,50 @@ const cleaning     = ref(false);
 const cleanProgress = ref(0);
 const totalFreed   = ref(0);
 const largeMinMb   = ref(100);
+const quarantineMode = ref(false);
+
+// Prévisualisation des fichiers d'une cible
+const expandedTarget = ref<string | null>(null);
+const previewFiles = ref<Record<string, string[]>>({});
+const previewLoading = ref<string | null>(null);
+
+async function togglePreview(t: CleanTarget) {
+  if (expandedTarget.value === t.name) { expandedTarget.value = null; return; }
+  expandedTarget.value = t.name;
+  if (previewFiles.value[t.name]) return; // déjà chargé
+  previewLoading.value = t.name;
+  try {
+    const r = await invoke<any>("run_system_command", {
+      cmd: "powershell",
+      args: ["-NoProfile", "-Command",
+        `Get-ChildItem -LiteralPath '${t.path.replace(/'/g, "''")}' -Recurse -File -EA SilentlyContinue | Select-Object -First 100 | ForEach-Object { $_.FullName }`],
+    });
+    const lines: string[] = (r?.stdout ?? r?.output ?? "").split("\n").map((l: string) => l.trim()).filter((l: string) => l.length > 0);
+    previewFiles.value[t.name] = lines;
+  } catch {
+    previewFiles.value[t.name] = ["Impossible de lister les fichiers"];
+  }
+  previewLoading.value = null;
+}
+
+interface QuarantineEntry { name: string; path: string; file_count: number; size_mb: number; }
+const quarantineList = ref<QuarantineEntry[]>([]);
+const quarantineLoading = ref(false);
+
+async function loadQuarantine() {
+  quarantineLoading.value = true;
+  try { quarantineList.value = await invoke<QuarantineEntry[]>("list_quarantine"); }
+  catch { quarantineList.value = []; }
+  quarantineLoading.value = false;
+}
+
+async function clearQuarantineEntry(name: string | null) {
+  try {
+    await invoke("clear_quarantine", { entryName: name });
+    await loadQuarantine();
+    notify.success("Quarantaine vidée");
+  } catch (e: any) { notify.error("Erreur", String(e)); }
+}
 
 let unlistenCleaner: (() => void) | null = null;
 
@@ -98,19 +142,27 @@ async function clean() {
   const names = [...selected.value];
   if (!names.length) return;
   cleaning.value = true; cleanProgress.value = 0; totalFreed.value = 0;
+  const cmd = quarantineMode.value ? "quarantine_target" : "clean_target";
   for (let i = 0; i < names.length; i++) {
     try {
-      const r = await invoke<CleanResult>("clean_target", { targetName: names[i] });
+      const r = await invoke<CleanResult>(cmd, { targetName: names[i] });
       if (r.success) totalFreed.value += r.freed_mb;
     } catch {}
     cleanProgress.value = Math.round(((i + 1) / names.length) * 100);
   }
-  notify.success("Nettoyage terminé", `${formatMb(totalFreed.value)} libérés`);
+  const msg = quarantineMode.value ? `${formatMb(totalFreed.value)} mis en quarantaine` : `${formatMb(totalFreed.value)} libérés`;
+  notify.success(quarantineMode.value ? "Quarantaine" : "Nettoyage terminé", msg);
   cleaning.value = false;
-  load(); // Rescan (fire-and-forget)
+  if (quarantineMode.value) await loadQuarantine();
+  load();
 }
 
-onMounted(() => { load(); });
+function openFolder(filePath: string) {
+  const folder = filePath.split("\\").slice(0, -1).join("\\");
+  invoke("open_path", { path: folder }).catch(() => {});
+}
+
+onMounted(() => { load(); loadQuarantine(); });
 onUnmounted(() => { if (unlistenCleaner) unlistenCleaner(); });
 </script>
 
@@ -138,16 +190,26 @@ onUnmounted(() => { if (unlistenCleaner) unlistenCleaner(); });
           <Zap :size="12" /> {{ formatMb(totalFreed) }} libérés
         </span>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button
+          class="quarantine-toggle"
+          :class="{ 'quarantine-on': quarantineMode }"
+          @click="quarantineMode = !quarantineMode"
+          :title="quarantineMode ? 'Mode quarantaine actif — déplacer vers quarantaine' : 'Mode suppression directe'"
+        >
+          <Shield :size="13" />
+          {{ quarantineMode ? 'Quarantaine' : 'Suppression' }}
+        </button>
         <NButton variant="ghost" size="sm" @click="selected = new Set(targets.map(t => t.name))">Tout</NButton>
         <NButton variant="ghost" size="sm" @click="selected = new Set()">Aucun</NButton>
         <NButton
-          variant="danger" size="sm"
+          :variant="quarantineMode ? 'secondary' : 'danger'" size="sm"
           :loading="cleaning"
           :disabled="selected.size === 0 || cleaning"
           @click="clean"
         >
-          <Trash2 :size="13" /> Nettoyer ({{ selected.size }})
+          <component :is="quarantineMode ? Shield : Trash2" :size="13" />
+          {{ quarantineMode ? 'Quarantaine' : 'Nettoyer' }} ({{ selected.size }})
         </NButton>
       </div>
     </div>
@@ -175,25 +237,78 @@ onUnmounted(() => { if (unlistenCleaner) unlistenCleaner(); });
           </div>
         </template>
         <div class="targets-list">
-          <button
-            v-for="t in items" :key="t.name"
-            class="target-row"
-            :class="{ checked: selected.has(t.name) }"
-            @click="selected.has(t.name) ? selected.delete(t.name) : selected.add(t.name); selected = new Set(selected)"
-          >
-            <component :is="selected.has(t.name) ? CheckSquare : Square" :size="15" class="check-ic" />
-            <div class="target-info">
-              <span class="target-label">{{ t.name }}</span>
-              <span class="target-desc">{{ t.path || '—' }}</span>
+          <div v-for="t in items" :key="t.name" class="target-wrapper">
+            <button
+              class="target-row"
+              :class="{ checked: selected.has(t.name) }"
+              @click="selected.has(t.name) ? selected.delete(t.name) : selected.add(t.name); selected = new Set(selected)"
+            >
+              <component :is="selected.has(t.name) ? CheckSquare : Square" :size="15" class="check-ic" />
+              <div class="target-info">
+                <span class="target-label">{{ t.name }}</span>
+                <span class="target-desc">{{ t.path || '—' }}</span>
+              </div>
+              <div class="target-meta">
+                <span class="target-size">{{ formatMb(t.size_mb) }}</span>
+                <NBadge v-if="t.file_count > 0" variant="neutral" size="sm">{{ t.file_count }} fichiers</NBadge>
+              </div>
+              <button
+                class="preview-btn"
+                :title="expandedTarget === t.name ? 'Masquer les fichiers' : 'Voir les fichiers'"
+                @click.stop="togglePreview(t)"
+              >
+                <Eye v-if="expandedTarget !== t.name" :size="13" />
+                <ChevronDown v-else :size="13" style="transform:rotate(180deg)" />
+              </button>
+            </button>
+            <!-- Liste des fichiers prévisualisés -->
+            <div v-if="expandedTarget === t.name" class="preview-panel">
+              <div v-if="previewLoading === t.name" class="preview-loading">
+                <RefreshCw :size="12" style="animation:spin 1s linear infinite" /> Chargement…
+              </div>
+              <div v-else-if="previewFiles[t.name]?.length" class="preview-files">
+                <div class="preview-header">
+                  Fichiers qui seront supprimés ({{ previewFiles[t.name].length >= 100 ? '100+' : previewFiles[t.name].length }}) :
+                </div>
+                <div v-for="f in previewFiles[t.name]" :key="f" class="preview-file">{{ f }}</div>
+                <div v-if="previewFiles[t.name].length >= 100" class="preview-more">+ d'autres fichiers non listés…</div>
+              </div>
+              <div v-else class="preview-empty">Dossier vide ou inaccessible</div>
             </div>
-            <div class="target-meta">
-              <span class="target-size">{{ formatMb(t.size_mb) }}</span>
-              <NBadge v-if="t.file_count > 0" variant="neutral" size="sm">{{ t.file_count }} fichiers</NBadge>
-            </div>
-          </button>
+          </div>
         </div>
       </NCard>
     </div>
+
+    <!-- Quarantaine -->
+    <NCard v-if="quarantineList.length > 0 || quarantineLoading">
+      <template #header>
+        <div class="section-header">
+          <Shield :size="15" style="color:var(--warning)" /><span>Quarantaine</span>
+          <NBadge v-if="quarantineList.length > 0" variant="warning">{{ quarantineList.length }}</NBadge>
+          <NButton variant="ghost" size="sm" style="margin-left:auto" @click="loadQuarantine" :loading="quarantineLoading">
+            <RefreshCw :size="12" />
+          </NButton>
+          <NButton variant="danger" size="sm" @click="clearQuarantineEntry(null)" :disabled="quarantineList.length === 0">
+            <Trash2 :size="12" /> Tout supprimer
+          </NButton>
+        </div>
+      </template>
+      <div v-if="quarantineLoading" class="empty-state" style="padding:16px">Chargement...</div>
+      <div v-else-if="!quarantineList.length" class="empty-state" style="padding:16px">Quarantaine vide.</div>
+      <div v-else class="targets-list">
+        <div v-for="q in quarantineList" :key="q.name" class="target-row" style="cursor:default">
+          <Shield :size="14" style="color:var(--warning);flex-shrink:0" />
+          <div class="target-info">
+            <span class="target-label">{{ q.name }}</span>
+            <span class="target-desc">{{ q.file_count }} fichiers — {{ formatMb(q.size_mb) }}</span>
+          </div>
+          <NButton variant="ghost" size="sm" @click="clearQuarantineEntry(q.name)" title="Supprimer définitivement">
+            <Trash2 :size="12" />
+          </NButton>
+        </div>
+      </div>
+    </NCard>
 
     <!-- Gros fichiers — scan manuel uniquement (peut prendre 1-5 min sur C:\Users) -->
     <NCard>
@@ -233,7 +348,7 @@ onUnmounted(() => { if (unlistenCleaner) unlistenCleaner(); });
           <span class="file-ext">{{ f.ext || '—' }}</span>
           <span class="file-path">{{ f.path }}</span>
           <span class="file-size">{{ formatMb(f.mb) }}</span>
-          <NButton variant="ghost" size="sm" @click="invoke('open_path', { path: f.path.split('\\').slice(0,-1).join('\\') })">Ouvrir</NButton>
+          <NButton variant="ghost" size="sm" @click="openFolder(f.path)">Ouvrir</NButton>
         </div>
       </div>
     </NCard>
@@ -276,4 +391,19 @@ h1 { font-size: 22px; font-weight: 700; }
 .large-not-scanned code { color: var(--accent-primary); background: var(--bg-tertiary); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
 .large-warning { font-size: 11px; color: color-mix(in srgb,var(--success) 80%,var(--text-muted)); background: var(--success-muted); padding: 6px 12px; border-radius: 6px; }
 .large-scan-info { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent-primary); margin-bottom: 8px; }
+.quarantine-toggle { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-tertiary); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-family: inherit; transition: all .15s; }
+.quarantine-toggle:hover { border-color: var(--warning); color: var(--warning); }
+.quarantine-toggle.quarantine-on { border-color: var(--warning); color: var(--warning); background: rgba(255,193,7,.08); }
+.target-wrapper { display: flex; flex-direction: column; }
+.preview-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; padding: 3px 5px; flex-shrink: 0; transition: all .15s; }
+.preview-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.preview-panel { background: var(--bg-tertiary); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); padding: 10px 12px; }
+.preview-loading { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.preview-header { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.preview-files { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
+.preview-file { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--text-secondary); padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-file:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.preview-more { font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+.preview-empty { font-size: 12px; color: var(--text-muted); font-style: italic; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>

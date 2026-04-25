@@ -194,6 +194,10 @@ pub fn surface_test_volume(
     window: &tauri::Window,
 ) -> SurfaceTestResult {
     let clean = drive_letter.trim_end_matches(':').to_uppercase();
+    // Validation : exactement une lettre A-Z
+    if clean.len() != 1 || !clean.chars().next().map(|c| c.is_ascii_uppercase()).unwrap_or(false) {
+        return SurfaceTestResult { drive: clean, total_blocks: 0, tested_blocks: 0, bad_blocks: 0, slow_blocks: 0, blocks: vec![] };
+    }
     let empty_result = SurfaceTestResult {
         drive: clean.clone(),
         total_blocks: 0,
@@ -310,6 +314,10 @@ pub fn surface_test_volume(
 
 pub fn deep_mft_scan_advanced(drive: String) -> Vec<DeepMftFile> {
     let clean = drive.trim_end_matches(':').to_uppercase();
+    // Validation : exactement une lettre A-Z
+    if clean.len() != 1 || !clean.chars().next().map(|c| c.is_ascii_uppercase()).unwrap_or(false) {
+        return vec![];
+    }
     let vol = format!("{}:", clean);
 
     let ps = format!(

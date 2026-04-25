@@ -1,0 +1,124 @@
+// Types partagés pour la page diagnostic et ses composables
+
+export interface OsInfo {
+  name: string; version: string; architecture: string
+  hostname: string; build_number: string
+}
+export interface CpuInfo {
+  name: string; manufacturer: string; cores: number; threads: number
+  base_speed_mhz: number; usage_percent: number
+}
+export interface RamInfo { total_gb: number; used_gb: number; usage_percent: number }
+
+export interface SysInfo {
+  os: OsInfo; cpu: CpuInfo; ram: RamInfo
+  gpus: unknown[]; disks: unknown[]; motherboard: unknown
+}
+export interface BiosInfo {
+  manufacturer: string; version: string; release_date: string
+  serial_number: string; smbios_version: string
+}
+export interface MoboDetailed {
+  manufacturer: string; product: string; serial_number: string; version: string; status: string
+}
+export interface GpuDetailed {
+  name: string; adapter_ram_mb: number; driver_version: string; driver_date: string
+  video_processor: string; video_mode: string; current_resolution: string
+  current_refresh_rate: number; status: string; pnp_device_id: string; adapter_dac_type: string
+}
+export interface RamSlot {
+  bank_label: string; device_locator: string; manufacturer: string; capacity_gb: number
+  speed_mhz: number; configured_speed_mhz: number; memory_type: string; form_factor: string
+  serial_number: string; part_number: string; data_width: number
+}
+export interface RamDetailed { total_slots: number; used_slots: number; total_capacity_gb: number; slots: RamSlot[] }
+export interface StoragePhysical {
+  model: string; serial_number: string; firmware_revision: string; size_bytes: number; size_gb: number
+  interface_type: string; media_type: string; status: string; pnp_device_id: string; partitions: number
+}
+export interface NetworkAdapter {
+  name: string; description: string; mac_address: string; ip_addresses: string[]
+  subnet_masks: string[]; default_gateway: string[]; dns_servers: string[]
+  dhcp_enabled: boolean; dhcp_server: string; speed_mbps: number
+  net_connection_id: string; is_physical: boolean; status: string
+}
+export interface CpuCache { l1_instruction_kb: number; l1_data_kb: number; l2_kb: number; l3_kb: number; l4_kb: number }
+export interface MonitorDetail {
+  name: string; screen_width: number; screen_height: number
+  pixels_per_inch: number; manufacturer: string; availability: string
+}
+export interface AudioDevice { name: string; manufacturer: string; status: string; device_id: string }
+export interface UsbDevice   { name: string; device_id: string; manufacturer: string; status: string; pnp_class: string }
+export interface BatteryDetailed {
+  name: string; status: string; estimated_charge_remaining: number; estimated_run_time: string
+  design_capacity: number; full_charge_capacity: number; battery_health_percent: number
+  chemistry: string; cycle_count: number
+}
+export interface InstalledSoftware {
+  name: string; version: string; publisher: string; install_date: string
+  install_location: string; estimated_size_mb: number
+}
+export interface StartupProgram { name: string; command: string; location: string; user: string; category: string }
+export interface PowerPlan  { name: string; is_active: boolean; guid: string }
+export interface PrinterDetail {
+  name: string; driver_name: string; port_name: string
+  is_default: boolean; is_network: boolean; status: string; shared: boolean
+}
+export interface EnvVar     { name: string; value: string; var_type: string }
+export interface WinLicense {
+  product_name: string; activation_status: string; partial_product_key: string; full_product_key: string
+  license_status: string; license_family: string; office_name: string; office_status: string
+  office_key: string; office_full_key: string
+}
+export interface InstalledUpdate { title: string; hotfix_id: string; description: string; installed_on: string; installed_by: string }
+
+export interface ScanResult {
+  bios_ok: boolean; bios_info: string | null
+  battery_present: boolean; battery_health: number; battery_cycles: number
+  suspicious_processes: { name: string; pid: number; path: string; reason: string }[]
+  disk_usage: { drive: string; total_gb: number; free_gb: number; used_percent: number }[]
+  winget_upgradable: { name: string; id: string; current_version: string; available_version: string }[]
+  choco_upgradable: string[]
+  dism_status: string; sfc_status: string; scan_errors: string[]
+  uptime_hours: number; cpu_name: string; cpu_cores: number; cpu_usage_percent: number
+  ram_total_gb: number; ram_used_gb: number; ram_usage_percent: number
+  windows_version: string; windows_activation: string
+  firewall_enabled: boolean; defender_enabled: boolean
+  startup_count: number; pending_reboot: boolean
+  recent_errors: { time: string; source: string; message: string; level: string }[]
+  network_ok: boolean; open_ports: number[]
+  antivirus_installed: string; defender_definition_age_days: number
+  last_bsod: string; last_update_days: number; temp_folder_size_mb: number
+  suspicious_services: { name: string; display_name: string; state: string; path: string }[]
+  autorun_entries: { name: string; path: string; location: string }[]
+  virtual_memory_total_mb: number; virtual_memory_available_mb: number
+  gpu_name: string; gpu_vram_mb: number; screen_resolution: string
+  power_plan: string; installed_software_count: number
+  services_running: number; services_stopped: number
+  network_adapters_summary: string; cpu_temperature: string
+  windows_product_key: string; office_product_key: string; office_name: string
+  bitlocker_volumes: { drive: string; protection_status: string; encryption_percent: number; recovery_password: string; protectors: string[] }[]
+  motherboard: string; ram_detail: string; cpu_threads: number; cpu_frequency_ghz: number
+  storage_items: { model: string; size_gb: number; media_type: string; interface_type: string; health: string }[]
+  monitors_detail: string
+  tpm_present: boolean; tpm_enabled: boolean; tpm_version: string
+  secure_boot: boolean; uac_level: string; rdp_enabled: boolean
+  smbv1_enabled: boolean; wmi_subscriptions: number
+  local_admins: string[]; guest_enabled: boolean
+  system_manufacturer: string; system_model: string; system_serial: string
+  bios_manufacturer: string; bios_version: string; bios_date: string
+  license_type: string; last_restore_point: string; pending_updates_cached: number
+  top_cpu: { name: string; pid: number; value: number }[]
+  top_ram: { name: string; pid: number; value: number }[]
+  susp_tasks_count: number
+  susp_tasks: { name: string; path: string; exec: string }[]
+  all_gpus?: { name: string; vram_mb: number; is_integrated: boolean }[]
+  ram_slots?: string[]
+  cpu_socket?: string; cpu_l3_mb?: number
+  wmi_subscription_details?: { name: string; consumer_type: string; path: string }[]
+  dism_details?: string; sfc_details?: string
+  windows_updates_pending?: string[]
+  scoop_upgradable?: string[]
+  activation_type?: string
+  office_activation_type?: string
+}

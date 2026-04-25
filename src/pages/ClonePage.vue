@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted, watch, onUnmounted } from "vue";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -75,40 +75,54 @@ async function loadDisks() {
   loadingDisks.value = false;
 }
 
+let unlistenCloneProgress: (() => void) | null = null;
+
 onMounted(async () => {
-  const { listen } = await import("@tauri-apps/api/event");
-  await listen<CloneProgress>("clone-progress", (ev) => {
-    progress.value = ev.payload.percent;
-    progressMsg.value = ev.payload.message;
-    if (ev.payload.percent < 20) progressStep.value = 1;
-    else if (ev.payload.percent < 85) progressStep.value = 2;
-    else if (ev.payload.percent < 100) progressStep.value = 3;
-    else progressStep.value = 4;
-  });
+  try {
+    const { listen } = await import("@tauri-apps/api/event");
+    unlistenCloneProgress = await listen<CloneProgress>("clone-progress", (ev) => {
+      progress.value = ev.payload.percent;
+      progressMsg.value = ev.payload.message;
+      if (ev.payload.percent < 20) progressStep.value = 1;
+      else if (ev.payload.percent < 85) progressStep.value = 2;
+      else if (ev.payload.percent < 100) progressStep.value = 3;
+      else progressStep.value = 4;
+    });
+  } catch (e) {
+    notify.error("Monitoring clonage", "Impossible d'écouter les événements de progression.");
+  }
   await loadDisks();
+});
+
+onUnmounted(() => {
+  if (unlistenCloneProgress) { unlistenCloneProgress(); unlistenCloneProgress = null; }
 });
 
 async function startSystemImage() {
   if (!targetDrive.value || !confirmed.value) return;
   cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
+  startTimer();
   progressMsg.value = "Lancement de Windows Backup (wbadmin)...";
   try {
-    result.value = await invoke<CloneResult>("start_system_image", { targetDrive: targetDrive.value });
+    result.value = await invokeRaw<CloneResult>("start_system_image", { targetDrive: targetDrive.value });
     progressStep.value = 4;
     if (result.value.success) notify.success("Image système créée", result.value.message);
     else notify.error("Clonage échoué", result.value.message);
   } catch (e: any) {
     notify.error("Erreur", String(e));
   }
+  stopTimer();
   cloning.value = false;
 }
 
 async function startRobocopy() {
   if (!sourceDrive.value || !targetDrive.value || !confirmed.value) return;
+  if (sourceDrive.value === targetDrive.value) { notify.error("Clonage impossible", "Source et destination identiques."); return; }
   cloning.value = true; result.value = null; progress.value = 5; progressStep.value = 1;
+  startTimer();
   progressMsg.value = "Démarrage Robocopy...";
   try {
-    result.value = await invoke<CloneResult>("start_robocopy_clone", {
+    result.value = await invokeRaw<CloneResult>("start_robocopy_clone", {
       sourceDrive: sourceDrive.value,
       targetDrive: targetDrive.value,
     });
@@ -118,6 +132,7 @@ async function startRobocopy() {
   } catch (e: any) {
     notify.error("Erreur", String(e));
   }
+  stopTimer();
   cloning.value = false;
 }
 
@@ -126,6 +141,101 @@ function formatSize(gb: number) {
 }
 
 const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
+
+// Chronomètre
+const elapsedSecs = ref(0);
+let elapsedTimer: ReturnType<typeof setInterval> | null = null;
+function startTimer() { elapsedSecs.value = 0; elapsedTimer = setInterval(() => elapsedSecs.value++, 1000); }
+function stopTimer() { if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; } }
+function formatElapsed(s: number) { return `${Math.floor(s / 60)}min ${s % 60}s`; }
+onUnmounted(stopTimer);
+
+// ETA & débit estimé (basé sur progression % / temps écoulé)
+const etaSecs = computed((): number | null => {
+  if (!cloning.value || progress.value <= 0 || elapsedSecs.value < 3) return null;
+  const rate = progress.value / elapsedSecs.value; // % par seconde
+  if (rate <= 0) return null;
+  const remaining = 100 - progress.value;
+  return Math.round(remaining / rate);
+});
+
+const speedStr = computed((): string | null => {
+  if (!cloning.value || progress.value <= 0 || elapsedSecs.value < 3) return null;
+  // Estimer la taille totale d'après la partition source
+  const srcPart = activeTab.value === 'robocopy'
+    ? drivesWithLetters.value.find(p => p.letter.replace(':', '') === sourceDrive.value)
+    : drivesWithLetters.value.find(p => p.is_boot || p.is_system);
+  if (!srcPart) return null;
+  const usedGb = srcPart.size_gb - srcPart.free_gb;
+  if (usedGb <= 0) return null;
+  const copiedGb = (progress.value / 100) * usedGb;
+  const mbPerSec = (copiedGb * 1024) / elapsedSecs.value;
+  return mbPerSec >= 1 ? `${mbPerSec.toFixed(0)} MB/s` : `${(mbPerSec * 1024).toFixed(0)} KB/s`;
+});
+
+function formatEta(s: number): string {
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}min ${s % 60}s`;
+}
+
+// Validation source ≠ cible (lettre identique)
+const sameLetterError = computed((): string | null => {
+  if (!sourceDrive.value || !targetDrive.value) return null;
+  if (sourceDrive.value.toUpperCase() === targetDrive.value.toUpperCase()) {
+    return "La source et la destination ne peuvent pas être le même lecteur.";
+  }
+  return null;
+});
+
+// Erreur espace insuffisant
+const spaceError = computed((): string | null => {
+  if (!spaceCheck.value) return null;
+  if (!spaceCheck.value.ok) {
+    return `Espace insuffisant : besoin de ${spaceCheck.value.usedGb.toFixed(1)} Go, seulement ${spaceCheck.value.freeGb.toFixed(1)} Go disponibles sur la cible.`;
+  }
+  return null;
+});
+
+// Checklist pré-lancement
+const preflight = computed(() => {
+  const tgtPartImg = drivesWithLetters.value.find(p => p.letter.replace(':', '') === targetDrive.value);
+  const srcPartRob = drivesWithLetters.value.find(p => p.letter.replace(':', '') === sourceDrive.value);
+  const tgtPartRob = drivesWithLetters.value.find(p => p.letter.replace(':', '') === targetDrive.value);
+
+  const ntfsOk = activeTab.value === 'image'
+    ? (tgtPartImg?.file_system === 'NTFS')
+    : (tgtPartRob?.file_system === 'NTFS');
+
+  const diffDisk = activeTab.value === 'robocopy'
+    ? (srcPartRob?.disk_index !== tgtPartRob?.disk_index)
+    : true; // wbadmin gère les partitions du même disque
+
+  return [
+    { label: "Droits administrateur", ok: true, always: true },
+    { label: "Cible format NTFS", ok: !!ntfsOk, na: !targetDrive.value },
+    { label: "Source ≠ Cible (disque physique différent)", ok: !!diffDisk, na: activeTab.value !== 'robocopy' || !sourceDrive.value || !targetDrive.value },
+    { label: "Espace disque suffisant", ok: spaceCheck.value?.ok ?? false, na: !spaceCheck.value },
+  ];
+});
+
+// Vérification espace pré-lancement
+const spaceCheck = computed(() => {
+  if (activeTab.value === 'image') {
+    const src = drivesWithLetters.value.find(p => p.is_boot || p.is_system);
+    const tgt = drivesWithLetters.value.find(p => p.letter.replace(':', '') === targetDrive.value);
+    if (!src || !tgt) return null;
+    const usedGb = src.size_gb - src.free_gb;
+    return { ok: tgt.free_gb >= usedGb, usedGb, freeGb: tgt.free_gb };
+  }
+  if (activeTab.value === 'robocopy') {
+    const src = drivesWithLetters.value.find(p => p.letter.replace(':', '') === sourceDrive.value);
+    const tgt = drivesWithLetters.value.find(p => p.letter.replace(':', '') === targetDrive.value);
+    if (!src || !tgt) return null;
+    const usedGb = src.size_gb - src.free_gb;
+    return { ok: tgt.free_gb >= usedGb, usedGb, freeGb: tgt.free_gb };
+  }
+  return null;
+});
 </script>
 
 <template>
@@ -230,6 +340,14 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
           </div>
         </div>
 
+        <!-- Checklist pré-lancement -->
+        <div v-if="targetDrive" class="preflight-list">
+          <div v-for="c in preflight" :key="c.label" class="preflight-item" :class="c.na ? 'na' : c.ok ? 'ok' : 'nok'">
+            <span class="pf-dot">{{ c.na ? '○' : c.ok ? '✓' : '✗' }}</span>
+            <span>{{ c.label }}</span>
+          </div>
+        </div>
+
         <div class="confirm-row">
           <label class="confirm-label">
             <input type="checkbox" v-model="confirmed" />
@@ -237,7 +355,11 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
           </label>
         </div>
 
-        <NButton variant="primary" :disabled="!targetDrive || !confirmed || cloning" :loading="cloning" @click="startSystemImage">
+        <div v-if="spaceError" class="validation-error">
+          <AlertTriangle :size="13" /> {{ spaceError }}
+        </div>
+
+        <NButton variant="primary" :disabled="!targetDrive || !confirmed || cloning || spaceCheck?.ok === false" :loading="cloning" @click="startSystemImage">
           <Play :size="14" /> Créer l'Image Système
         </NButton>
       </template>
@@ -276,6 +398,14 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
           </div>
         </div>
 
+        <!-- Checklist pré-lancement -->
+        <div v-if="sourceDrive && targetDrive" class="preflight-list">
+          <div v-for="c in preflight" :key="c.label" class="preflight-item" :class="c.na ? 'na' : c.ok ? 'ok' : 'nok'">
+            <span class="pf-dot">{{ c.na ? '○' : c.ok ? '✓' : '✗' }}</span>
+            <span>{{ c.label }}</span>
+          </div>
+        </div>
+
         <div class="confirm-row">
           <label class="confirm-label">
             <input type="checkbox" v-model="confirmed" />
@@ -283,7 +413,14 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
           </label>
         </div>
 
-        <NButton variant="primary" :disabled="!sourceDrive || !targetDrive || !confirmed || cloning" :loading="cloning" @click="startRobocopy">
+        <div v-if="sameLetterError" class="validation-error">
+          <AlertTriangle :size="13" /> {{ sameLetterError }}
+        </div>
+        <div v-else-if="spaceError" class="validation-error">
+          <AlertTriangle :size="13" /> {{ spaceError }}
+        </div>
+
+        <NButton variant="primary" :disabled="!sourceDrive || !targetDrive || !confirmed || cloning || !!sameLetterError || spaceCheck?.ok === false" :loading="cloning" @click="startRobocopy">
           <Play :size="14" /> Lancer le Clone
         </NButton>
       </template>
@@ -300,6 +437,9 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
         <div class="progress-header">
           <NSpinner v-if="cloning" :size="14" />
           <span>{{ progressMsg }}</span>
+          <span v-if="cloning && elapsedSecs > 0" class="elapsed-badge">⏱ {{ formatElapsed(elapsedSecs) }}</span>
+          <span v-if="cloning && speedStr" class="speed-badge">{{ speedStr }}</span>
+          <span v-if="cloning && etaSecs !== null" class="eta-badge">ETA : {{ formatEta(etaSecs as number) }}</span>
         </div>
         <NProgress :value="progress" showLabel size="lg" />
         <p class="progress-note">Cette opération peut prendre plusieurs minutes selon la taille du disque.</p>
@@ -543,4 +683,16 @@ const stepLabels = ["Préparation", "Copie", "Vérification", "Terminé"];
 .badge-boot { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--warning-muted); color: var(--warning); }
 
 .loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px; color: var(--text-muted); font-size: 13px; }
+
+.preflight-list { display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.preflight-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.preflight-item.ok  { color: var(--success); }
+.preflight-item.nok { color: var(--danger); }
+.preflight-item.na  { color: var(--text-muted); opacity: 0.6; }
+.pf-dot { font-weight: 700; font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+
+.elapsed-badge { margin-left: auto; font-size: 11px; color: var(--accent-primary); font-family: monospace; background: var(--accent-muted); padding: 2px 8px; border-radius: 99px; }
+.speed-badge { font-size: 11px; color: var(--info); font-family: monospace; background: var(--info-muted); padding: 2px 8px; border-radius: 99px; }
+.eta-badge { font-size: 11px; color: var(--warning); font-family: monospace; background: var(--warning-muted); padding: 2px 8px; border-radius: 99px; }
+.validation-error { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--danger-muted); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); border-radius: var(--radius-md); font-size: 12px; color: var(--danger); }
 </style>

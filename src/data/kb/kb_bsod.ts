@@ -1,0 +1,100 @@
+import type { KBCategory } from "../knowledgeBase";
+
+export const kbBsod: KBCategory[] = [
+  {
+    id: "bsod",
+    label: "Écrans Bleus (BSOD)",
+    icon: "AlertTriangle",
+    items: [
+      {
+        title: "CRITICAL_PROCESS_DIED (0x000000EF)",
+        symptoms: "Arrêt brutal avec code 0x000000EF, redémarrage automatique",
+        solution: [
+          "Lancer SFC pour réparer les fichiers système corrompus : sfc /scannow",
+          "Lancer DISM si SFC échoue : DISM /Online /Cleanup-Image /RestoreHealth",
+          "Vérifier la RAM avec Windows Memory Diagnostic : mdsched.exe",
+          "Mettre à jour tous les pilotes (chipset, stockage, réseau en priorité)",
+          "Vérifier les logs événements : eventvwr > Journaux Windows > Système (chercher Critical/Error)",
+          "Désinstaller les programmes récemment installés au moment des BSOD",
+          "Restaurer un point de restauration antérieur aux BSOD",
+          "Vérifier la santé du disque système avec CrystalDiskInfo",
+        ],
+        command: "sfc /scannow",
+      },
+      {
+        title: "MEMORY_MANAGEMENT (0x0000001A)",
+        symptoms: "Code 0x0000001A, souvent après ajout de RAM ou mise à jour",
+        solution: [
+          "Lancer Windows Memory Diagnostic : mdsched.exe (redémarrage requis)",
+          "Tester avec MemTest86 (USB bootable) pour test RAM approfondi — laisser tourner 4h minimum",
+          "Tester les barrettes RAM une par une pour identifier la fautive",
+          "Vérifier les slots RAM (nettoyage des contacts à l'alcool isopropylique)",
+          "Essayer de passer en mono-canal (une seule barrette) pour tester",
+          "Vérifier que la RAM est dans les bons slots (souvent A2+B2 pour dual-channel)",
+          "Mettre à jour les pilotes graphiques et chipset",
+          "Vérifier que le profil XMP/EXPO est bien activé dans le BIOS (si RAM OC)",
+        ],
+        command: "mdsched.exe",
+      },
+      {
+        title: "DRIVER_IRQL_NOT_LESS_OR_EQUAL (0x000000D1)",
+        symptoms: "Code 0x000000D1, souvent lié à un pilote défaillant, peut survenir au démarrage ou à l'arrêt",
+        solution: [
+          "Analyser le fichier minidump : %SystemRoot%\\Minidump (utiliser WhoCrashed ou WinDbg)",
+          "Identifier le pilote fautif mentionné dans le dump (souvent .sys file)",
+          "Mettre à jour ou réinstaller le pilote incriminé",
+          "Désinstaller les logiciels récemment installés (antivirus, VPN, outils système)",
+          "Utiliser l'outil Driver Verifier pour diagnostiquer : verifier.exe > Paramètres standard > Sélectionner tous les pilotes",
+          "Désinstaller proprement les pilotes GPU avec DDU puis réinstaller",
+          "Mettre à jour le BIOS de la carte mère",
+          "Vérifier la compatibilité des drivers avec la version Windows",
+        ],
+        command: "verifier.exe",
+      },
+      {
+        title: "PAGE_FAULT_IN_NONPAGED_AREA (0x00000050)",
+        symptoms: "Code 0x50, souvent lié à RAM défaillante ou pilote accédant à une zone mémoire invalide",
+        solution: [
+          "Tester la RAM avec MemTest86",
+          "Vérifier les pilotes récemment installés",
+          "Lancer SFC /scannow et DISM",
+          "Analyser le dump avec WhoCrashed pour identifier le module fautif",
+          "Vérifier la santé du disque : chkdsk C: /f",
+          "Désactiver l'overclocking RAM (XMP) temporairement pour tester",
+          "Vérifier la température RAM avec HWiNFO64 (RAM trop chaude = erreurs)",
+          "Si sur SSD NVMe récent : mettre à jour le firmware du SSD",
+        ],
+        command: "sfc /scannow && DISM /Online /Cleanup-Image /RestoreHealth",
+      },
+      {
+        title: "SYSTEM_SERVICE_EXCEPTION (0x0000003B)",
+        symptoms: "Code 0x3B, peut survenir aléatoirement, souvent lié à des pilotes corrompus",
+        solution: [
+          "Analyser le dump : WhoCrashed ou WinDbg (chercher le .sys fautif)",
+          "Mettre à jour en priorité : pilotes chipset, réseau, son, Bluetooth",
+          "Désinstaller les logiciels de virtualisation (VMware, VirtualBox) si récemment installés",
+          "Mettre à jour ou désinstaller l'antivirus (souvent impliqué dans les SYSTEM_SERVICE_EXCEPTION)",
+          "Lancer SFC /scannow puis DISM /Online /Cleanup-Image /RestoreHealth",
+          "Vérifier les mises à jour Windows (un KB peut parfois causer ce BSOD)",
+          "Rétrograder un pilote récemment mis à jour si le problème a commencé après",
+          "Créer un rapport de diagnostic : perfmon /report",
+        ],
+      },
+      {
+        title: "Analyse complète d'un BSOD",
+        symptoms: "BSOD récurrents, besoin d'identifier la cause racine",
+        solution: [
+          "Activer la création de dump complet : Paramètres système avancés > Démarrage et récupération > Vidage mémoire complet",
+          "Analyser avec WhoCrashed (gratuit, analyse automatique les dumps)",
+          "Analyser avec WinDbg (Microsoft) pour analyse experte : 'analyze -v' dans WinDbg",
+          "Consulter l'Observateur d'événements : eventvwr > Journaux Windows > Application + Système",
+          "Site web : passepourdépannage.org ou Nirsoft BlueScreenView pour historique BSODs",
+          "Chercher le code d'erreur sur Google avec le .sys incriminé pour identifier le pilote",
+          "Utiliser NiTriTe > Analyse BSOD pour voir l'historique automatiquement",
+          "Paramètre clé dans WinDbg : !analyze -v puis lm (list modules) pour voir le driver fautif",
+        ],
+        command: "eventvwr.msc",
+      },
+    ],
+  }
+];

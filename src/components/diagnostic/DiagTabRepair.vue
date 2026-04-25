@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invokeRaw as invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
@@ -140,7 +141,6 @@ const REPAIR_GROUPS = [
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     health.value = await invoke<SystemHealthStatus>("check_system_health");
   } catch {}
   finally { healthLoading.value = false; }
@@ -151,7 +151,6 @@ async function runRepair(key: string) {
   repairResult.value = null;
   repairError.value = "";
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     repairResult.value = await invoke<RepairResult>("run_repair_command", { repairType: key });
   } catch (e: any) { repairError.value = e?.toString() ?? "Erreur"; }
   finally { repairLoading.value = null; }

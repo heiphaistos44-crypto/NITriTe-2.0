@@ -1,0 +1,100 @@
+import type { KBCategory } from "../knowledgeBase";
+
+export const kbPerformance: KBCategory[] = [
+  {
+    id: "performance",
+    label: "Performance",
+    icon: "Zap",
+    items: [
+      {
+        title: "PC lent au démarrage",
+        symptoms: "Démarrage > 2 minutes, bureau long à apparaître, HDD/SSD voyant actif longtemps",
+        solution: [
+          "Désactiver les programmes au démarrage : Gestionnaire des tâches > Démarrage > Désactiver les inutiles",
+          "Vérifier l'espace disque (> 15% libre minimum, idéalement > 20%)",
+          "Lancer un nettoyage de disque : cleanmgr",
+          "Vérifier les malwares avec Windows Defender (scan complet)",
+          "Passer le plan d'alimentation en 'Hautes performances'",
+          "Activer le démarrage rapide : Panneau config > Options d'alimentation > Comportement bouton d'alimentation",
+          "Si HDD : défragmenter (inutile sur SSD). Si SSD : vérifier santé avec CrystalDiskInfo",
+          "Augmenter RAM à 16 GB si < 8 GB avec Windows 11",
+        ],
+        command: "cleanmgr",
+      },
+      {
+        title: "Utilisation CPU à 100%",
+        symptoms: "Ventilateurs bruyants, PC très lent, tâches qui ne répondent plus, températures élevées",
+        solution: [
+          "Ouvrir le Gestionnaire des tâches (Ctrl+Shift+Échap) > onglet Processus",
+          "Identifier le processus consommateur (trier par CPU)",
+          "Si svchost.exe : chercher dans Détails quel service est derrière (clic droit > Services associés)",
+          "Si WMI (WmiPrvSE.exe) : redémarrer service WMI : net stop winmgmt && net start winmgmt",
+          "Si SearchIndexer.exe : reconstruire l'index (Paramètres > Recherche Windows > Indexation avancée > Reconstruire)",
+          "Si antivirus : planifier le scan en dehors des heures d'utilisation",
+          "Scanner les malwares : ils sont souvent derrière une utilisation CPU anormale",
+          "Vérifier les températures CPU : HWiNFO64 (si > 95°C → problème refroidissement)",
+        ],
+        command: 'tasklist /FI "STATUS eq running" /SOR MEMUSAGE /FO LIST',
+      },
+      {
+        title: "Mémoire RAM saturée",
+        symptoms: "Message 'mémoire insuffisante', ralentissements, swap disque intensif, PC qui rame avec peu d'onglets",
+        solution: [
+          "Fermer les onglets de navigateur inutiles (Chrome/Edge prend ~100MB par onglet)",
+          "Identifier les processus gourmands en RAM dans le Gestionnaire des tâches",
+          "Vider le cache RAM : RAMMap de Sysinternals > Empty > Empty Standby List",
+          "Augmenter la mémoire virtuelle (fichier d'échange) : Paramètres système avancés > Performances > Avancé > Mémoire virtuelle",
+          "Vérifier la RAM : mdsched.exe (Diagnostic mémoire Windows) pour détecter les erreurs",
+          "Désactiver SysMain/Superfetch si SSD : services.msc > SysMain > Désactivé",
+          "Passer à 16 GB ou 32 GB de RAM si utilisation régulière > 80%",
+          "Vérifier les fuites mémoire : RAMMap ou Process Explorer de Sysinternals",
+        ],
+        command: "mdsched.exe",
+      },
+      {
+        title: "Disque à 100% en permanence",
+        symptoms: "Voyant disque constamment allumé, PC figé plusieurs secondes, Gestionnaire des tâches montre disque à 100%",
+        solution: [
+          "Désactiver SysMain (Superfetch) : services.msc > SysMain > Désactivé (surtout sur HDD)",
+          "Désactiver Windows Search si non essentiel : services.msc > Windows Search > Désactivé",
+          "Désactiver les notifications de Windows Defender ou planifier les scans",
+          "Vérifier les mises à jour en cours : Windows Update peut utiliser 100% du disque en fond",
+          "Changer le fichier d'échange vers un SSD secondaire si disponible",
+          "Tester la santé du disque : chkdsk C: /scan ou CrystalDiskInfo",
+          "Sur HDD : défragmenter (mais inutile si le HDD est proche de la retraite)",
+          "Envisager fortement de remplacer HDD par SSD — gain de performance massif (x5 à x10)",
+        ],
+        command: "services.msc",
+      },
+      {
+        title: "Jeux lagguent / FPS instables",
+        symptoms: "Chutes de FPS soudaines, stuttering, lag même sur jeux anciens, FPS drops lors de nouveaux objets",
+        solution: [
+          "Vérifier GPU dans Gestionnaire des tâches > GPU (doit approcher 95-100% en charge normale)",
+          "Activer Mode Jeu Windows : Paramètres > Gaming > Mode Jeu",
+          "Désactiver Xbox Game Bar si non utilisé : Paramètres > Gaming > Xbox Game Bar",
+          "Passer le plan d'alimentation en Hautes performances (désactive les économies d'énergie GPU)",
+          "Activer HAGS (Hardware Accelerated GPU Scheduling) : Paramètres > Système > Affichage > Graphiques",
+          "Vérifier la température GPU : ne doit pas dépasser 83°C en gaming — nettoyer les ventilateurs",
+          "Mettre à jour les pilotes GPU (NVIDIA GeForce Experience ou AMD Radeon Software)",
+          "Désactiver l'enregistrement en arrière-plan Xbox DVR : Paramètres > Gaming > Captures > Désactiver",
+        ],
+        command: "powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
+      },
+      {
+        title: "Optimisation pour travail en bureau",
+        symptoms: "Lenteurs sur applications Office, Teams lent, VSCode lent, beaucoup d'applications ouvertes",
+        solution: [
+          "Installer les mises à jour Windows + Office pour les derniers correctifs de performance",
+          "Désactiver les animations : Paramètres > Accessibilité > Effets visuels > Toujours désactiver",
+          "Fermer les applications inutilisées dans la barre des tâches",
+          "Activer efficacité de la batterie pour Teams dans le Gestionnaire des tâches",
+          "Passer à 32 GB de RAM pour le développement multi-projets",
+          "Utiliser un SSD NVMe pour le disque système",
+          "Placer le fichier d'échange sur le disque le plus rapide",
+          "Nettoyer régulièrement avec cleanmgr et supprimer les fichiers temporaires",
+        ],
+      },
+    ],
+  }
+];

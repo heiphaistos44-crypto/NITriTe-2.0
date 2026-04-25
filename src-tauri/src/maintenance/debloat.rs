@@ -456,9 +456,10 @@ pub fn remove_bloatware_uwp(apps: Vec<String>) -> Result<Vec<DebloatResult>, NiT
     };
 
     for app in &default_bloatware {
+        // PS single-quoted string escape : '' (double quote), pas \'
         let script = format!(
             r#"Get-AppxPackage -Name '{}' | Remove-AppxPackage -ErrorAction SilentlyContinue; Write-Output 'done'"#,
-            app.replace('\'', "\\'")
+            app.replace('\'', "''")
         );
         let mut res = run_ps(&script);
         res.action = format!("Suppression {}", app);

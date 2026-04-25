@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSkeleton from "@/components/ui/NSkeleton.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Terminal, RefreshCw, Play, Package, Settings2, CheckCircle2 } from "lucide-vue-next";
+import { Terminal, RefreshCw, Play, Package, Settings2, CheckCircle2, StopCircle, Upload, ArrowUp, Trash2, ExternalLink } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
@@ -26,6 +26,13 @@ const cmdDistro = ref("");
 const cmdOutput = ref("");
 const runningCmd = ref(false);
 const settingVersion = ref(false);
+
+// Per-distro action states
+const startingDistro = ref<string | null>(null);
+const stoppingDistro = ref<string | null>(null);
+const exportingDistro = ref<string | null>(null);
+const convertingDistro = ref<string | null>(null);
+const unregisteringDistro = ref<string | null>(null);
 
 async function load() {
   loading.value = true;
@@ -67,6 +74,93 @@ async function setDefaultVersion(v: number) {
     notify.error("Erreur", String(e));
   }
   settingVersion.value = false;
+}
+
+async function startDistro(d: WslDistro) {
+  startingDistro.value = d.name;
+  try {
+    await invoke("run_system_command", { cmd: "wsl", args: ["-d", d.name] });
+    notify.success("Distro démarrée", d.name);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur démarrage", String(e));
+  }
+  startingDistro.value = null;
+}
+
+async function stopDistro(d: WslDistro) {
+  stoppingDistro.value = d.name;
+  try {
+    await invoke("run_system_command", { cmd: "wsl", args: ["--terminate", d.name] });
+    notify.success("Distro arrêtée", d.name);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur arrêt", String(e));
+  }
+  stoppingDistro.value = null;
+}
+
+async function exportDistro(d: WslDistro) {
+  // Demande un chemin via dialog natif Tauri ou fallback prompt
+  let exportPath: string | null = null;
+  try {
+    exportPath = await invoke<string>("pick_save_path", {
+      defaultName: `${d.name}.tar`,
+      filters: [{ name: "TAR Archive", extensions: ["tar"] }],
+    });
+  } catch {
+    // pick_save_path indisponible — demande le chemin via notification
+    notify.error("Sélection impossible", `Entrez le chemin dans le terminal : wsl --export ${d.name} C:\\backup\\${d.name}.tar`);
+    return;
+  }
+  if (!exportPath) return;
+
+  exportingDistro.value = d.name;
+  try {
+    await invokeRaw("run_system_command", { cmd: "wsl", args: ["--export", d.name, exportPath] });
+    notify.success("Export terminé", exportPath);
+  } catch (e: any) {
+    notify.error("Erreur export", String(e));
+  }
+  exportingDistro.value = null;
+}
+
+async function convertToWsl2(d: WslDistro) {
+  if (!confirm(`Convertir "${d.name}" de WSL 1 vers WSL 2 ? Cette opération peut prendre plusieurs minutes.`)) return;
+  convertingDistro.value = d.name;
+  try {
+    await invoke("run_system_command", { cmd: "wsl", args: ["--set-version", d.name, "2"] });
+    notify.success("Conversion en cours", `${d.name} → WSL 2`);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur conversion", String(e));
+  }
+  convertingDistro.value = null;
+}
+
+async function unregisterDistro(d: WslDistro) {
+  if (!confirm(`Supprimer la distribution "${d.name}" ? Toutes les données seront perdues définitivement.`)) return;
+  unregisteringDistro.value = d.name;
+  try {
+    await invoke("run_system_command", { cmd: "wsl", args: ["--unregister", d.name] });
+    notify.success("Distribution supprimée", d.name);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur suppression", String(e));
+  }
+  unregisteringDistro.value = null;
+}
+
+async function openInTerminal(d: WslDistro) {
+  try {
+    await invoke("run_system_command", { cmd: "wt", args: ["-p", d.name] });
+  } catch {
+    try {
+      await invoke("run_system_command", { cmd: "wsl", args: ["-d", d.name] });
+    } catch (e: any) {
+      notify.error("Erreur terminal", String(e));
+    }
+  }
 }
 
 onMounted(load);
@@ -154,6 +248,62 @@ onMounted(load);
               <NBadge :variant="d.state === 'Running' ? 'success' : 'neutral'">{{ d.state }}</NBadge>
               <NBadge variant="neutral">WSL {{ d.version }}</NBadge>
             </div>
+            <!-- Actions distro -->
+            <div class="distro-actions">
+              <!-- Ouvrir dans Terminal Windows -->
+              <NButton variant="ghost" size="sm" @click="openInTerminal(d)" title="Ouvrir dans Terminal Windows">
+                <ExternalLink :size="12" />
+              </NButton>
+              <!-- Start / Stop -->
+              <NButton
+                v-if="d.state !== 'Running'"
+                variant="primary"
+                size="sm"
+                :loading="startingDistro === d.name"
+                @click="startDistro(d)"
+              >
+                <Play :size="12" /> Démarrer
+              </NButton>
+              <NButton
+                v-else
+                variant="secondary"
+                size="sm"
+                :loading="stoppingDistro === d.name"
+                @click="stopDistro(d)"
+              >
+                <StopCircle :size="12" /> Arrêter
+              </NButton>
+              <!-- Export -->
+              <NButton
+                variant="ghost"
+                size="sm"
+                :loading="exportingDistro === d.name"
+                @click="exportDistro(d)"
+                title="Exporter la distro en .tar"
+              >
+                <Upload :size="12" /> Exporter
+              </NButton>
+              <!-- Conversion WSL1 → WSL2 -->
+              <NButton
+                v-if="d.version === 1"
+                variant="secondary"
+                size="sm"
+                :loading="convertingDistro === d.name"
+                @click="convertToWsl2(d)"
+              >
+                <ArrowUp :size="12" /> → WSL 2
+              </NButton>
+              <!-- Supprimer -->
+              <NButton
+                variant="danger"
+                size="sm"
+                :loading="unregisteringDistro === d.name"
+                @click="unregisterDistro(d)"
+                title="Supprimer définitivement la distro"
+              >
+                <Trash2 :size="12" />
+              </NButton>
+            </div>
           </div>
         </div>
       </NCard>
@@ -205,13 +355,14 @@ h1 { font-size: 22px; font-weight: 700; }
 .status-label { font-size: 12px; color: var(--text-muted); }
 .status-val { font-family: "JetBrains Mono", monospace; font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .distros-list { display: flex; flex-direction: column; gap: 8px; }
-.distro-card { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-tertiary); border-radius: var(--radius-lg); border: 1px solid var(--border); transition: border-color .15s; }
+.distro-card { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-tertiary); border-radius: var(--radius-lg); border: 1px solid var(--border); transition: border-color .15s; flex-wrap: wrap; }
 .distro-card.is-default { border-color: var(--success); background: var(--success-muted); }
 .distro-icon { width: 38px; height: 38px; border-radius: var(--radius-md); background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; color: var(--text-muted); flex-shrink: 0; }
-.distro-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.distro-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
 .distro-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .distro-meta { font-size: 11px; color: var(--text-muted); font-family: monospace; }
 .distro-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+.distro-actions { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; flex-shrink: 0; }
 .console-section { display: flex; flex-direction: column; gap: 10px; }
 .cmd-row { display: flex; gap: 8px; align-items: center; }
 .distro-select { padding: 6px 10px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; cursor: pointer; flex-shrink: 0; }

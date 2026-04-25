@@ -1,0 +1,174 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { invoke } from "@/utils/invoke";
+import NButton from "@/components/ui/NButton.vue";
+import { HardDrive, Terminal, Activity, Trash2, CheckCircle, XCircle } from "lucide-vue-next";
+
+interface RepairResult { success: boolean; output: string; command: string; }
+
+const emit = defineEmits<{ (e: "result", r: RepairResult): void }>();
+
+const output = ref("");
+const isLoading = ref(false);
+const lastSuccess = ref<boolean | null>(null);
+
+const formatDrive = ref("");
+const formatFs = ref("ntfs");
+const formatLabel = ref("");
+const cloneSrc = ref("");
+const cloneDst = ref("");
+
+async function run(cmd: string, label?: string) {
+  isLoading.value = true;
+  try {
+    const r = await invoke<RepairResult>("winpe_run_command", { command: cmd });
+    output.value = r.output;
+    lastSuccess.value = r.success;
+    emit("result", { ...r, command: label || cmd });
+  } catch (e) { output.value = String(e); lastSuccess.value = false; }
+  finally { isLoading.value = false; }
+}
+
+const diskpartCmds = [
+  { label: "Lister tous les disques",     cmd: "echo list disk | diskpart" },
+  { label: "Lister les volumes",           cmd: "echo list volume | diskpart" },
+  { label: "Lister les partitions (disk 0)", cmd: "printf 'select disk 0\nlist partition' | diskpart" },
+  { label: "Infos SMART (WMI)",            cmd: "Get-WmiObject -Namespace 'root/WMI' -Class MSStorageDriver_FailurePredictStatus | Select-Object InstanceName,PredictFailure,Reason | Format-Table -AutoSize" },
+  { label: "État des disques physiques",   cmd: "Get-PhysicalDisk | Select-Object FriendlyName,MediaType,OperationalStatus,HealthStatus,Size | Format-Table -AutoSize" },
+  { label: "Partitions Windows",           cmd: "Get-Partition | Select-Object PartitionNumber,DriveLetter,Size,Type | Format-Table -AutoSize" },
+  { label: "Volumes montés",              cmd: "Get-Volume | Select-Object DriveLetter,FileSystem,HealthStatus,SizeRemaining,Size | Format-Table -AutoSize" },
+  { label: "Débit disque (3s)",           cmd: "winsat disk -ran -read -drive c" },
+  { label: "Test vitesse lecture",         cmd: "winsat disk -read -drive c" },
+  { label: "Infos S.M.A.R.T. détaillées", cmd: "Get-WmiObject -Class MSStorageDriver_FailurePredictData -Namespace 'root/WMI' | Select-Object InstanceName,VendorSpecific | Format-List" },
+  { label: "Attribuer lettre D: au vol 1", cmd: "printf 'select volume 1\nassign letter=D' | diskpart" },
+  { label: "Enlever lettre D:",           cmd: "printf 'select volume 1\nremove letter=D' | diskpart" },
+  { label: "Étendre partition (disk 0 part 1)", cmd: "printf 'select disk 0\nselect partition 1\nextend' | diskpart" },
+  { label: "Marquer partition active",    cmd: "printf 'select disk 0\nselect partition 1\nactive' | diskpart" },
+];
+
+async function formatVolume() {
+  if (!formatDrive.value) return;
+  const letter = formatDrive.value.replace(":", "").trim();
+  const label = formatLabel.value || "VOLUME";
+  const cmd = `format ${letter}: /fs:${formatFs.value} /v:${label} /q /y`;
+  await run(cmd, `Formater ${letter}: en ${formatFs.value}`);
+}
+
+async function cloneDisk() {
+  if (!cloneSrc.value || !cloneDst.value) return;
+  const cmd = `robocopy ${cloneSrc.value} ${cloneDst.value} /E /COPYALL /R:0 /W:0 /LOG+:robocopy_log.txt`;
+  await run(cmd, `Clone ${cloneSrc.value} → ${cloneDst.value}`);
+}
+
+async function cleanDisk() {
+  const idx = prompt("Entrez l'index du disque à nettoyer (ex: 0):");
+  if (!idx) return;
+  if (!confirm(`⚠️ IRRÉVERSIBLE : effacer toutes les partitions du disque ${idx} ?`)) return;
+  await run(`printf 'select disk ${idx}\nclean' | diskpart`, `Clean disk ${idx}`);
+}
+</script>
+
+<template>
+  <div class="disk-tab">
+    <!-- Commandes rapides -->
+    <div class="section-card">
+      <h3 class="section-title"><Terminal :size="15" /> Commandes Disques / Partitions</h3>
+      <div class="cmd-grid">
+        <button v-for="c in diskpartCmds" :key="c.label" class="cmd-btn" :disabled="isLoading" @click="run(c.cmd, c.label)">
+          {{ c.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Formatage -->
+    <div class="section-card">
+      <h3 class="section-title"><HardDrive :size="15" /> Formater un Volume</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Lettre de lecteur</label>
+          <input v-model="formatDrive" class="form-input" placeholder="Ex: D:" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Système de fichiers</label>
+          <select v-model="formatFs" class="form-select">
+            <option value="ntfs">NTFS</option>
+            <option value="fat32">FAT32</option>
+            <option value="exfat">exFAT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Étiquette de volume</label>
+          <input v-model="formatLabel" class="form-input" placeholder="Ex: BACKUP" />
+        </div>
+      </div>
+      <div class="tool-actions">
+        <NButton variant="danger" size="sm" :disabled="!formatDrive || isLoading" @click="formatVolume">
+          Formater {{ formatDrive }}
+        </NButton>
+      </div>
+    </div>
+
+    <!-- Clone avec robocopy -->
+    <div class="section-card">
+      <h3 class="section-title"><Activity :size="15" /> Clone Robocopy (Fichiers)</h3>
+      <p class="hint">Copie tous les fichiers d'un volume vers un autre avec Robocopy.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Source</label>
+          <input v-model="cloneSrc" class="form-input" placeholder="Ex: C:\" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Destination</label>
+          <input v-model="cloneDst" class="form-input" placeholder="Ex: D:\" />
+        </div>
+      </div>
+      <div class="tool-actions">
+        <NButton variant="primary" size="sm" :disabled="!cloneSrc || !cloneDst || isLoading" @click="cloneDisk">
+          Lancer la copie
+        </NButton>
+      </div>
+    </div>
+
+    <!-- Nettoyage disque dangereux -->
+    <div class="section-card danger-card">
+      <h3 class="section-title"><Trash2 :size="15" /> Clean Disk (Effacer partitions)</h3>
+      <p class="hint" style="color:var(--danger)">⚠️ Supprime toutes les partitions du disque sélectionné — IRRÉVERSIBLE.</p>
+      <div class="tool-actions">
+        <NButton variant="danger" size="sm" :disabled="isLoading" @click="cleanDisk">Clean disk…</NButton>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div v-if="output" class="output-panel" :class="lastSuccess === false ? 'error' : lastSuccess ? 'success' : ''">
+      <div class="output-header">
+        <CheckCircle v-if="lastSuccess" :size="13" style="color:var(--success)" />
+        <XCircle v-else-if="lastSuccess === false" :size="13" style="color:var(--danger)" />
+        <span>Résultat</span>
+      </div>
+      <pre class="output-pre">{{ output }}</pre>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.disk-tab { display: flex; flex-direction: column; gap: 14px; }
+.section-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.danger-card { border-color: rgba(239,68,68,.35); }
+.section-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.cmd-btn { padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; color: var(--text-secondary); cursor: pointer; transition: all .15s; text-align: left; font-family: inherit; }
+.cmd-btn:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--accent-primary); }
+.cmd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.form-input { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 6px 10px; font-size: 12px; color: var(--text-primary); width: 100%; font-family: monospace; }
+.form-select { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 6px 8px; font-size: 12px; color: var(--text-primary); width: 100%; }
+.tool-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.hint { font-size: 11px; color: var(--text-muted); }
+.output-panel { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; }
+.output-panel.success { border-color: var(--success); }
+.output-panel.error { border-color: var(--danger); }
+.output-header { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+.output-pre { font-size: 11px; font-family: "JetBrains Mono", monospace; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow-y: auto; }
+</style>

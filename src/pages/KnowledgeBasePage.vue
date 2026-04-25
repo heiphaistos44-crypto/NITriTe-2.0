@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, markRaw } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, markRaw, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import { knowledgeBase } from "@/data/knowledgeBase";
-import type { KBCategory } from "@/data/knowledgeBase";
+import type { KBCategory, KBItem } from "@/data/knowledgeBase";
 import {
   BookOpen, Wifi, Zap, Shield, HardDrive,
   Monitor, Volume2, Usb, ChevronDown, ChevronRight,
   Terminal, Copy, AlertTriangle, Settings, Cpu,
-  CheckCircle,
+  CheckCircle, Heart, Printer, Link,
 } from "lucide-vue-next";
 
 // Map icon name → composant
@@ -41,7 +41,52 @@ const search             = ref("");
 const expandedCategory   = ref<string | null>(null);
 const expandedItem       = ref<string | null>(null);
 const copiedCmd          = ref<string | null>(null);
+const copiedLink         = ref<string | null>(null);
 
+// ── Favoris ────────────────────────────────────────────────────────────────
+const FAVORITES_KEY = "nitrite-kb-favorites";
+const favorites = ref<Set<string>>(new Set());
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    if (raw) favorites.value = new Set(JSON.parse(raw));
+  } catch { /* ignore */ }
+}
+
+function saveFavorites() {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites.value]));
+}
+
+function isFavorite(title: string): boolean {
+  return favorites.value.has(title);
+}
+
+function toggleFavorite(title: string) {
+  if (favorites.value.has(title)) {
+    favorites.value.delete(title);
+  } else {
+    favorites.value.add(title);
+  }
+  saveFavorites();
+  // Trigger reactivity
+  favorites.value = new Set(favorites.value);
+}
+
+// Tous les articles favoris (avec leur catégorie)
+const favoriteItems = computed<Array<KBItem & { categoryId: string; categoryLabel: string }>>(() => {
+  const result: Array<KBItem & { categoryId: string; categoryLabel: string }> = [];
+  for (const cat of knowledgeBase) {
+    for (const item of cat.items) {
+      if (favorites.value.has(item.title)) {
+        result.push({ ...item, categoryId: cat.id, categoryLabel: cat.label });
+      }
+    }
+  }
+  return result;
+});
+
+// ── Filtrage ────────────────────────────────────────────────────────────────
 function toggleCategory(id: string) {
   expandedCategory.value = expandedCategory.value === id ? null : id;
   expandedItem.value = null;
@@ -69,10 +114,21 @@ const filteredCategories = computed(() => {
     .filter((cat) => cat.items.length > 0);
 });
 
-// Compteurs globaux
-const totalCategories = computed(() => knowledgeBase.length);
-const totalArticles   = computed(() => knowledgeBase.reduce((n, c) => n + c.items.length, 0));
+// ── Stats dynamiques ────────────────────────────────────────────────────────
+const totalCategories  = computed(() => knowledgeBase.length);
+const totalArticles    = computed(() => knowledgeBase.reduce((n, c) => n + c.items.length, 0));
+const totalResults     = computed(() => filteredCategories.value.reduce((n, c) => n + c.items.length, 0));
 
+// ── Articles connexes ───────────────────────────────────────────────────────
+function relatedItems(item: KBItem, catId: string): KBItem[] {
+  const cat = knowledgeBase.find(c => c.id === catId);
+  if (!cat) return [];
+  return cat.items
+    .filter(i => i.title !== item.title)
+    .slice(0, 3);
+}
+
+// ── Actions ─────────────────────────────────────────────────────────────────
 async function runCommand(cmd: string) {
   try {
     await invoke("run_system_command", { cmd: "cmd", args: ["/C", cmd] });
@@ -86,6 +142,43 @@ async function copyToClipboard(text: string) {
     setTimeout(() => { copiedCmd.value = null; }, 2000);
   } catch { /* dev */ }
 }
+
+function copyArticleLink(itemId: string) {
+  const hash = `#article-${itemId}`;
+  try {
+    navigator.clipboard.writeText(hash);
+  } catch { /* dev */ }
+  copiedLink.value = itemId;
+  setTimeout(() => { copiedLink.value = null; }, 2000);
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function printArticle(item: KBItem) {
+  const content = escapeHtml([
+    `# ${item.title}`,
+    item.symptoms ? `Symptômes: ${item.symptoms}` : "",
+    item.solution ? `Solution:\n${item.solution.map((s, i) => `${i + 1}. ${s}`).join("\n")}` : "",
+    item.code ? `Code:\n${item.code}` : "",
+    item.note ? `Note: ${item.note}` : "",
+  ].filter(Boolean).join("\n\n"));
+
+  const win = window.open("", "_blank");
+  if (win) {
+    win.document.write(`<pre style="font-family:monospace;white-space:pre-wrap;padding:20px">${content}</pre>`);
+    win.document.close();
+    win.print();
+  }
+}
+
+/** Génère un id stable pour un article (slug du titre) */
+function articleId(title: string): string {
+  return title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+onMounted(loadFavorites);
 </script>
 
 <template>
@@ -101,6 +194,39 @@ async function copyToClipboard(text: string) {
     <!-- Recherche -->
     <NSearchBar v-model="search" placeholder="Rechercher un problème, une commande, un symptôme…" />
 
+    <!-- Stats rapides -->
+    <div class="stats-banner">
+      <span class="stat-item"><strong>{{ totalArticles }}</strong> articles</span>
+      <span class="stat-sep">·</span>
+      <span class="stat-item"><strong>{{ totalCategories }}</strong> catégories</span>
+      <span class="stat-sep">·</span>
+      <span class="stat-item"><strong>{{ totalResults }}</strong> résultat{{ totalResults > 1 ? 's' : '' }}</span>
+      <span v-if="favorites.size > 0" class="stat-sep">·</span>
+      <span v-if="favorites.size > 0" class="stat-item stat-favs">
+        <Heart :size="11" style="color:var(--danger)" /> {{ favorites.size }} favori{{ favorites.size > 1 ? 's' : '' }}
+      </span>
+    </div>
+
+    <!-- Section Favoris -->
+    <div v-if="favoriteItems.length > 0" class="favorites-section">
+      <div class="favorites-header">
+        <Heart :size="14" style="color:var(--danger)" />
+        <span>Favoris ({{ favoriteItems.length }})</span>
+      </div>
+      <div class="favorites-list">
+        <div
+          v-for="fav in favoriteItems"
+          :key="fav.title"
+          class="fav-chip"
+          @click="expandedCategory = fav.categoryId; expandedItem = fav.title"
+        >
+          <Heart :size="11" style="color:var(--danger); flex-shrink:0" />
+          <span>{{ fav.title }}</span>
+          <span class="fav-cat">{{ fav.categoryLabel }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Grille de catégories -->
     <div class="categories">
       <div v-for="cat in filteredCategories" :key="cat.id" class="category">
@@ -115,10 +241,43 @@ async function copyToClipboard(text: string) {
 
         <!-- Liste des articles -->
         <div v-if="expandedCategory === cat.id" class="cat-items">
-          <div v-for="item in cat.items" :key="item.title" class="kb-item">
+          <div
+            v-for="item in cat.items"
+            :key="item.title"
+            class="kb-item"
+            :id="`article-${articleId(item.title)}`"
+          >
             <!-- En-tête article -->
             <button class="item-header" @click="toggleItem(item.title)">
               <span class="item-title">{{ item.title }}</span>
+              <div class="item-header-actions" @click.stop>
+                <!-- Favori -->
+                <button
+                  class="icon-action-btn"
+                  :class="{ active: isFavorite(item.title) }"
+                  @click="toggleFavorite(item.title)"
+                  :title="isFavorite(item.title) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+                >
+                  <Heart :size="12" />
+                </button>
+                <!-- Copier lien -->
+                <button
+                  class="icon-action-btn"
+                  :class="{ active: copiedLink === articleId(item.title) }"
+                  @click="copyArticleLink(articleId(item.title))"
+                  title="Copier le lien de l'article"
+                >
+                  <Link :size="12" />
+                </button>
+                <!-- Imprimer -->
+                <button
+                  class="icon-action-btn"
+                  @click="printArticle(item)"
+                  title="Imprimer l'article"
+                >
+                  <Printer :size="12" />
+                </button>
+              </div>
               <ChevronDown v-if="expandedItem === item.title" :size="14" />
               <ChevronRight v-else :size="14" />
             </button>
@@ -172,6 +331,22 @@ async function copyToClipboard(text: string) {
               <div v-if="item.note" class="note-block">
                 💡 {{ item.note }}
               </div>
+
+              <!-- Articles connexes -->
+              <div v-if="relatedItems(item, cat.id).length > 0" class="related-section">
+                <span class="related-label">Voir aussi :</span>
+                <div class="related-chips">
+                  <button
+                    v-for="rel in relatedItems(item, cat.id)"
+                    :key="rel.title"
+                    class="related-chip"
+                    @click="toggleItem(rel.title)"
+                  >
+                    <ChevronRight :size="11" />
+                    {{ rel.title }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -207,6 +382,63 @@ async function copyToClipboard(text: string) {
   font-size: 13px;
   margin-top: 4px;
 }
+
+/* ── Stats banner ── */
+.stats-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.stat-item { display: flex; align-items: center; gap: 4px; }
+.stat-sep { color: var(--border); }
+.stat-favs { color: var(--text-secondary); }
+
+/* ── Favoris ── */
+.favorites-section {
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+.favorites-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--danger) 6%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
+}
+.favorites-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+}
+.fav-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.fav-chip:hover { border-color: var(--danger); color: var(--text-primary); }
+.fav-cat { font-size: 10px; color: var(--text-muted); margin-left: 2px; }
 
 /* ── Catégories ── */
 .categories { display: flex; flex-direction: column; gap: 6px; }
@@ -259,7 +491,6 @@ async function copyToClipboard(text: string) {
 .item-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
   padding: 11px 16px 11px 44px;
   border: none;
@@ -275,6 +506,29 @@ async function copyToClipboard(text: string) {
 .item-header:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
 .item-title { flex: 1; text-align: left; }
+
+.item-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.icon-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.icon-action-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.icon-action-btn.active { color: var(--danger); }
 
 /* ── Contenu ── */
 .item-content {
@@ -312,7 +566,7 @@ async function copyToClipboard(text: string) {
   line-height: 1.5;
 }
 
-/* ── Bloc code (scripts multi-lignes) ── */
+/* ── Bloc code ── */
 .code-block {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -415,6 +669,43 @@ async function copyToClipboard(text: string) {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* ── Articles connexes ── */
+.related-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.related-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.related-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.related-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s, color .15s;
+}
+.related-chip:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
 
 /* ── État vide ── */
 .empty-state {

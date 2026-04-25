@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { invoke } from "@/utils/invoke";
 import { ref } from "vue";
 import type { SystemInfo, MonitorData } from "@/types/system";
 
@@ -12,7 +13,6 @@ export const useSystemStore = defineStore("system", () => {
     loading.value = true;
     error.value = null;
     try {
-      const { invoke } = await import("@tauri-apps/api/core");
       info.value = await invoke<SystemInfo>("get_system_info");
     } catch (e: any) {
       error.value = e?.toString() ?? "Erreur inconnue";

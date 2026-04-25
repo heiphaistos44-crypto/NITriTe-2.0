@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSearchBar from "@/components/ui/NSearchBar.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NTabs from "@/components/ui/NTabs.vue";
+import DiagTabSysDrivers from "@/components/diagnostic/DiagTabSysDrivers.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Cpu, RefreshCw, Download, FileSpreadsheet, FileText, FolderOpen, ExternalLink, CheckCircle, XCircle } from "lucide-vue-next";
+import {
+  Cpu, RefreshCw, Download, FileSpreadsheet, FileText,
+  FolderOpen, ExternalLink, CheckCircle, XCircle,
+  AlertTriangle, ToggleLeft, ToggleRight, RotateCcw, Zap, ScanSearch,
+} from "lucide-vue-next";
+
+type MainTab = "list" | "diagnostics";
+const mainTab = ref<MainTab>("list");
 
 const notifications = useNotificationStore();
 const loading = ref(true);
@@ -27,6 +35,13 @@ const driverCategoryTabs = [
   { id: "systeme", label: "Systeme" },
   { id: "autre", label: "Autre" },
 ];
+
+// Drivers considérés comme critiques (regex sur module + displayName)
+const CRITICAL_PATTERN = /nvidia|geforce|radeon|amd.*video|ati.*display|nvlddmkm|tcpip|ndis|ethernet|lan|wifi|wlan|wireless|ntfs|disk|nvme|sata|ahci|acpi|hal\b|realtek.*audio|hdaudio/i;
+
+function isCriticalDriver(module: string, displayName: string): boolean {
+  return CRITICAL_PATTERN.test(module + " " + displayName);
+}
 
 function getDriverCategory(module: string, displayName: string): string {
   const m = (module + " " + displayName).toLowerCase();
@@ -47,9 +62,21 @@ interface DriverEntry {
   driverType: string;
   linkDate: string;
   state: string;
+  provider?: string;
+  instance_id?: string;
+  device_id?: string;
 }
 
 const drivers = ref<DriverEntry[]>([]);
+const togglingIds = ref<Set<string>>(new Set());
+const rollingBackIds = ref<Set<string>>(new Set());
+
+// Drivers problématiques (Error / Degraded)
+const problematicDrivers = computed(() =>
+  drivers.value.filter(d =>
+    /error|degraded/i.test(d.state)
+  )
+);
 
 const filteredDrivers = computed(() => {
   let result = drivers.value;
@@ -62,7 +89,8 @@ const filteredDrivers = computed(() => {
       d.module.toLowerCase().includes(q) ||
       d.displayName.toLowerCase().includes(q) ||
       d.driverType.toLowerCase().includes(q) ||
-      d.state.toLowerCase().includes(q)
+      d.state.toLowerCase().includes(q) ||
+      (d.provider ?? "").toLowerCase().includes(q)
     );
   }
   return result;
@@ -82,6 +110,7 @@ function parseCSV(csv: string): DriverEntry[] {
         driverType: cols[3] ?? "",
         linkDate: cols[5] ?? cols[4] ?? "",
         state: cols[2] ?? "",
+        provider: cols[6] ?? undefined,
       });
     }
   }
@@ -98,28 +127,28 @@ async function loadDrivers() {
     const out = result?.stdout ?? result?.output ?? "";
     drivers.value = parseCSV(out);
   } catch {
-    // Donnees de demo
+    // Données de démo
     drivers.value = [
       { module: "1394ohci", displayName: "1394 OHCI Compliant Host Controller", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped" },
       { module: "3ware", displayName: "3ware", driverType: "Kernel", linkDate: "17/05/2015", state: "Stopped" },
-      { module: "ACPI", displayName: "Microsoft ACPI Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "AcpiDev", displayName: "ACPI Devices driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped" },
-      { module: "acpiex", displayName: "Microsoft ACPIEx Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "AFD", displayName: "Ancillary Function Driver", driverType: "Kernel", linkDate: "11/03/2024", state: "Running" },
+      { module: "ACPI", displayName: "Microsoft ACPI Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "AcpiDev", displayName: "ACPI Devices driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped", provider: "Microsoft" },
+      { module: "acpiex", displayName: "Microsoft ACPIEx Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "AFD", displayName: "Ancillary Function Driver", driverType: "Kernel", linkDate: "11/03/2024", state: "Running", provider: "Microsoft" },
       { module: "ahcache", displayName: "Application Compatibility Cache", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "amdgpio2", displayName: "AMD GPIO Client Driver", driverType: "Kernel", linkDate: "01/09/2023", state: "Running" },
-      { module: "amdi2c", displayName: "AMD I2C Controller Driver", driverType: "Kernel", linkDate: "01/09/2023", state: "Stopped" },
+      { module: "amdgpio2", displayName: "AMD GPIO Client Driver", driverType: "Kernel", linkDate: "01/09/2023", state: "Running", provider: "AMD" },
+      { module: "amdi2c", displayName: "AMD I2C Controller Driver", driverType: "Kernel", linkDate: "01/09/2023", state: "Stopped", provider: "AMD" },
       { module: "AmdK8", displayName: "AMD K8 Processor Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped" },
       { module: "Beep", displayName: "Beep", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "BthA2dp", displayName: "Microsoft Bluetooth A2dp driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped" },
-      { module: "CLFS", displayName: "Common Log (CLFS)", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "disk", displayName: "Disk Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "HTTP", displayName: "HTTP Service", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "intelppm", displayName: "Intel Processor Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped" },
+      { module: "BthA2dp", displayName: "Microsoft Bluetooth A2dp driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped", provider: "Microsoft" },
+      { module: "CLFS", displayName: "Common Log (CLFS)", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "disk", displayName: "Disk Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "HTTP", displayName: "HTTP Service", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "intelppm", displayName: "Intel Processor Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Stopped", provider: "Intel" },
       { module: "Ndu", displayName: "Network Data Usage Monitoring Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
-      { module: "Ntfs", displayName: "Ntfs", driverType: "File System", linkDate: "21/06/2006", state: "Running" },
-      { module: "nvlddmkm", displayName: "NVIDIA Windows Kernel Mode Driver", driverType: "Kernel", linkDate: "15/01/2025", state: "Running" },
-      { module: "Tcpip", displayName: "TCP/IP Protocol Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running" },
+      { module: "Ntfs", displayName: "Ntfs", driverType: "File System", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
+      { module: "nvlddmkm", displayName: "NVIDIA Windows Kernel Mode Driver", driverType: "Kernel", linkDate: "15/01/2025", state: "Running", provider: "NVIDIA" },
+      { module: "Tcpip", displayName: "TCP/IP Protocol Driver", driverType: "Kernel", linkDate: "21/06/2006", state: "Running", provider: "Microsoft" },
     ];
   }
   loading.value = false;
@@ -162,26 +191,27 @@ async function writeToExports(filename: string, content: string) {
 }
 
 async function exportCSV() {
-  const header = "Module,Nom,Type,Date,Etat";
+  const header = "Module,Nom,Type,Date,Etat,Provider";
   const rows = filteredDrivers.value.map(
-    (d) => `"${d.module}","${d.displayName}","${d.driverType}","${d.linkDate}","${d.state}"`
+    (d) => `"${d.module}","${d.displayName}","${d.driverType}","${d.linkDate}","${d.state}","${d.provider ?? ""}"`
   );
   await writeToExports("drivers.csv", [header, ...rows].join("\n"));
 }
 
 async function exportTxt() {
   const col = (s: string, w: number) => s.padEnd(w).slice(0, w);
-  const header = `${col("Module", 25)} ${col("Nom", 45)} ${col("Type", 15)} ${col("Date", 12)} Etat`;
-  const sep = "-".repeat(115);
+  const header = `${col("Module", 25)} ${col("Nom", 40)} ${col("Type", 15)} ${col("Date", 12)} ${col("Etat", 12)} Provider`;
+  const sep = "-".repeat(120);
   const rows = filteredDrivers.value.map(d =>
-    `${col(d.module, 25)} ${col(d.displayName, 45)} ${col(d.driverType, 15)} ${col(d.linkDate, 12)} ${d.state}`
+    `${col(d.module, 25)} ${col(d.displayName, 40)} ${col(d.driverType, 15)} ${col(d.linkDate, 12)} ${col(d.state, 12)} ${d.provider ?? ""}`
   );
   await writeToExports("drivers.txt", [header, sep, ...rows].join("\n"));
 }
 
-function stateVariant(state: string): "success" | "warning" | "neutral" {
+function stateVariant(state: string): "success" | "warning" | "neutral" | "danger" {
   if (state.toLowerCase().includes("running")) return "success";
   if (state.toLowerCase().includes("stopped")) return "neutral";
+  if (/error|degraded/i.test(state)) return "danger";
   return "warning";
 }
 
@@ -198,6 +228,68 @@ function driverAgeInfo(dateStr: string): { label: string; variant: "success" | "
   if (ageYears < 1) return { label: "A jour", variant: "success" };
   if (ageYears < 2) return { label: "Ancien", variant: "warning" };
   return { label: "Obsolete", variant: "danger" };
+}
+
+function driverKey(d: DriverEntry): string {
+  return d.instance_id ?? d.module;
+}
+
+function isRunning(d: DriverEntry): boolean {
+  return d.state.toLowerCase().includes("running");
+}
+
+async function rollbackDriver(d: DriverEntry) {
+  const confirmed = window.confirm(
+    `Rollback du driver "${d.displayName}" ?\n\nLe Gestionnaire de périphériques va s'ouvrir. Sélectionnez le driver > Propriétés > Pilote > Restaurer.`
+  );
+  if (!confirmed) return;
+
+  rollingBackIds.value.add(driverKey(d));
+  try {
+    await invoke("run_system_command", {
+      cmd: "cmd",
+      args: ["/c", "start", "devmgmt.msc"],
+    });
+    notifications.info(`Gestionnaire de périphériques ouvert`, `Trouvez "${d.displayName}" et utilisez Propriétés > Pilote > Restaurer`);
+  } catch (e) {
+    notifications.error(`Erreur ouverture Gestionnaire de périphériques`, String(e));
+  }
+  rollingBackIds.value.delete(driverKey(d));
+}
+
+async function toggleDriver(d: DriverEntry) {
+  const action = isRunning(d) ? "désactiver" : "activer";
+  const confirmed = window.confirm(
+    `Voulez-vous ${action} le driver "${d.displayName}" ?\n\n${isRunning(d) ? "ATTENTION : Désactiver un driver critique peut rendre le système instable." : ""}`
+  );
+  if (!confirmed) return;
+
+  const key = driverKey(d);
+  togglingIds.value.add(key);
+  try {
+    const instanceId = d.instance_id ?? d.module;
+    const psCmd = isRunning(d)
+      ? `Disable-PnpDevice -InstanceId '${instanceId}' -Confirm:$false`
+      : `Enable-PnpDevice -InstanceId '${instanceId}' -Confirm:$false`;
+
+    await invoke("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", psCmd],
+    });
+
+    // Mettre à jour l'état local optimistement
+    const idx = drivers.value.findIndex(x => driverKey(x) === key);
+    if (idx !== -1) {
+      drivers.value[idx] = {
+        ...drivers.value[idx],
+        state: isRunning(d) ? "Stopped" : "Running",
+      };
+    }
+    notifications.success(`Driver "${d.displayName}" ${isRunning(d) ? "désactivé" : "activé"}`);
+  } catch (e) {
+    notifications.error(`Erreur toggle driver "${d.displayName}"`, String(e));
+  }
+  togglingIds.value.delete(key);
 }
 
 // Recommended drivers
@@ -227,6 +319,18 @@ async function loadRecommended() {
     ];
   } finally {
     recommendedLoading.value = false;
+  }
+}
+
+async function launchSdi() {
+  try {
+    (window as any).__nitrite_sdi_active = true;
+    setTimeout(() => { (window as any).__nitrite_sdi_active = false; }, 60000);
+    await invoke("launch_sdi");
+    notifications.success("Snappy Driver Installer lancé");
+  } catch (e) {
+    (window as any).__nitrite_sdi_active = false;
+    notifications.error("SDI introuvable", String(e));
   }
 }
 
@@ -262,6 +366,11 @@ onMounted(() => {
         <p class="page-subtitle">Liste des pilotes systeme installes</p>
       </div>
       <div class="header-actions">
+        <div class="page-tabs">
+          <button class="page-tab" :class="{ active: mainTab === 'list' }" @click="mainTab = 'list'"><Cpu :size="13" /> Pilotes</button>
+          <button class="page-tab" :class="{ active: mainTab === 'diagnostics' }" @click="mainTab = 'diagnostics'"><ScanSearch :size="13" /> Diagnostics</button>
+        </div>
+        <NButton variant="primary" size="sm" @click="launchSdi"><Zap :size="14" /> Snappy Driver</NButton>
         <NButton variant="ghost" size="sm" @click="openExportFolder"><FolderOpen :size="14" /> Exports</NButton>
         <NButton variant="secondary" size="sm" @click="exportTxt"><FileText :size="14" /> TXT</NButton>
         <NButton variant="secondary" size="sm" @click="exportCSV">
@@ -273,6 +382,21 @@ onMounted(() => {
           Rafraichir
         </NButton>
       </div>
+    </div>
+
+    <!-- Onglet Diagnostics -->
+    <DiagTabSysDrivers v-if="mainTab === 'diagnostics'" />
+
+    <!-- Onglet Pilotes (liste) -->
+    <template v-if="mainTab === 'list'">
+
+    <!-- Bandeau d'alerte drivers problématiques -->
+    <div v-if="!loading && problematicDrivers.length > 0" class="alert-banner">
+      <AlertTriangle :size="16" class="alert-icon" />
+      <span>
+        <strong>{{ problematicDrivers.length }} driver(s) problématique(s) détecté(s)</strong>
+        — {{ problematicDrivers.map(d => d.displayName).join(", ") }}
+      </span>
     </div>
 
     <!-- Recommended Drivers -->
@@ -332,24 +456,67 @@ onMounted(() => {
                 <thead>
                   <tr>
                     <th>Module</th>
-                    <th>Nom</th>
+                    <th>Nom / Provider</th>
                     <th>Type</th>
                     <th>Date</th>
                     <th>Age</th>
                     <th>Etat</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="d in filteredDrivers" :key="d.module" :class="`age-${driverAgeInfo(d.linkDate).variant}`">
-                    <td class="font-mono">{{ d.module }}</td>
-                    <td>{{ d.displayName }}</td>
+                  <tr
+                    v-for="d in filteredDrivers"
+                    :key="d.module"
+                    :class="`age-${driverAgeInfo(d.linkDate).variant}`"
+                  >
+                    <td class="font-mono">
+                      {{ d.module }}
+                      <!-- Badge CRITIQUE -->
+                      <NBadge v-if="isCriticalDriver(d.module, d.displayName)" variant="danger" class="critical-badge">
+                        CRITIQUE
+                      </NBadge>
+                    </td>
+                    <td>
+                      <div class="driver-name-cell">
+                        <span>{{ d.displayName }}</span>
+                        <span v-if="d.provider" class="driver-provider">{{ d.provider }}</span>
+                      </div>
+                    </td>
                     <td>{{ d.driverType }}</td>
                     <td class="font-mono">{{ d.linkDate }}</td>
                     <td><NBadge :variant="driverAgeInfo(d.linkDate).variant">{{ driverAgeInfo(d.linkDate).label }}</NBadge></td>
                     <td><NBadge :variant="stateVariant(d.state)">{{ d.state }}</NBadge></td>
+                    <td>
+                      <div class="action-cell">
+                        <!-- Rollback -->
+                        <NButton
+                          variant="secondary"
+                          size="sm"
+                          :loading="rollingBackIds.has(driverKey(d))"
+                          :title="`Rollback : ${d.displayName}`"
+                          @click="rollbackDriver(d)"
+                        >
+                          <RotateCcw :size="12" />
+                          Rollback
+                        </NButton>
+                        <!-- Enable / Disable -->
+                        <NButton
+                          :variant="isRunning(d) ? 'warning' : 'success'"
+                          size="sm"
+                          :loading="togglingIds.has(driverKey(d))"
+                          :title="isRunning(d) ? 'Désactiver le driver' : 'Activer le driver'"
+                          @click="toggleDriver(d)"
+                        >
+                          <ToggleLeft v-if="isRunning(d)" :size="12" />
+                          <ToggleRight v-else :size="12" />
+                          {{ isRunning(d) ? "Désactiver" : "Activer" }}
+                        </NButton>
+                      </div>
+                    </td>
                   </tr>
                   <tr v-if="filteredDrivers.length === 0">
-                    <td colspan="6" class="empty-row">Aucun pilote dans cette categorie</td>
+                    <td colspan="7" class="empty-row">Aucun pilote dans cette categorie</td>
                   </tr>
                 </tbody>
               </table>
@@ -358,6 +525,7 @@ onMounted(() => {
         </template>
       </NTabs>
     </template>
+    </template><!-- end list tab -->
   </div>
 </template>
 
@@ -367,6 +535,31 @@ onMounted(() => {
   flex-direction: column;
   gap: 16px;
 }
+
+.page-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+.page-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+}
+.page-tab:hover { color: var(--text-primary); }
+.page-tab.active { background: var(--accent-muted); color: var(--accent-primary); font-weight: 600; }
 
 .page-header {
   display: flex;
@@ -379,6 +572,24 @@ onMounted(() => {
 .header-actions { display: flex; gap: 8px; }
 
 .section-header { display: flex; align-items: center; gap: 8px; }
+
+/* Bandeau alerte drivers problématiques */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.alert-icon {
+  color: var(--danger);
+  flex-shrink: 0;
+}
 
 .loading-state {
   display: flex;
@@ -415,6 +626,7 @@ onMounted(() => {
   padding: 8px 12px;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
 }
 
 .drivers-table tbody tr:hover {
@@ -442,6 +654,36 @@ onMounted(() => {
   text-align: center;
   color: var(--text-muted);
   padding: 24px !important;
+}
+
+/* Driver name + provider */
+.driver-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.driver-provider {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Badge critique */
+.critical-badge {
+  margin-left: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+}
+
+/* Actions column */
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* Recommended Drivers */

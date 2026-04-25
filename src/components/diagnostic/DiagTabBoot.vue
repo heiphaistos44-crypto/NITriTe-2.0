@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from "@/utils/invoke";
 import { Settings, RefreshCw, List, Star, Monitor, AlertTriangle, Clock, Power } from 'lucide-vue-next'
 
 interface BcdEntry { id: string; description: string; entry_type: string; device: string; path: string; locale: string; is_default: boolean }
@@ -125,7 +125,7 @@ async function setDefault(entryId: string) {
   try { showMsg(await invoke<string>('set_default_boot', { entryId })); await load() }
   catch(e) { showMsg(String(e), true) }
 }
-async function doRecovery() { confirmRecovery.value = false; await invoke<string>('boot_to_recovery') }
+async function doRecovery() { confirmRecovery.value = false; try { await invoke<string>('boot_to_recovery') } catch(e) { showMsg(String(e), true) } }
 
 onMounted(load)
 </script>

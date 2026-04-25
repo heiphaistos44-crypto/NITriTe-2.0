@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import NCard from "@/components/ui/NCard.vue";
@@ -9,14 +9,17 @@ import NDropdown from "@/components/ui/NDropdown.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
+import NModal from "@/components/ui/NModal.vue";
 import { useNotificationStore } from "@/stores/notifications";
+import { useExportData } from "@/composables/useExportData";
 import {
   Bot, Send, Terminal, Play, CheckCircle, XCircle, RefreshCw,
   Cpu, MessageSquare, Settings, FolderOpen, Square, Download,
-  Zap, Server, Package, History, Trash2, Plus, Clock,
+  Zap, Server, Package, History, Trash2, Plus, Clock, RotateCcw,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
+const { exportJSON } = useExportData();
 
 // ─── Backend selector ──────────────────────────────────────────────────────────
 const backend = ref<"llamacpp" | "ollama">("llamacpp");
@@ -83,25 +86,29 @@ function modelDlProgress(entry: CatalogEntry) { return downloadProgress.value[en
 
 // ─── Scan modèles locaux ───────────────────────────────────────────────────────
 async function detectServer() {
-  try { const bin = await invoke<string | null>("ai_find_llamacpp_server"); if (bin) serverBin.value = bin; } catch {}
+  try { const bin = await invoke<string | null>("ai_find_llamacpp_server"); if (bin) serverBin.value = bin; } catch { /* llama.cpp server non trouvé — normal si pas installé */ }
 }
 async function scanGgufModels() {
   try {
     const list = await invoke<GgufModel[]>("ai_list_gguf_models");
     ggufModels.value = list;
     if (list.length && !selectedGguf.value) selectedGguf.value = list[0].path;
-  } catch {}
+  } catch { /* aucun modèle GGUF trouvé — normal au premier lancement */ }
 }
 async function browseModelFile() {
   try {
     const path = await open({ filters: [{ name: "GGUF", extensions: ["gguf"] }] });
     if (path && typeof path === "string") {
+      if (!validateAndSetGguf(path)) {
+        notify.error("Extension invalide", "Seuls les fichiers .gguf sont acceptés.");
+        return;
+      }
       selectedGguf.value = path;
       const name = path.split(/[\\/]/).pop() ?? path;
       if (!ggufModels.value.find(m => m.path === path))
         ggufModels.value.unshift({ name, path, size_gb: 0 });
     }
-  } catch {}
+  } catch (e) { notify.error("Erreur sélection fichier", String(e)); }
 }
 
 // ─── Serveur ──────────────────────────────────────────────────────────────────
@@ -151,6 +158,25 @@ async function loadOllamaModels() {
   ollamaModelsLoading.value = false;
 }
 
+// ─── Paramètres ────────────────────────────────────────────────────────────────
+const maxConversations = ref<number>(
+  parseInt(localStorage.getItem("nitrite_ai_max_conv") ?? "50", 10)
+);
+function saveMaxConversations() {
+  localStorage.setItem("nitrite_ai_max_conv", String(maxConversations.value));
+}
+
+// ─── Validation chemin GGUF custom ─────────────────────────────────────────────
+const ggufPathError = ref("");
+function validateAndSetGguf(path: string) {
+  if (!path.toLowerCase().endsWith(".gguf")) {
+    ggufPathError.value = "Le fichier doit avoir l'extension .gguf";
+    return false;
+  }
+  ggufPathError.value = "";
+  return true;
+}
+
 // ─── Historique conversations (localStorage) ───────────────────────────────────
 interface Conversation {
   id: string;
@@ -170,7 +196,25 @@ function loadConversations() {
 }
 
 function persistConversations() {
-  localStorage.setItem("nitrite_ai_conversations", JSON.stringify(conversations.value.slice(0, 50)));
+  localStorage.setItem("nitrite_ai_conversations", JSON.stringify(conversations.value.slice(0, maxConversations.value)));
+}
+
+function exportConversations() {
+  if (!conversations.value.length) { notify.warning("Aucune conversation", "L'historique est vide."); return; }
+  exportJSON(conversations.value, `nitrite_ai_conversations_${new Date().toISOString().slice(0, 10)}`);
+  notify.success("Export réussi", `${conversations.value.length} conversation(s) exportée(s)`);
+}
+
+function resetCurrentConversation() {
+  if (currentConvId.value) {
+    const idx = conversations.value.findIndex(c => c.id === currentConvId.value);
+    if (idx >= 0) {
+      conversations.value[idx].messages = [];
+      persistConversations();
+    }
+  }
+  messages.value = [];
+  currentConvId.value = null;
 }
 
 function saveCurrentConversation() {
@@ -255,17 +299,24 @@ async function sendMessage() {
   scrollChat();
   const history = messages.value.slice(0, -1).slice(-20).map(m => ({ role: m.role, content: m.content }));
   try {
-    const response = await invoke<string>("ai_query", {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("TIMEOUT")), 30_000)
+    );
+    const queryPromise = invoke<string>("ai_query", {
       model: activeModel.value || undefined,
       prompt: text,
       systemPrompt: activeSystemPrompt.value || null,
       history: history.length ? history : null,
     });
+    const response = await Promise.race([queryPromise, timeoutPromise]);
     messages.value.push({ role: "assistant", content: response, command: extractCommand(response) ?? undefined });
     saveCurrentConversation();
   } catch (err: any) {
-    const hint = backend.value === "llamacpp" ? "Vérifiez que le serveur est démarré." : "Lancez `ollama serve`.";
-    messages.value.push({ role: "assistant", content: `⚠ Erreur IA.\n\n${hint}\n\nDétail : ${String(err)}` });
+    const isTimeout = String(err).includes("TIMEOUT");
+    const hint = isTimeout
+      ? "Délai dépassé — le modèle n'a pas répondu dans les 30 secondes. Vérifiez la charge du serveur."
+      : (backend.value === "llamacpp" ? "Vérifiez que le serveur est démarré." : "Lancez `ollama serve`.");
+    messages.value.push({ role: "assistant", content: `⚠ ${isTimeout ? "Délai dépassé." : "Erreur IA."}\n\n${hint}${isTimeout ? "" : `\n\nDétail : ${String(err)}`}` });
   } finally { sending.value = false; scrollChat(); }
 }
 
@@ -283,10 +334,24 @@ async function executeCommand(i: number) {
 
 function clearChat() { messages.value = []; }
 function handleKeydown(e: KeyboardEvent) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 function formatMessage(text: string): string {
-  return text
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+  // Extraire les blocs code AVANT d'échapper pour les protéger
+  const codeBlocks: string[] = [];
+  let safe = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, _lang, code) => {
+    codeBlocks.push(code);
+    return `\x00CODEBLOCK${codeBlocks.length - 1}\x00`;
+  });
+  // Échapper le HTML du texte courant (hors blocs code)
+  safe = escapeHtml(safe);
+  // Réinsérer les blocs code avec leur contenu échappé
+  safe = safe.replace(/\x00CODEBLOCK(\d+)\x00/g, (_m, i) =>
+    `<pre class="code-block"><code>${escapeHtml(codeBlocks[Number(i)])}</code></pre>`
+  );
+  return safe
+    .replace(/`([^`]+)`/g, (_m, c) => `<code class="inline-code">${escapeHtml(c)}</code>`)
     .replace(/\n/g, "<br>");
 }
 
@@ -467,6 +532,25 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
           </div>
         </NCard>
 
+        <!-- Paramètres -->
+        <NCard>
+          <template #header><div class="section-header"><Settings :size="15" /><span>Paramètres</span></div></template>
+          <div class="config-section">
+            <div class="setting-row">
+              <label class="setting-label">Limite conversations</label>
+              <span class="setting-value">{{ maxConversations }}</span>
+            </div>
+            <input
+              type="range"
+              v-model.number="maxConversations"
+              min="10" max="200" step="10"
+              class="setting-slider"
+              @change="saveMaxConversations"
+            />
+            <div class="setting-hint">Conversations max sauvegardées en localStorage</div>
+          </div>
+        </NCard>
+
         <!-- Prompt système (commun) -->
         <NCard>
           <template #header><div class="section-header"><Settings :size="15" /><span>Prompt système</span></div></template>
@@ -488,6 +572,12 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
             <div style="margin-left:auto;display:flex;gap:6px">
               <NButton variant="ghost" size="sm" @click="showHistory = true">
                 <History :size="13" /> ({{ conversations.length }})
+              </NButton>
+              <NButton variant="ghost" size="sm" @click="exportConversations" title="Export JSON conversations">
+                <Download :size="13" /> Export JSON
+              </NButton>
+              <NButton v-if="messages.length" variant="ghost" size="sm" @click="resetCurrentConversation" title="Réinitialiser la conversation">
+                <RotateCcw :size="13" />
               </NButton>
               <NButton variant="ghost" size="sm" @click="newConversation" title="Nouvelle conversation">
                 <Plus :size="13" />
@@ -652,6 +742,13 @@ onUnmounted(() => { if (unlistenDownload) unlistenDownload(); });
 .chat-input-area { display:flex; gap:8px; align-items:flex-end; padding-top:12px; margin-top:12px; border-top:1px solid var(--border); }
 .chat-input { flex:1; padding:10px 12px; background:var(--bg-primary); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--text-primary); font-family:inherit; font-size:13px; resize:none; outline:none; }
 .chat-input:focus { border-color:var(--accent-primary); }
+
+/* Paramètres slider */
+.setting-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--text-secondary); }
+.setting-label { font-weight:500; }
+.setting-value { font-weight:700; color:var(--accent-primary); font-family:monospace; }
+.setting-slider { width:100%; accent-color:var(--accent-primary); cursor:pointer; height:4px; }
+.setting-hint { font-size:10px; color:var(--text-muted); }
 
 /* Historique conversations */
 .conv-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); transition:border-color .15s; }

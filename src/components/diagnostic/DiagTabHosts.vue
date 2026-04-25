@@ -7,9 +7,13 @@
         <div class="hosts-banner-title">Éditeur Hosts</div>
         <div class="hosts-banner-desc">Gérez le fichier <code class="path-code">C:\Windows\System32\drivers\etc\hosts</code></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="hosts-btn hosts-btn-primary" :disabled="loading" @click="loadEntries"><RefreshCw :size="13" /> Actualiser</button>
         <button class="hosts-btn" @click="doBackup"><Save :size="13" /> Sauvegarde .bak</button>
+        <button class="hosts-btn" @click="exportHosts">↓ Exporter hosts</button>
+        <button class="hosts-btn" :class="showBlocklists ? 'hosts-btn-primary' : ''" @click="showBlocklists = !showBlocklists">
+          📋 Blocklists
+        </button>
         <span v-if="msg" :class="msgErr ? 'h-err' : 'h-ok'" class="h-msg">{{ msg }}</span>
       </div>
     </div>
@@ -78,6 +82,54 @@
         <span>Aucune entrée dans le fichier hosts</span>
       </div>
 
+      <!-- Blocklists prédéfinies -->
+      <div v-if="showBlocklists" class="hosts-add-section" style="border-color:rgba(59,130,246,.3)">
+        <div class="hosts-add-title" style="color:#60a5fa">📋 Blocklists prédéfinies</div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
+          <div v-for="bl in BLOCKLISTS" :key="bl.name"
+            style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-tertiary);border-radius:8px;border:1px solid var(--border)">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600">{{ bl.name }}</div>
+              <div style="font-size:11px;color:var(--text-muted)">{{ bl.description }} · {{ bl.count }} entrées</div>
+            </div>
+            <span style="font-size:10px;padding:2px 7px;border-radius:4px"
+              :style="{ background: bl.category === 'ads' ? 'rgba(249,115,22,.12)' : bl.category === 'malware' ? 'rgba(239,68,68,.12)' : 'rgba(59,130,246,.12)',
+                        color: bl.category === 'ads' ? '#f97316' : bl.category === 'malware' ? '#ef4444' : '#60a5fa' }">
+              {{ bl.category }}
+            </span>
+            <button class="hosts-btn hosts-btn-primary hosts-btn-sm"
+              :disabled="importingList !== null"
+              @click="importBlocklist(bl)">
+              <span v-if="importingList === bl.name">...</span>
+              <span v-else>+ Importer</span>
+            </button>
+          </div>
+          <div v-if="importMsg" style="font-size:12px;padding:6px 10px;border-radius:5px"
+            :style="{ color: importMsg.includes('Erreur') ? 'var(--error)' : 'var(--success)', background: importMsg.includes('Erreur') ? 'rgba(239,68,68,.08)' : 'rgba(34,197,94,.08)' }">
+            {{ importMsg }}
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">
+            ⚠ L'import de blocklists ajoute un grand nombre d'entrées. Utilisez "Sauvegarde .bak" avant d'importer.
+          </div>
+        </div>
+      </div>
+
+      <!-- Test de résolution DNS -->
+      <div class="hosts-add-section">
+        <div class="hosts-add-title">🔍 Tester la résolution d'un hostname</div>
+        <div style="padding:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input v-model="testHostname" class="hosts-input" style="flex:1;min-width:200px"
+            placeholder="exemple.com" @keyup.enter="testResolution" />
+          <button class="hosts-btn hosts-btn-primary" :disabled="testLoading || !testHostname" @click="testResolution">
+            {{ testLoading ? 'Résolution...' : 'Tester' }}
+          </button>
+          <div v-if="testResult" style="font-size:12px;padding:4px 10px;border-radius:5px;font-family:monospace"
+            :style="{ color: testResult.includes('Erreur') ? 'var(--error)' : 'var(--success)', background: testResult.includes('Erreur') ? 'rgba(239,68,68,.08)' : 'rgba(34,197,94,.08)' }">
+            {{ testHostname }} → {{ testResult }}
+          </div>
+        </div>
+      </div>
+
       <!-- Add form -->
       <div class="hosts-add-section">
         <div class="hosts-add-title"><Plus :size="14" /> Ajouter une entrée</div>
@@ -105,7 +157,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from "@/utils/invoke";
 import { FileText, RefreshCw, Save, Plus, Trash2 } from 'lucide-vue-next'
 
 interface HostsEntry { ip: string; hostname: string; comment: string; active: boolean; line_number: number }
@@ -125,6 +177,99 @@ async function toggleEntry(n: number, en: boolean) { try { await invoke<string>(
 async function doBackup() { try { showMsg(await invoke<string>('backup_hosts')) } catch(e) { showMsg(String(e), true) } }
 
 function ipClass(ip: string) { if (ip.startsWith('127.')) return 'ip-localhost'; if (ip.startsWith('::1') || ip === '0.0.0.0') return 'ip-special'; return 'ip-normal'; }
+
+// ── Blocklists prédéfinies ────────────────────────────────────────────────────
+interface Blocklist {
+  name: string;
+  description: string;
+  url: string;
+  count: string;
+  category: 'ads' | 'malware' | 'privacy' | 'social';
+}
+
+const BLOCKLISTS: Blocklist[] = [
+  {
+    name: "StevenBlack Ads",
+    description: "Publicités et trackers",
+    url: "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+    count: "~150k",
+    category: "ads",
+  },
+  {
+    name: "AdAway",
+    description: "Publicités mobiles",
+    url: "https://adaway.org/hosts.txt",
+    count: "~40k",
+    category: "ads",
+  },
+  {
+    name: "MVPS Hosts",
+    description: "Spam, malware, trackers",
+    url: "https://winhelp2002.mvps.org/hosts.txt",
+    count: "~15k",
+    category: "malware",
+  },
+  {
+    name: "Cameleon",
+    description: "Publicités + scripts malveillants",
+    url: "https://sysctl.org/cameleon/hosts",
+    count: "~21k",
+    category: "ads",
+  },
+];
+
+const showBlocklists = ref(false);
+const importingList = ref<string | null>(null);
+const importMsg = ref("");
+
+async function importBlocklist(bl: Blocklist) {
+  if (!confirm(`Importer "${bl.name}" (~${bl.count} entrées) ? Cela ajoutera des entrées au fichier hosts.`)) return;
+  importingList.value = bl.name;
+  importMsg.value = "Téléchargement en cours...";
+  try {
+    const result = await invoke<string>("import_hosts_blocklist", { url: bl.url, listName: bl.name });
+    importMsg.value = result || `Import "${bl.name}" terminé ✓`;
+    await loadEntries();
+  } catch (e: any) {
+    importMsg.value = "Erreur import : " + String(e);
+  }
+  importingList.value = null;
+  setTimeout(() => { importMsg.value = ""; }, 5000);
+}
+
+// ── Test de résolution DNS ────────────────────────────────────────────────────
+const testHostname = ref("");
+const testResult = ref("");
+const testLoading = ref(false);
+
+async function testResolution() {
+  if (!testHostname.value.trim()) return;
+  testLoading.value = true;
+  testResult.value = "";
+  try {
+    const result = await invoke<string>("resolve_hostname", { hostname: testHostname.value.trim() });
+    testResult.value = result || "Résolu";
+  } catch (e: any) {
+    testResult.value = "Erreur : " + String(e);
+  }
+  testLoading.value = false;
+}
+
+// ── Export fichier hosts complet ──────────────────────────────────────────────
+async function exportHosts() {
+  try {
+    const content = await invoke<string>("get_hosts_raw");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "hosts_backup_" + new Date().toISOString().slice(0, 10) + ".txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e: any) {
+    showMsg("Erreur export : " + String(e), true);
+  }
+}
 
 onMounted(loadEntries)
 </script>

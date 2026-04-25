@@ -2,8 +2,46 @@
 import { ref, onMounted } from "vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { Globe, Wifi, Search, Server, Activity } from "lucide-vue-next";
+import { useExportData } from '@/composables/useExportData';
+import { invoke } from "@/utils/invoke";
+const { exportCSV, exportTXT } = useExportData();
+
+function exportPingResult(result: PingResult | null) {
+  if (!result) return;
+  exportTXT([
+    `=== Résultat Ping ===`,
+    `Hôte: ${result.host}`,
+    `Min: ${result.min_ms}ms | Moy: ${result.avg_ms}ms | Max: ${result.max_ms}ms`,
+    `Paquets: ${result.packets_sent} envoyés, ${result.packets_received} reçus`,
+    `Perte: ${result.loss_percent}%`,
+    `Date: ${new Date().toLocaleString('fr-FR')}`,
+  ], 'ping-result');
+}
+
+function exportTracertResult(hops: TracertHop[]) {
+  if (!hops?.length) return;
+  exportCSV(hops.map(h => ({
+    Saut: h.hop, Adresse: h.address || '*', Latence: h.ms > 0 ? h.ms + 'ms' : 'timeout',
+  })), 'traceroute-result');
+}
+
+function exportPortScanResult(ports: PortScanResult[]) {
+  if (!ports?.length) return;
+  exportCSV(ports.map(p => ({
+    Port: p.port, Etat: p.open ? 'Ouvert' : 'Fermé', Service: p.service || '',
+  })), 'portscan-result');
+}
+
+function exportWifiNetworksList(networks: WifiNetwork[]) {
+  if (!networks?.length) return;
+  exportCSV(networks.map(n => ({
+    SSID: n.ssid, BSSID: n.bssid, Signal: n.signal_percent + '%',
+    Bande: n.band, Canal: n.channel, Securite: n.auth,
+  })), 'wifi-networks');
+}
 
 interface PingResult { host: string; success: boolean; avg_ms: number; min_ms: number; max_ms: number; packets_sent: number; packets_received: number; loss_percent: number; }
 interface TracertHop { hop: number; address: string; ms: number; }
@@ -33,12 +71,12 @@ const sharesHost = ref("localhost"); const shares = ref<NetShareEntry[]>([]); co
 const bandwidth = ref<BandwidthResult|null>(null); const bwLoading = ref(false);
 
 onMounted(async () => {
-  try { const { invoke } = await import("@tauri-apps/api/core"); ipConfig.value = await invoke<IpConfigAdapter[]>("get_ip_config"); } catch {}
+  try { ipConfig.value = await invoke<IpConfigAdapter[]>("get_ip_config"); } catch {}
   finally { ipLoading.value = false; }
 });
 
 async function inv<T>(cmd: string, args?: any): Promise<T|null> {
-  try { const { invoke } = await import("@tauri-apps/api/core"); return await invoke<T>(cmd, args); } catch { return null; }
+  try { return await invoke<T>(cmd, args); } catch { return null; }
 }
 
 async function doPing() { pingLoading.value=true; pingResult.value=null; pingResult.value=await inv("run_ping",{host:pingHost.value,count:pingCount.value}); pingLoading.value=false; }
@@ -105,6 +143,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
             </div>
             <NBadge variant="neutral" style="font-size:9px">{{ n.auth }}</NBadge>
           </div>
+          <NButton variant="ghost" size="sm" @click="exportWifiNetworksList(wifiNetworks)" style="margin-top:6px">↓ Export CSV</NButton>
         </div>
         <p v-else style="font-size:12px;color:var(--text-secondary)">Cliquez Actualiser pour scanner les réseaux.</p>
       </div>
@@ -131,6 +170,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
             <div class="info-row"><span>Min / Max</span><span>{{ pingResult.min_ms }} / {{ pingResult.max_ms }} ms</span></div>
             <div class="info-row"><span>Paquets</span><span>{{ pingResult.packets_received }}/{{ pingResult.packets_sent }} ({{ pingResult.loss_percent }}% perte)</span></div>
           </div>
+          <NButton variant="ghost" size="sm" @click="exportPingResult(pingResult)" style="margin-top:6px">↓ Exporter TXT</NButton>
         </div>
       </div>
 
@@ -155,6 +195,7 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
               </tr>
             </tbody>
           </table>
+          <NButton variant="ghost" size="sm" @click="exportTracertResult(tracertHops)" style="margin-top:6px">↓ Export CSV</NButton>
         </div>
       </div>
 
@@ -169,12 +210,15 @@ const filteredOpenPorts = () => openPorts.value.filter(p=>!openPortFilter.value|
           </button>
         </div>
         <div v-if="scanLoading" class="diag-loading"><div class="diag-spinner"></div> Scan en cours...</div>
-        <div v-else-if="scanResults.length" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-          <div v-for="r in scanResults" :key="r.port" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px" :style="{background:r.open?'rgba(74,222,128,0.1)':'rgba(100,116,139,0.1)',border:r.open?'1px solid rgba(74,222,128,0.3)':'1px solid var(--border)'}">
-            <span :style="{color:r.open?'var(--success)':'var(--text-muted)'}">{{ r.open?'●':'○' }}</span>
-            <strong :style="{color:r.open?'var(--text-primary)':'var(--text-muted)'}">{{ r.port }}</strong>
-            <span v-if="r.service" style="color:var(--accent);font-size:9px">{{ r.service }}</span>
+        <div v-else-if="scanResults.length">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+            <div v-for="r in scanResults" :key="r.port" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px" :style="{background:r.open?'rgba(74,222,128,0.1)':'rgba(100,116,139,0.1)',border:r.open?'1px solid rgba(74,222,128,0.3)':'1px solid var(--border)'}">
+              <span :style="{color:r.open?'var(--success)':'var(--text-muted)'}">{{ r.open?'●':'○' }}</span>
+              <strong :style="{color:r.open?'var(--text-primary)':'var(--text-muted)'}">{{ r.port }}</strong>
+              <span v-if="r.service" style="color:var(--accent);font-size:9px">{{ r.service }}</span>
+            </div>
           </div>
+          <NButton variant="ghost" size="sm" @click="exportPortScanResult(scanResults)" style="margin-top:6px">↓ Export CSV</NButton>
         </div>
       </div>
 

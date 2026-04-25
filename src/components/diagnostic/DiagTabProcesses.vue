@@ -1,12 +1,43 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { Search, RefreshCw, Cpu, Server, Play, Clock, X, SquarePlay, Square, RotateCcw, Trash2, Monitor } from "lucide-vue-next";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NCollapse from "@/components/ui/NCollapse.vue";
+import { useExportData } from '@/composables/useExportData';
+const { exportCSV } = useExportData();
+
+// Actions enrichies processus
+async function openProcessLocation(path: string) {
+  if (!path) return;
+  try {
+    const folder = path.includes('\\') ? path.substring(0, path.lastIndexOf('\\')) : path;
+    await invoke('open_path', { path: folder });
+  } catch {}
+}
+
+async function openVirusTotal(name: string) {
+  try {
+    await invoke('open_url', { url: `https://www.virustotal.com/gui/search/${encodeURIComponent(name)}` });
+  } catch {}
+}
+
+async function searchProcess(name: string) {
+  try {
+    await invoke('open_url', { url: `https://www.google.com/search?q=${encodeURIComponent(name + ' process windows')}` });
+  } catch {}
+}
+
+function doExportProcesses(processList: any[]) {
+  exportCSV(processList.map(p => ({
+    PID: p.pid, Nom: p.name, CPU: p.cpu_percent?.toFixed(1) + '%',
+    RAM: p.memory_mb?.toFixed(0) + ' MB', Chemin: p.path || '',
+    Statut: p.status || '',
+  })), 'processus-' + new Date().toISOString().slice(0, 10));
+}
 
 const props = defineProps<{
   tab: string;
@@ -171,6 +202,10 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
         <button class="diag-search" style="padding:6px 10px;cursor:pointer;border:none" @click="onRefresh">
           <RefreshCw :size="13" style="color:var(--text-secondary)" />
         </button>
+        <button @click="doExportProcesses(filteredProcs)"
+          style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer">
+          ↓ CSV
+        </button>
       </div>
 
       <!-- Toast global -->
@@ -199,14 +234,26 @@ const runningCount = computed(() => props.services.filter(s => s.state === "Runn
               </td>
               <td><NBadge :variant="p.status === 'Running' ? 'success' : p.status === 'Sleeping' ? 'default' : 'warning'" style="font-size:10px">{{ p.status }}</NBadge></td>
               <td>
-                <button
-                  class="kill-btn"
-                  :disabled="busyPid === p.pid"
-                  @click="killProc(p.pid, p.name)"
-                  title="Terminer le processus"
-                >
-                  <X :size="12" />
-                </button>
+                <div style="display:flex;gap:3px;align-items:center">
+                  <button
+                    class="kill-btn"
+                    :disabled="busyPid === p.pid"
+                    @click="killProc(p.pid, p.name)"
+                    title="Terminer le processus"
+                  >
+                    <X :size="12" />
+                  </button>
+                  <button @click="openProcessLocation(p.path)" :disabled="!p.path"
+                    style="font-size:10px;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:none;color:var(--text-muted);cursor:pointer;opacity:0.7"
+                    :style="{ opacity: p.path ? '0.85' : '0.3', cursor: p.path ? 'pointer' : 'not-allowed' }"
+                    title="Ouvrir emplacement">📂</button>
+                  <button @click="openVirusTotal(p.name)"
+                    style="font-size:10px;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:none;color:var(--text-muted);cursor:pointer;opacity:0.7"
+                    title="Vérifier VirusTotal">🛡</button>
+                  <button @click="searchProcess(p.name)"
+                    style="font-size:10px;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:none;color:var(--text-muted);cursor:pointer;opacity:0.7"
+                    title="Rechercher sur Google">🔍</button>
+                </div>
               </td>
             </tr>
           </tbody>

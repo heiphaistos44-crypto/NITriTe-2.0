@@ -40,3 +40,7 @@ pub mod partition;
 pub mod advanced_recovery;
 pub mod restore_points;
 pub mod dependencies;
+pub mod extras;
+pub mod winpe;
+pub mod sensors;
+pub mod dll_scanner;

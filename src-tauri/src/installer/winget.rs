@@ -32,29 +32,47 @@ pub fn check_winget() -> bool {
 
 pub fn list_upgradable() -> Result<Vec<WingetPackage>, NiTriTeError> {
     let output = Command::new("winget")
-        .args(["upgrade", "--accept-source-agreements"])
+        .args(["upgrade", "--include-unknown", "--accept-source-agreements"])
         .creation_flags(0x08000000).output()?;
 
-    let text = String::from_utf8_lossy(&output.stdout);
+    let text = String::from_utf8_lossy(&output.stdout).to_string();
     let mut packages = Vec::new();
+    let mut past_separator = false;
 
-    let lines: Vec<&str> = text.lines().collect();
-    let header_idx = lines.iter().position(|l| l.contains("----"));
-
-    if let Some(idx) = header_idx {
-        for line in &lines[idx + 1..] {
-            let trimmed = line.trim();
-            if trimmed.is_empty() || trimmed.contains("upgrade") { continue; }
-            let parts: Vec<&str> = trimmed.split_whitespace().collect();
-            if parts.len() >= 4 {
-                packages.push(WingetPackage {
-                    name: parts[..parts.len()-3].join(" "),
-                    id: parts[parts.len()-3].to_string(),
-                    version: parts[parts.len()-2].to_string(),
-                    available: parts[parts.len()-1].to_string(),
-                    source: "winget".to_string(),
-                });
+    for line in text.lines() {
+        let t = line.trim();
+        if t.is_empty() { continue; }
+        if !past_separator {
+            if t.chars().all(|c| c == '-' || c == ' ') && t.len() > 10 { past_separator = true; }
+            continue;
+        }
+        let lower = t.to_lowercase();
+        if lower.contains("package") || lower.contains("paquet") || lower.starts_with("upgrades available") { break; }
+        // Parsing par colonnes (double espace) — plus fiable que split_whitespace pour les noms avec espaces
+        let parts: Vec<&str> = {
+            let mut parts = Vec::new();
+            let bytes = t.as_bytes();
+            let mut start = 0; let mut i = 0;
+            while i < bytes.len() {
+                if i + 1 < bytes.len() && bytes[i] == b' ' && bytes[i + 1] == b' ' {
+                    let p = t[start..i].trim();
+                    if !p.is_empty() { parts.push(p); }
+                    while i < bytes.len() && bytes[i] == b' ' { i += 1; }
+                    start = i;
+                } else { i += 1; }
             }
+            let last = t[start..].trim();
+            if !last.is_empty() { parts.push(last); }
+            parts
+        };
+        if parts.len() >= 3 {
+            packages.push(WingetPackage {
+                name: parts[0].to_string(),
+                id: parts.get(1).unwrap_or(&"").to_string(),
+                version: parts.get(2).unwrap_or(&"").to_string(),
+                available: parts.get(3).unwrap_or(&"").to_string(),
+                source: "winget".to_string(),
+            });
         }
     }
 

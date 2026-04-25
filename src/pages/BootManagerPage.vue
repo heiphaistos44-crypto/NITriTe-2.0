@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSkeleton from "@/components/ui/NSkeleton.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Server, Star, Clock, RefreshCw, AlertTriangle, Shield } from "lucide-vue-next";
+import { Server, Star, Clock, RefreshCw, AlertTriangle, Shield, Pencil, Check, X, Settings } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
@@ -17,6 +17,7 @@ interface BcdEntry {
 interface BootConfig {
   entries: BcdEntry[]; default_id: string; timeout_secs: number;
   safe_mode: boolean; debug_mode: boolean;
+  last_boot_time_secs?: number;
 }
 
 const config = ref<BootConfig | null>(null);
@@ -24,6 +25,85 @@ const loading = ref(true);
 const newTimeout = ref(10);
 const savingTimeout = ref(false);
 const booting = ref(false);
+
+// Edit description inline
+const editingId = ref<string | null>(null);
+const editingDesc = ref("");
+const savingDesc = ref(false);
+
+// Safe mode toggle
+const togglingMode = ref(false);
+
+function startEdit(e: BcdEntry) {
+  editingId.value = e.id;
+  editingDesc.value = e.description || "";
+}
+
+function cancelEdit() {
+  editingId.value = null;
+  editingDesc.value = "";
+}
+
+async function saveDesc(e: BcdEntry) {
+  const desc = editingDesc.value.trim();
+  if (!desc) return;
+  if (desc.length > 200) { notify.error("Description trop longue", "Maximum 200 caractères."); return; }
+  // Bloque les caractères pouvant causer une injection de commande via bcdedit
+  if (/[&|;<>"`\n\r]/.test(desc)) { notify.error("Caractères invalides", "La description ne peut pas contenir & | ; < > \" ` ou des sauts de ligne."); return; }
+  savingDesc.value = true;
+  try {
+    await invoke("run_system_command", {
+      cmd: "bcdedit",
+      args: ["/set", `{${e.id}}`, "description", desc],
+    });
+    notify.success("Description mise à jour");
+    cancelEdit();
+    await load();
+  } catch (err: any) {
+    notify.error("Erreur", String(err));
+  }
+  savingDesc.value = false;
+}
+
+async function enableSafeMode() {
+  if (!confirm("Activer le Safe Mode au prochain démarrage ? Le système redémarrera en mode minimal.")) return;
+  togglingMode.value = true;
+  try {
+    await invoke("run_system_command", {
+      cmd: "bcdedit",
+      args: ["/set", "{current}", "safeboot", "minimal"],
+    });
+    notify.success("Safe Mode activé", "Prendra effet au prochain démarrage");
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+  togglingMode.value = false;
+}
+
+async function disableSafeMode() {
+  if (!confirm("Désactiver le Safe Mode ? Le système démarrera normalement au prochain redémarrage.")) return;
+  togglingMode.value = true;
+  try {
+    await invoke("run_system_command", {
+      cmd: "bcdedit",
+      args: ["/deletevalue", "{current}", "safeboot"],
+    });
+    notify.success("Safe Mode désactivé");
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+  togglingMode.value = false;
+}
+
+async function openMsconfig() {
+  try {
+    await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "msconfig"] });
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+}
 
 async function load() {
   loading.value = true;
@@ -80,14 +160,25 @@ onMounted(load);
         <h1>Gestionnaire de Démarrage</h1>
         <p class="subtitle">Configuration BCD (Boot Configuration Data)</p>
       </div>
-      <NButton variant="ghost" size="sm" :loading="loading" @click="load" style="margin-left:auto">
-        <RefreshCw :size="13" /> Actualiser
-      </NButton>
+      <div class="header-actions">
+        <NButton variant="ghost" size="sm" @click="openMsconfig">
+          <Settings :size="13" /> msconfig
+        </NButton>
+        <NButton variant="ghost" size="sm" :loading="loading" @click="load">
+          <RefreshCw :size="13" /> Actualiser
+        </NButton>
+      </div>
     </div>
 
     <div class="warning-banner">
       <AlertTriangle :size="14" />
       <span>Modifier la configuration de démarrage peut rendre le système inopérant. Procédez avec précaution.</span>
+    </div>
+
+    <!-- Boot time -->
+    <div v-if="config?.last_boot_time_secs && config.last_boot_time_secs > 0" class="boot-time-banner">
+      <Clock :size="14" />
+      <span>Dernier démarrage : <strong>{{ config.last_boot_time_secs }}s</strong></span>
     </div>
 
     <div v-if="loading">
@@ -112,7 +203,23 @@ onMounted(load);
                 <Server v-else :size="16" />
               </div>
               <div class="entry-info">
-                <span class="entry-desc">{{ e.description || 'Windows Boot Manager' }}</span>
+                <!-- Description inline edit -->
+                <div v-if="editingId === e.id" class="desc-edit-row">
+                  <input
+                    v-model="editingDesc"
+                    class="desc-input"
+                    @keydown.enter="saveDesc(e)"
+                    @keydown.escape="cancelEdit"
+                    autofocus
+                  />
+                  <NButton variant="primary" size="sm" :loading="savingDesc" @click="saveDesc(e)">
+                    <Check :size="12" />
+                  </NButton>
+                  <NButton variant="ghost" size="sm" @click="cancelEdit">
+                    <X :size="12" />
+                  </NButton>
+                </div>
+                <span v-else class="entry-desc">{{ e.description || 'Windows Boot Manager' }}</span>
                 <span class="entry-id">{{ e.id }}</span>
                 <span class="entry-meta" v-if="e.device">{{ e.device }}</span>
               </div>
@@ -120,6 +227,15 @@ onMounted(load);
             <div class="entry-right">
               <NBadge v-if="e.is_default" variant="success" dot>Défaut</NBadge>
               <NBadge v-if="e.entry_type" variant="neutral">{{ e.entry_type }}</NBadge>
+              <NButton
+                v-if="editingId !== e.id"
+                variant="ghost"
+                size="sm"
+                @click="startEdit(e)"
+                title="Modifier la description"
+              >
+                <Pencil :size="12" />
+              </NButton>
               <NButton v-if="!e.is_default" variant="secondary" size="sm" @click="setDefault(e.id)">
                 <Star :size="12" /> Définir par défaut
               </NButton>
@@ -146,6 +262,23 @@ onMounted(load);
           <NBadge v-if="config.safe_mode" variant="warning">Safe Mode</NBadge>
           <NBadge v-if="config.debug_mode" variant="danger">Debug Mode</NBadge>
           <NBadge v-if="!config.safe_mode && !config.debug_mode" variant="success">Normal</NBadge>
+          <!-- Safe Mode toggle -->
+          <NButton
+            v-if="!config.safe_mode"
+            variant="warning"
+            size="sm"
+            :loading="togglingMode"
+            @click="enableSafeMode"
+            style="margin-left:auto"
+          >Activer Safe Mode</NButton>
+          <NButton
+            v-else
+            variant="secondary"
+            size="sm"
+            :loading="togglingMode"
+            @click="disableSafeMode"
+            style="margin-left:auto"
+          >Désactiver Safe Mode</NButton>
         </div>
       </NCard>
 
@@ -171,7 +304,9 @@ onMounted(load);
 .header-icon { width: 42px; height: 42px; border-radius: var(--radius-lg); background: var(--info-muted, color-mix(in srgb, #60a5fa 15%, transparent)); display: flex; align-items: center; justify-content: center; color: #60a5fa; flex-shrink: 0; }
 h1 { font-size: 22px; font-weight: 700; }
 .subtitle { font-size: 12px; color: var(--text-muted); }
+.header-actions { margin-left: auto; display: flex; gap: 6px; }
 .warning-banner { display: flex; gap: 10px; align-items: center; padding: 10px 14px; background: var(--danger-muted); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: var(--radius-md); font-size: 12px; color: var(--danger); }
+.boot-time-banner { display: flex; gap: 8px; align-items: center; padding: 8px 14px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 12px; color: var(--text-secondary); }
 .section-header { display: flex; align-items: center; gap: 8px; }
 .entries-list { display: flex; flex-direction: column; gap: 8px; }
 .entry-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; background: var(--bg-tertiary); border-radius: var(--radius-lg); border: 1px solid var(--border); transition: border-color .15s; }
@@ -180,11 +315,13 @@ h1 { font-size: 22px; font-weight: 700; }
 .entry-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
 .entry-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--bg-elevated); color: var(--text-muted); }
 .entry-icon.default { background: var(--success-muted); color: var(--success); }
-.entry-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.entry-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 .entry-desc { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .entry-id { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--text-muted); }
 .entry-meta { font-size: 11px; color: var(--text-secondary); }
 .entry-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.desc-edit-row { display: flex; align-items: center; gap: 6px; }
+.desc-input { flex: 1; min-width: 160px; padding: 4px 8px; background: var(--bg-elevated); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; outline: none; }
 .timeout-row { display: flex; flex-direction: column; gap: 10px; }
 .timeout-desc { font-size: 12px; color: var(--text-muted); }
 .timeout-ctrl { display: flex; align-items: center; gap: 12px; }

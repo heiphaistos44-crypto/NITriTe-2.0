@@ -5,11 +5,16 @@
     <div class="drivers-subtabs">
       <button v-for="t in SUBTABS" :key="t.id"
         class="drivers-subtab" :class="{ active: subTab === t.id }"
-        @click="subTab = t.id as 'list' | 'wu' | 'packs'">
+        @click="subTab = t.id as SubTab">
         <component :is="t.icon" :size="14" />
         {{ t.label }}
         <span v-if="t.badge" class="subtab-badge">{{ t.badge }}</span>
       </button>
+    </div>
+
+    <!-- ===== ONGLET SDI / Updater ===== -->
+    <div v-if="subTab === 'updater'">
+      <Suspense><DiagTabDriverUpdater /></Suspense>
     </div>
 
     <!-- ===== ONGLET 1 : Liste des pilotes ===== -->
@@ -69,7 +74,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(d, i) in filteredList.slice(0, 300)" :key="i"
+              <tr v-for="d in filteredList.slice(0, 300)" :key="`drv-${d.name}-${d.provider}`"
                 :class="{ 'row-error': d.config_error !== 0, 'row-unsigned': d.config_error === 0 && !d.signed }">
                 <td class="td-name">
                   <AlertTriangle v-if="d.config_error !== 0" :size="11" class="icon-err" />
@@ -96,6 +101,55 @@
             +{{ filteredList.length - 300 }} pilotes — affinez la recherche
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== ONGLET 2 : Périphériques avec problèmes ===== -->
+    <div v-if="subTab === 'problems'">
+      <div class="wu-section">
+        <button class="drv-btn drv-btn-primary" :disabled="problemsLoading" @click="loadProblems">
+          <RefreshCw :size="14" /> Vérifier les périphériques
+        </button>
+        <span v-if="problemsLoading" class="wu-loading"><div class="drv-spinner" /> Analyse WMI en cours...</span>
+      </div>
+
+      <div v-if="problemsLoaded">
+        <div v-if="problemDevices.length === 0" class="wu-empty">
+          <CheckCircle :size="18" style="color:#22c55e" />
+          <span style="color:#22c55e;font-weight:600">Aucun problème de pilote détecté</span>
+          <span style="color:var(--text-muted)">— Tous les périphériques fonctionnent correctement.</span>
+        </div>
+        <div v-else>
+          <div class="wu-summary" style="grid-template-columns:repeat(2,1fr)">
+            <div class="wu-sum-card sum-orange">
+              <div class="wu-sum-val">{{ problemDevices.length }}</div>
+              <div class="wu-sum-lbl">Périphérique(s) en erreur</div>
+            </div>
+            <div class="wu-sum-card sum-red">
+              <div class="wu-sum-val">{{ new Set(problemDevices.map(d => d.error_code)).size }}</div>
+              <div class="wu-sum-lbl">Code(s) d'erreur différents</div>
+            </div>
+          </div>
+          <div class="wu-list">
+            <div v-for="d in problemDevices" :key="d.device_id" class="wu-item" style="border-color:rgba(239,68,68,.2)">
+              <div class="wu-item-info">
+                <div class="wu-item-title" style="display:flex;align-items:center;gap:6px">
+                  <AlertTriangle :size="14" style="color:#f59e0b;flex-shrink:0" />
+                  {{ d.name }}
+                </div>
+                <div class="wu-item-meta">
+                  <span class="wu-tag wu-tag-orange">Code {{ d.error_code }}</span>
+                  <span v-if="d.class" class="wu-tag">{{ d.class }}</span>
+                  <span class="wu-tag wu-tag-red">{{ d.error_description }}</span>
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:4px;font-family:monospace">{{ d.device_id }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="wu-empty" style="color:var(--text-muted)">
+        Cliquez sur "Vérifier les périphériques" pour analyser les erreurs de pilotes
       </div>
     </div>
 
@@ -162,6 +216,9 @@
         <div class="packs-info">
           <HardDrive :size="16" style="color:var(--accent-primary)" />
           <span>Sélectionnez un dossier contenant des packs de pilotes (.inf) — compatible Snappy Driver</span>
+          <button class="drv-btn drv-btn-primary" style="margin-left:auto" @click="launchSdi">
+            <Zap :size="13" /> Snappy Driver Installer
+          </button>
         </div>
 
         <!-- Step 1: scan hardware -->
@@ -255,10 +312,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, shallowRef } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted, shallowRef, defineAsyncComponent } from "vue";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Search, AlertTriangle, Shield, RefreshCw, Download, HardDrive, Cpu, FolderOpen } from "lucide-vue-next";
+import { Search, AlertTriangle, Shield, RefreshCw, Download, HardDrive, Cpu, FolderOpen, CheckCircle, Zap } from "lucide-vue-next";
+const DiagTabDriverUpdater = defineAsyncComponent(() => import("./DiagTabDriverUpdater.vue"));
 
 // ---- Types ----
 interface PnpDriver { name: string; provider: string; version: string; date: string; class: string; inf: string; signed: boolean; status: string; config_error: number }
@@ -269,15 +327,32 @@ interface DriverMatch { device_name: string; hardware_id: string; inf_path: stri
 interface DriverScanResult { matches: DriverMatch[]; total_inf_scanned: number; total_devices_checked: number; scan_duration_ms: number }
 interface HardwareDevice { name: string; hardware_ids: string[]; compatible_ids: string[]; class: string; status: string; pnp_device_id: string }
 
+type SubTab = 'list' | 'problems' | 'wu' | 'packs' | 'updater'
+
 const SUBTABS = shallowRef([
-  { id: 'list',  label: 'Pilotes installés',  icon: Shield,    badge: null as number | null },
-  { id: 'wu',    label: 'MAJ Windows Update', icon: RefreshCw, badge: null as number | null },
-  { id: 'packs', label: 'MAJ via Packs INF',  icon: HardDrive, badge: null as number | null },
+  { id: 'list',     label: 'Pilotes installés',           icon: Shield,         badge: null as number | null },
+  { id: 'problems', label: 'Périphériques avec problèmes', icon: AlertTriangle,  badge: null as number | null },
+  { id: 'wu',       label: 'MAJ Windows Update',          icon: RefreshCw,      badge: null as number | null },
+  { id: 'packs',    label: 'MAJ via Packs INF',           icon: HardDrive,      badge: null as number | null },
+  { id: 'updater',  label: 'Mise à jour auto (SDI)',      icon: Zap,            badge: null as number | null },
 ])
 
 const LIST_FILTERS = [{ k: 'all', l: 'Tous' }, { k: 'errors', l: 'Erreurs' }, { k: 'unsigned', l: 'Non signés' }]
 
-const subTab = ref<'list' | 'wu' | 'packs'>('list')
+const subTab = ref<SubTab>('list')
+
+// --- Problems tab ---
+interface ProblemDevice { name: string; device_id: string; error_code: number; error_description: string; class: string; status: string; }
+const problemDevices = ref<ProblemDevice[]>([])
+const problemsLoading = ref(false)
+const problemsLoaded = ref(false)
+
+async function loadProblems() {
+  problemsLoading.value = true
+  try { problemDevices.value = await invoke<ProblemDevice[]>("get_problem_devices") }
+  catch (e) { showMsg(String(e), true) }
+  finally { problemsLoading.value = false; problemsLoaded.value = true }
+}
 
 // --- List tab ---
 const loadingList = ref(true)
@@ -311,6 +386,17 @@ const installErr = ref(false)
 function showMsg(msg: string, err = false) {
   installMsg.value = msg; installErr.value = err
   setTimeout(() => { installMsg.value = "" }, 4000)
+}
+
+async function launchSdi() {
+  try {
+    (window as any).__nitrite_sdi_active = true;
+    setTimeout(() => { (window as any).__nitrite_sdi_active = false; }, 60000);
+    await invoke("launch_sdi");
+  } catch (e) {
+    (window as any).__nitrite_sdi_active = false;
+    showMsg("SDI introuvable : " + String(e), true);
+  }
 }
 
 async function checkWU() {
@@ -382,7 +468,7 @@ async function installAll() {
   installing.value = true
   try {
     for (const m of scanResult.value.matches) {
-      await invoke("install_driver", { infPath: m.inf_path })
+      await invokeRaw("install_driver", { infPath: m.inf_path })
     }
     showMsg(`${scanResult.value.matches.length} pilotes installés`)
   } catch(e) { showMsg(String(e), true) }

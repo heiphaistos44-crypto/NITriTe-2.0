@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import { useNotificationStore } from "@/stores/notifications";
 
 const notify = useNotificationStore();
@@ -70,7 +71,6 @@ function findPortableId(match: string, exclude?: string): string | undefined {
 async function launchTool(tool: ToolDef) {
   loading.value = tool.label;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
 
     if (tool.type === "url") {
       await invoke("open_url", { url: tool.url });
@@ -105,7 +105,6 @@ async function launchTool(tool: ToolDef) {
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     portables.value = await invoke<PortableInfo[]>("get_portable_apps");
   } catch {
     // dev fallback

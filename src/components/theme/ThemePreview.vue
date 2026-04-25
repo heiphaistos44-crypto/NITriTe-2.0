@@ -101,7 +101,7 @@ const store = useThemeEditorStore();
         <span class="tp-dot tp-dot--success"></span>
         <span class="tp-text-muted" style="font-size:10px">RAM 55%</span>
         <div style="flex:1"></div>
-        <span class="tp-text-accent" style="font-size:10px; font-family:monospace; opacity:0.6">NiTriTe v26.19.0</span>
+        <span class="tp-text-accent" style="font-size:10px; font-family:monospace; opacity:0.6">NiTriTe v6.0.0</span>
       </div>
 
     </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSkeleton from "@/components/ui/NSkeleton.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Bluetooth, BluetoothOff, RefreshCw, Radio, Smartphone, Headphones, Laptop, Mouse } from "lucide-vue-next";
+import { Bluetooth, BluetoothOff, RefreshCw, Radio, Smartphone, Headphones, Laptop, Mouse, Trash2, Settings } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
@@ -15,6 +15,7 @@ interface BluetoothDevice {
   name: string; address: string; device_class: string;
   paired: boolean; connected: boolean; trusted: boolean;
   rssi: number; manufacturer: string; category: string;
+  device_id?: string; battery_level?: number; last_connected?: string;
 }
 interface BluetoothAdapter {
   name: string; address: string; enabled: boolean;
@@ -28,6 +29,7 @@ interface BluetoothReport {
 const report = ref<BluetoothReport | null>(null);
 const loading = ref(true);
 const toggling = ref(false);
+const forgetting = ref<string | null>(null);
 
 function deviceIcon(cat: string) {
   const c = cat.toLowerCase();
@@ -36,6 +38,32 @@ function deviceIcon(cat: string) {
   if (c.includes("mouse") || c.includes("hid")) return Mouse;
   if (c.includes("computer")) return Laptop;
   return Radio;
+}
+
+/** Retourne la couleur CSS selon le niveau de batterie */
+function batteryColor(level: number): string {
+  if (level > 50) return "var(--success)";
+  if (level > 20) return "var(--warning)";
+  return "var(--danger)";
+}
+
+/** Retourne le nombre de barres signal selon le RSSI */
+function rssiBars(rssi: number): number {
+  if (rssi >= -40) return 4;
+  if (rssi >= -70) return 3;
+  if (rssi >= -85) return 2;
+  return 1;
+}
+
+/** Formate une date ISO en "DD/MM/YYYY HH:mm" */
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("fr-FR") + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return iso;
+  }
 }
 
 async function load() {
@@ -61,6 +89,34 @@ async function toggleBt(enable: boolean) {
   toggling.value = false;
 }
 
+async function forgetDevice(d: BluetoothDevice) {
+  if (!d.device_id) {
+    notify.error("Impossible d'oublier", "Identifiant d'appareil manquant");
+    return;
+  }
+  if (!confirm(`Oublier l'appareil "${d.name || d.address}" ? Cette action supprimera le jumelage.`)) return;
+  forgetting.value = d.device_id;
+  try {
+    await invoke("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", `Remove-PnpDevice -InstanceId '${d.device_id}' -Confirm:$false`],
+    });
+    notify.success("Appareil oublié", d.name || d.address);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+  forgetting.value = null;
+}
+
+async function openBtSettings() {
+  try {
+    await invoke("open_url", { url: "ms-settings:bluetooth" });
+  } catch (e: any) {
+    notify.error("Erreur", String(e));
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -72,9 +128,14 @@ onMounted(load);
         <h1>Bluetooth</h1>
         <p class="subtitle">Adaptateurs et appareils Bluetooth</p>
       </div>
-      <NButton variant="ghost" size="sm" :loading="loading" @click="load" style="margin-left:auto">
-        <RefreshCw :size="13" /> Actualiser
-      </NButton>
+      <div class="header-actions">
+        <NButton variant="ghost" size="sm" @click="openBtSettings">
+          <Settings :size="13" /> Paramètres BT
+        </NButton>
+        <NButton variant="ghost" size="sm" :loading="loading" @click="load">
+          <RefreshCw :size="13" /> Actualiser
+        </NButton>
+      </div>
     </div>
 
     <div v-if="loading">
@@ -130,11 +191,50 @@ onMounted(load);
               <span class="device-name">{{ d.name || 'Appareil inconnu' }}</span>
               <span class="device-addr">{{ d.address }}</span>
               <span class="device-meta">{{ d.manufacturer || d.device_class }}</span>
+
+              <!-- Indicateur batterie -->
+              <span
+                v-if="d.battery_level !== undefined && d.battery_level > 0"
+                class="device-battery"
+                :style="{ color: batteryColor(d.battery_level) }"
+              >
+                🔋 {{ d.battery_level }}%
+              </span>
+
+              <!-- Barres signal RSSI -->
+              <div v-if="d.rssi !== undefined && d.rssi !== 0" class="rssi-bars">
+                <span
+                  v-for="b in 4"
+                  :key="b"
+                  class="rssi-bar"
+                  :class="{ active: b <= rssiBars(d.rssi) }"
+                  :style="{ height: (6 + b * 3) + 'px' }"
+                ></span>
+                <span class="rssi-label">{{ d.rssi }} dBm</span>
+              </div>
+
+              <!-- Dernière connexion -->
+              <span v-if="d.last_connected" class="device-last-conn">
+                Dernière connexion : {{ formatDate(d.last_connected) }}
+              </span>
             </div>
-            <div class="device-badges">
-              <NBadge v-if="d.connected" variant="success" dot>Connecté</NBadge>
-              <NBadge v-if="d.paired" variant="accent">Jumelé</NBadge>
-              <NBadge v-if="d.trusted" variant="neutral">Approuvé</NBadge>
+            <div class="device-right">
+              <div class="device-badges">
+                <NBadge v-if="d.connected" variant="success" dot>Connecté</NBadge>
+                <NBadge v-if="d.paired" variant="accent">Jumelé</NBadge>
+                <NBadge v-if="d.trusted" variant="neutral">Approuvé</NBadge>
+              </div>
+              <!-- Bouton Oublier -->
+              <NButton
+                v-if="d.paired && d.device_id"
+                variant="danger"
+                size="sm"
+                :loading="forgetting === d.device_id"
+                @click="forgetDevice(d)"
+                style="margin-top:6px"
+              >
+                <Trash2 :size="12" /> Oublier
+              </NButton>
             </div>
           </div>
         </div>
@@ -149,6 +249,7 @@ onMounted(load);
 .header-icon { width: 42px; height: 42px; border-radius: var(--radius-lg); background: var(--accent-muted); display: flex; align-items: center; justify-content: center; color: var(--accent-primary); flex-shrink: 0; }
 h1 { font-size: 22px; font-weight: 700; }
 .subtitle { font-size: 12px; color: var(--text-muted); }
+.header-actions { margin-left: auto; display: flex; gap: 6px; }
 .no-bt-banner { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--warning-muted); border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent); border-radius: var(--radius-md); font-size: 13px; color: var(--warning); }
 .section-header { display: flex; align-items: center; gap: 8px; }
 .adapters-list { display: flex; flex-direction: column; gap: 8px; }
@@ -160,14 +261,23 @@ h1 { font-size: 22px; font-weight: 700; }
 .adapter-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .adapter-meta { font-size: 11px; color: var(--text-muted); font-family: monospace; }
 .adapter-btns { flex-shrink: 0; }
-.devices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.devices-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
 .device-card { padding: 14px; background: var(--bg-tertiary); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); transition: border-color var(--transition-fast); }
 .device-card:hover { border-color: var(--text-muted); }
 .device-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--accent-muted); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; }
 .device-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .device-addr { font-family: monospace; font-size: 10px; color: var(--text-muted); }
 .device-meta { font-size: 11px; color: var(--text-muted); }
-.device-info { display: flex; flex-direction: column; gap: 2px; }
-.device-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.device-battery { font-size: 11px; font-weight: 600; }
+.device-last-conn { font-size: 10px; color: var(--text-muted); font-style: italic; }
+.device-info { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.device-right { display: flex; flex-direction: column; align-items: flex-end; }
+.device-badges { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px; color: var(--text-muted); font-size: 13px; }
+
+/* Barres RSSI */
+.rssi-bars { display: flex; align-items: flex-end; gap: 2px; }
+.rssi-bar { width: 4px; border-radius: 2px 2px 0 0; background: var(--border); transition: background .2s; }
+.rssi-bar.active { background: var(--accent-primary); }
+.rssi-label { font-size: 10px; color: var(--text-muted); margin-left: 4px; }
 </style>

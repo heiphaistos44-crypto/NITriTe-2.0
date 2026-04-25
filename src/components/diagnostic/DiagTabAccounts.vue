@@ -1,10 +1,53 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
-import { Users, Shield, Lock, UserX, Key } from "lucide-vue-next";
+import { Users, Shield, Lock, UserX, Key, Settings, AlertTriangle, CheckCircle, ExternalLink } from "lucide-vue-next";
+import { useExportData } from "@/composables/useExportData";
+
+const togglingUser = ref<string | null>(null);
+const toggleMsg = ref("");
+
+async function toggleUser(name: string, enable: boolean) {
+  togglingUser.value = name;
+  toggleMsg.value = "";
+  try {
+    await invoke("run_system_command", {
+      cmd: "cmd",
+      args: ["/c", "start", "cmd", "/k",
+        enable
+          ? `net user "${name}" /active:yes && echo Compte activé && pause`
+          : `net user "${name}" /active:no && echo Compte désactivé && pause`
+      ]
+    });
+    toggleMsg.value = enable ? `${name} : activation demandée` : `${name} : désactivation demandée`;
+    setTimeout(() => { toggleMsg.value = ""; }, 4000);
+  } catch (e: any) {
+    toggleMsg.value = "Erreur : " + String(e);
+  }
+  togglingUser.value = null;
+}
+
+async function openTool(tool: string) {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", tool] }).catch(() => {});
+}
+
+async function openSettings(uri: string) {
+  await invoke("open_url", { url: uri }).catch(() => {});
+}
+
+function doExportUsers() {
+  if (!data.value) return;
+  exportCSV(data.value.users.map(u => ({
+    Nom: u.name, NomComplet: u.full_name, Type: u.account_type,
+    Actif: u.enabled ? 'Oui' : 'Non', Admin: u.is_admin ? 'Oui' : 'Non',
+    DerniereConnexion: u.last_logon, Description: u.description,
+  })), 'comptes-' + new Date().toISOString().slice(0,10));
+}
 
 interface UserAccount {
   name: string; full_name: string; description: string;
@@ -27,10 +70,10 @@ interface AccountsInfo {
 const data = ref<AccountsInfo | null>(null);
 const loading = ref(true);
 const error = ref("");
+const { exportCSV } = useExportData();
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await cachedInvoke<AccountsInfo>("get_user_accounts");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
@@ -46,6 +89,29 @@ onMounted(async () => {
     </div>
     <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>
     <div v-else-if="data" style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Outils rapides -->
+      <div class="diag-section">
+        <p class="diag-section-label" style="margin:0 0 8px 0"><Settings :size="13" style="display:inline;margin-right:4px" />Outils de gestion</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <NButton variant="ghost" size="sm" @click="openTool('lusrmgr.msc')">
+            <Users :size="12" /> Gestion utilisateurs locaux
+          </NButton>
+          <NButton variant="ghost" size="sm" @click="openTool('netplwiz')">
+            <Key :size="12" /> Comptes utilisateurs (netplwiz)
+          </NButton>
+          <NButton variant="ghost" size="sm" @click="openSettings('ms-settings:otherusers')">
+            <ExternalLink :size="12" /> Autres utilisateurs (Paramètres)
+          </NButton>
+          <NButton variant="ghost" size="sm" @click="openSettings('ms-settings:signin')">
+            <Lock :size="12" /> Options de connexion
+          </NButton>
+          <NButton variant="ghost" size="sm" @click="doExportUsers" :disabled="!data">
+            ↓ Exporter comptes CSV
+          </NButton>
+        </div>
+        <div v-if="toggleMsg" style="font-size:12px;color:var(--accent);padding:4px 0">{{ toggleMsg }}</div>
+      </div>
 
       <!-- Résumé -->
       <div class="diag-section">
@@ -75,6 +141,7 @@ onMounted(async () => {
                 <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Statut</th>
                 <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Admin</th>
                 <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Dernière connexion</th>
+                <th style="padding:6px 10px;text-align:left;color:var(--text-secondary);font-weight:500">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +169,20 @@ onMounted(async () => {
                   <span v-else class="muted">—</span>
                 </td>
                 <td style="padding:6px 10px;color:var(--text-secondary);font-size:11px">{{ u.last_logon }}</td>
+                <td style="padding:4px 6px">
+                  <button v-if="u.enabled && !u.name.toLowerCase().includes('admin')"
+                    @click="toggleUser(u.name, false)"
+                    :disabled="togglingUser === u.name"
+                    style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#ef4444;cursor:pointer">
+                    Désactiver
+                  </button>
+                  <button v-else-if="!u.enabled"
+                    @click="toggleUser(u.name, true)"
+                    :disabled="togglingUser === u.name"
+                    style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:#22c55e;cursor:pointer">
+                    Activer
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -140,6 +221,45 @@ onMounted(async () => {
           </div>
           <div class="info-row"><span>Historique mots de passe</span>
             <span>{{ data.policy.history_count > 0 ? data.policy.history_count + ' mémorisés' : 'Aucun' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analyse sécurité comptes -->
+      <div class="diag-section" style="border-left:3px solid var(--accent)">
+        <p class="diag-section-label" style="margin:0 0 8px 0"><Shield :size="13" style="display:inline;margin-right:4px" />Analyse sécurité</p>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <component :is="data.total_admin <= 2 ? CheckCircle : AlertTriangle" :size="13"
+              :class="data.total_admin <= 2 ? 'ic-ok' : 'ic-warn'" />
+            <span>{{ data.total_admin }} administrateur(s) —
+              <span :style="{ color: data.total_admin <= 2 ? 'var(--success)' : 'var(--warning)' }">
+                {{ data.total_admin <= 1 ? 'OK' : data.total_admin === 2 ? 'Acceptable' : 'Trop d\'admins — vérifier' }}
+              </span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <component :is="data.policy.min_length >= 8 ? CheckCircle : AlertTriangle" :size="13"
+              :class="data.policy.min_length >= 8 ? 'ic-ok' : 'ic-warn'" />
+            <span>Mot de passe min. {{ data.policy.min_length }} car. —
+              <span :style="{ color: data.policy.min_length >= 12 ? 'var(--success)' : data.policy.min_length >= 8 ? 'var(--warning)' : 'var(--error)' }">
+                {{ data.policy.min_length >= 12 ? 'Fort' : data.policy.min_length >= 8 ? 'Moyen' : 'Faible' }}
+              </span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <component :is="data.policy.complexity ? CheckCircle : AlertTriangle" :size="13"
+              :class="data.policy.complexity ? 'ic-ok' : 'ic-warn'" />
+            <span>Complexité des mots de passe : <strong>{{ data.policy.complexity ? 'Activée' : 'Désactivée ⚠' }}</strong></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <component :is="data.policy.lockout_threshold > 0 ? CheckCircle : AlertTriangle" :size="13"
+              :class="data.policy.lockout_threshold > 0 ? 'ic-ok' : 'ic-warn'" />
+            <span>Verrouillage compte : <strong>{{ data.policy.lockout_threshold > 0 ? 'Activé (' + data.policy.lockout_threshold + ' tentatives)' : 'Désactivé ⚠ (brute-force possible)' }}</strong></span>
+          </div>
+          <div v-if="data.users.some(u => u.enabled && u.name.toLowerCase() === 'guest')"
+            style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--warning)">
+            <AlertTriangle :size="13" /> Compte Invité (Guest) actif — recommandé de le désactiver
           </div>
         </div>
       </div>

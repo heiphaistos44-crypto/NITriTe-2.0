@@ -162,7 +162,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from "@/utils/invoke";
 import { Activity, Play, Cpu, RefreshCw, TrendingUp, Clock, HardDrive as MemoryStick, List as Table } from 'lucide-vue-next'
 
 interface PerfPoint {

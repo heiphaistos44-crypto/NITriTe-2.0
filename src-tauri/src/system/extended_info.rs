@@ -215,7 +215,7 @@ fn expand_env_path(path: &str) -> String {
 fn measure_folder(path: &str) -> (f64, u64) {
     let script = format!(
         r#"try {{ $f=Get-ChildItem -LiteralPath '{}' -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum; Write-Output "$($f.Sum),$($f.Count)" }} catch {{ Write-Output '0,0' }}"#,
-        path.replace('\'', "\\'")
+        path.replace('\'', "''")
     );
 
     let output = Command::new("powershell")

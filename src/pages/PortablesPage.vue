@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -12,15 +12,49 @@ import {
   Package, Download, Play, FolderOpen, Star,
   HardDrive, FileCode, Globe, Wrench, Film,
   FileText, Trash2, Shield, Image, RefreshCw, Database,
+  Clock,
 } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
-const installedMap  = ref<Record<string, boolean>>({});
-const search        = ref("");
+const installedMap   = ref<Record<string, boolean>>({});
+const search         = ref("");
 const activeCategory = ref("Tous");
-const showPopular   = ref(false);
-const loading       = ref(false);
+const showPopular    = ref(false);
+const loading        = ref(false);
+
+// ── Favoris (localStorage) ────────────────────────────────────
+const FAV_KEY    = "nitrite-portables-fav";
+const RECENT_KEY = "nitrite-portables-recent";
+
+function safeParse<T>(key: string, fallback: T): T {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+const favorites = ref<Set<string>>(new Set(safeParse<string[]>(FAV_KEY, [])));
+const recentIds  = ref<string[]>(safeParse<string[]>(RECENT_KEY, []));
+
+function saveFavorites() {
+  localStorage.setItem(FAV_KEY, JSON.stringify([...favorites.value]));
+}
+function saveRecent() {
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recentIds.value));
+}
+
+function toggleFavorite(app: PortableApp) {
+  if (favorites.value.has(app.id)) {
+    favorites.value.delete(app.id);
+  } else {
+    favorites.value.add(app.id);
+  }
+  favorites.value = new Set(favorites.value);
+  saveFavorites();
+}
+
+function trackRecent(app: PortableApp) {
+  recentIds.value = [app.id, ...recentIds.value.filter(id => id !== app.id)].slice(0, 5);
+  saveRecent();
+}
 
 // ── Catalogue local enrichi ────────────────────────────────────
 const apps = ref<PortableApp[]>(PORTABLE_APPS);
@@ -39,6 +73,13 @@ const CAT_ICONS: Record<string, any> = {
   Récupération:  Database,
 };
 const catIcon = (cat: string) => CAT_ICONS[cat] ?? Package;
+
+function faviconUrl(appUrl: string): string {
+  try {
+    const host = new URL(appUrl).hostname;
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+  } catch { return ""; }
+}
 
 // ── Compteurs par catégorie ───────────────────────────────────
 const categoryCounts = computed(() => {
@@ -72,6 +113,20 @@ const filteredApps = computed(() => {
 
 const popularCount = computed(() => apps.value.filter((a) => a.popular).length);
 
+const favoriteApps = computed(() =>
+  apps.value.filter(a => favorites.value.has(a.id))
+);
+
+const recentApps = computed(() =>
+  recentIds.value.map(id => apps.value.find(a => a.id === id)).filter(Boolean) as PortableApp[]
+);
+
+function hasVersionMismatch(app: PortableApp): boolean {
+  if (!app.version || !installedMap.value[app.id]) return false;
+  const installed = (installedMap.value as any)[`${app.id}_version`];
+  return installed ? installed !== app.version : false;
+}
+
 // ── Actions ───────────────────────────────────────────────────
 async function openDownload(app: PortableApp) {
   if (!app.url) {
@@ -89,6 +144,7 @@ async function openDownload(app: PortableApp) {
 async function launchApp(app: PortableApp) {
   try {
     await invoke("launch_portable", { appId: app.id });
+    trackRecent(app);
     notify.success(`${app.name} lancé`);
   } catch (e: any) {
     notify.error(e?.toString() || `Impossible de lancer ${app.name}`);
@@ -105,14 +161,14 @@ async function openPortablesFolder() {
 
 async function refreshInstalled() {
   loading.value = true;
+  const results = await Promise.allSettled(
+    apps.value.map(app => invoke<boolean>("check_portable_installed", { appId: app.id }))
+  );
   const map: Record<string, boolean> = {};
-  for (const app of apps.value) {
-    try {
-      map[app.id] = await invoke<boolean>("check_portable_installed", { appId: app.id });
-    } catch {
-      map[app.id] = false;
-    }
-  }
+  apps.value.forEach((app, i) => {
+    const r = results[i];
+    map[app.id] = r.status === "fulfilled" ? r.value : false;
+  });
   installedMap.value = map;
   loading.value = false;
 }
@@ -171,7 +227,78 @@ async function refreshInstalled() {
       <span v-if="search" class="port-clear-search" @click="search = ''">✕ Effacer</span>
     </div>
 
-    <!-- Grille d'apps ───────────────────────────────── -->
+    <!-- Section Récemment lancées ───────────────────── -->
+    <template v-if="recentApps.length > 0 && !search">
+      <div class="port-section-title"><Clock :size="13" /> Récemment lancées</div>
+      <div class="port-grid port-grid--compact">
+        <div
+          v-for="app in recentApps"
+          :key="`recent-${app.id}`"
+          class="port-card"
+          :class="{ 'port-card--installed': installedMap[app.id] }"
+        >
+          <div class="port-card-icon">
+            <component :is="catIcon(app.category)" :size="22" />
+          </div>
+          <div class="port-card-body">
+            <div class="port-card-top">
+              <span class="port-card-name">{{ app.name }}</span>
+              <div class="port-card-badges">
+                <NBadge variant="neutral" size="sm">{{ app.category }}</NBadge>
+              </div>
+            </div>
+            <div class="port-card-bottom" style="margin-top:4px">
+              <span class="port-card-size">{{ app.size }}</span>
+              <div class="port-card-actions">
+                <NButton v-if="installedMap[app.id]" variant="primary" size="sm" @click="launchApp(app)">
+                  <Play :size="12" /> Lancer
+                </NButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Section Favoris ─────────────────────────────── -->
+    <template v-if="favoriteApps.length > 0 && !search">
+      <div class="port-section-title"><Star :size="13" style="color:#eab308" /> Favoris</div>
+      <div class="port-grid port-grid--compact">
+        <div
+          v-for="app in favoriteApps"
+          :key="`fav-${app.id}`"
+          class="port-card port-card--fav"
+          :class="{ 'port-card--installed': installedMap[app.id] }"
+        >
+          <div class="port-card-icon">
+            <component :is="catIcon(app.category)" :size="22" />
+            <Star class="port-popular-star" :size="10" />
+          </div>
+          <div class="port-card-body">
+            <div class="port-card-top">
+              <span class="port-card-name">{{ app.name }}</span>
+              <div class="port-card-badges">
+                <NBadge v-if="installedMap[app.id]" variant="success" size="sm">✓</NBadge>
+                <NBadge v-if="hasVersionMismatch(app)" variant="warning" size="sm">Update dispo</NBadge>
+              </div>
+            </div>
+            <div class="port-card-bottom" style="margin-top:4px">
+              <span class="port-card-size">{{ app.size }}</span>
+              <div class="port-card-actions">
+                <NButton v-if="installedMap[app.id]" variant="primary" size="sm" @click="launchApp(app)">
+                  <Play :size="12" /> Lancer
+                </NButton>
+                <NButton variant="ghost" size="sm" @click="toggleFavorite(app)" title="Retirer des favoris">
+                  <Star :size="12" style="color:#eab308;fill:#eab308" />
+                </NButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Grille d'apps principale ────────────────────── -->
     <div class="port-grid">
       <div
         v-for="app in filteredApps"
@@ -180,7 +307,10 @@ async function refreshInstalled() {
         :class="{ 'port-card--installed': installedMap[app.id] }"
       >
         <div class="port-card-icon">
-          <component :is="catIcon(app.category)" :size="22" />
+          <img v-if="app.url" :src="faviconUrl(app.url)" :alt="app.name"
+            class="port-favicon" loading="lazy"
+            @error="($event.target as HTMLImageElement).style.display='none'" />
+          <component v-if="!app.url" :is="catIcon(app.category)" :size="22" />
           <Star v-if="app.popular" class="port-popular-star" :size="10" />
         </div>
 
@@ -189,6 +319,7 @@ async function refreshInstalled() {
             <span class="port-card-name">{{ app.name }}</span>
             <div class="port-card-badges">
               <NBadge v-if="installedMap[app.id]" variant="success" size="sm">✓ Installée</NBadge>
+              <NBadge v-if="hasVersionMismatch(app)" variant="warning" size="sm">Update dispo</NBadge>
               <NBadge variant="neutral" size="sm">{{ app.category }}</NBadge>
             </div>
           </div>
@@ -211,6 +342,14 @@ async function refreshInstalled() {
               >
                 <Download :size="12" />
                 {{ installedMap[app.id] ? 'MAJ' : 'Télécharger' }}
+              </NButton>
+              <NButton
+                variant="ghost"
+                size="sm"
+                @click="toggleFavorite(app)"
+                :title="favorites.has(app.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              >
+                <Star :size="12" :style="favorites.has(app.id) ? 'color:#eab308;fill:#eab308' : 'color:var(--text-muted)'" />
               </NButton>
             </div>
           </div>
@@ -362,6 +501,13 @@ async function refreshInstalled() {
   flex-shrink: 0;
   color: var(--accent-primary);
   position: relative;
+  overflow: hidden;
+}
+.port-favicon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 .port-popular-star {
   position: absolute;
@@ -416,6 +562,26 @@ async function refreshInstalled() {
   font-family: "JetBrains Mono", monospace;
 }
 .port-card-actions { display: flex; gap: 4px; }
+
+/* ── Section titles ────────────────────────── */
+.port-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 4px 0 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.port-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.port-card--fav {
+  border-color: rgba(234, 179, 8, 0.3);
+}
 
 /* ── État vide ──────────────────────────────── */
 .port-empty {

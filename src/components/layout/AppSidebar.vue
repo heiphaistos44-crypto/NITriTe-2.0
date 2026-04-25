@@ -12,6 +12,7 @@ import {
   BarChart3, Settings, ChevronLeft, ChevronRight, ChevronDown, Search,
   Palette, Trash2, Gauge, Server, Globe, Bug, TerminalSquare,
   Bluetooth, Sparkles, Copy, Database, Star, StarOff, User,
+  Thermometer, PieChart, Files, FileSearch, Hash, Container, Radio, Network, Code2,
 } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<{
@@ -26,6 +27,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{ toggle: [] }>();
+const appVersion = __APP_VERSION__;
 
 const route = useRoute();
 const router = useRouter();
@@ -91,6 +93,9 @@ const iconMap: Record<string, any> = {
   bug: Bug, "terminal-square": TerminalSquare, bluetooth: Bluetooth,
   sparkles: Sparkles, copy: Copy, database: Database, "shield-check": ShieldCheck,
   user: User,
+  thermometer: Thermometer, "pie-chart": PieChart, files: Files,
+  "file-search": FileSearch, hash: Hash, container: Container,
+  radio: Radio, network: Network, "code-2": Code2,
 };
 
 function getIcon(name: string) { return iconMap[name] ?? LayoutDashboard; }
@@ -138,8 +143,8 @@ const pinnedItems = computed(() =>
         <img :src="logoUrl" class="logo-img" alt="NiTriTe" />
         <transition name="fade">
           <div v-if="!iconsOnly" class="logo-text">
-            <span class="logo-title">NiTriTe</span>
-            <span class="logo-version">v26.36.0</span>
+            <span class="logo-title">Nitrite</span>
+            <span class="logo-version">v{{ appVersion }}</span>
           </div>
         </transition>
       </div>
@@ -287,13 +292,15 @@ const pinnedItems = computed(() =>
 }
 .logo-area { display: flex; align-items: center; gap: 10px; overflow: hidden; }
 .logo-img {
-  width: 34px; height: 34px; border-radius: var(--radius-md);
+  width: 48px; height: 48px; border-radius: var(--radius-lg);
   object-fit: cover; flex-shrink: 0; display: block;
-  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3), 0 2px 6px rgba(0,0,0,0.4);
+  box-shadow: 0 0 18px rgba(249, 115, 22, 0.45), 0 4px 12px rgba(0,0,0,0.5);
+  transition: transform .2s; cursor: pointer;
 }
+.logo-img:hover { transform: scale(1.06); }
 .logo-text { display: flex; flex-direction: column; white-space: nowrap; }
 .logo-title {
-  font-weight: 800; font-size: 16px;
+  font-weight: 900; font-size: 19px;
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text; line-height: 1.2;

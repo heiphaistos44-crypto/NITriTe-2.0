@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { save, open } from "@tauri-apps/plugin-dialog";
 import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
 import { useNotificationStore } from "@/stores/notifications";
@@ -59,7 +59,7 @@ async function createProfile() {
       name:       newName.value.trim(),
       description: newDesc.value.trim(),
       created_at: new Date().toISOString(),
-      version:    "26.32.0",
+      version:    "6.0.0",
       config: {
         ...cfg,
         ollama_url:         aiStore.ollamaUrl,

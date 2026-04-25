@@ -182,7 +182,15 @@ pub fn create_system_image(target_drive: String, window: &tauri::Window) -> Clon
         };
 
         // ── Thread de lecture stdout → progression réelle ───────
-        let stdout = child.stdout.take().unwrap();
+        let stdout = match child.stdout.take() {
+            Some(s) => s,
+            None => return CloneResult {
+                success: false,
+                method: "wbadmin".into(),
+                message: "Impossible de lire la sortie du processus wbadmin.".into(),
+                duration_secs: 0,
+            },
+        };
         let window2 = window.clone();
         let reader_thread = std::thread::spawn(move || {
             let br = BufReader::new(stdout);

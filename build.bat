@@ -1,18 +1,78 @@
 @echo off
 setlocal EnableDelayedExpansion
-title Nitrite Build v26.44.0
-echo ============================================================
-echo   Nitrite 2.0 - Build Production v26.44.0
-echo   (UAC: requireAdministrator)
-echo ============================================================
-echo.
 cd /d "%~dp0"
 
-set VERSION=26.44.0
-set EXE_SRC=src-tauri\target\release\nitrite.exe
-set OUT_DIR=release
-set MAKENSIS=%LOCALAPPDATA%\tauri\NSIS\makensis.exe
-set NSIS_INCLUDE=%LOCALAPPDATA%\tauri\NSIS\Include
+:: ============================================================
+:: CHANGELOG
+:: ============================================================
+:: v6.1.0 (2026-04-07) — Audit sécurité complet
+::   - PS injection fixes : debloat.rs, extended_info.rs (escape '' correct)
+::   - Validation IP/hostname hosts_editor.rs, lettre A-Z advanced_recovery.rs
+::   - delete_dll : whitelist System32/SysWOW64/ProgramFiles uniquement
+::   - check_portable_installed : guard path traversal (../ \\ /)
+::   - lib_diagnostic_extra_a.rs : validation HH:MM tâche planifiée
+::   - script_generator.rs : safe_pkg_id + safe_display_name
+::   - DiagTabBoot.vue : try/catch sur doRecovery
+::   - invokeRaw -> invoke (timeout 15s) sur 6 composants rapides
+::   - useCachedInvoke.ts : pendingRequests Map (dédup concurrence)
+::   - tauri.conf.json : CSP sans wildcard https:
+::   - Suppression dead code : useTauriCommand.ts, useLocalStorage.ts
+::   - vue-tsc 0 erreur, cargo check 0 warning
+::
+:: v6.0.0 (2026-04-04) — Export Scan complet
+::   - Export batterie dans tous les formats (TXT/HTML/MD/JSON)
+::     avec capacité originale + actuelle en mWh, santé, cycles, chimie
+::   - Correction champs manquants : bios_ok, activation_type,
+::     office_activation_type, scan_errors
+::   - 4 gestionnaires de paquets toujours affichés (WinGet, Chocolatey,
+::     Scoop, Windows Update) avec détail des mises à jour disponibles
+::     ou "Aucune mise à jour" explicite
+::   - TXT : UTF-8 BOM pour affichage correct dans Notepad
+::   - DiagTabScan.vue : Chocolatey ajouté, Scoop toujours visible
+::   - Deux systèmes d'export synchronisés (useScanExport + useDiagnosticExport)
+:: ============================================================
+
+:: ── Version dynamique depuis package.json ────────────────────────────────────
+for /f "delims=" %%V in ('powershell -NoProfile -Command "(Get-Content package.json -Raw | ConvertFrom-Json).version"') do set "VERSION=%%V"
+if not defined VERSION set "VERSION=unknown"
+
+title Nitrite Build v!VERSION!
+
+:: ── Auto-elevation UAC ───────────────────────────────────────────────────────
+net session >nul 2>&1
+if !ERRORLEVEL! neq 0 (
+    echo --- Elevation UAC necessaire. Relancement en administrateur...
+    powershell -NoProfile -Command "Start-Process -FilePath '%~f0' -WorkingDirectory '%~dp0' -Verb RunAs"
+    exit /b
+)
+
+echo ============================================================
+echo   Nitrite 2.0 - Build Production v!VERSION!  [Administrateur]
+echo ============================================================
+echo.
+
+set "EXE_SRC=src-tauri\target\release\nitrite.exe"
+set "OUT_DIR=release"
+
+:: ── 7-Zip : tools\7za.exe en priorite, installation systeme en fallback ───────
+set "SEVENZIP="
+if exist "%~dp0tools\x64\7za.exe" set "SEVENZIP=%~dp0tools\x64\7za.exe"
+if not defined SEVENZIP (
+    if exist "%~dp0tools\7za.exe" set "SEVENZIP=%~dp0tools\7za.exe"
+)
+if not defined SEVENZIP (
+    if exist "C:\Program Files\7-Zip\7z.exe" set "SEVENZIP=C:\Program Files\7-Zip\7z.exe"
+)
+if not defined SEVENZIP (
+    set "_7Z86=C:\Program Files (x86)\7-Zip\7z.exe"
+    if exist "!_7Z86!" set "SEVENZIP=!_7Z86!"
+)
+
+:: ── Log (timestamp ISO via PowerShell - independant de la locale) ─────────────
+if not exist ".logs" mkdir ".logs"
+for /f "delims=" %%D in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "TIMESTAMP=%%D"
+set "LOGFILE=.logs\build_v!VERSION!_!TIMESTAMP!.log"
+echo [!TIMESTAMP!] [INFO] Build Nitrite v!VERSION! > "!LOGFILE!"
 
 :: ============================================================
 :: MENU
@@ -20,28 +80,37 @@ set NSIS_INCLUDE=%LOCALAPPDATA%\tauri\NSIS\Include
 echo Choisissez le mode de packaging :
 echo.
 echo   [1] EXE Portable seul (~15 MB)
-echo       release\Nitrite_v%VERSION%_portable.exe
+echo       release\Nitrite_v!VERSION!_portable.exe
 echo       (application uniquement, sans logiciel/drivers/scripts)
 echo.
 echo   [2] Dossier portable complet (~2.5 GB)
-echo       release\Nitrite_v%VERSION%\
+echo       release\Nitrite_v!VERSION!\
 echo       Contient : Nitrite.exe + logiciel + Drivers + Script Windows
 echo.
 echo   [3] SFX tout-en-un (~1.5 GB compresse)
-echo       release\Nitrite_v%VERSION%_full.exe
+echo       release\Nitrite_v!VERSION!_full.exe
 echo       Un seul .exe qui extrait tout et lance Nitrite
 echo.
-set /p CHOICE="Votre choix [1/2/3] : "
+echo   [4] ISO WinPE 11 bootable
+echo       release\Nitrite_v!VERSION!_WinPE.iso
+echo       Cle USB bootable - Necessite Windows ADK + WinPE Add-on
+echo.
+echo   [0] Quitter
+echo.
+set /p CHOICE="Votre choix [1/2/3/4/0] : "
 echo.
 
-if "%CHOICE%"=="1" goto MODE_EXE_SEUL
-if "%CHOICE%"=="2" goto MODE_DOSSIER
-if "%CHOICE%"=="3" goto MODE_SFX
+if "!CHOICE!"=="0" exit /b 0
+if "!CHOICE!"=="1" goto MODE_EXE_SEUL
+if "!CHOICE!"=="2" goto MODE_DOSSIER
+if "!CHOICE!"=="3" goto MODE_SFX
+if "!CHOICE!"=="4" goto MODE_ISO_WINPE
 echo Choix invalide. Relancez le script.
+echo [!TIMESTAMP!] [ERROR] Choix invalide : !CHOICE! >> "!LOGFILE!"
 pause & exit /b 1
 
 :: ============================================================
-:: ETAPES COMMUNES
+:: ETAPES COMMUNES (simulee en subroutine via goto + BUILD_RETURN)
 :: ============================================================
 :BUILD_COMMON
 echo --- Arret des instances en cours...
@@ -51,40 +120,59 @@ timeout /t 1 /nobreak >nul
 echo --- Verification des dependances npm...
 if not exist "node_modules" (
     call npm install
-    if %ERRORLEVEL% neq 0 ( echo [ERREUR] npm install. & pause & exit /b 1 )
+    if !ERRORLEVEL! neq 0 (
+        echo [ERREUR] npm install echoue.
+        echo [!TIMESTAMP!] [ERROR] npm install failed >> "!LOGFILE!"
+        pause & exit /b 1
+    )
 ) else (
-    echo      node_modules present.
+    echo      node_modules OK.
 )
 
-echo --- Verification TypeScript (729 apps portables + catalogue complet)...
-call npx tsc --noEmit
-if %ERRORLEVEL% neq 0 ( echo [ERREUR] Erreurs TypeScript. & pause & exit /b 1 )
+echo --- Verification TypeScript (vue-tsc)...
+call npx vue-tsc --noEmit >> "!LOGFILE!" 2>&1
+if !ERRORLEVEL! neq 0 (
+    echo [ERREUR] Erreurs TypeScript detectees. Voir !LOGFILE!
+    echo [!TIMESTAMP!] [ERROR] vue-tsc failed >> "!LOGFILE!"
+    pause & exit /b 1
+)
+echo      TypeScript OK.
 
-echo --- Preparation dossier release...
-if exist "%OUT_DIR%" rmdir /s /q "%OUT_DIR%"
-mkdir "%OUT_DIR%"
+if not exist "!OUT_DIR!" mkdir "!OUT_DIR!"
 
-echo --- Build Tauri Release (Vue + Rust + manifests)...
-call npx tauri build --no-bundle
-if %ERRORLEVEL% neq 0 ( echo [ERREUR] Build Tauri echoue. & pause & exit /b 1 )
-if not exist "%EXE_SRC%" ( echo [ERREUR] EXE non genere. & pause & exit /b 1 )
+echo --- Build Tauri Release (Vue + Rust)...
+echo [!TIMESTAMP!] [INFO] npx tauri build --no-bundle >> "!LOGFILE!"
+call npx tauri build --no-bundle >> "!LOGFILE!" 2>&1
+if !ERRORLEVEL! neq 0 (
+    echo [ERREUR] Build Tauri echoue. Voir !LOGFILE!
+    echo [!TIMESTAMP!] [ERROR] tauri build failed >> "!LOGFILE!"
+    pause & exit /b 1
+)
+if not exist "!EXE_SRC!" (
+    echo [ERREUR] EXE non genere apres build.
+    echo [!TIMESTAMP!] [ERROR] EXE manquant apres build >> "!LOGFILE!"
+    pause & exit /b 1
+)
+echo [!TIMESTAMP!] [INFO] Build OK : !EXE_SRC! >> "!LOGFILE!"
 
-goto %BUILD_RETURN%
+goto !BUILD_RETURN!
 
 :: ============================================================
 :: MODE 1 - EXE portable seul
 :: ============================================================
 :MODE_EXE_SEUL
-set BUILD_RETURN=AFTER_EXE_SEUL
+set "BUILD_RETURN=AFTER_EXE_SEUL"
 goto BUILD_COMMON
 :AFTER_EXE_SEUL
-set DEST=%OUT_DIR%\Nitrite_v%VERSION%_portable.exe
-copy /Y "%EXE_SRC%" "%DEST%" >nul
+set "DEST=!OUT_DIR!\Nitrite_v!VERSION!_portable.exe"
+if exist "!DEST!" del /f /q "!DEST!"
+copy /Y "!EXE_SRC!" "!DEST!" >nul
+echo [!TIMESTAMP!] [INFO] Mode 1 OK : !DEST! >> "!LOGFILE!"
 echo.
 echo ============================================================
 echo   [1] Build termine !
-echo   Fichier : %DEST%
-for %%F in ("%DEST%") do echo   Taille  : %%~zF octets
+echo   Fichier : !DEST!
+for %%F in ("!DEST!") do echo   Taille  : %%~zF octets
 echo ============================================================
 echo.
 pause & exit /b 0
@@ -93,27 +181,25 @@ pause & exit /b 0
 :: MODE 2 - Dossier portable complet
 :: ============================================================
 :MODE_DOSSIER
-set BUILD_RETURN=AFTER_DOSSIER
+set "BUILD_RETURN=AFTER_DOSSIER"
 goto BUILD_COMMON
 :AFTER_DOSSIER
-set DEST_DIR=%OUT_DIR%\Nitrite_v%VERSION%
-mkdir "%DEST_DIR%"
+set "DEST_DIR=!OUT_DIR!\Nitrite_v!VERSION!"
+if exist "!DEST_DIR!" rmdir /s /q "!DEST_DIR!"
+mkdir "!DEST_DIR!"
 echo --- Copie de l'executable...
-copy /Y "%EXE_SRC%" "%DEST_DIR%\Nitrite.exe" >nul
+copy /Y "!EXE_SRC!" "!DEST_DIR!\Nitrite.exe" >nul
 echo --- Copie de logiciel\ (peut prendre du temps)...
-xcopy /E /I /Q /Y "logiciel" "%DEST_DIR%\logiciel" >nul
-echo --- Copie de Drivers\...
-xcopy /E /I /Q /Y "Drivers" "%DEST_DIR%\Drivers" >nul
-echo --- Copie de Script Windows\...
-xcopy /E /I /Q /Y "Script Windows" "%DEST_DIR%\Script Windows" >nul
+xcopy /E /I /Q /Y "logiciel" "!DEST_DIR!\logiciel" >nul
+echo --- Copie de Drivers\ ...
+xcopy /E /I /Q /Y "Drivers" "!DEST_DIR!\Drivers" >nul
+echo --- Copie de Script Windows\ ...
+xcopy /E /I /Q /Y "Script Windows" "!DEST_DIR!\Script Windows" >nul
+echo [!TIMESTAMP!] [INFO] Mode 2 OK : !DEST_DIR! >> "!LOGFILE!"
 echo.
 echo ============================================================
 echo   [2] Build termine !
-echo   Dossier : %DEST_DIR%\
-echo     Nitrite.exe
-echo     logiciel\
-echo     Drivers\
-echo     Script Windows\
+echo   Dossier : !DEST_DIR!\
 echo ============================================================
 echo.
 pause & exit /b 0
@@ -122,151 +208,161 @@ pause & exit /b 0
 :: MODE 3 - SFX tout-en-un via 7-Zip SFX
 :: ============================================================
 :MODE_SFX
-:: Recherche 7-Zip (64-bit requis pour >2GB)
-set SEVENZIP=
-if exist "C:\Program Files\7-Zip\7z.exe"       set SEVENZIP=C:\Program Files\7-Zip\7z.exe
-if exist "C:\Program Files (x86)\7-Zip\7z.exe" set SEVENZIP=C:\Program Files (x86)\7-Zip\7z.exe
 if not defined SEVENZIP (
-    echo [ERREUR] 7-Zip introuvable.
-    echo Installez 7-Zip 64-bit depuis https://www.7-zip.org/
+    echo [ERREUR] Aucun compresseur 7-Zip trouve.
+    echo Verifiez que tools\7za.exe est present ou installez 7-Zip.
     pause & exit /b 1
 )
-for %%D in ("%SEVENZIP%") do set SEVENZIP_DIR=%%~dpD
+echo     Compresseur : !SEVENZIP!
 
-:: Recherche du stub SFX (7zSD.sfx = GUI avec choix dossier, 7zS.sfx = console, 7z.sfx = GUI simple)
-set SFX_STUB=
-if exist "%SEVENZIP_DIR%7zSD.sfx" set SFX_STUB=%SEVENZIP_DIR%7zSD.sfx
-if exist "%SEVENZIP_DIR%7zS.sfx"  set SFX_STUB=%SEVENZIP_DIR%7zS.sfx
-if exist "%SEVENZIP_DIR%7z.sfx"   set SFX_STUB=%SEVENZIP_DIR%7z.sfx
-if exist "%~dp0tools\7zSD.sfx"    set SFX_STUB=%~dp0tools\7zSD.sfx
-if exist "%~dp0tools\7zS.sfx"     set SFX_STUB=%~dp0tools\7zS.sfx
-if exist "%~dp0tools\7z.sfx"      set SFX_STUB=%~dp0tools\7z.sfx
-if defined SFX_STUB goto :SFX_STUB_FOUND
+:: ── Recherche du stub SFX ────────────────────────────────────────────────────
+set "SFX_STUB="
+for %%P in (
+    "%~dp0tools\7zSD.sfx"
+    "%~dp0tools\7zS.sfx"
+    "%~dp0tools\7z.sfx"
+    "%~dp0tools\x64\7zSD.sfx"
+    "%~dp0tools\x64\7zS.sfx"
+) do (
+    if exist %%P (
+        if not defined SFX_STUB set "SFX_STUB=%%~P"
+    )
+)
 
-:: Telechargement automatique via subroutine (hors bloc if, evite problemes expansion)
-echo --- 7zSD.sfx introuvable. Telechargement du package 7-Zip Extra...
-"%SEVENZIP%" i > "%TEMP%\_7zver.txt" 2>nul
-set SZVER=
+:: Chercher aussi dans le dossier de 7-Zip installe si applicable
+if not defined SFX_STUB (
+    for %%X in ("!SEVENZIP!") do set "_SZDIR=%%~dpX"
+    for %%P in (
+        "!_SZDIR!7zSD.sfx"
+        "!_SZDIR!7zS.sfx"
+        "!_SZDIR!7z.sfx"
+    ) do (
+        if exist %%P (
+            if not defined SFX_STUB set "SFX_STUB=%%~P"
+        )
+    )
+)
+
+if defined SFX_STUB goto SFX_STUB_FOUND
+
+:: ── Telechargement automatique du stub SFX ───────────────────────────────────
+echo --- 7zSD.sfx introuvable. Telechargement depuis 7-zip.org...
+if not exist "%~dp0tools" mkdir "%~dp0tools"
+set "EXTRA_DL=%TEMP%\_7z_sfx_extra.7z"
+set "SZVER="
+"!SEVENZIP!" i > "%TEMP%\_7zver.txt" 2>nul
 for /f "tokens=2" %%V in ('type "%TEMP%\_7zver.txt" ^| findstr /B /C:"7-Zip "') do (
-    if not defined SZVER set SZVER=%%V
+    if not defined SZVER set "SZVER=%%V"
 )
 del /Q "%TEMP%\_7zver.txt" >nul 2>&1
-if not defined SZVER (
-    echo [ERREUR] Impossible de determiner la version de 7-Zip.
+if defined SZVER (
+    set "SZVER_URL=!SZVER:.=!"
+    echo     Version detectee : !SZVER! ^(7z!SZVER_URL!-extra.7z^)
+    powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest 'https://www.7-zip.org/a/7z!SZVER_URL!-extra.7z' -OutFile '!EXTRA_DL!' -UseBasicParsing -ErrorAction SilentlyContinue"
+)
+if not exist "!EXTRA_DL!" (
+    echo     Fallback sur la version stable 24.08...
+    powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest 'https://www.7-zip.org/a/7z2408-extra.7z' -OutFile '!EXTRA_DL!' -UseBasicParsing -ErrorAction SilentlyContinue"
+)
+if exist "!EXTRA_DL!" (
+    "!SEVENZIP!" e "!EXTRA_DL!" 7zSD.sfx 7zS.sfx -o"%~dp0tools" -y >nul 2>&1
+    del /Q "!EXTRA_DL!" >nul 2>&1
+)
+for %%P in ("%~dp0tools\7zSD.sfx" "%~dp0tools\7zS.sfx") do (
+    if exist %%P (
+        if not defined SFX_STUB set "SFX_STUB=%%~P"
+    )
+)
+if not defined SFX_STUB (
+    echo [ERREUR] Echec du telechargement du stub SFX.
+    echo Copiez manuellement 7zSD.sfx dans tools\ depuis :
+    echo https://www.7-zip.org/download.html  ^(section "7-Zip Extra"^)
     pause & exit /b 1
 )
-:: Convertit "24.09" -> "2409"
-set SZVER_URL=!SZVER:.=!
-echo     Version detectee : !SZVER! -- URL: 7z!SZVER_URL!-extra.7z
-if not exist "%~dp0tools" mkdir "%~dp0tools"
-set EXTRA_DL=%~dp0tools\_extra.7z
-set EXTRA_OUT=%~dp0tools
-call :SFX_DOWNLOAD
-if exist "%~dp0tools\7zSD.sfx" set SFX_STUB=%~dp0tools\7zSD.sfx
-if exist "%~dp0tools\7zS.sfx"  set SFX_STUB=%~dp0tools\7zS.sfx
-if exist "%~dp0tools\7z.sfx"   set SFX_STUB=%~dp0tools\7z.sfx
-if defined SFX_STUB (
-    echo     SFX stub telecharge dans tools\
-    goto :SFX_STUB_FOUND
-)
-echo [ERREUR] Echec du telechargement automatique.
-echo.
-echo Solution manuelle :
-echo   1. Allez sur https://www.7-zip.org/download.html
-echo   2. Telechargez "7-Zip Extra" ^(en bas de la page^)
-echo   3. Extrayez 7zSD.sfx dans le dossier "tools\" du projet
-pause & exit /b 1
-
-:SFX_DOWNLOAD
-:: TLS 1.2 obligatoire + download visible pour diagnostiquer les erreurs reseau
-echo     Telechargement en cours...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest 'https://www.7-zip.org/a/7z%SZVER_URL%-extra.7z' -OutFile '%EXTRA_DL%' -UseBasicParsing"
-if exist "%EXTRA_DL%" goto :SFX_EXTRACT
-:: Fallback version stable 23.01
-echo     Fallback sur la version stable 23.01...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest 'https://www.7-zip.org/a/7z2301-extra.7z' -OutFile '%EXTRA_DL%' -UseBasicParsing"
-if exist "%EXTRA_DL%" goto :SFX_EXTRACT
-exit /b 0
-:SFX_EXTRACT
-:: Extraction recursive (le fichier peut etre dans un sous-dossier de l'archive)
-"%SEVENZIP%" e "%EXTRA_DL%" 7zSD.sfx -o"%EXTRA_OUT%" -y -r
-del /Q "%EXTRA_DL%" >nul 2>&1
-exit /b 0
 
 :SFX_STUB_FOUND
-
-set BUILD_RETURN=AFTER_SFX
+echo     SFX stub : !SFX_STUB!
+set "BUILD_RETURN=AFTER_SFX"
 goto BUILD_COMMON
 :AFTER_SFX
 
-set TEMP_SFX=%OUT_DIR%\_sfx_temp
-set ARCHIVE=%OUT_DIR%\_nitrite.7z
-set CFG_FILE=%OUT_DIR%\_sfx_config.txt
-set SFX_OUT=%OUT_DIR%\Nitrite_v%VERSION%_full.exe
+set "TEMP_SFX=%TEMP%\_nitrite_sfx_pack"
+set "ARCHIVE=!OUT_DIR!\_nitrite_tmp.7z"
+set "CFG_FILE=!OUT_DIR!\_sfx_config.txt"
+set "SFX_OUT=!OUT_DIR!\Nitrite_v!VERSION!_full.exe"
 
-:: Preparation du dossier temporaire
 echo --- Preparation du contenu SFX...
-if exist "%TEMP_SFX%" rmdir /s /q "%TEMP_SFX%"
-mkdir "%TEMP_SFX%"
-copy /Y "%EXE_SRC%" "%TEMP_SFX%\Nitrite.exe" >nul
+if exist "!TEMP_SFX!" rmdir /s /q "!TEMP_SFX!"
+mkdir "!TEMP_SFX!"
+copy /Y "!EXE_SRC!" "!TEMP_SFX!\Nitrite.exe" >nul
 echo --- Copie logiciel\ ...
-xcopy /E /I /Q /Y "logiciel" "%TEMP_SFX%\logiciel" >nul
+xcopy /E /I /Q /Y "logiciel" "!TEMP_SFX!\logiciel" >nul
 echo --- Copie Drivers\ ...
-xcopy /E /I /Q /Y "Drivers" "%TEMP_SFX%\Drivers" >nul
+xcopy /E /I /Q /Y "Drivers" "!TEMP_SFX!\Drivers" >nul
 echo --- Copie Script Windows\ ...
-xcopy /E /I /Q /Y "Script Windows" "%TEMP_SFX%\Script Windows" >nul
+xcopy /E /I /Q /Y "Script Windows" "!TEMP_SFX!\Script Windows" >nul
 
-:: Fichier de configuration SFX 7-Zip
+:: Desactiver temporairement delayed expansion : les ! dans les marqueurs SFX
+:: seraient interpretes comme delimiteurs de variable sinon
+set "_VER=!VERSION!"
+set "_CFG=!CFG_FILE!"
+setlocal DisableDelayedExpansion
 (
 echo ;!@Install@!UTF-8!
-echo Title="Nitrite v%VERSION%"
-echo BeginPrompt="Voulez-vous extraire Nitrite v%VERSION% ?"
+echo Title="Nitrite v%_VER%"
+echo BeginPrompt="Voulez-vous extraire Nitrite v%_VER% ?"
 echo RunProgram="Nitrite.exe"
 echo ;!@InstallEnd@!
-) > "%CFG_FILE%"
+) > "%_CFG%"
+endlocal
 
-:: Compression 7-Zip (LZMA2, multi-thread, niveau 5 = equilibre vitesse/taille)
-echo --- Compression 7-Zip LZMA2 (peut prendre 10-20 min selon le CPU)...
-echo     Source : ~2.4 GB non compresse
-"%SEVENZIP%" a -t7z -m0=lzma2 -mx=5 -mmt=on -ms=on "%ARCHIVE%" "%TEMP_SFX%\*" -y
-if %ERRORLEVEL% neq 0 (
+echo --- Compression LZMA2 (peut prendre 10-20 min selon le CPU)...
+if exist "!SFX_OUT!" del /f /q "!SFX_OUT!"
+if exist "!ARCHIVE!" del /f /q "!ARCHIVE!"
+"!SEVENZIP!" a -t7z -m0=lzma2 -mx=5 -mmt=on -ms=on "!ARCHIVE!" "!TEMP_SFX!\*" -y
+if !ERRORLEVEL! neq 0 (
     echo [ERREUR] Compression 7-Zip echouee.
-    rmdir /s /q "%TEMP_SFX%" >nul 2>&1
-    del /Q "%CFG_FILE%" >nul 2>&1
+    rmdir /s /q "!TEMP_SFX!" >nul 2>&1
+    del /Q "!CFG_FILE!" "!ARCHIVE!" >nul 2>&1
     pause & exit /b 1
 )
 
-:: Assemblage SFX : stub + config + archive
 echo --- Assemblage SFX...
-copy /b "%SFX_STUB%" + "%CFG_FILE%" + "%ARCHIVE%" "%SFX_OUT%" >nul
-if %ERRORLEVEL% neq 0 (
+copy /b "!SFX_STUB!" + "!CFG_FILE!" + "!ARCHIVE!" "!SFX_OUT!" >nul
+if !ERRORLEVEL! neq 0 (
     echo [ERREUR] Assemblage SFX echoue.
-    rmdir /s /q "%TEMP_SFX%" >nul 2>&1
-    del /Q "%ARCHIVE%" >nul 2>&1
-    del /Q "%CFG_FILE%" >nul 2>&1
+    rmdir /s /q "!TEMP_SFX!" >nul 2>&1
+    del /Q "!ARCHIVE!" "!CFG_FILE!" >nul 2>&1
     pause & exit /b 1
 )
 
-:: Nettoyage
-rmdir /s /q "%TEMP_SFX%" >nul 2>&1
-del /Q "%ARCHIVE%" >nul 2>&1
-del /Q "%CFG_FILE%" >nul 2>&1
+rmdir /s /q "!TEMP_SFX!" >nul 2>&1
+del /Q "!ARCHIVE!" "!CFG_FILE!" >nul 2>&1
 
-if not exist "%SFX_OUT%" (
-    echo [ERREUR] SFX non genere.
+if not exist "!SFX_OUT!" (
+    echo [ERREUR] SFX final non genere.
     pause & exit /b 1
 )
-
+echo [!TIMESTAMP!] [INFO] Mode 3 OK : !SFX_OUT! >> "!LOGFILE!"
 echo.
 echo ============================================================
 echo   [3] Build termine !
-echo   SFX : %SFX_OUT%
-for %%F in ("%SFX_OUT%") do echo   Taille : %%~zF octets
-echo.
-echo   Au lancement :
-echo     1. Cliquez sur "Oui" pour extraire
-echo     2. Extraction automatique de tout le contenu
-echo     3. Nitrite se lance automatiquement
+echo   SFX : !SFX_OUT!
+for %%F in ("!SFX_OUT!") do echo   Taille : %%~zF octets
 echo ============================================================
 echo.
 pause & exit /b 0
+
+:: ============================================================
+:: MODE 4 - ISO WinPE 11 bootable
+:: ============================================================
+:MODE_ISO_WINPE
+echo --- Build de l'exe Nitrite (prerequis pour l'ISO)...
+set "BUILD_RETURN=AFTER_ISO_WINPE"
+goto BUILD_COMMON
+:AFTER_ISO_WINPE
+echo [!TIMESTAMP!] [INFO] Mode 4 : lancement build-bootable.bat >> "!LOGFILE!"
+echo.
+echo --- Lancement du script de creation ISO WinPE...
+call "%~dp0boot\build-bootable.bat"
+exit /b %ERRORLEVEL%

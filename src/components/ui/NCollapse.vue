@@ -3,7 +3,7 @@ import { ref, watch, onMounted, type Component } from "vue";
 import { ChevronDown } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<{
-  title: string;
+  title?: string;
   storageKey?: string;
   defaultOpen?: boolean;
   icon?: Component;

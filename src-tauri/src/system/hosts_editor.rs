@@ -73,17 +73,36 @@ pub fn get_hosts_entries() -> Vec<HostsEntry> {
 
 #[tauri::command]
 pub fn add_hosts_entry(ip: String, hostname: String, comment: String) -> Result<String, String> {
-    let ip_c = ip.trim().to_string();
-    let host_c = hostname.trim().to_string();
+    // Suppression de tous les caractères de contrôle (newlines inclus) + guillemets
+    fn clean(s: &str) -> String {
+        s.chars().filter(|c| !c.is_control() && *c != '\'' && *c != '"').collect::<String>().trim().to_string()
+    }
+    let ip_c = clean(&ip);
+    let host_c = clean(&hostname);
+    let comment_c = clean(&comment);
+
     if ip_c.is_empty() || host_c.is_empty() {
         return Err("IP et hostname requis".to_string());
     }
-    let line = if comment.is_empty() {
+
+    // Validation IP basique (IPv4 ou IPv6)
+    let valid_ip = ip_c.parse::<std::net::IpAddr>().is_ok();
+    if !valid_ip {
+        return Err(format!("IP invalide : {}", ip_c));
+    }
+
+    // Validation hostname : alphanumériques, tirets, points uniquement
+    let valid_host = host_c.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '.' || c == '_');
+    if !valid_host {
+        return Err(format!("Hostname invalide : {}", host_c));
+    }
+
+    let line = if comment_c.is_empty() {
         format!("\n{}\t{}", ip_c, host_c)
     } else {
-        format!("\n{}\t{}\t# {}", ip_c, host_c, comment)
+        format!("\n{}\t{}\t# {}", ip_c, host_c, comment_c)
     };
-    let ps = format!(r#"Add-Content -Path '{}' -Value '{}' -Encoding UTF8"#, HOSTS_PATH, line.replace('\'', ""));
+    let ps = format!(r#"Add-Content -Path '{}' -Value '{}' -Encoding UTF8"#, HOSTS_PATH, line);
     #[cfg(target_os = "windows")]
     {
         let o = Command::new("powershell").args(["-NoProfile","-NonInteractive","-Command",&ps]).creation_flags(0x08000000).output().map_err(|e| e.to_string())?;
@@ -143,4 +162,32 @@ if ($idx -ge 0 -and $idx -lt $lines.Count) {{
 pub fn backup_hosts() -> Result<String, String> {
     let backup = format!("{}.bak", HOSTS_PATH);
     std::fs::copy(HOSTS_PATH, &backup).map(|_| format!("Sauvegarde : {}", backup)).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_hosts_raw() -> String {
+    std::fs::read_to_string(HOSTS_PATH).unwrap_or_default()
+}
+
+#[tauri::command]
+pub fn resolve_hostname(hostname: String) -> Result<String, String> {
+    use std::net::ToSocketAddrs;
+    let addr = format!("{}:80", hostname.trim());
+    match addr.to_socket_addrs() {
+        Ok(iter) => {
+            let mut seen = std::collections::HashSet::new();
+            for a in iter { seen.insert(a.ip().to_string()); }
+            let ips: Vec<String> = seen.into_iter().collect();
+            Ok(ips.join(", "))
+        }
+        Err(e) => Err(format!("Résolution échouée : {}", e)),
+    }
+}
+
+#[tauri::command]
+pub fn import_hosts_blocklist(url: String, _list_name: String) -> Result<String, String> {
+    Err(format!(
+        "Import en ligne non disponible dans cette version. Téléchargez manuellement : {} et importez-le.",
+        url
+    ))
 }

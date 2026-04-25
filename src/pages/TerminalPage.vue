@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
-import { Terminal, Trash2, Send, ChevronDown } from "lucide-vue-next";
+import { Terminal, Trash2, Send, Clock, ChevronRight } from "lucide-vue-next";
 
 interface OutputLine {
   timestamp: string;
@@ -17,23 +17,64 @@ interface ShellInfo {
   available: boolean;
 }
 
+// ─── Quick commands ───────────────────────────────────────────────────────────
+const QUICK_COMMANDS: { label: string; cmd: string; shell?: string }[] = [
+  { label: "IP Config",      cmd: "ipconfig /all" },
+  { label: "Ping Google",    cmd: "ping -n 4 8.8.8.8" },
+  { label: "Processus",      cmd: "tasklist /fo table" },
+  { label: "Disques",        cmd: "wmic logicaldisk get caption,freespace,size" },
+  { label: "Temp CPU",       cmd: "wmic /namespace:\\\\root\\wmi PATH MSAcpi_ThermalZoneTemperature get CurrentTemperature" },
+  { label: "Uptime",         cmd: "net statistics workstation | findstr /i statistics" },
+  { label: "Ports ouverts",  cmd: "netstat -ano | findstr LISTENING" },
+  { label: "Vars env",       cmd: "set", shell: "cmd" },
+  { label: "Services actifs",cmd: "sc query type= all state= running" },
+  { label: "Événements récents", cmd: "wevtutil qe System /c:5 /rd:true /f:text" },
+];
+
+const HISTORY_KEY = "nitrite_terminal_history";
+const MAX_HISTORY = 100;
+
 const input = ref("");
 const output = ref<OutputLine[]>([]);
 const outputEl = ref<HTMLDivElement | null>(null);
+const inputEl = ref<HTMLInputElement | null>(null);
 const history = ref<string[]>([]);
 const historyIndex = ref(-1);
 const running = ref(false);
 const shells = ref<ShellInfo[]>([]);
 const activeShell = ref("cmd");
+const showQuickPanel = ref(false);
 
+// ─── Persistance historique ───────────────────────────────────────────────────
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) history.value = JSON.parse(raw) as string[];
+  } catch { /* ignore */ }
+  historyIndex.value = history.value.length;
+}
+
+function saveHistory() {
+  try {
+    // Garder les MAX_HISTORY dernières entrées
+    const trimmed = history.value.slice(-MAX_HISTORY);
+    history.value = trimmed;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+  } catch { /* ignore */ }
+}
+
+function clearHistory() {
+  history.value = [];
+  historyIndex.value = 0;
+  localStorage.removeItem(HISTORY_KEY);
+}
+
+// ─── Shells ───────────────────────────────────────────────────────────────────
 async function loadShells() {
   try {
     shells.value = await invoke<ShellInfo[]>("detect_shells");
-    // Selectionner le premier shell disponible
     const available = shells.value.filter(s => s.available);
-    if (available.length > 0) {
-      activeShell.value = available[0].id;
-    }
+    if (available.length > 0) activeShell.value = available[0].id;
   } catch {
     shells.value = [
       { id: "cmd", name: "CMD", path: "cmd.exe", available: true },
@@ -63,20 +104,26 @@ function pushLine(type: OutputLine["type"], text: string) {
   scrollToBottom();
 }
 
-async function executeCommand() {
-  const cmd = input.value.trim();
-  if (!cmd || running.value) return;
+// ─── Exécution ────────────────────────────────────────────────────────────────
+async function executeCommand(cmd?: string) {
+  const raw = (cmd ?? input.value).trim();
+  if (!raw || running.value) return;
 
-  pushLine("cmd", cmd);
-  history.value.push(cmd);
+  pushLine("cmd", raw);
+
+  // Eviter les doublons consécutifs dans l'historique
+  if (history.value[history.value.length - 1] !== raw) {
+    history.value.push(raw);
+    saveHistory();
+  }
   historyIndex.value = history.value.length;
-  input.value = "";
+  if (!cmd) input.value = "";
   running.value = true;
 
   try {
     const result = await invoke<any>("run_in_shell", {
       shellId: activeShell.value,
-      command: cmd,
+      command: raw,
     });
 
     const stdout = result?.stdout ?? result?.output ?? "";
@@ -84,12 +131,12 @@ async function executeCommand() {
 
     if (stdout) {
       for (const line of stdout.split("\n")) {
-        if (line.trim()) pushLine("stdout", line);
+        if (line.trim()) pushLine("stdout", line.trimEnd());
       }
     }
     if (stderr) {
       for (const line of stderr.split("\n")) {
-        if (line.trim()) pushLine("stderr", line);
+        if (line.trim()) pushLine("stderr", line.trimEnd());
       }
     }
     if (!stdout && !stderr) {
@@ -128,9 +175,25 @@ function clearOutput() {
   pushLine("info", "Terminal efface");
 }
 
+function focusInput() {
+  nextTick(() => inputEl.value?.focus());
+}
+
+function onShellChange() {
+  focusInput();
+}
+
+function runQuickCommand(qc: { label: string; cmd: string; shell?: string }) {
+  if (qc.shell) activeShell.value = qc.shell;
+  executeCommand(qc.cmd);
+  showQuickPanel.value = false;
+  focusInput();
+}
+
 onMounted(() => {
   loadShells();
-  pushLine("info", "NiTriTe Terminal — Tapez une commande et appuyez sur Entree");
+  loadHistory();
+  pushLine("info", `NiTriTe Terminal — ${history.value.length} commande(s) dans l'historique. Tapez ou choisissez un raccourci.`);
 });
 </script>
 
@@ -142,9 +205,10 @@ onMounted(() => {
         <p class="page-subtitle">Executeur de commandes systeme</p>
       </div>
       <div class="header-actions">
+        <!-- Shell selector -->
         <div class="shell-selector">
           <label class="shell-label">Shell :</label>
-          <select v-model="activeShell" class="shell-select">
+          <select v-model="activeShell" class="shell-select" @change="onShellChange">
             <option
               v-for="shell in shells.filter(s => s.available)"
               :key="shell.id"
@@ -154,10 +218,37 @@ onMounted(() => {
             </option>
           </select>
         </div>
+        <!-- Quick commands toggle -->
+        <NButton variant="secondary" size="sm" @click="showQuickPanel = !showQuickPanel" :class="{ 'btn-active': showQuickPanel }">
+          <ChevronRight :size="14" :style="{ transform: showQuickPanel ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }" />
+          Raccourcis
+        </NButton>
+        <!-- Historique infos + effacer -->
+        <NButton variant="secondary" size="sm" @click="clearHistory" title="Effacer l'historique persistant">
+          <Clock :size="14" />
+          {{ history.length }}
+        </NButton>
         <NButton variant="secondary" size="sm" @click="clearOutput">
           <Trash2 :size="14" />
           Effacer
         </NButton>
+      </div>
+    </div>
+
+    <!-- Quick commands panel -->
+    <div v-if="showQuickPanel" class="quick-panel">
+      <div class="quick-panel-title">Commandes rapides</div>
+      <div class="quick-grid">
+        <button
+          v-for="qc in QUICK_COMMANDS"
+          :key="qc.cmd"
+          class="quick-chip"
+          :title="qc.cmd"
+          @click="runQuickCommand(qc)"
+        >
+          <ChevronRight :size="11" />
+          {{ qc.label }}
+        </button>
       </div>
     </div>
 
@@ -185,15 +276,16 @@ onMounted(() => {
         <span class="shell-badge">{{ getShellLabel(activeShell) }}</span>
         <span class="input-prompt">&gt;</span>
         <input
+          ref="inputEl"
           v-model="input"
           type="text"
           class="cmd-input"
-          placeholder="Entrez une commande..."
+          placeholder="Entrez une commande... (↑↓ historique)"
           :disabled="running"
           @keydown="handleKeyDown"
           autofocus
         />
-        <NButton variant="primary" size="sm" :loading="running" @click="executeCommand">
+        <NButton variant="primary" size="sm" :loading="running" @click="executeCommand()">
           <Send :size="14" />
         </NButton>
       </div>
@@ -213,11 +305,59 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .page-header h1 { font-size: 24px; font-weight: 700; }
 .page-subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
-.header-actions { display: flex; gap: 8px; }
+.header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* Quick commands panel */
+.quick-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+}
+.quick-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.quick-chip:hover {
+  background: var(--accent-muted);
+  border-color: rgba(249,115,22,.4);
+  color: var(--accent-primary);
+}
+
+.btn-active {
+  background: var(--accent-muted) !important;
+  border-color: rgba(249,115,22,.4) !important;
+  color: var(--accent-primary) !important;
+}
 
 .terminal-container {
   flex: 1;
@@ -253,8 +393,10 @@ onMounted(() => {
 .output-line {
   display: flex;
   gap: 8px;
+  /* word-wrap activé : les longues lignes passent à la ligne */
   white-space: pre-wrap;
-  word-break: break-all;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .line-time {
@@ -287,6 +429,14 @@ onMounted(() => {
 .output-stderr .line-text { color: #f85149; }
 .output-info .line-text { color: #58a6ff; font-style: italic; }
 
+/* La zone .line-text doit aussi wrapper */
+.line-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 .terminal-input {
   display: flex;
   align-items: center;
@@ -312,6 +462,7 @@ onMounted(() => {
   color: #c9d1d9;
   font-family: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
   font-size: 13px;
+  min-width: 0;
 }
 
 .cmd-input::placeholder { color: #484f58; }

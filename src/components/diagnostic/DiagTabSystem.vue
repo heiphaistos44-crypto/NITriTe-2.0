@@ -169,14 +169,23 @@ const props = defineProps<{
         <div v-if="!biosExtended" class="diag-loading" style="margin-top:8px"><div class="diag-spinner"></div> Chargement des infos BIOS étendues...</div>
 
         <NCollapse title="Informations complémentaires" storageKey="diag-bios-info" :defaultOpen="false">
-          <div class="card-block" style="margin-top:0">
-            <div class="diag-badge-row">
-              <CheckCircle :size="14" class="ic-ok" />
-              <span>Firmware détecté via WMI Win32_BIOS</span>
+          <div class="info-grid">
+            <div class="info-row"><span>Fabricant BIOS</span><span>{{ biosInfo.manufacturer }}</span></div>
+            <div class="info-row"><span>Version firmware</span><code>{{ biosInfo.version }}</code></div>
+            <div class="info-row"><span>Date de sortie</span><span>{{ biosInfo.release_date }}</span></div>
+            <div class="info-row"><span>Version SMBIOS</span><NBadge variant="info">{{ biosInfo.smbios_version }}</NBadge></div>
+            <div class="info-row info-full"><span>Numéro de série système</span><code>{{ biosInfo.serial_number || 'Non communiqué' }}</code></div>
+            <div v-if="biosExtended" class="info-row"><span>Type de châssis</span><span>{{ biosExtended.chassis_type || 'N/A' }}</span></div>
+            <div v-if="biosExtended" class="info-row"><span>Mode firmware</span>
+              <NBadge :variant="biosExtended.firmware_type === 'UEFI' ? 'success' : 'warning'">{{ biosExtended.firmware_type || 'BIOS Legacy' }}</NBadge>
             </div>
-            <div class="diag-badge-row">
-              <span class="muted">SMBIOS (System Management BIOS) définit la structure des données matérielles exposées au système d'exploitation.</span>
-            </div>
+          </div>
+          <div class="card-block" style="margin-top:8px;border:none;background:var(--bg-tertiary)">
+            <span class="muted" style="font-size:11px;line-height:1.6">
+              <strong>SMBIOS</strong> (System Management BIOS) standardise la façon dont le firmware communique les informations matérielles au système d'exploitation.
+              Le numéro de série système identifie la machine auprès du fabricant pour le support et les garanties.
+              La version UEFI remplace le BIOS Legacy depuis 2012 avec support du Secure Boot et du disque GPT.
+            </span>
           </div>
         </NCollapse>
       </template>
@@ -249,11 +258,25 @@ const props = defineProps<{
         </template>
         <div v-if="!moboExtended" class="diag-loading" style="margin-top:8px"><div class="diag-spinner"></div> Chargement des infos étendues...</div>
 
-        <NCollapse title="À propos" storageKey="diag-mobo-about" :defaultOpen="false">
-          <div class="card-block" style="margin-top:0">
-            <p class="muted" style="font-size:12px;line-height:1.6">
-              La carte mère est le circuit imprimé principal reliant tous les composants hardware.
-              Le numéro de série permet d'identifier la carte pour le support fabricant.
+        <NCollapse title="À propos de cette carte mère" storageKey="diag-mobo-about" :defaultOpen="false">
+          <div class="info-grid" style="margin-bottom:10px">
+            <div class="info-row"><span>Fabricant</span><span>{{ moboInfo.manufacturer }}</span></div>
+            <div class="info-row"><span>Modèle</span><span style="font-weight:600">{{ moboInfo.product }}</span></div>
+            <div v-if="moboInfo.version && moboInfo.version !== 'N/A'" class="info-row"><span>Révision PCB</span><NBadge variant="info">{{ moboInfo.version }}</NBadge></div>
+            <div v-if="moboExtended?.cpu_socket" class="info-row"><span>Socket CPU</span><NBadge variant="success">{{ moboExtended.cpu_socket }}</NBadge></div>
+            <div v-if="moboExtended?.slot_count > 0" class="info-row"><span>Slots d'extension</span><span>{{ moboExtended.slot_count }} slots PCIe/PCI/M.2</span></div>
+            <div v-if="moboExtended?.motherboard_temp_c > 0" class="info-row"><span>Température actuelle</span>
+              <NBadge :variant="moboExtended.motherboard_temp_c > 70 ? 'danger' : moboExtended.motherboard_temp_c > 50 ? 'warning' : 'success'">
+                {{ moboExtended.motherboard_temp_c }}°C
+              </NBadge>
+            </div>
+          </div>
+          <div class="card-block" style="margin-top:0;border:none;background:var(--bg-tertiary)">
+            <p class="muted" style="font-size:11px;line-height:1.7">
+              La <strong>carte mère</strong> est le circuit imprimé central qui interconnecte CPU, RAM, stockage, GPU et périphériques.
+              Le <strong>numéro de série</strong> permet d'identifier la carte pour le support et la garantie fabricant.
+              Pour les mises à jour BIOS/UEFI ou les manuels de votre carte, recherchez le modèle
+              <strong>{{ moboInfo.product }}</strong> sur le site de <strong>{{ moboInfo.manufacturer }}</strong>.
             </p>
           </div>
         </NCollapse>

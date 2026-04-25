@@ -1,10 +1,52 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
-import { Shield, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-vue-next";
+import { Shield, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, Settings, ExternalLink, RefreshCw } from "lucide-vue-next";
+import { useExportData } from "@/composables/useExportData";
+
+const fwActionLoading = ref(false);
+const fwMsg = ref("");
+const fwMsgErr = ref(false);
+
+function showFwMsg(msg: string, err = false) {
+  fwMsg.value = msg; fwMsgErr.value = err;
+  setTimeout(() => { fwMsg.value = ""; }, 4000);
+}
+
+async function enableAllProfiles() {
+  fwActionLoading.value = true;
+  try {
+    await invoke("enable_firewall_all_profiles");
+    showFwMsg("Pare-feu activé sur tous les profils ✓");
+  } catch (e: any) { showFwMsg("Erreur : " + String(e), true); }
+  fwActionLoading.value = false;
+}
+
+async function disableAllProfiles() {
+  if (!confirm("Désactiver le pare-feu sur tous les profils ? Cela réduit la sécurité du système.")) return;
+  fwActionLoading.value = true;
+  try {
+    await invoke("run_system_command", {
+      cmd: "cmd",
+      args: ["/c", "netsh advfirewall set allprofiles state off"]
+    });
+    showFwMsg("Pare-feu désactivé sur tous les profils");
+  } catch (e: any) { showFwMsg("Erreur : " + String(e), true); }
+  fwActionLoading.value = false;
+}
+
+async function openFirewallSettings() {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "wf.msc"] }).catch(() => {});
+}
+
+async function openDefenderSettings() {
+  await invoke("open_url", { url: "ms-settings:windowsdefender" }).catch(() => {});
+}
 
 interface FirewallRule {
   name: string; direction: string; action: string; enabled: boolean;
@@ -24,10 +66,10 @@ const data = ref<FirewallInfo | null>(null);
 const loading = ref(true);
 const error = ref("");
 const filter = ref<"all" | "in" | "out" | "block">("all");
+const { exportCSV } = useExportData();
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await cachedInvoke<FirewallInfo>("get_firewall_rules");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
@@ -39,11 +81,44 @@ function filteredRules(rules: FirewallRule[]) {
   if (filter.value === "block") return rules.filter(r => r.action === "Block");
   return rules;
 }
+
+function doExportRules() {
+  if (!data.value) return;
+  exportCSV(data.value.rules.map(r => ({
+    Nom: r.name, Direction: r.direction, Action: r.action,
+    Profil: r.profile, Protocole: r.protocol, Port: r.local_port,
+    Programme: r.program, Groupe: r.group,
+  })), 'firewall-regles-' + new Date().toISOString().slice(0,10));
+}
 </script>
 
 <template>
   <div class="diag-tab-content">
     <DiagBanner :icon="Shield" title="Pare-feu Windows" desc="Règles de filtrage réseau et profils de sécurité" color="red" />
+
+    <!-- Actions rapides pare-feu -->
+    <div class="diag-section" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <NButton variant="success" size="sm" :disabled="fwActionLoading" @click="enableAllProfiles">
+        <NSpinner v-if="fwActionLoading" :size="12" />
+        <Shield v-else :size="13" /> Activer tous les profils
+      </NButton>
+      <NButton variant="ghost" size="sm" :disabled="fwActionLoading" @click="disableAllProfiles">
+        <Shield :size="13" /> Désactiver pare-feu
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="openFirewallSettings">
+        <Settings :size="13" /> Ouvrir wf.msc (avancé)
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="openDefenderSettings">
+        <ExternalLink :size="13" /> Paramètres sécurité Windows
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="doExportRules" :disabled="!data">
+        ↓ Export règles CSV
+      </NButton>
+      <span v-if="fwMsg"
+        :style="{ fontSize: '12px', color: fwMsgErr ? 'var(--error)' : 'var(--success)', padding: '4px 10px', borderRadius: '6px', background: fwMsgErr ? 'rgba(239,68,68,.08)' : 'rgba(34,197,94,.08)' }">
+        {{ fwMsg }}
+      </span>
+    </div>
 
     <div v-if="loading" class="diag-loading"><div class="diag-spinner"></div> Chargement règles pare-feu...</div>
     <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>

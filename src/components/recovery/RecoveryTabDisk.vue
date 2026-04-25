@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invokeRaw as invoke } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NProgress from "@/components/ui/NProgress.vue";
@@ -23,7 +24,6 @@ const selectedDisk = ref<DiskInfo | null>(null);
 async function loadDisks() {
   loadingDisks.value = true; disks.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     disks.value = await invoke<DiskInfo[]>("list_connected_disks");
   } catch (e: any) { notify.error("Erreur disques", String(e)); }
   loadingDisks.value = false;
@@ -57,7 +57,6 @@ async function browsePath(path: string) {
   loadingPath.value = true;
   entries.value = [];
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     entries.value = await invoke<DiskEntry[]>("browse_disk_path", { path });
     // Dossiers en premier
     entries.value.sort((a, b) => (b.is_dir ? 1 : 0) - (a.is_dir ? 1 : 0) || a.name.localeCompare(b.name));
@@ -108,7 +107,6 @@ async function startRecover() {
     recoverMsg.value = ev.payload.message;
   });
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     recoverResult.value = await invoke<RecoverResult>("recover_files_safe", {
       files: Array.from(selectedItems.value),
       targetFolder: restoreTarget.value,

@@ -14,6 +14,9 @@
       <button class="bsod-btn bsod-btn-primary" :disabled="loading" @click="load">
         <RefreshCw :size="13" /> Analyser les crashs
       </button>
+      <button v-if="report && report.total_count > 0" class="bsod-btn" @click="exportBsodReport(report)" style="margin-left:8px">
+        ↓ Exporter rapport
+      </button>
     </div>
 
     <div v-if="loading" class="bsod-loading"><div class="bsod-spinner" /> Lecture de l'historique des crashs...</div>
@@ -87,6 +90,17 @@
                 <span>{{ fix }}</span>
               </div>
             </div>
+            <!-- Liens externes -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button @click.stop="openMsdn(e.bug_check_hex)"
+                style="font-size:10px;padding:3px 8px;border:1px solid rgba(59,130,246,.3);border-radius:4px;background:rgba(59,130,246,.08);color:#60a5fa;cursor:pointer">
+                📘 MSDN
+              </button>
+              <button @click.stop="openWinDbgSearch(e.bug_check_code, e.module)"
+                style="font-size:10px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text-muted);cursor:pointer">
+                🔍 Rechercher solution
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -106,9 +120,51 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from '@/composables/useCachedInvoke'
+import { useExportData } from '@/composables/useExportData'
 import { AlertTriangle, RefreshCw, Search, ChevronDown, BookOpen, Wrench, CheckCircle2 } from 'lucide-vue-next'
+
+const { exportTXT } = useExportData()
+
+function openMsdn(bugCheckHex: string) {
+  if (!bugCheckHex) return
+  const code = bugCheckHex.replace(/^0x/i, '').toLowerCase().padStart(8, '0')
+  invoke('open_url', { url: `https://learn.microsoft.com/fr-fr/windows-hardware/drivers/debugger/bug-check-0x${code}` })
+    .catch(() => {
+      invoke('open_url', { url: `https://www.google.com/search?q=BSOD+${bugCheckHex}+windows` })
+    })
+}
+
+function openWinDbgSearch(bugCheckCode: string, module: string) {
+  const query = [bugCheckCode, module].filter(Boolean).join(' ')
+  invoke('open_url', { url: `https://www.google.com/search?q=${encodeURIComponent('BSOD ' + query + ' windows fix')}` })
+    .catch(() => {})
+}
+
+function exportBsodReport(r: BsodReport | null) {
+  if (!r) return
+  const lines: string[] = [
+    '=== RAPPORT BSOD — NiTriTe ===',
+    `Date: ${new Date().toLocaleString('fr-FR')}`,
+    '',
+    `Total BSOD: ${r.total_count}`,
+    `Dumps: ${r.dump_count}`,
+    `Dernier BSOD: ${r.last_bsod || 'Inconnu'}`,
+    `Dossier dumps: ${r.dump_folder}`,
+    '',
+    '=== ENTRÉES ===',
+  ]
+  for (const e of (r.entries || [])) {
+    lines.push('')
+    lines.push(`BugCheck: ${e.bug_check_code} (${e.bug_check_hex})`)
+    lines.push(`Description: ${e.description}`)
+    lines.push(`Module: ${e.module || 'Inconnu'}`)
+    lines.push(`Timestamp: ${e.timestamp}`)
+    lines.push(`Dump: ${e.dump_file || 'N/A'} (${e.dump_size_kb || 0} KB)`)
+  }
+  exportTXT(lines, 'rapport-bsod-' + new Date().toISOString().slice(0, 10))
+}
 
 interface BsodEntry { timestamp: string; bug_check_code: string; bug_check_hex: string; description: string; parameters: string[]; module: string; dump_file: string; dump_size_kb: number }
 interface BsodReport { entries: BsodEntry[]; total_count: number; last_bsod: string; dump_folder: string; dump_count: number }
@@ -125,12 +181,16 @@ async function load() {
 function getDescSync(code: string): string {
   if (!code) return ''
   if (descCache[code]) return descCache[code]
-  invoke<string>('get_bugcheck_description', { code }).then(d => { descCache[code] = d })
+  invoke<string>('get_bugcheck_description', { code }).then(d => { descCache[code] = d }).catch(() => {})
   return 'Chargement...'
 }
 async function doLookup() {
   if (!lookupCode.value.trim()) return
-  lookupResult.value = await invoke<string>('get_bugcheck_description', { code: lookupCode.value.trim() })
+  try {
+    lookupResult.value = await invoke<string>('get_bugcheck_description', { code: lookupCode.value.trim() })
+  } catch (e) {
+    lookupResult.value = 'Erreur lors de la recherche'
+  }
 }
 
 // ── KB de fixes par code BSOD ──────────────────────────────────────────

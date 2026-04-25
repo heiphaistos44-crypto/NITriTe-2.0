@@ -52,3 +52,32 @@ pub fn portables_dir() -> PathBuf {
     let _ = std::fs::create_dir_all(&dir);
     dir
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn app_root_dir_is_absolute() {
+        let p = app_root_dir();
+        assert!(p.is_absolute(), "app_root_dir() should be absolute");
+    }
+
+    #[test]
+    fn logs_dir_ends_with_logs() {
+        let p = logs_dir();
+        assert!(p.ends_with(".logs"), "logs_dir should end with .logs");
+    }
+
+    #[test]
+    fn downloads_dir_ends_with_downloads() {
+        let p = downloads_dir();
+        assert!(p.ends_with("downloads"));
+    }
+
+    #[test]
+    fn portables_dir_ends_with_logiciel() {
+        let p = portables_dir();
+        assert!(p.ends_with("logiciel"));
+    }
+}

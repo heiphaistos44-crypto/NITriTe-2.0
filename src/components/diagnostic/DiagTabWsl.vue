@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from "@/utils/invoke";
 import { Terminal, RefreshCw, List, Star, Play } from 'lucide-vue-next'
 
 interface WslDistro { name: string; state: string; version: number; is_default: boolean }
@@ -215,9 +215,10 @@ onMounted(load)
 .wsl-input:focus, .wsl-select:focus { border-color: #7c3aed; }
 .wsl-cmd-loading { display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
 .wsl-spinner-sm { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,.15); border-top-color: #7c3aed; border-radius: 50%; animation: spin .8s linear infinite; }
-.wsl-output { margin: 0; padding: 14px 16px; background: rgba(0,0,0,.25); border-top: 1px solid rgba(124,58,237,.2);
-  font-family: 'JetBrains Mono',monospace; font-size: 11px; white-space: pre-wrap; max-height: 280px; overflow-y: auto;
-  color: #a3e635; line-height: 1.6; }
+.wsl-output { margin: 0; padding: 14px 16px; background: #0d0d0d; border-top: 1px solid rgba(124,58,237,.3);
+  font-family: 'JetBrains Mono',monospace; font-size: 12px; white-space: pre-wrap; max-height: 320px; overflow-y: auto;
+  color: #e5e5e5; line-height: 1.7; letter-spacing: .02em;
+  text-shadow: 0 0 8px rgba(167,139,250,.3); }
 
 .wsl-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 8px;
   border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary);

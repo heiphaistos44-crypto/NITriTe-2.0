@@ -24,15 +24,12 @@ pub fn get_event_logs(log_name: &str, count: u32) -> Result<Vec<EventLogEntry>, 
 
     let count = count.min(200); // Limiter a 200 max
 
+    let ps_cmd = format!(
+        "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-WinEvent -LogName '{}' -MaxEvents {} -ErrorAction SilentlyContinue | Select-Object Id, LevelDisplayName, ProviderName, TimeCreated, Message | ConvertTo-Json -Depth 2",
+        log_name, count
+    );
     let output = Command::new("powershell")
-        .args([
-            "-NoProfile",
-            "-Command",
-            &format!(
-                "Get-WinEvent -LogName '{}' -MaxEvents {} -ErrorAction SilentlyContinue | Select-Object Id, LevelDisplayName, ProviderName, TimeCreated, Message | ConvertTo-Json -Depth 2",
-                log_name, count
-            ),
-        ])
+        .args(["-NoProfile", "-Command", &ps_cmd])
         .creation_flags(0x08000000)
         .output()
         .map_err(|e| NiTriTeError::System(format!("Erreur wevtutil: {}", e)))?;

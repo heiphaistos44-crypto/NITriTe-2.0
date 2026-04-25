@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import {
   Search, Wifi, WifiOff, Globe, Shield, ShieldOff, Router, Share2,
   Activity, Server, Database, RefreshCw, CheckCircle, XCircle, MapPin,

@@ -350,8 +350,8 @@ const filteredSections = computed(() => {
         <div class="section-header"><Info :size="16" /><span>A propos de NiTriTe</span></div>
       </template>
       <div class="about-info">
-        <div class="about-row"><span>Application</span><span>NiTriTe 2.0</span></div>
-        <div class="about-row"><span>Version</span><span>26.37.0</span></div>
+        <div class="about-row"><span>Application</span><span>Nitrite 6.0</span></div>
+        <div class="about-row"><span>Version</span><span>6.0.0</span></div>
         <div class="about-row"><span>Stack</span><span>Tauri v2 + Rust + Vue 3 + TypeScript</span></div>
         <div class="about-row"><span>IA</span><span>llama.cpp portable + Ollama</span></div>
         <div class="about-row"><span>Onglets diagnostic</span><span>33 onglets, 6 catégories</span></div>

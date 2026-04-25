@@ -11,6 +11,7 @@ export interface PortableApp {
   url: string;
   exe_name: string;
   popular?: boolean;
+  version?: string;
 }
 
 import { CAT_SYSTEME }  from "./portable/cat_systeme";

@@ -1,16 +1,35 @@
 <script setup lang="ts">
-import { ref, computed, provide, onMounted, nextTick, watch } from "vue";
+import { ref, computed, provide, onMounted, onUnmounted, onErrorCaptured, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import logoUrl from "@/assets/nitrite-logo.jpg";
 import AppSidebar from "@/components/layout/AppSidebar.vue";
 import AppHeader from "@/components/layout/AppHeader.vue";
 import AppStatusBar from "@/components/layout/AppStatusBar.vue";
 import NToast from "@/components/ui/NToast.vue";
+import NAlertBanner from "@/components/ui/NAlertBanner.vue";
 import SearchModal from "@/components/shared/SearchModal.vue";
 import KeyboardShortcutsModal from "@/components/ui/KeyboardShortcutsModal.vue";
 import { useAppStore } from "@/stores/app";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { useDataCache } from "@/stores/dataCache";
+import { useProactiveAlerts } from "@/composables/useProactiveAlerts";
+import { logger } from "@/utils/logger";
 
+const { start: startAlerts, stop: stopAlerts } = useProactiveAlerts();
+function handleKeyDown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); searchOpen.value = !searchOpen.value; }
+  if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); toggleSidebar(); localStorage.setItem("nitrite-sidebar", String(sidebarCollapsed.value)); }
+  if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") { e.preventDefault(); shortcutsOpen.value = !shortcutsOpen.value; }
+  }
+}
+
+onUnmounted(() => { stopAlerts(); window.removeEventListener("keydown", handleKeyDown); });
+
+const route       = useRoute();
+const router      = useRouter();
+const appContent  = ref<HTMLElement | null>(null);
 const appStore    = useAppStore();
 const layoutStore = useLayoutStore();
 const dataCache   = useDataCache();
@@ -19,18 +38,16 @@ const sidebarCollapsed = ref(false);
 const searchOpen       = ref(false);
 const shortcutsOpen    = ref(false);
 const appReady         = ref(false);
-const videoMuted       = ref(false); // son activé par défaut
-const splashVideo      = ref<HTMLVideoElement | null>(null);
-
-// Sync direct de la propriété live .muted (l'attribut HTML ne suffit pas)
-watch(videoMuted, (muted) => {
-  if (splashVideo.value) splashVideo.value.muted = muted;
-});
+const videoMuted  = ref(true);
+const splashVideo = ref<HTMLVideoElement | null>(null);
+const splashAudio = ref<HTMLAudioElement | null>(null);
 
 function toggleMute() {
+  const a = splashAudio.value;
+  if (!a) return;
+  // Volume uniquement — jamais de play()/pause() sur clic (bloquant dans WebView2)
+  a.volume = videoMuted.value ? 1 : 0;
   videoMuted.value = !videoMuted.value;
-  // Double sécurité : forcer la propriété immédiatement (évite un cycle Vue)
-  if (splashVideo.value) splashVideo.value.muted = videoMuted.value;
 }
 
 // ── Preloader ──────────────────────────────────────────────────────────────────
@@ -81,19 +98,55 @@ provide("openSearch",       openSearch);
 const isRightSidebar      = computed(() => layoutStore.state.sidebarPosition === "right");
 const currentSidebarWidth = computed(() => sidebarCollapsed.value ? 64 : layoutStore.sidebarWidthPx);
 
+// ── Scroll reset automatique à chaque navigation ─────────────────────────────
+router.afterEach(() => {
+  pageError.value = null;
+  if (appContent.value) appContent.value.scrollTop = 0;
+});
+
+// ── Capture d'erreurs pages (diagnostic écrans noirs) ────────────────────────
+const pageError = ref<{ message: string; stack?: string } | null>(null);
+
+onErrorCaptured((err: unknown, _instance, info) => {
+  const msg = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : undefined;
+  console.error("[Nitrite] Erreur Vue capturée :", info, err);
+  logger.vue(info, err);
+  pageError.value = { message: `[${info}] ${msg}`, stack };
+  return false;
+});
+
+// Capture les erreurs de chargement de route (import() raté)
+router.onError((err) => {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error("[Nitrite] Erreur Router :", err);
+  logger.router(err);
+  pageError.value = { message: `[router] ${msg}`, stack: err instanceof Error ? err.stack : undefined };
+});
+
 // ── Démarrage ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
+  startAlerts(60000);
   // Masquer le préloader HTML natif dès que Vue est prêt
   (window as any).__hideNativeBoot?.();
 
-  // Démarrer la vidéo (WebView2 autorise l'autoplay avec son)
   await nextTick();
-  if (splashVideo.value) {
-    splashVideo.value.play().catch(() => {
-      // Fallback silencieux si autoplay refusé : mute + retry
-      videoMuted.value = true;
-      splashVideo.value?.play().catch(() => {});
-    });
+
+  // ── PRIORITÉ 1 : démarrer vidéo (toujours muette) + pré-chauffer l'audio ────
+  // La vidéo reste MUETTE en permanence — aucun pipeline audio lié au rendu vidéo.
+  // L'audio est géré par un élément <audio> séparé, évitant tout freeze compositor.
+  const v = splashVideo.value;
+  if (v) {
+    v.muted = true;
+    await v.play().catch(() => {});
+  }
+
+  // Démarrer l'audio en silence dès le chargement — il joue en continu,
+  // le toggle change uniquement le volume (opération non-bloquante)
+  const a = splashAudio.value;
+  if (a) {
+    a.volume = 0;
+    await a.play().catch(() => {});
   }
 
   // ── Tâche 0 : Interface (synchrone) ──
@@ -102,14 +155,7 @@ onMounted(async () => {
   appStore.loadSidebarState();
   sidebarCollapsed.value = appStore.sidebarCollapsed;
   layoutStore.applyToDocument();
-  window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); searchOpen.value = !searchOpen.value; }
-    if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); toggleSidebar(); localStorage.setItem("nitrite-sidebar", String(sidebarCollapsed.value)); }
-    if (e.key === "?" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") { e.preventDefault(); shortcutsOpen.value = !shortcutsOpen.value; }
-    }
-  });
+  window.addEventListener("keydown", handleKeyDown);
   loadTasks.value[0].status = "done";
 
   // ── Import Tauri ──
@@ -145,8 +191,8 @@ onMounted(async () => {
     load(6,  "get_gpu_detailed"),
     load(7,  "get_user_accounts"),
   ]);
-  // Yield → permet aux clics/events utilisateur de passer
-  await nextTick();
+  // Yield réel → libère le thread UI entre chaque batch
+  await new Promise(r => setTimeout(r, 0));
 
   // Batch B — données moyennement lourdes
   await Promise.allSettled([
@@ -157,7 +203,7 @@ onMounted(async () => {
     load(12, "get_event_logs", { logName: "System", count: 50 }),
     load(13, "get_firewall_rules"),
   ]);
-  await nextTick();
+  await new Promise(r => setTimeout(r, 0));
 
   // Batch C — données secondaires / lentes
   await Promise.allSettled([
@@ -178,12 +224,14 @@ onMounted(async () => {
     const { getCurrentWindow } = await import("@tauri-apps/api/window");
     const win = getCurrentWindow();
     await win.listen("tauri://close-requested", async () => {
+      if ((window as any).__nitrite_sdi_active) { (window as any).__nitrite_sdi_active = false; return; }
       try { if (inv) await inv("cleanup_on_exit"); } catch { await win.destroy(); }
     });
   } catch { /* dev */ }
 
   // Transition vers l'app
   await new Promise(r => setTimeout(r, 400));
+  if (splashAudio.value) { splashAudio.value.volume = 0; splashAudio.value.pause(); }
   appReady.value = true;
 });
 </script>
@@ -193,15 +241,16 @@ onMounted(async () => {
   <Transition name="splash">
     <div v-if="!appReady" class="splash-screen">
 
-      <!-- ── Vidéo fond plein écran ── -->
+      <!-- ── Vidéo fond (toujours muette — audio géré séparément) ── -->
       <video
         ref="splashVideo"
         class="splash-video"
         src="/splash.mp4"
         loop
         playsinline
-        :muted="videoMuted"
+        muted
       />
+      <audio ref="splashAudio" src="/splash.mp4" loop preload="auto" style="display:none" />
 
       <!-- ── Overlay dégradé ── -->
       <div class="splash-overlay" />
@@ -235,7 +284,7 @@ onMounted(async () => {
           <img :src="logoUrl" class="splash-logo" alt="NiTriTe" />
           <div class="splash-brand-text">
             <div class="splash-title">NiTriTe</div>
-            <div class="splash-version">v26.41.0</div>
+            <div class="splash-version">v6.0.0</div>
           </div>
         </div>
 
@@ -279,6 +328,8 @@ onMounted(async () => {
     </div>
   </Transition>
 
+  <NAlertBanner />
+
   <!-- ── Application ── -->
   <div
     v-if="appReady"
@@ -303,16 +354,26 @@ onMounted(async () => {
       }"
     >
       <AppHeader v-if="layoutStore.state.headerVisible" @open-search="openSearch" />
-      <main class="app-content" :style="{ padding: `${layoutStore.state.contentPadding}px` }">
+      <main ref="appContent" class="app-content" :style="{ padding: `${layoutStore.state.contentPadding}px` }">
         <div
           class="app-content-inner"
           :style="{ maxWidth: layoutStore.state.contentMaxWidth === 'full' ? '100%' : layoutStore.state.contentMaxWidth, margin: '0 auto' }"
         >
           <router-view v-slot="{ Component }">
-            <transition name="page" mode="out-in">
-              <component :is="Component" />
+            <transition name="page">
+              <component :is="Component" :key="route.path" />
             </transition>
           </router-view>
+
+          <!-- ── Overlay diagnostic erreur page ── -->
+          <div v-if="pageError" class="page-error-overlay">
+            <div class="page-error-box">
+              <div class="page-error-title">⚠ Erreur de rendu détectée</div>
+              <div class="page-error-msg">{{ pageError.message }}</div>
+              <pre v-if="pageError.stack" class="page-error-stack">{{ pageError.stack }}</pre>
+              <button class="page-error-dismiss" @click="pageError = null">Fermer</button>
+            </div>
+          </div>
         </div>
       </main>
       <AppStatusBar />
@@ -355,18 +416,17 @@ onMounted(async () => {
   position: absolute; top: 16px; right: 16px; z-index: 10;
   display: flex; align-items: center; gap: 7px;
   padding: 8px 14px;
-  background: rgba(9,9,11,0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(15,15,18,0.90);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 99px;
   color: #e4e4e7; cursor: pointer;
   font-family: inherit; font-size: 12px; font-weight: 500;
-  transition: all 200ms ease;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
   letter-spacing: 0.02em;
 }
 .splash-mute-btn:hover {
-  background: rgba(249,115,22,0.15);
-  border-color: rgba(249,115,22,0.4);
+  background: rgba(249,115,22,0.18);
+  border-color: rgba(249,115,22,0.45);
   color: #f97316;
 }
 .splash-mute-btn svg { flex-shrink: 0; }
@@ -456,13 +516,46 @@ onMounted(async () => {
 .sidebar-pos-right { flex-direction:row-reverse; }
 .app-main { flex:1; display:flex; flex-direction:column; transition:margin var(--transition-normal); min-width:0; }
 .app-content { flex:1; overflow-y:auto; overflow-x:hidden; }
-.app-content-inner { width:100%; }
+.app-content-inner { width:100%; position: relative; }
 
-.page-enter-active, .page-leave-active { transition: opacity 180ms ease, transform 180ms ease; }
-.page-enter-from { opacity:0; transform:translateX(10px); }
-.page-leave-to   { opacity:0; transform:translateX(-10px); }
+/* transition gérée globalement — voir <style> ci-dessous */
 
 .density-compact  :deep(.ncard) { padding: calc(var(--layout-density-pad-md, 8px) * 0.72); }
 .density-spacious :deep(button.nav-item) { padding: 10px 12px; }
 .density-compact  :deep(button.nav-item) { padding: 5px 8px; font-size: 11px; }
+
+/* ── Diagnostic d'erreur page ── */
+.page-error-overlay {
+  position: absolute; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px);
+  pointer-events: all;
+}
+.page-error-box {
+  max-width: 640px; width: 90%; padding: 24px;
+  background: #1c0a0a; border: 1px solid #ef4444;
+  border-radius: 12px; box-shadow: 0 0 32px rgba(239,68,68,0.4);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.page-error-title { font-size: 15px; font-weight: 700; color: #ef4444; }
+.page-error-msg { font-size: 13px; color: #fca5a5; word-break: break-all; }
+.page-error-stack {
+  font-size: 10px; color: #71717a; font-family: "JetBrains Mono", monospace;
+  white-space: pre-wrap; word-break: break-all; max-height: 200px;
+  overflow-y: auto; background: #0c0c0e; border-radius: 6px; padding: 8px;
+}
+.page-error-dismiss {
+  align-self: flex-end; padding: 6px 16px; font-size: 12px;
+  background: #ef4444; color: #fff; border: none; border-radius: 6px;
+  cursor: pointer; font-family: inherit;
+}
+.page-error-dismiss:hover { background: #dc2626; }
+</style>
+
+<!-- Transition de page : fade simultané (pas de mode out-in = pas de blocage) -->
+<style>
+.page-enter-active { transition: opacity 120ms ease; }
+.page-leave-active { transition: opacity 120ms ease; position: absolute; width: 100%; top: 0; left: 0; pointer-events: none; }
+.page-enter-from   { opacity: 0; }
+.page-leave-to     { opacity: 0; }
 </style>

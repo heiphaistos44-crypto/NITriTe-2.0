@@ -70,3 +70,41 @@ pub fn log_action(action: String) -> Result<(), String> {
 pub fn reset_stats() -> Result<(), String> {
     save_stats(&AppStats::default())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn app_stats_default_zeroed() {
+        let s = AppStats::default();
+        assert_eq!(s.installs_count, 0);
+        assert_eq!(s.cleanups_count, 0);
+        assert_eq!(s.scans_count, 0);
+        assert_eq!(s.scripts_run, 0);
+        assert_eq!(s.exports_count, 0);
+        assert_eq!(s.actions_today, 0);
+        assert!(s.action_counts.is_empty());
+    }
+
+    #[test]
+    fn action_counts_increments() {
+        let mut s = AppStats::default();
+        *s.action_counts.entry("scan".to_string()).or_insert(0) += 1;
+        *s.action_counts.entry("scan".to_string()).or_insert(0) += 1;
+        assert_eq!(s.action_counts["scan"], 2);
+    }
+
+    #[test]
+    fn stats_serializes_to_valid_json() {
+        let s = AppStats {
+            installs_count: 3,
+            scans_count: 7,
+            last_action: "2026-04-01T12:00:00".to_string(),
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&s).expect("serialization failed");
+        assert!(json.contains("\"installs_count\":3"));
+        assert!(json.contains("\"scans_count\":7"));
+    }
+}

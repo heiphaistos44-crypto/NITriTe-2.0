@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, invokeRaw } from "@/utils/invoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -10,8 +10,10 @@ import { useNotificationStore } from "@/stores/notifications";
 import {
   Save, FolderArchive, CheckSquare, Square,
   RefreshCw, CheckCircle, Clock, Download,
-  AlertTriangle, FolderOpen,
+  AlertTriangle, FolderOpen, Lock,
 } from "lucide-vue-next";
+
+const SENSITIVE_ITEMS = new Set(["wifi_passwords","bitlocker_keys","windows_license","ssh_keys","office_license"]);
 
 const notify = useNotificationStore();
 
@@ -38,7 +40,6 @@ async function pickBackupFolder() {
 
 async function openSaveFolder() {
   try {
-    const { invoke } = await import('@tauri-apps/api/core');
     if (customBackupPath.value) {
       await invoke('open_path', { path: customBackupPath.value });
     } else {
@@ -55,49 +56,71 @@ interface BackupItem {
   label: string;
   description: string;
   checked: boolean;
+  category: string;
 }
 
 const backupItems = ref<BackupItem[]>([
   // Logiciels & systeme
-  { id: "installed_apps", label: "Apps installees", description: "Liste complete de toutes les applications installees", checked: true },
-  { id: "winget_export", label: "WinGet JSON", description: "Export winget packages.json reinstallable avec winget import", checked: true },
-  { id: "drivers", label: "Drivers", description: "Sauvegarde des pilotes du systeme via driverquery", checked: true },
-  { id: "windows_features", label: "Features Windows", description: "Fonctionnalites Windows activees/desactivees", checked: false },
-  { id: "installed_fonts", label: "Polices installees", description: "Liste de toutes les polices du systeme", checked: false },
+  { id: "installed_apps",      label: "Apps installees",       description: "Liste complete de toutes les applications installees",                     checked: true,  category: "Logiciels & Système" },
+  { id: "winget_export",       label: "WinGet JSON",           description: "Export winget packages.json reinstallable avec winget import",              checked: true,  category: "Logiciels & Système" },
+  { id: "drivers",             label: "Drivers",               description: "Sauvegarde des pilotes du systeme via driverquery",                        checked: true,  category: "Logiciels & Système" },
+  { id: "windows_features",    label: "Features Windows",      description: "Fonctionnalites Windows activees/desactivees",                              checked: false, category: "Logiciels & Système" },
+  { id: "installed_fonts",     label: "Polices installees",    description: "Liste de toutes les polices du systeme",                                   checked: false, category: "Logiciels & Système" },
   // Reseau & securite
-  { id: "network_config", label: "Config reseau", description: "Configuration IP, DNS, Wi-Fi, passerelle", checked: true },
-  { id: "wifi_passwords", label: "Mots de passe WiFi", description: "Profils WiFi avec mots de passe en clair", checked: true },
-  { id: "firewall_rules", label: "Regles firewall", description: "Export des regles du pare-feu Windows", checked: false },
-  { id: "network_shares", label: "Partages reseau", description: "Lecteurs reseau mappes et partages SMB", checked: false },
-  { id: "hosts_file", label: "Fichier hosts", description: "Copie du fichier C:\\Windows\\System32\\drivers\\etc\\hosts", checked: false },
-  // Cles de licence (toutes en clair/decrypte)
-  { id: "windows_license", label: "Cle Windows (clair)", description: "Cle de produit Windows extraite en clair via WMI/registry", checked: true },
-  { id: "bitlocker_keys", label: "Cles BitLocker (clair)", description: "Cle(s) de recuperation BitLocker en clair via PowerShell", checked: true },
-  { id: "office_license", label: "Cle Office (clair)", description: "Cle de produit Microsoft Office extraite en clair via OSPP.vbs", checked: true },
+  { id: "network_config",      label: "Config reseau",         description: "Configuration IP, DNS, Wi-Fi, passerelle",                                  checked: true,  category: "Réseau & Sécurité" },
+  { id: "wifi_passwords",      label: "Mots de passe WiFi",    description: "Profils WiFi avec mots de passe en clair",                                  checked: true,  category: "Réseau & Sécurité" },
+  { id: "firewall_rules",      label: "Regles firewall",       description: "Export des regles du pare-feu Windows",                                    checked: false, category: "Réseau & Sécurité" },
+  { id: "network_shares",      label: "Partages reseau",       description: "Lecteurs reseau mappes et partages SMB",                                   checked: false, category: "Réseau & Sécurité" },
+  { id: "hosts_file",          label: "Fichier hosts",         description: "Copie du fichier C:\\Windows\\System32\\drivers\\etc\\hosts",              checked: false, category: "Réseau & Sécurité" },
+  // Licences
+  { id: "windows_license",     label: "Cle Windows",           description: "Cle de produit Windows extraite en clair via WMI/registry",               checked: true,  category: "Licences" },
+  { id: "bitlocker_keys",      label: "Cles BitLocker",        description: "Cle(s) de recuperation BitLocker en clair via PowerShell",                 checked: true,  category: "Licences" },
+  { id: "office_license",      label: "Cle Office",            description: "Cle de produit Microsoft Office extraite en clair via OSPP.vbs",           checked: true,  category: "Licences" },
   // Navigateurs
-  { id: "chrome_bookmarks", label: "Favoris Chrome", description: "Favoris Google Chrome (Bookmarks JSON)", checked: false },
-  { id: "edge_bookmarks", label: "Favoris Edge", description: "Favoris Microsoft Edge (Bookmarks JSON)", checked: false },
-  { id: "brave_bookmarks", label: "Favoris Brave", description: "Favoris navigateur Brave (Bookmarks JSON)", checked: false },
+  { id: "chrome_bookmarks",    label: "Favoris Chrome",        description: "Favoris Google Chrome (Bookmarks JSON)",                                   checked: false, category: "Navigateurs" },
+  { id: "edge_bookmarks",      label: "Favoris Edge",          description: "Favoris Microsoft Edge (Bookmarks JSON)",                                  checked: false, category: "Navigateurs" },
+  { id: "brave_bookmarks",     label: "Favoris Brave",         description: "Favoris navigateur Brave (Bookmarks JSON)",                                checked: false, category: "Navigateurs" },
   // Demarrage & taches
-  { id: "startup_programs", label: "Programmes demarrage", description: "Liste des programmes au demarrage (HKCU + HKLM Run)", checked: true },
-  { id: "scheduled_tasks", label: "Taches planifiees", description: "Taches planifiees Windows actives (Get-ScheduledTask)", checked: false },
-  { id: "registry_export", label: "Export registre Run", description: "Export partiel registre utilisateur (Run, Shell, Winlogon)", checked: false },
-  // Environnement developpeur
-  { id: "env_variables", label: "Variables env.", description: "Variables d'environnement systeme et utilisateur", checked: true },
-  { id: "ssh_keys", label: "Cles SSH", description: "Fichiers ~/.ssh/ (id_rsa, id_ed25519, known_hosts, config)", checked: false },
-  { id: "pip_packages", label: "Packages Python (pip)", description: "pip freeze > requirements.txt — liste des packages Python", checked: false },
-  { id: "vscode_extensions", label: "Extensions VSCode", description: "code --list-extensions — liste des extensions VS Code", checked: false },
-  { id: "wsl_config", label: "Config WSL", description: "Liste distros WSL + copie de .wslconfig", checked: false },
-  { id: "powershell_profile", label: "Profil PowerShell", description: "Copie du profil PowerShell utilisateur ($PROFILE)", checked: false },
-  // Composants matériels
-  { id: "system_components", label: "Composants PC", description: "CPU, GPU, RAM, SSD/HDD, Carte mère, BIOS — rapport complet du matériel", checked: true },
-  // Materiel & autres
-  { id: "power_plans", label: "Plans d'alimentation", description: "Export de tous les plans d'alimentation (powercfg /export)", checked: false },
-  { id: "printer_config", label: "Imprimantes", description: "Liste des imprimantes installes et leurs pilotes", checked: false },
-  { id: "folder_sizes", label: "Tailles dossiers", description: "Top 30 dossiers les plus volumineux sur C:", checked: false },
-  { id: "desktop_files", label: "Fichiers Bureau", description: "Liste des fichiers presents sur le Bureau", checked: false },
-  { id: "suspicious_processes", label: "Processus suspects", description: "Processus hors dossiers systeme standards (hors System32/PF)", checked: false },
+  { id: "startup_programs",    label: "Programmes demarrage",  description: "Liste des programmes au demarrage (HKCU + HKLM Run)",                      checked: true,  category: "Démarrage & Tâches" },
+  { id: "scheduled_tasks",     label: "Taches planifiees",     description: "Taches planifiees Windows actives (Get-ScheduledTask)",                     checked: false, category: "Démarrage & Tâches" },
+  { id: "registry_export",     label: "Export registre Run",   description: "Export partiel registre utilisateur (Run, Shell, Winlogon)",                checked: false, category: "Démarrage & Tâches" },
+  // Dev
+  { id: "env_variables",       label: "Variables env.",        description: "Variables d'environnement systeme et utilisateur",                          checked: true,  category: "Développeur" },
+  { id: "ssh_keys",            label: "Cles SSH",              description: "Fichiers ~/.ssh/ (id_rsa, id_ed25519, known_hosts, config)",               checked: false, category: "Développeur" },
+  { id: "pip_packages",        label: "Packages Python",       description: "pip freeze > requirements.txt",                                            checked: false, category: "Développeur" },
+  { id: "vscode_extensions",   label: "Extensions VSCode",     description: "code --list-extensions",                                                  checked: false, category: "Développeur" },
+  { id: "wsl_config",          label: "Config WSL",            description: "Liste distros WSL + copie de .wslconfig",                                  checked: false, category: "Développeur" },
+  { id: "powershell_profile",  label: "Profil PowerShell",     description: "Copie du profil PowerShell utilisateur ($PROFILE)",                       checked: false, category: "Développeur" },
+  // Matériel
+  { id: "system_components",   label: "Composants PC",         description: "CPU, GPU, RAM, SSD/HDD, Carte mère, BIOS — rapport complet",              checked: true,  category: "Matériel" },
+  { id: "power_plans",         label: "Plans d'alimentation",  description: "Export de tous les plans d'alimentation (powercfg /export)",               checked: false, category: "Matériel" },
+  { id: "printer_config",      label: "Imprimantes",           description: "Liste des imprimantes installes et leurs pilotes",                         checked: false, category: "Matériel" },
+  // Divers
+  { id: "folder_sizes",        label: "Tailles dossiers",      description: "Top 30 dossiers les plus volumineux sur C:",                               checked: false, category: "Divers" },
+  { id: "desktop_files",       label: "Fichiers Bureau",       description: "Liste des fichiers presents sur le Bureau",                                checked: false, category: "Divers" },
+  { id: "suspicious_processes",label: "Processus suspects",    description: "Processus hors dossiers systeme standards (hors System32/PF)",             checked: false, category: "Divers" },
 ]);
+
+// Groupement par catégorie
+const groupedItems = computed(() => {
+  const groups: Record<string, BackupItem[]> = {};
+  for (const item of backupItems.value) {
+    if (!groups[item.category]) groups[item.category] = [];
+    groups[item.category].push(item);
+  }
+  return groups;
+});
+
+// Presets
+function applyPreset(preset: 'essential' | 'full' | 'dev') {
+  const essential = new Set(["installed_apps","winget_export","drivers","network_config","wifi_passwords","windows_license","bitlocker_keys","office_license","startup_programs","env_variables","system_components"]);
+  const dev = new Set([...essential, "ssh_keys","pip_packages","vscode_extensions","wsl_config","powershell_profile","firewall_rules","scheduled_tasks","registry_export"]);
+  backupItems.value.forEach(item => {
+    if (preset === 'essential') item.checked = essential.has(item.id);
+    else if (preset === 'dev') item.checked = dev.has(item.id);
+    else item.checked = true;
+  });
+}
 
 function toggleItem(id: string) {
   const item = backupItems.value.find((i) => i.id === id);
@@ -113,6 +136,33 @@ function selectNone() {
 }
 
 const selectedCount = computed(() => backupItems.value.filter((i) => i.checked).length);
+
+// Estimation taille backup (heuristique)
+const ESTIMATES: Record<string, number> = {
+  installed_apps: 80,    winget_export: 30,    drivers: 100,
+  windows_features: 20, installed_fonts: 15,  network_config: 20,
+  wifi_passwords: 5,    firewall_rules: 30,   network_shares: 10,
+  hosts_file: 5,        windows_license: 5,   bitlocker_keys: 5,
+  office_license: 5,    chrome_bookmarks: 100, edge_bookmarks: 100,
+  brave_bookmarks: 80,  startup_programs: 15,  scheduled_tasks: 25,
+  registry_export: 10,  env_variables: 10,    ssh_keys: 20,
+  pip_packages: 15,     vscode_extensions: 10, wsl_config: 10,
+  powershell_profile: 5, system_components: 50, power_plans: 40,
+  printer_config: 15,   folder_sizes: 20,     desktop_files: 10,
+  suspicious_processes: 25,
+};
+
+const estimatedSizeKb = computed(() => {
+  return backupItems.value
+    .filter(i => i.checked)
+    .reduce((acc, i) => acc + (ESTIMATES[i.id] ?? 10), 0);
+});
+
+const estimatedSizeLabel = computed(() => {
+  const kb = estimatedSizeKb.value;
+  if (kb < 1024) return `~${kb} KB`;
+  return `~${(kb / 1024).toFixed(1)} MB`;
+});
 
 // --- Backup creation ---
 const backupInProgress = ref(false);
@@ -142,15 +192,19 @@ async function createBackup() {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    const result = await invoke<{ path: string; total_items: number }>("create_backup", {
+    const result = await invokeRaw<{ path: string; total_items: number }>("create_backup", {
       items: selected,
       format: exportFormat.value,
       customPath: useCustomPath.value ? customBackupPath.value : undefined,
     });
     backupResult.value = { path: result.path, items: selected };
-    notify.success("Sauvegarde terminée", result.path);
+    notify.success(
+      `Backup créé — ${selected.length} élément(s) sauvegardé(s)`,
+      result.path
+    );
   } catch (e: any) {
     notify.error("Sauvegarde échouée", String(e));
+    backupProgress.value = 0;
   } finally {
     backupInProgress.value = false;
     backupStatus.value = "";
@@ -173,11 +227,7 @@ async function loadBackups() {
   try {
     previousBackups.value = await invoke<BackupEntry[]>("list_backups");
   } catch {
-    previousBackups.value = [
-      { filename: "backup_2026-02-28.zip", date: "28/02/2026 14:32", size: "2.4 MB", items_count: 8 },
-      { filename: "backup_2026-02-15.zip", date: "15/02/2026 09:15", size: "1.8 MB", items_count: 6 },
-      { filename: "backup_2026-01-30.zip", date: "30/01/2026 17:45", size: "3.1 MB", items_count: 10 },
-    ];
+    previousBackups.value = [];
   } finally {
     backupsLoading.value = false;
   }
@@ -231,6 +281,12 @@ onMounted(loadBackups);
             <Save :size="16" />
             <span>Elements a sauvegarder</span>
             <div class="header-btns">
+              <div class="preset-btns">
+                <button class="preset-btn preset-essential" @click="applyPreset('essential')" title="Sélection recommandée">Essentiel</button>
+                <button class="preset-btn preset-dev"       @click="applyPreset('dev')"       title="Profil développeur">Dev</button>
+                <button class="preset-btn preset-full"      @click="applyPreset('full')"      title="Tout sélectionner">Complet</button>
+              </div>
+              <span class="separator">·</span>
               <button class="link-btn" @click="selectAll">Tout</button>
               <span class="separator">|</span>
               <button class="link-btn" @click="selectNone">Aucun</button>
@@ -239,19 +295,30 @@ onMounted(loadBackups);
         </template>
 
         <div class="items-list">
-          <button
-            v-for="item in backupItems"
-            :key="item.id"
-            class="backup-item"
-            :class="{ checked: item.checked }"
-            @click="toggleItem(item.id)"
-          >
-            <component :is="item.checked ? CheckSquare : Square" :size="18" class="check-icon" />
-            <div class="item-info">
-              <span class="item-label">{{ item.label }}</span>
-              <span class="item-desc">{{ item.description }}</span>
+          <template v-for="(items, category) in groupedItems" :key="category">
+            <div class="category-header">
+              <span class="cat-label">{{ category }}</span>
+              <span class="cat-count">{{ items.filter(i => i.checked).length }}/{{ items.length }}</span>
             </div>
-          </button>
+            <button
+              v-for="item in items"
+              :key="item.id"
+              class="backup-item"
+              :class="{ checked: item.checked }"
+              @click="toggleItem(item.id)"
+            >
+              <component :is="item.checked ? CheckSquare : Square" :size="16" class="check-icon" />
+              <div class="item-info">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span class="item-label">{{ item.label }}</span>
+                  <span v-if="SENSITIVE_ITEMS.has(item.id)" class="sensitive-badge" title="Ce contenu est exporté en clair — conservez le fichier en lieu sûr">
+                    <Lock :size="9" /> Sensible
+                  </span>
+                </div>
+                <span class="item-desc">{{ item.description }}</span>
+              </div>
+            </button>
+          </template>
         </div>
 
         <!-- Format d'export -->
@@ -276,7 +343,7 @@ onMounted(loadBackups);
         </div>
 
         <div class="backup-actions">
-          <span class="selected-count">{{ selectedCount }} / {{ backupItems.length }} selectionne(s)</span>
+          <span class="selected-count">{{ selectedCount }} / {{ backupItems.length }} selectionne(s) <span style="color:var(--text-muted);font-size:11px">· {{ estimatedSizeLabel }}</span></span>
           <NButton
             variant="primary"
             :loading="backupInProgress"
@@ -337,7 +404,7 @@ onMounted(loadBackups);
               <span class="entry-meta">
                 <Clock :size="12" /> {{ backup.date }}
                 &middot; {{ backup.size }}
-                &middot; {{ backup.items_count }} elements
+                <template v-if="backup.items_count > 0">&middot; {{ backup.items_count }} éléments</template>
               </span>
             </div>
             <NButton variant="ghost" size="sm" @click="openEntryFolder(backup.filename)" style="margin-left:auto;flex-shrink:0">
@@ -617,5 +684,72 @@ onMounted(loadBackups);
   font-size: 11px; color: var(--accent-primary); flex: 1;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: "JetBrains Mono", monospace;
+}
+
+/* Preset buttons */
+.preset-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.preset-btn {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.preset-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+.preset-essential:hover { border-color: var(--success); color: var(--success); background: rgba(var(--success-rgb, 34,197,94), 0.1); }
+.preset-dev:hover       { border-color: var(--accent-primary); color: var(--accent-primary); background: var(--accent-muted); }
+.preset-full:hover      { border-color: var(--warning, #f59e0b); color: var(--warning, #f59e0b); background: rgba(245,158,11,0.08); }
+
+/* Category headers */
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+  margin-top: 8px;
+}
+
+.category-header:first-child { margin-top: 0; }
+
+.cat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  opacity: 0.8;
+}
+
+.cat-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.sensitive-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  color: var(--warning, #f59e0b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 </style>

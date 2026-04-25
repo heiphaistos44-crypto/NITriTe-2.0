@@ -212,6 +212,74 @@ pub fn clean_target(target_name: String) -> CleanResult {
     CleanResult { target: target_name, success: false, message: "Erreur".to_string(), ..Default::default() }
 }
 
+/// Quarantine: move files to %LOCALAPPDATA%\NiTriTe\quarantine\ instead of deleting
+#[tauri::command]
+pub fn quarantine_target(target_name: String) -> CleanResult {
+    let src_ps = match target_name.as_str() {
+        "%TEMP%"        => "$env:TEMP".to_string(),
+        "Windows\\Temp" => "'C:\\Windows\\Temp'".to_string(),
+        "Prefetch"      => "'C:\\Windows\\Prefetch'".to_string(),
+        "Chrome Cache"  => "\"$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Cache\"".to_string(),
+        "Edge Cache"    => "\"$env:LOCALAPPDATA\\Microsoft\\Edge\\User Data\\Default\\Cache\"".to_string(),
+        _ => return CleanResult { target: target_name, success: false, message: "Quarantaine non supportée pour cette cible".to_string(), ..Default::default() },
+    };
+    let safe_name = target_name.replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], "_");
+    let ps = format!(r#"
+$src = {src}
+$qDir = "$env:LOCALAPPDATA\NiTriTe\quarantine\{name}"
+New-Item -ItemType Directory -Force -Path $qDir | Out-Null
+$b=0; $c=0
+if (Test-Path $src) {{
+    @(Get-ChildItem $src -Recurse -File -EA SilentlyContinue) | ForEach-Object {{
+        $b += $_.Length; $c++
+        $dst = Join-Path $qDir $_.Name
+        try {{ Move-Item $_.FullName -Destination $dst -Force -EA SilentlyContinue }} catch {{}}
+    }}
+}}
+@{{freed=[math]::Round($b/1MB,2);count=$c;ok=$true}} | ConvertTo-Json -Compress
+"#, src = src_ps, name = safe_name);
+    if let Some(v) = ps_run(&ps) {
+        return CleanResult {
+            target: target_name,
+            freed_mb: v["freed"].as_f64().unwrap_or(0.0),
+            files_deleted: v["count"].as_u64().unwrap_or(0) as u32,
+            success: v["ok"].as_bool().unwrap_or(false),
+            message: "Mis en quarantaine".to_string(),
+        };
+    }
+    CleanResult { target: target_name, success: false, message: "Erreur quarantaine".to_string(), ..Default::default() }
+}
+
+/// List quarantine entries
+#[tauri::command]
+pub fn list_quarantine() -> Vec<serde_json::Value> {
+    let ps = r#"
+$qBase = "$env:LOCALAPPDATA\NiTriTe\quarantine"
+if (!(Test-Path $qBase)) { @() | ConvertTo-Json -Compress; return }
+@(Get-ChildItem $qBase -Directory -EA SilentlyContinue | ForEach-Object {
+    $files = @(Get-ChildItem $_.FullName -Recurse -File -EA SilentlyContinue)
+    $size = ($files | Measure-Object -Property Length -Sum).Sum
+    @{ name=$_.Name; path=$_.FullName; file_count=$files.Count; size_mb=[math]::Round($size/1MB,2) }
+}) | ConvertTo-Json -Compress"#;
+    if let Some(v) = ps_run(ps) {
+        if let Some(arr) = v.as_array() { return arr.clone(); }
+        return vec![v];
+    }
+    vec![]
+}
+
+/// Clear quarantine (permanently delete quarantine folder contents)
+#[tauri::command]
+pub fn clear_quarantine(entry_name: Option<String>) -> bool {
+    let ps = if let Some(name) = entry_name {
+        let safe = name.replace(['\'', '"', ';', '`'], "_");
+        format!("$p=\"$env:LOCALAPPDATA\\NiTriTe\\quarantine\\{safe}\";if(Test-Path $p){{Remove-Item $p -Recurse -Force -EA SilentlyContinue}};$true")
+    } else {
+        "$p=\"$env:LOCALAPPDATA\\NiTriTe\\quarantine\";if(Test-Path $p){Remove-Item $p -Recurse -Force -EA SilentlyContinue};$true".to_string()
+    };
+    ps_run(&ps).is_some()
+}
+
 #[tauri::command]
 pub async fn get_large_files(folder: String, min_size_mb: f64) -> Vec<serde_json::Value> {
     tokio::task::spawn_blocking(move || get_large_files_sync(folder, min_size_mb))
@@ -220,7 +288,8 @@ pub async fn get_large_files(folder: String, min_size_mb: f64) -> Vec<serde_json
 }
 
 fn get_large_files_sync(folder: String, min_size_mb: f64) -> Vec<serde_json::Value> {
-    let f = folder.replace('"', "").replace('\'', "");
+    // Supprime quotes et caractères de contrôle (newlines inclus) pour éviter l'injection PS
+    let f: String = folder.chars().filter(|c| !c.is_control() && *c != '\'' && *c != '"').collect::<String>().trim().to_string();
     let min_bytes = (min_size_mb * 1048576.0) as u64;
     let ps = format!(r#"
 @(Get-ChildItem '{folder}' -Recurse -File -EA SilentlyContinue |

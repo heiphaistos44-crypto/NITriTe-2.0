@@ -78,9 +78,9 @@
           <div v-for="d in report.devices" :key="d.address" class="bt-device">
             <div class="bt-device-emoji">{{ catIcon(d.category) }}</div>
             <div class="bt-device-body">
-              <div class="bt-device-name">{{ d.name }}</div>
+              <div class="bt-device-name">{{ sanitize(d.name) || d.name }}</div>
               <div class="bt-device-meta">
-                <span class="bt-cat-chip">{{ d.category }}</span>
+                <span class="bt-cat-chip">{{ sanitize(d.category) || d.category }}</span>
                 <span v-if="d.manufacturer" style="font-size:11px;opacity:.5">{{ d.manufacturer }}</span>
                 <span v-if="d.address" class="bt-addr-chip">{{ d.address }}</span>
               </div>
@@ -99,8 +99,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from '@/composables/useCachedInvoke'
 import { Bluetooth, RefreshCw, Cpu, Smartphone } from 'lucide-vue-next'
 
@@ -115,17 +115,32 @@ function showMsg(t: string, err = false) { msg.value = t; msgErr.value = err; se
 
 async function load() { loading.value = true; try { report.value = await cachedInvoke<BluetoothReport>('get_bluetooth_info') } finally { loading.value = false } }
 
+let btReloadTimer: ReturnType<typeof setTimeout> | null = null;
 async function toggleBt(enable: boolean) {
-  try { const r = await invoke<string>('toggle_bluetooth', { enable }); showMsg(r); setTimeout(load, 1500) }
+  try { const r = await invoke<string>('toggle_bluetooth', { enable }); showMsg(r); btReloadTimer = setTimeout(load, 1500) }
   catch(e) { showMsg(String(e), true) }
 }
 
+function sanitize(s: string): string {
+  // Remove non-printable / non-ASCII characters
+  return s ? s.replace(/[^\x20-\x7EÀ-ÿ]/g, '').trim() : '';
+}
+
 function catIcon(cat: string): string {
-  const m: Record<string, string> = { Audio: '🎧', Souris: '🖱️', Clavier: '⌨️', Manette: '🎮', Téléphone: '📱', Autre: '📡' }
-  return m[cat] || '📡'
+  const clean = sanitize(cat);
+  const m: Record<string, string> = {
+    'Audio': '🎧', 'Souris': '🖱️', 'Mouse': '🖱️',
+    'Clavier': '⌨️', 'Keyboard': '⌨️',
+    'Manette': '🎮', 'Gamepad': '🎮', 'Controller': '🎮',
+    'T\u00e9l\u00e9phone': '📱', 'Phone': '📱', 'Smartphone': '📱',
+    'Casque': '🎧', 'Headset': '🎧',
+    'Autre': '📡', 'Other': '📡',
+  };
+  return m[clean] || m[cat] || '📡';
 }
 
 onMounted(load)
+onUnmounted(() => { if (btReloadTimer) clearTimeout(btReloadTimer); })
 </script>
 
 <style scoped>

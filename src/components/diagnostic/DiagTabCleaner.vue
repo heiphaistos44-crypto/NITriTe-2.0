@@ -14,8 +14,20 @@
         <button class="cl-btn cl-btn-primary" :disabled="loading || cleaning !== null" @click="loadTargets">
           <RefreshCw :size="13" /> Analyser
         </button>
-        <button v-if="selectedTargets.size > 0" class="cl-btn cl-btn-danger" :disabled="cleaning !== null" @click="cleanSelected">
-          <Trash2 :size="13" /> Nettoyer ({{ selectedTargets.size }})
+        <button v-if="targets.length > 0" class="cl-btn" @click="toggleAll" :disabled="cleaning !== null">
+          <component :is="allSelected ? CheckSquare : Square" :size="13" />
+          {{ allSelected ? 'Désélectionner tout' : 'Tout sélectionner' }}
+        </button>
+        <button v-if="selectedTargets.size > 0 && cleanTotal === 0" class="cl-btn cl-btn-danger" :disabled="cleaning !== null" @click="cleanSelected">
+          <Trash2 :size="13" /> Nettoyer ({{ selectedTargets.size }}) · {{ totalSelectedMb.toFixed(0) }} MB
+        </button>
+        <div v-if="cleanTotal > 0" class="cl-batch-progress">
+          <div class="cl-spinner-sm" />
+          <span>{{ cleanProgress }}/{{ cleanTotal }} nettoyé(s)&nbsp;–&nbsp;<em>{{ cleaning }}</em></span>
+          <div class="cl-batch-bar"><div class="cl-batch-fill" :style="{ width: (cleanProgress/cleanTotal*100)+'%' }" /></div>
+        </div>
+        <button class="cl-btn" :class="showBrowserSection ? 'cl-btn-primary' : ''" @click="toggleBrowserSection">
+          <Globe :size="13" /> Cache navigateurs
         </button>
       </div>
     </div>
@@ -33,10 +45,11 @@
 
       <!-- Targets by category -->
       <div v-for="cat in categories" :key="cat" class="cl-category">
-        <div class="cl-cat-header">
+        <div class="cl-cat-header" @click="toggleCategory(cat)" style="cursor:pointer" title="Tout sélectionner / déselectionner cette catégorie">
           <span class="cl-cat-dot" />
           {{ cat }}
           <span class="cl-cat-count">{{ targetsByCategory(cat).length }} éléments</span>
+          <span class="cl-cat-sel">{{ targetsByCategory(cat).filter(t => selectedTargets.has(t.name)).length }}/{{ targetsByCategory(cat).length }} sélectionnés</span>
         </div>
         <div class="cl-items">
           <div v-for="t in targetsByCategory(cat)" :key="t.name"
@@ -75,6 +88,37 @@
       <span>Cliquez sur "Analyser" pour rechercher les fichiers temporaires</span>
     </div>
 
+    <!-- Browser cache section -->
+    <div v-if="showBrowserSection" class="cl-browser">
+      <div class="cl-browser-header">
+        <Globe :size="14" /> Cache des navigateurs
+        <button class="cl-btn cl-btn-primary" style="margin-left:auto;padding:4px 10px;font-size:11px" :disabled="browserLoading" @click="loadBrowserCaches">
+          <RefreshCw :size="11" /> Actualiser
+        </button>
+      </div>
+      <div v-if="browserLoading" class="cl-loading" style="padding:12px 16px"><div class="cl-spinner-sm" /> Analyse des caches...</div>
+      <div v-else class="cl-browser-list">
+        <div v-for="b in browserCaches.filter(b => b.exists)" :key="b.browser" class="cl-browser-row">
+          <div class="cl-browser-icon">{{ b.browser[0] }}</div>
+          <div class="cl-browser-info">
+            <div class="cl-browser-name">{{ b.browser }}</div>
+            <div class="cl-browser-path">{{ b.path }}</div>
+          </div>
+          <span :class="b.size_mb > 500 ? 'sz-xl' : b.size_mb > 100 ? 'sz-lg' : 'sz-sm'">
+            {{ b.size_mb >= 1024 ? (b.size_mb/1024).toFixed(1)+'GB' : b.size_mb.toFixed(0)+'MB' }}
+          </span>
+          <button class="cl-btn cl-btn-sm cl-btn-danger" :disabled="cleaningBrowser === b.browser || b.size_mb === 0" @click="cleanBrowserCache(b)">
+            <div v-if="cleaningBrowser === b.browser" class="cl-spinner-sm" />
+            <Trash2 v-else :size="11" />
+            Vider
+          </button>
+        </div>
+        <div v-if="!browserCaches.some(b => b.exists)" style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px">
+          Aucun navigateur détecté
+        </div>
+      </div>
+    </div>
+
     <!-- Large Files finder -->
     <div class="cl-finder">
       <div class="cl-finder-header"><Search :size="14" /> Recherche de grands fichiers</div>
@@ -105,22 +149,34 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { Trash2, RefreshCw, Search } from 'lucide-vue-next'
+import { invoke, invokeRaw } from "@/utils/invoke";
+import { Trash2, RefreshCw, Search, CheckSquare, Square, Globe } from 'lucide-vue-next'
+import { useNotificationStore } from '@/stores/notifications'
 
 interface CleanTarget { name: string; path: string; size_mb: number; file_count: number; category: string }
 interface CleanResult { target: string; freed_mb: number; files_deleted: number; success: boolean; message: string }
 interface LargeFile { name: string; path: string; mb: number; ext: string; mod: string }
+interface BrowserCacheInfo { browser: string; path: string; size_mb: number; exists: boolean }
+
+const notify = useNotificationStore()
 
 const targets = ref<CleanTarget[]>([]); const loading = ref(false)
 const cleaning = ref<string | null>(null); const selectedTargets = ref(new Set<string>())
 const results = ref<Record<string, CleanResult>>({})
+const cleanProgress = ref(0); const cleanTotal = ref(0)
 const largeFolder = ref('C:\\Users'); const minSizeMb = ref(100)
 const largLoading = ref(false); const largeFiles = ref<LargeFile[]>([])
+
+// Browser cache
+const browserCaches = ref<BrowserCacheInfo[]>([])
+const browserLoading = ref(false)
+const cleaningBrowser = ref<string | null>(null)
+const showBrowserSection = ref(false)
 
 const categories = computed(() => [...new Set(targets.value.map(t => t.category))])
 const totalMb = computed(() => targets.value.reduce((s, t) => s + t.size_mb, 0))
 const totalSelectedMb = computed(() => targets.value.filter(t => selectedTargets.value.has(t.name)).reduce((s, t) => s + t.size_mb, 0))
+const allSelected = computed(() => targets.value.length > 0 && targets.value.every(t => selectedTargets.value.has(t.name)))
 
 function targetsByCategory(cat: string) { return targets.value.filter(t => t.category === cat) }
 
@@ -130,23 +186,75 @@ function toggleTarget(name: string) {
   selectedTargets.value = new Set(selectedTargets.value)
 }
 
-async function loadTargets() { loading.value = true; try { targets.value = await invoke<CleanTarget[]>('get_clean_targets') } finally { loading.value = false } }
+function toggleAll() {
+  if (allSelected.value) selectedTargets.value = new Set()
+  else selectedTargets.value = new Set(targets.value.map(t => t.name))
+}
+
+function toggleCategory(cat: string) {
+  const catItems = targetsByCategory(cat)
+  const allCatSel = catItems.every(t => selectedTargets.value.has(t.name))
+  const newSet = new Set(selectedTargets.value)
+  if (allCatSel) catItems.forEach(t => newSet.delete(t.name))
+  else catItems.forEach(t => newSet.add(t.name))
+  selectedTargets.value = newSet
+}
+
+async function loadTargets() { loading.value = true; try { targets.value = await invokeRaw<CleanTarget[]>('get_clean_targets') } finally { loading.value = false } }
 
 async function cleanOne(name: string) {
   cleaning.value = name
-  try { const r = await invoke<CleanResult>('clean_target', { targetName: name }); results.value[name] = r; await loadTargets() }
-  finally { cleaning.value = null }
+  try {
+    const r = await invokeRaw<CleanResult>('clean_target', { targetName: name })
+    results.value[name] = r
+    // Mise à jour en place — évite le rechargement complet de la liste
+    const idx = targets.value.findIndex(t => t.name === name)
+    if (idx !== -1) targets.value[idx] = { ...targets.value[idx], size_mb: 0, file_count: 0 }
+  } finally { cleaning.value = null }
 }
 
 async function cleanSelected() {
-  for (const name of Array.from(selectedTargets.value)) await cleanOne(name)
+  const names = Array.from(selectedTargets.value)
+  cleanTotal.value = names.length
+  cleanProgress.value = 0
+  for (const name of names) {
+    await cleanOne(name)
+    cleanProgress.value++
+  }
   selectedTargets.value.clear()
+  cleanProgress.value = 0; cleanTotal.value = 0
+  // Un seul rechargement à la fin pour avoir les tailles réelles
+  await loadTargets()
+  notify.success('Nettoyage terminé', `${names.length} élément(s) traités`)
 }
 
 async function findLarge() {
   largLoading.value = true; largeFiles.value = []
   try { largeFiles.value = await invoke<LargeFile[]>('get_large_files', { folder: largeFolder.value, minSizeMb: minSizeMb.value }) }
   finally { largLoading.value = false }
+}
+
+async function loadBrowserCaches() {
+  browserLoading.value = true
+  try { browserCaches.value = await invoke<BrowserCacheInfo[]>('get_browser_cache_info') }
+  catch { browserCaches.value = [] }
+  finally { browserLoading.value = false }
+}
+
+async function cleanBrowserCache(b: BrowserCacheInfo) {
+  cleaningBrowser.value = b.browser
+  try {
+    const freed = await invoke<number>('clean_browser_cache_path', { browserPath: b.path })
+    notify.success(`Cache ${b.browser} vidé`, `${freed.toFixed(0)} MB libérés`)
+    await loadBrowserCaches()
+  } catch (e: any) {
+    notify.error(`Erreur ${b.browser}`, String(e))
+  } finally { cleaningBrowser.value = null }
+}
+
+function toggleBrowserSection() {
+  showBrowserSection.value = !showBrowserSection.value
+  if (showBrowserSection.value && !browserCaches.value.length) loadBrowserCaches()
 }
 
 onMounted(loadTargets)
@@ -243,4 +351,26 @@ onMounted(loadTargets)
 .cl-btn-sm { padding: 4px 10px; font-size: 11px; }
 .cl-btn-clean { color: var(--text-muted); }
 .cl-btn-clean:hover:not(:disabled) { color: #f97316; border-color: rgba(249,115,22,.4); }
+
+/* Category select-all */
+.cl-cat-sel { font-size: 10px; opacity: .5; margin-left: 8px; }
+.cl-cat-header:hover { background: var(--bg-secondary); }
+
+/* Batch clean progress */
+.cl-batch-progress { display:flex; align-items:center; gap:8px; padding:6px 12px; background:rgba(249,115,22,.08); border:1px solid rgba(249,115,22,.2); border-radius:8px; font-size:12px; color:var(--text-secondary); flex-wrap:wrap; }
+.cl-batch-bar { flex:1; min-width:80px; height:4px; background:rgba(255,255,255,.1); border-radius:2px; overflow:hidden; }
+.cl-batch-fill { height:100%; background:#f97316; border-radius:2px; transition:width 300ms ease; }
+
+/* Browser cache */
+.cl-browser { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.cl-browser-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+  font-size: 12px; font-weight: 600; background: var(--bg-tertiary); border-bottom: 1px solid var(--border); }
+.cl-browser-list { display: flex; flex-direction: column; }
+.cl-browser-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.cl-browser-row:last-child { border-bottom: none; }
+.cl-browser-row:hover { background: var(--bg-tertiary); }
+.cl-browser-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--accent-muted); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--accent-primary); flex-shrink: 0; }
+.cl-browser-info { flex: 1; min-width: 0; }
+.cl-browser-name { font-size: 13px; font-weight: 500; }
+.cl-browser-path { font-size: 10px; opacity: .4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>

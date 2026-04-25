@@ -7,14 +7,22 @@ const props = defineProps<{
   height?: number;
   fill?: boolean;
   label?: string;
+  maxPoints?: number; // limite dynamique (défaut 60)
 }>();
 
 const h = computed(() => props.height ?? 40);
 const w = 120;
 const color = computed(() => props.color ?? "var(--accent-primary)");
 
-const points = computed(() => {
+// Fenêtre glissante : on affiche les N derniers points
+const visibleData = computed(() => {
+  const max = props.maxPoints ?? 60;
   const d = props.data;
+  return d.length > max ? d.slice(d.length - max) : d;
+});
+
+const points = computed(() => {
+  const d = visibleData.value;
   if (!d || d.length < 2) return "";
   const min = Math.min(...d);
   const max = Math.max(...d);
@@ -31,7 +39,7 @@ const points = computed(() => {
 
 const fillPath = computed(() => {
   if (!points.value) return "";
-  const d = props.data;
+  const d = visibleData.value;
   const min = Math.min(...d);
   const max = Math.max(...d);
   const range = max - min || 1;
@@ -42,6 +50,20 @@ const fillPath = computed(() => {
     .split(" ")
     .map((p) => `L ${p}`)
     .join(" ")} L ${last} Z`;
+});
+
+// Coordonnées du dernier point (dot indicateur)
+const lastDot = computed(() => {
+  const d = visibleData.value;
+  if (!d || d.length < 2) return null;
+  const min = Math.min(...d);
+  const max = Math.max(...d);
+  const range = max - min || 1;
+  const step = w / (d.length - 1);
+  const i = d.length - 1;
+  const x = i * step;
+  const y = h.value - ((d[i] - min) / range) * (h.value - 4) - 2;
+  return { x, y };
 });
 </script>
 
@@ -68,6 +90,15 @@ const fillPath = computed(() => {
         stroke-width="1.5"
         stroke-linejoin="round"
         stroke-linecap="round"
+      />
+      <!-- Dot indicateur sur le dernier point -->
+      <circle
+        v-if="lastDot"
+        :cx="lastDot.x"
+        :cy="lastDot.y"
+        r="2.5"
+        :fill="color"
+        opacity="0.9"
       />
     </svg>
   </div>

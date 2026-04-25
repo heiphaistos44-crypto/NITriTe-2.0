@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import { Key, Shield, ShieldCheck, ShieldOff, ExternalLink, AlertTriangle, CheckCircle } from "lucide-vue-next";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -13,17 +13,35 @@ interface WinLicense {
   full_product_key: string; office_name: string; office_status: string;
   office_key: string; office_full_key: string;
 }
+interface ProductKey { product: string; key: string; key_type: string; }
 
 const licenseInfo = ref<WinLicense | null>(null);
 const loading = ref(true);
 const activating = ref(false);
 const statusMsg = ref("");
+const allKeys = ref<ProductKey[]>([]);
+const keysLoading = ref(false);
+const keysLoaded = ref(false);
 
 onMounted(async () => {
   try { licenseInfo.value = await cachedInvoke<WinLicense>("get_windows_license"); }
   catch { /* silencieux */ }
   loading.value = false;
 });
+
+async function scanAllKeys() {
+  keysLoading.value = true;
+  try { allKeys.value = await invoke<ProductKey[]>("get_all_product_keys"); }
+  catch { allKeys.value = []; }
+  finally { keysLoading.value = false; keysLoaded.value = true; }
+}
+
+function keyTypeVariant(t: string): "success"|"warning"|"info"|"default" {
+  if (t === "Windows") return "success";
+  if (t === "Office") return "warning";
+  if (t === "Software") return "info";
+  return "default";
+}
 
 async function openMas() {
   activating.value = true;
@@ -75,11 +93,11 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
         </div>
       </div>
 
-      <!-- Statut Office -->
-      <div v-if="licenseInfo && licenseInfo.office_name" class="card-block" style="margin-bottom:12px">
+      <!-- Statut Office (affiché même si clé non récupérable — ex: Ohook/KMS) -->
+      <div v-if="licenseInfo && (licenseInfo.office_name || licenseInfo.office_status)" class="card-block" style="margin-bottom:12px">
         <div class="block-title">
           <Key :size="15" style="color:var(--warning)" />
-          <span>{{ licenseInfo.office_name }}</span>
+          <span>{{ licenseInfo.office_name || "Microsoft Office" }}</span>
           <NBadge :variant="actStatus(licenseInfo.office_status)">{{ licenseInfo.office_status || "Inconnu" }}</NBadge>
         </div>
         <div class="info-grid">
@@ -184,6 +202,38 @@ function actStatus(s: string): "success" | "danger" | "warning" | "default" {
         :style="{ color: statusMsg.startsWith('Erreur') ? 'var(--error)' : 'var(--success)' }">
         <CheckCircle v-if="!statusMsg.startsWith('Erreur')" :size="13" />
         {{ statusMsg }}
+      </div>
+    </div>
+
+    <!-- Scanner toutes les clés -->
+    <p class="diag-section-label">Scanner toutes les clés de licence</p>
+    <div class="card-block" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <NButton variant="secondary" :disabled="keysLoading" @click="scanAllKeys">
+          <NSpinner v-if="keysLoading" :size="13" />
+          <Key v-else :size="14" />
+          {{ keysLoading ? 'Analyse du registre...' : 'Scanner les clés (Windows, Office, logiciels)' }}
+        </NButton>
+      </div>
+      <div v-if="keysLoaded">
+        <div v-if="allKeys.length === 0" style="font-size:12px;color:var(--text-muted)">
+          Aucune clé de licence détectée dans le registre.
+        </div>
+        <div v-else>
+          <div style="margin-bottom:8px;font-size:12px;color:var(--text-secondary)">{{ allKeys.length }} clé(s) trouvée(s) :</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Type</th><th>Produit</th><th>Clé</th></tr></thead>
+              <tbody>
+                <tr v-for="(k, i) in allKeys" :key="i">
+                  <td><NBadge :variant="keyTypeVariant(k.key_type)" style="font-size:10px">{{ k.key_type }}</NBadge></td>
+                  <td style="font-weight:500;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ k.product }}</td>
+                  <td><code style="color:var(--accent);font-size:12px;letter-spacing:.05em">{{ k.key }}</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 

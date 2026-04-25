@@ -63,12 +63,7 @@ const router = createRouter({
       component: () => import("@/pages/DriversPage.vue"),
       meta: { title: "Drivers" },
     },
-    {
-      path: "/driver-scanner",
-      name: "driver-scanner",
-      component: () => import("@/pages/DriverScannerPage.vue"),
-      meta: { title: "Scanner Pilotes" },
-    },
+    { path: "/driver-scanner", redirect: "/drivers" },
     {
       path: "/backup",
       name: "backup",
@@ -116,12 +111,6 @@ const router = createRouter({
       name: "scripts",
       component: () => import("@/pages/ScriptsPage.vue"),
       meta: { title: "Scripts Windows" },
-    },
-    {
-      path: "/system-utils",
-      name: "system-utils",
-      component: () => import("@/pages/ToolsPage.vue"),
-      meta: { title: "Utilitaires" },
     },
     {
       path: "/ai-agents",
@@ -236,6 +225,69 @@ const router = createRouter({
       name: "stats-reports",
       component: () => import("@/pages/StatsReportsPage.vue"),
       meta: { title: "Rapports & Statistiques" },
+    },
+    // ═══ Nouvelles pages v26.46 ═══
+    { path: "/turbo-mode", redirect: "/optimizations" },
+    {
+      path: "/hash-checker",
+      name: "hash-checker",
+      component: () => import("@/pages/HashCheckerPage.vue"),
+      meta: { title: "Vérificateur de Hash" },
+    },
+    {
+      path: "/dns-switcher",
+      name: "dns-switcher",
+      component: () => import("@/pages/DnsSwitcherPage.vue"),
+      meta: { title: "DNS Switcher" },
+    },
+    {
+      path: "/port-scanner",
+      name: "port-scanner",
+      component: () => import("@/pages/PortScannerPage.vue"),
+      meta: { title: "Scanner de Ports" },
+    },
+    {
+      path: "/disk-visualizer",
+      name: "disk-visualizer",
+      component: () => import("@/pages/DiskVisualizerPage.vue"),
+      meta: { title: "Visualiseur Disque" },
+    },
+    {
+      path: "/duplicate-finder",
+      name: "duplicate-finder",
+      component: () => import("@/pages/DuplicateFinderPage.vue"),
+      meta: { title: "Détecteur de Doublons" },
+    },
+    {
+      path: "/big-files",
+      name: "big-files",
+      component: () => import("@/pages/BigFilesFinderPage.vue"),
+      meta: { title: "Gros Fichiers" },
+    },
+    {
+      path: "/wifi-analyzer",
+      name: "wifi-analyzer",
+      component: () => import("@/pages/WifiAnalyzerPage.vue"),
+      meta: { title: "Analyseur WiFi" },
+    },
+    {
+      path: "/temperatures",
+      name: "temperatures",
+      component: () => import("@/pages/TemperaturesPage.vue"),
+      meta: { title: "Températures" },
+    },
+    { path: "/snippets", redirect: "/scripts" },
+    {
+      path: "/docker",
+      name: "docker",
+      component: () => import("@/pages/DockerManagerPage.vue"),
+      meta: { title: "Docker Manager" },
+    },
+    {
+      path: "/winpe",
+      name: "winpe",
+      component: () => import("@/pages/WinPEModePage.vue"),
+      meta: { title: "Mode WinPE" },
     },
   ],
 });

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, computed, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke, refreshCached } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSkeleton from "@/components/ui/NSkeleton.vue";
 import { useNotificationStore } from "@/stores/notifications";
-import { Shield, RefreshCw, Plus, Clock, CheckCircle2, AlertTriangle } from "lucide-vue-next";
+import { Shield, RefreshCw, Plus, Clock, CheckCircle2, AlertTriangle, RotateCcw, Trash2, User, Bot } from "lucide-vue-next";
 
 const notify = useNotificationStore();
 
@@ -16,12 +16,28 @@ interface RestorePoint {
   description: string;
   creation_time: string;
   restore_type: string;
+  id?: string;
+  size_bytes?: number;
 }
 
 const points = ref<RestorePoint[]>([]);
 const loading = ref(true);
 const creating = ref(false);
 const newDesc = ref("");
+const restoringId = ref<number | null>(null);
+const deletingId = ref<number | null>(null);
+
+// Le point le plus récent (numéro le plus élevé après tri)
+const latestSequence = computed(() => {
+  if (!points.value.length) return -1;
+  const nums = points.value.map(p => p.sequence_number).filter(n => typeof n === "number" && !isNaN(n));
+  return nums.length ? Math.max(...nums) : -1;
+});
+
+function isManual(t: string): boolean {
+  return !["APPLICATION_INSTALL", "APPLICATION_UNINSTALL", "DEVICE_DRIVER_INSTALL",
+    "MODIFY_SETTINGS", "CANCELLED_OPERATION", "RESTORE"].includes(t);
+}
 
 function formatType(t: string) {
   const map: Record<string, string> = {
@@ -44,7 +60,6 @@ function typeVariant(t: string): "success" | "info" | "warning" | "neutral" {
 
 function formatDate(raw: string): string {
   if (!raw) return "—";
-  // Format WMI : "20240315120000.000000-000" ou ISO
   try {
     const m = raw.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
     if (m) {
@@ -54,6 +69,12 @@ function formatDate(raw: string): string {
   } catch {
     return raw;
   }
+}
+
+function formatSize(bytes?: number): string {
+  if (bytes == null || bytes === 0) return "";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
 }
 
 async function load() {
@@ -79,6 +100,44 @@ async function create() {
     notify.error("Erreur création", String(e));
   }
   creating.value = false;
+}
+
+async function restorePoint(p: RestorePoint) {
+  const ok = confirm(
+    `Restaurer le système à ce point ?\n\n"${p.description}" (#${p.sequence_number})\n\nL'ordinateur va redémarrer.`
+  );
+  if (!ok) return;
+  restoringId.value = p.sequence_number;
+  try {
+    await invoke("run_system_command", {
+      cmd: "powershell",
+      args: ["-Command", `Restore-Computer -RestorePoint ${p.sequence_number} -Confirm:$false`],
+    });
+    notify.success("Restauration lancée", "Le système va redémarrer.");
+  } catch (e: any) {
+    notify.error("Erreur restauration", String(e));
+  }
+  restoringId.value = null;
+}
+
+async function deletePoint(p: RestorePoint) {
+  const ok = confirm(
+    `Supprimer ce point de restauration ?\n\n"${p.description}" (#${p.sequence_number})\n\nCette action est irréversible.`
+  );
+  if (!ok) return;
+  deletingId.value = p.sequence_number;
+  try {
+    const shadowArg = p.id ? `/shadow=${p.id}` : `/oldest`;
+    await invoke("run_system_command", {
+      cmd: "vssadmin",
+      args: ["delete", "shadows", shadowArg, "/quiet"],
+    });
+    notify.success("Point supprimé", `#${p.sequence_number}`);
+    await load();
+  } catch (e: any) {
+    notify.error("Erreur suppression", String(e));
+  }
+  deletingId.value = null;
 }
 
 onMounted(load);
@@ -143,14 +202,49 @@ onMounted(load);
         <div v-for="p in points" :key="p.sequence_number" class="point-row">
           <div class="point-num">#{{ p.sequence_number }}</div>
           <div class="point-info">
-            <span class="point-desc">{{ p.description || 'Sans description' }}</span>
-            <span class="point-date">
-              <Clock :size="11" /> {{ formatDate(p.creation_time) }}
-            </span>
+            <div class="point-desc-row">
+              <span class="point-desc">{{ p.description || 'Sans description' }}</span>
+              <!-- Badge Auto / Manuel -->
+              <NBadge :variant="isManual(p.restore_type) ? 'accent' : 'neutral'" size="sm" class="type-mode-badge">
+                <component :is="isManual(p.restore_type) ? User : Bot" :size="10" />
+                {{ isManual(p.restore_type) ? 'Manuel' : 'Auto' }}
+              </NBadge>
+            </div>
+            <div class="point-meta">
+              <span class="point-date"><Clock :size="11" /> {{ formatDate(p.creation_time) }}</span>
+              <span v-if="p.size_bytes" class="point-size">{{ formatSize(p.size_bytes) }}</span>
+            </div>
           </div>
+
           <NBadge :variant="typeVariant(p.restore_type)" size="sm">
             {{ formatType(p.restore_type) }}
           </NBadge>
+
+          <!-- Bouton Restaurer -->
+          <NButton
+            variant="secondary"
+            size="sm"
+            :loading="restoringId === p.sequence_number"
+            @click="restorePoint(p)"
+            title="Restaurer le système à ce point"
+          >
+            <RotateCcw :size="12" />
+            Restaurer
+          </NButton>
+
+          <!-- Bouton Supprimer (sauf le plus récent) -->
+          <NButton
+            v-if="p.sequence_number !== latestSequence"
+            variant="ghost"
+            size="sm"
+            :loading="deletingId === p.sequence_number"
+            @click="deletePoint(p)"
+            title="Supprimer ce point"
+            style="color: var(--danger)"
+          >
+            <Trash2 :size="12" />
+          </NButton>
+
           <CheckCircle2 :size="16" style="color:var(--success);flex-shrink:0" />
         </div>
       </div>
@@ -170,12 +264,16 @@ h1 { font-size: 22px; font-weight: 700; }
 .desc-input { flex: 1; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-family: inherit; outline: none; transition: border-color .15s; }
 .desc-input:focus { border-color: var(--accent-primary); }
 .points-list { display: flex; flex-direction: column; gap: 4px; }
-.point-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--bg-tertiary); border-radius: var(--radius-md); border: 1px solid var(--border); transition: border-color .15s; }
+.point-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-tertiary); border-radius: var(--radius-md); border: 1px solid var(--border); transition: border-color .15s; flex-wrap: wrap; }
 .point-row:hover { border-color: var(--border-hover); }
 .point-num { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--text-muted); width: 28px; flex-shrink: 0; }
-.point-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.point-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.point-desc-row { display: flex; align-items: center; gap: 8px; }
 .point-desc { font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.type-mode-badge { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.point-meta { display: flex; align-items: center; gap: 12px; }
 .point-date { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-muted); }
+.point-size { font-size: 11px; color: var(--text-muted); font-family: "JetBrains Mono", monospace; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px; color: var(--text-muted); font-size: 13px; text-align: center; }
 .empty-hint { font-size: 11px; color: var(--text-muted); opacity: .7; }
 </style>

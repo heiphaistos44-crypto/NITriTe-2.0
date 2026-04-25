@@ -16,10 +16,14 @@ pub struct ProcessInfo {
     pub gpu_percent: Option<f64>,
 }
 
+/// Collecte les processus actifs avec valeurs CPU précises.
+/// Cette fonction est BLOQUANTE (300ms de sleep) — toujours appeler via spawn_blocking
+/// depuis un contexte async Tauri pour ne pas bloquer le runtime tokio.
 pub fn collect_processes() -> Vec<ProcessInfo> {
     let mut sys = System::new_all();
     sys.refresh_all();
-    // Double refresh pour avoir les valeurs CPU correctes
+    // Double refresh : le premier établit la baseline CPU, le second mesure la delta.
+    // std::thread::sleep est intentionnel ici — la fonction doit être appelée via spawn_blocking.
     std::thread::sleep(std::time::Duration::from_millis(300));
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
 

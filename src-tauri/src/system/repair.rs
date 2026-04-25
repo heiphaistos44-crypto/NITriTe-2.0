@@ -282,6 +282,17 @@ fn repair_cmd_and_label(repair_type: &str) -> Option<(&'static str, String)> {
         "list_restore_pts"  => Some(("Lister points restauration", "powershell -Command Get-ComputerRestorePoint | Format-Table -AutoSize".to_string())),
         "enable_restore"    => Some(("Activer protection système", "powershell -Command Enable-ComputerRestore -Drive 'C:\\'".to_string())),
 
+        // Sécurité — correctifs inline scan
+        "disable_smb1" => Some(("Désactiver SMBv1",
+            "powershell -Command \"Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force -Confirm:$false\"".to_string())),
+        "disable_guest" => Some(("Désactiver compte Invité", "net user guest /active:no".to_string())),
+        "wmi_cleanup"  => Some(("Nettoyer abonnements WMI", concat!(
+            "powershell -Command \"",
+            "Get-WmiObject -Namespace root\\subscription -Class __EventFilter | Remove-WmiObject -EA SilentlyContinue; ",
+            "Get-WmiObject -Namespace root\\subscription -Class __EventConsumer | Remove-WmiObject -EA SilentlyContinue; ",
+            "Get-WmiObject -Namespace root\\subscription -Class __FilterToConsumerBinding | Remove-WmiObject -EA SilentlyContinue\""
+        ).to_string())),
+
         _ => None,
     }
 }

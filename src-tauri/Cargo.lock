@@ -2326,7 +2326,7 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nitrite"
-version = "26.44.0"
+version = "6.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4872,7 +4872,6 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
- "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",

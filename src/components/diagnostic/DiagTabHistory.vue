@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import { cachedInvoke } from "@/composables/useCachedInvoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
@@ -28,7 +29,6 @@ const error = ref("");
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await cachedInvoke<SystemHistory>("get_system_history");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }

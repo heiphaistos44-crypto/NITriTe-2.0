@@ -1,9 +1,40 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
-import { Share2, FolderOpen, HardDrive, Globe, Lock } from "lucide-vue-next";
+import { Share2, FolderOpen, HardDrive, Globe, Lock, Settings, RefreshCw, XCircle } from "lucide-vue-next";
+
+const actionMsg = ref("");
+const actionLoading = ref(false);
+
+async function openShareMgmt() {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "fsmgmt.msc"] }).catch(() => {});
+}
+
+async function openComputerMgmt() {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "compmgmt.msc"] }).catch(() => {});
+}
+
+async function disconnectAllSessions() {
+  if (!confirm("Déconnecter toutes les sessions SMB actives ?")) return;
+  actionLoading.value = true;
+  try {
+    await invoke("run_system_command", {
+      cmd: "cmd",
+      args: ["/c", "net session /delete /y"]
+    });
+    actionMsg.value = "Sessions SMB déconnectées ✓";
+    setTimeout(() => data.value && (data.value.smb_sessions = []), 500);
+  } catch (e: any) {
+    actionMsg.value = "Erreur : " + String(e);
+  } finally {
+    actionLoading.value = false;
+    setTimeout(() => { actionMsg.value = ""; }, 4000);
+  }
+}
 
 interface NetworkShare {
   name: string; path: string; description: string;
@@ -27,7 +58,6 @@ const error = ref("");
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await invoke<SharesInfo>("get_network_shares");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
@@ -37,6 +67,22 @@ onMounted(async () => {
 <template>
   <div class="diag-tab-content">
     <DiagBanner :icon="Share2" title="Partages & SMB" desc="Dossiers partagés et sessions réseau actives" color="blue" />
+
+    <!-- Actions rapides -->
+    <div class="diag-section" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <NButton variant="ghost" size="sm" @click="openShareMgmt">
+        <FolderOpen :size="13" /> Gestion des partages (fsmgmt)
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="openComputerMgmt">
+        <Settings :size="13" /> Gestion de l'ordinateur
+      </NButton>
+      <NButton v-if="data && data.smb_sessions.length > 0" variant="danger" size="sm"
+        :disabled="actionLoading" @click="disconnectAllSessions">
+        <NSpinner v-if="actionLoading" :size="12" />
+        <XCircle v-else :size="13" /> Déconnecter toutes les sessions SMB
+      </NButton>
+      <span v-if="actionMsg" style="font-size:12px;color:var(--success)">{{ actionMsg }}</span>
+    </div>
 
     <div v-if="loading" class="diag-loading"><div class="diag-spinner"></div> Chargement partages réseau...</div>
     <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>

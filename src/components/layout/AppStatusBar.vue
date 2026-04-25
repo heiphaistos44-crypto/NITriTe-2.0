@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Cpu, MemoryStick, HardDrive, Wifi, Activity } from "lucide-vue-next";
 
+const appVersion = __APP_VERSION__;
 const cpuUsage = ref(0);
 const ramUsage = ref(0);
 const diskUsage = ref(0);
@@ -119,7 +120,7 @@ const networkColor = computed(() => {
 
     <!-- Version -->
     <div class="status-item">
-      <span class="status-version">NiTriTe v26.19.0</span>
+      <span class="status-version">NiTriTe v{{ appVersion }}</span>
     </div>
   </footer>
 </template>

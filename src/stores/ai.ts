@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 
 export const useAiStore = defineStore("ai", () => {
   const ollamaUrl   = ref(localStorage.getItem("ai_url")   ?? "http://localhost:11434");
@@ -37,9 +37,7 @@ export const useAiStore = defineStore("ai", () => {
           ...extraConfig,
         },
       });
-    } catch (err) {
-      console.error("[ai] saveToConfig failed:", err);
-    }
+    } catch { /* config save non critique */ }
   }
 
   return { ollamaUrl, ollamaModel, temperature, isLoaded, loadFromConfig, saveToConfig };

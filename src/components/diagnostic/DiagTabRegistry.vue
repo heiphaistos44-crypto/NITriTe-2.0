@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NModal from "@/components/ui/NModal.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
 import { Database, AlertTriangle, CheckCircle, Key, FolderOpen, ChevronRight, Edit2, Trash2, RefreshCw } from "lucide-vue-next";
+import { useNotificationStore } from "@/stores/notifications";
 
 interface RegEntry {
   hive: string; key: string; name: string; value: string; suspicious: boolean;
@@ -19,10 +21,10 @@ interface RegistryPersistence {
 const data = ref<RegistryPersistence | null>(null);
 const loading = ref(true);
 const error = ref("");
+const notify = useNotificationStore();
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await invoke<RegistryPersistence>("get_registry_persistence");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
@@ -61,7 +63,6 @@ async function browseTo(path: string) {
   browseInput.value = path;
   browsing.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     browseResult.value = await invoke<RegBrowseResult>("registry_browse", { path });
   } catch (e: any) {
     browseResult.value = { path, subkeys: [], values: [], error: String(e) };
@@ -88,21 +89,19 @@ function startEdit(v: RegValue) {
 async function saveEdit() {
   editSaving.value = true;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("registry_set_value", { path: browsePath.value, name: editName.value, data: editData.value });
     editModal.value = false;
     await browseTo(browsePath.value);
-  } catch (e: any) { alert(String(e)); }
+  } catch (e: any) { notify.error("Erreur registre", String(e)); }
   editSaving.value = false;
 }
 
 async function deleteValue(name: string) {
   if (!confirm(`Supprimer la valeur "${name}" ?`)) return;
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     await invoke("registry_delete_value", { path: browsePath.value, name });
     await browseTo(browsePath.value);
-  } catch (e: any) { alert(String(e)); }
+  } catch (e: any) { notify.error("Erreur registre", String(e)); }
 }
 
 function kindVariant(kind: string): "info" | "warning" | "success" | "neutral" {
@@ -110,6 +109,62 @@ function kindVariant(kind: string): "info" | "warning" | "success" | "neutral" {
   if (kind === "DWord" || kind === "QWord") return "success";
   if (kind === "Binary") return "warning";
   return "neutral";
+}
+
+// ── Recherche dans les valeurs ────────────────────────────────────────────────
+const searchQuery = ref("");
+const searchResults = ref<Array<{path: string; name: string; kind: string; data: string}>>([]);
+const searching = ref(false);
+const searchDone = ref(false);
+
+async function searchRegistry() {
+  if (!searchQuery.value.trim()) return;
+  searching.value = true;
+  searchDone.value = false;
+  searchResults.value = [];
+  try {
+    const result = await invoke<{path: string; subkeys: string[]; values: Array<{name: string; kind: string; data: string}>}>(
+      "registry_browse", { path: browsePath.value }
+    );
+    const q = searchQuery.value.toLowerCase();
+    const matches = (result.values || [])
+      .filter(v => v.name.toLowerCase().includes(q) || v.data.toLowerCase().includes(q))
+      .map(v => ({ path: browsePath.value, name: v.name, kind: v.kind, data: v.data }));
+    searchResults.value = matches;
+  } catch (e: any) {
+    searchResults.value = [];
+  }
+  searching.value = false;
+  searchDone.value = true;
+}
+
+function exportRegKey() {
+  if (!browseResult.value) return;
+  const lines: string[] = [
+    "Windows Registry Editor Version 5.00",
+    "",
+    `[${browsePath.value}]`,
+  ];
+  for (const v of browseResult.value.values) {
+    const name = v.name === "(Default)" ? "@" : `"${v.name}"`;
+    if (v.kind === "String" || v.kind === "ExpandString") {
+      lines.push(`${name}="${v.data.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`);
+    } else if (v.kind === "DWord") {
+      const hex = parseInt(v.data || "0").toString(16).padStart(8, "0");
+      lines.push(`${name}=dword:${hex}`);
+    } else {
+      lines.push(`; ${name}=${v.kind}:${v.data}`);
+    }
+  }
+  const content = lines.join("\r\n");
+  const blob = new Blob(["\ufeff" + content], { type: "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = browsePath.value.replace(/[\\:*?"<>|]/g, "_").slice(0, 50);
+  a.download = safeName + ".reg";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 </script>
 
@@ -134,6 +189,9 @@ function kindVariant(kind: string): "info" | "warning" | "success" | "neutral" {
         <input v-model="browseInput" class="reg-addr-input" placeholder="HKEY_LOCAL_MACHINE\SOFTWARE\..." @keyup.enter="browseTo(browseInput)" />
         <NButton variant="primary" size="sm" :disabled="browsing" @click="browseTo(browseInput)">
           <RefreshCw v-if="browsing" :size="13" style="animation:spin .8s linear infinite" /><ChevronRight v-else :size="13" /> Aller
+        </NButton>
+        <NButton v-if="browseResult && !browseResult.error" variant="ghost" size="sm" @click="exportRegKey" title="Exporter en .reg">
+          ↓ .reg
         </NButton>
       </div>
 
@@ -174,6 +232,27 @@ function kindVariant(kind: string): "info" | "warning" | "success" | "neutral" {
           <!-- Valeurs -->
           <div class="reg-section">
             <div class="reg-section-title"><Key :size="13" /> Valeurs ({{ browseResult.values.length }})</div>
+            <div v-if="browseResult && !browseResult.error" style="margin:8px 10px;display:flex;gap:6px;align-items:center">
+              <input v-model="searchQuery" class="reg-addr-input" style="flex:1;font-size:12px;padding:5px 10px"
+                placeholder="Rechercher dans les valeurs (nom ou données)..."
+                @keyup.enter="searchRegistry" />
+              <NButton variant="ghost" size="sm" :disabled="searching" @click="searchRegistry">
+                <span v-if="searching">...</span><span v-else>🔍 Chercher</span>
+              </NButton>
+            </div>
+            <div v-if="searchDone && searchResults.length === 0" style="font-size:12px;color:var(--text-muted);padding:4px 10px">
+              Aucun résultat pour "{{ searchQuery }}" dans ce niveau.
+            </div>
+            <div v-if="searchResults.length > 0" style="margin:0 10px 10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px">
+              <div style="font-size:11px;color:var(--warning);margin-bottom:6px;font-weight:600">
+                {{ searchResults.length }} résultat(s) pour "{{ searchQuery }}"
+              </div>
+              <div v-for="(r, i) in searchResults" :key="i" style="font-size:11px;padding:3px 0;border-bottom:1px solid rgba(245,158,11,.1)">
+                <code style="color:var(--accent)">{{ r.name }}</code>
+                <NBadge :variant="'neutral'" style="font-size:9px;margin:0 6px">{{ r.kind }}</NBadge>
+                <span style="color:var(--text-secondary)">{{ r.data.length > 50 ? r.data.slice(0,50)+'...' : r.data }}</span>
+              </div>
+            </div>
             <div v-if="!browseResult.values.length" class="muted" style="font-size:12px;padding:6px">(Aucune valeur)</div>
             <div v-else class="reg-values-table">
               <div class="reg-values-head">

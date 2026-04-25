@@ -3,6 +3,24 @@ use std::process::Command;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
+/// Valide un nom d'hôte ou une adresse IP.
+/// Autorise : lettres, chiffres, tirets, points, deux-points (IPv6), crochets.
+/// Bloque tout le reste (injection PowerShell, backticks, $, etc.)
+fn validate_host(host: &str) -> Result<String, String> {
+    let h = host.trim().to_string();
+    if h.is_empty() {
+        return Err("Hôte vide".into());
+    }
+    if h.len() > 255 {
+        return Err(format!("Hôte trop long ({} caractères, max 255)", h.len()));
+    }
+    let valid = h.chars().all(|c| c.is_alphanumeric() || matches!(c, '.' | '-' | ':' | '[' | ']' | '_'));
+    if !valid {
+        return Err(format!("Caractères invalides dans l'hôte: {}", h));
+    }
+    Ok(h)
+}
+
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct PingDiagResult {
     pub host: String, pub success: bool, pub avg_ms: f64, pub min_ms: f64,
@@ -57,7 +75,10 @@ pub struct NetShareEntry { pub name: String, pub path: String, pub comment: Stri
 #[tauri::command]
 pub fn run_ping(host: String, count: u32) -> PingDiagResult {
     let count = count.min(10).max(1);
-    let h = host.replace('\'', "").replace('"', "");
+    let h = match validate_host(&host) {
+        Ok(h) => h,
+        Err(e) => { tracing::warn!("run_ping: {}", e); return PingDiagResult::default(); }
+    };
     let ps = format!(
         r#"try {{ $r = Test-Connection '{host}' -Count {count} -ErrorAction SilentlyContinue; if ($r) {{ $t = @($r | Select-Object -ExpandProperty ResponseTime); @{{s=$true;avg=[math]::Round(($t|Measure-Object -Average).Average,1);min=[math]::Round(($t|Measure-Object -Minimum).Minimum,1);max=[math]::Round(($t|Measure-Object -Maximum).Maximum,1);sent={count};recv=$t.Count;loss=[math]::Round((({count}-$t.Count)/{count})*100,1)}} | ConvertTo-Json -Compress }} else {{ '@{{\"s\":false,\"avg\":0,\"min\":0,\"max\":0,\"sent\":{count},\"recv\":0,\"loss\":100}}' }} }} catch {{ '@{{\"s\":false,\"avg\":0,\"min\":0,\"max\":0,\"sent\":{count},\"recv\":0,\"loss\":100}}' }}"#,
         host = h, count = count
@@ -78,7 +99,10 @@ pub fn run_ping(host: String, count: u32) -> PingDiagResult {
 // ─── Traceroute ────────────────────────────────────────────────────────────────
 #[tauri::command]
 pub fn run_traceroute(host: String) -> Vec<TracertHop> {
-    let h = host.replace('\'', "").replace('"', "");
+    let h = match validate_host(&host) {
+        Ok(h) => h,
+        Err(e) => { tracing::warn!("run_traceroute: {}", e); return vec![]; }
+    };
     // Use tracert cmd (more reliable than Test-NetConnection for real ms)
     let cmd = format!("tracert -h 20 -w 1000 {}", h);
     #[cfg(target_os = "windows")]
@@ -109,7 +133,10 @@ pub fn run_traceroute(host: String) -> Vec<TracertHop> {
 // ─── DNS Lookup ────────────────────────────────────────────────────────────────
 #[tauri::command]
 pub fn run_nslookup(host: String, record_type: String) -> DnsResult {
-    let h = host.replace('\'', "").replace('"', "");
+    let h = match validate_host(&host) {
+        Ok(h) => h,
+        Err(e) => { tracing::warn!("run_nslookup: {}", e); return DnsResult::default(); }
+    };
     let rtype = match record_type.to_uppercase().as_str() {
         "A"|"AAAA"|"MX"|"NS"|"TXT"|"CNAME"|"SOA"|"PTR"|"SRV" => record_type.to_uppercase(),
         _ => "A".to_string(),

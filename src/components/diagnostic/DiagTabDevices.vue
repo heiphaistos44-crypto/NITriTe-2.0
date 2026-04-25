@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Monitor, Music, Usb, Battery, Zap, Printer, RefreshCw, Star, FileText, Settings } from "lucide-vue-next";
+import { Monitor, Music, Usb, Battery, Zap, Printer, RefreshCw, Star, FileText, Settings, AlertTriangle, Download } from "lucide-vue-next";
 import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NProgress from "@/components/ui/NProgress.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
@@ -23,6 +23,9 @@ const emit = defineEmits(["reload"]);
 const actionMsg = ref("");
 const actionErr = ref(false);
 const loading = ref(false);
+const usbProblemDevices = ref<any[]>([]);
+const usbScanDone = ref(false);
+const usbScanLoading = ref(false);
 
 function showMsg(msg: string, err = false) {
   actionMsg.value = msg;
@@ -68,6 +71,44 @@ async function openDeviceManager() {
     showMsg("Gestionnaire de périphériques ouvert + scan en cours...");
   } catch (e: any) {
     showMsg(e || "Erreur ouverture gestionnaire", true);
+  }
+}
+
+async function scanUsbProblems() {
+  usbScanLoading.value = true;
+  usbScanDone.value = false;
+  try {
+    const all = await invoke<any[]>("get_problem_devices");
+    usbProblemDevices.value = all.filter(d => {
+      const cls = (d.class || "").toLowerCase();
+      const id = (d.device_id || "").toLowerCase();
+      return cls.includes("usb") || id.includes("usb") || cls === "" ;
+    });
+    usbScanDone.value = true;
+    showMsg(usbProblemDevices.value.length > 0
+      ? `${usbProblemDevices.value.length} périphérique(s) avec problème de pilote détecté(s)`
+      : "Aucun problème de pilote USB détecté ✓");
+  } catch (e: any) {
+    showMsg(e || "Erreur scan pilotes", true);
+  } finally {
+    usbScanLoading.value = false;
+  }
+}
+
+async function addUltimatePlan() {
+  loading.value = true;
+  try {
+    const results = await invoke<any[]>("enable_hidden_power_plans");
+    if (results.length > 0 && results[0].success) {
+      showMsg("Plan 'Performances maximales' ajouté ! Rechargement...");
+      setTimeout(() => emit("reload"), 1200);
+    } else {
+      showMsg(results[0]?.message || "Plan non disponible sur cette édition Windows", true);
+    }
+  } catch (e: any) {
+    showMsg(e || "Erreur activation plan caché", true);
+  } finally {
+    loading.value = false;
   }
 }
 </script>
@@ -165,12 +206,34 @@ async function openDeviceManager() {
         desc="Périphériques USB connectés"
         color="orange"
       />
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <NButton size="sm" variant="secondary" @click="openDeviceManager">
-          <RefreshCw :size="13" style="margin-right:5px" />
-          Scanner MAJ pilotes USB
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <NButton size="sm" variant="secondary" :disabled="usbScanLoading" @click="scanUsbProblems">
+          <RefreshCw :size="13" style="margin-right:5px" :class="{ spin: usbScanLoading }" />
+          {{ usbScanLoading ? 'Scan en cours...' : 'Scanner problèmes de pilotes' }}
+        </NButton>
+        <NButton size="sm" variant="ghost" @click="openDeviceManager">
+          <Settings :size="13" style="margin-right:5px" />
+          Gestionnaire de périphériques
         </NButton>
       </div>
+
+      <!-- Résultats du scan problèmes -->
+      <div v-if="usbScanDone" class="card-block" style="margin-bottom:12px">
+        <div v-if="usbProblemDevices.length === 0" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--success)">
+          ✓ Aucun problème de pilote détecté — tous les périphériques fonctionnent correctement
+        </div>
+        <div v-else>
+          <div style="font-size:12px;font-weight:600;color:var(--warning);margin-bottom:8px">
+            <AlertTriangle :size="13" style="margin-right:5px" />
+            {{ usbProblemDevices.length }} périphérique(s) avec problème de pilote :
+          </div>
+          <div v-for="d in usbProblemDevices" :key="d.device_id" style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+            <div style="font-weight:600">{{ d.name }}</div>
+            <div style="color:var(--warning);font-size:11px">{{ d.error_description }} (code {{ d.error_code }})</div>
+          </div>
+        </div>
+      </div>
+
       <div v-if="!usbDevices.length" class="diag-loading"><div class="diag-spinner"></div> Aucun périphérique USB détecté...</div>
       <template v-else>
         <NCollapse :title="'Périphériques USB — ' + usbDevices.length" storageKey="diag-devices-usb" :defaultOpen="true">
@@ -315,6 +378,14 @@ async function openDeviceManager() {
         desc="Gestion énergétique Windows — Activer un plan en un clic"
         color="amber"
       />
+      <!-- Activer plans cachés -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <NButton size="sm" variant="secondary" :disabled="loading" @click="addUltimatePlan">
+          <Download :size="13" style="margin-right:5px" />
+          Activer "Performances maximales" (caché)
+        </NButton>
+      </div>
+
       <NCollapse :title="'Plans d\'alimentation Windows — ' + powerPlans.length" storageKey="diag-devices-power" :defaultOpen="true">
         <div v-if="!powerPlans.length" class="diag-loading"><div class="diag-spinner"></div> Aucun plan d'énergie...</div>
         <div v-for="(p, i) in powerPlans" :key="i" class="card-block">
@@ -362,4 +433,6 @@ async function openDeviceManager() {
 }
 .action-toast-ok { background: #1a4a1a; border: 1px solid #22c55e; color: #86efac; }
 .action-toast-err { background: #4a1a1a; border: 1px solid #ef4444; color: #fca5a5; }
+.spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>

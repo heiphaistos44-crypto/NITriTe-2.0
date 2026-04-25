@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 
 export type SidebarPosition = "left" | "right";
 export type SidebarMode = "icons-only" | "icons-text";
@@ -399,7 +399,7 @@ export const useLayoutStore = defineStore("layout", () => {
   }
 
   function setField<K extends keyof LayoutState>(key: K, value: LayoutState[K]) {
-    (state.value as any)[key] = value;
+    state.value[key] = value;
     state.value.activePreset = "custom";
     save();
     applyToDocument();
@@ -443,8 +443,6 @@ export const useLayoutStore = defineStore("layout", () => {
     root.setAttribute("data-tab-style", state.value.tabStyle ?? "underline");
     root.setAttribute("data-nav-style", state.value.groupNavStyle ?? "sidebar");
   }
-
-  watch(cssVars, applyToDocument);
 
   load();
 

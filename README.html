@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NiTriTe 2.0 — Documentation Utilisateur</title>
+  <style>
+    :root {
+      --bg-primary: #0d0d10;
+      --bg-secondary: #141418;
+      --bg-tertiary: #1c1c22;
+      --border: #2e2e33;
+      --border-hover: #44444c;
+      --text-primary: #f0f0f5;
+      --text-secondary: #b0b0bc;
+      --text-muted: #6b6b80;
+      --accent: #f97316;
+      --accent-muted: rgba(249,115,22,0.15);
+      --accent-glow: rgba(249,115,22,0.3);
+      --blue: #3b82f6;
+      --blue-muted: rgba(59,130,246,0.12);
+      --green: #22c55e;
+      --green-muted: rgba(34,197,94,0.12);
+      --purple: #a78bfa;
+      --purple-muted: rgba(167,139,250,0.12);
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────────── */
+    .sidebar {
+      width: 270px;
+      flex-shrink: 0;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .logo-text .name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+
+    .logo-text .version {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .sidebar nav {
+      padding: 12px 0;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 12px 20px 4px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.12s;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar a:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+      border-left-color: var(--accent);
+    }
+
+    .sidebar a .icon { font-size: 15px; min-width: 18px; }
+
+    /* ── Main ───────────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      padding: 48px 60px;
+      max-width: 960px;
+    }
+
+    /* ── Hero ───────────────────────────────────────────────────── */
+    .hero {
+      margin-bottom: 48px;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(30,30,40,0) 60%);
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: var(--radius-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--accent-muted);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #c0c0d0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero h1 span {
+      -webkit-text-fill-color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      max-width: 600px;
+      margin-bottom: 24px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border-hover);
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+    }
+
+    /* ── Headings ────────────────────────────────────────────────── */
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 48px 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 22px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 32px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 .route {
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      color: var(--accent);
+      background: var(--accent-muted);
+      border: 1px solid rgba(249,115,22,0.2);
+      padding: 2px 8px;
+      border-radius: 5px;
+      margin-left: 4px;
+    }
+
+    h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 20px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    /* ── Feature Cards ────────────────────────────────────────────── */
+    .feature-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+
+    .feature-card:hover { border-color: var(--border-hover); }
+
+    .feature-card h3 { margin-top: 0; }
+
+    /* ── Tables ────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead tr {
+      background: var(--bg-tertiary);
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(46,46,51,0.6);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    td strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── Code / Route ─────────────────────────────────────────── */
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+
+    /* ── Callout ─────────────────────────────────────────────── */
+    .callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      margin: 16px 0;
+      font-size: 13px;
+      border-left: 3px solid;
+    }
+
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .callout.info {
+      background: var(--blue-muted);
+      border-color: var(--blue);
+      color: #93c5fd;
+    }
+
+    .callout.warning {
+      background: rgba(245,158,11,0.1);
+      border-color: var(--yellow);
+      color: #fcd34d;
+    }
+
+    .callout.danger {
+      background: rgba(239,68,68,0.1);
+      border-color: var(--red);
+      color: #fca5a5;
+    }
+
+    .callout.success {
+      background: var(--green-muted);
+      border-color: var(--green);
+      color: #86efac;
+    }
+
+    /* ── Lists ──────────────────────────────────────────────────── */
+    ul, ol {
+      padding-left: 20px;
+      color: var(--text-secondary);
+      margin: 8px 0 12px;
+    }
+
+    li { margin-bottom: 4px; line-height: 1.6; }
+    li strong { color: var(--text-primary); }
+
+    /* ── Badges ─────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      vertical-align: middle;
+    }
+
+    .badge-orange { background: var(--accent-muted); color: var(--accent); border: 1px solid rgba(249,115,22,0.3); }
+    .badge-blue   { background: var(--blue-muted);   color: #60a5fa;       border: 1px solid rgba(59,130,246,0.3); }
+    .badge-green  { background: var(--green-muted);  color: #4ade80;       border: 1px solid rgba(34,197,94,0.3); }
+    .badge-purple { background: var(--purple-muted); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+    .badge-red    { background: rgba(239,68,68,0.1); color: #f87171;       border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Grid shortcuts ─────────────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0; }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .num { font-size: 28px; font-weight: 800; color: var(--accent); }
+    .stat-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Keyboard shortcuts ────────────────────────────────────── */
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-hover);
+      border-bottom: 2px solid var(--border-hover);
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      margin: 0 2px;
+    }
+
+    .shortcut-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .shortcut-row:last-child { border-bottom: none; }
+    .shortcut-key { min-width: 120px; }
+
+    /* ── Stack table ─────────────────────────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .tech-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .tech-card .tech-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+    .tech-card .tech-sub  { font-size: 11px; color: var(--text-muted); }
+    .tech-card .tech-ver  { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+
+    /* ── Divider ─────────────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    footer {
+      margin-top: 64px;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 20px; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .tech-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🔵</div>
+      <div class="logo-text">
+        <div class="name">NiTriTe</div>
+        <div class="version">v6.0.0</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-section-label">Général</div>
+      <a href="#presentation"><span class="icon">📖</span> Présentation</a>
+      <a href="#installation"><span class="icon">⚙️</span> Installation</a>
+
+      <div class="nav-section-label">Système</div>
+      <a href="#dashboard"><span class="icon">🏠</span> Tableau de bord</a>
+      <a href="#diagnostic"><span class="icon">🩺</span> Diagnostic</a>
+      <a href="#optimizations"><span class="icon">⚡</span> Optimisations</a>
+
+      <div class="nav-section-label">Logiciels</div>
+      <a href="#applications"><span class="icon">📦</span> Applications</a>
+      <a href="#tools"><span class="icon">🔧</span> Outils Système</a>
+      <a href="#master-install"><span class="icon">📥</span> Master Install</a>
+      <a href="#portables"><span class="icon">📱</span> Apps Portables</a>
+      <a href="#os-downloads"><span class="icon">💿</span> OS & USB Tools</a>
+
+      <div class="nav-section-label">Performance</div>
+      <a href="#temperatures"><span class="icon">🌡️</span> Températures</a>
+      <a href="#benchmark"><span class="icon">📊</span> Benchmark</a>
+      <a href="#perf-history"><span class="icon">📈</span> Historique</a>
+
+      <div class="nav-section-label">Avancé</div>
+      <a href="#clone"><span class="icon">💾</span> Clonage</a>
+      <a href="#data-recovery"><span class="icon">🗄️</span> Récupération</a>
+      <a href="#disk-visualizer"><span class="icon">🥧</span> Visualiseur Disque</a>
+      <a href="#duplicates"><span class="icon">🔍</span> Doublons</a>
+      <a href="#big-files"><span class="icon">📁</span> Gros Fichiers</a>
+      <a href="#hash"><span class="icon">#</span> Hash Checker</a>
+      <a href="#boot-manager"><span class="icon">🖥️</span> Boot Manager</a>
+      <a href="#hosts-editor"><span class="icon">🌐</span> Éditeur Hosts</a>
+      <a href="#bsod"><span class="icon">💥</span> Analyse BSOD</a>
+      <a href="#wsl"><span class="icon">🐧</span> WSL Linux</a>
+      <a href="#restore-points"><span class="icon">🛡️</span> Restauration</a>
+      <a href="#docker"><span class="icon">🐳</span> Docker</a>
+
+      <div class="nav-section-label">Maintenance</div>
+      <a href="#updates"><span class="icon">🔄</span> Mises à jour</a>
+      <a href="#drivers"><span class="icon">🖥️</span> Drivers</a>
+      <a href="#uninstaller"><span class="icon">🗑️</span> Désinstallateur</a>
+      <a href="#cleaner"><span class="icon">✨</span> Nettoyeur</a>
+      <a href="#backup"><span class="icon">💾</span> Sauvegarde</a>
+      <a href="#antivirus"><span class="icon">🛡️</span> Antivirus</a>
+      <a href="#dependencies"><span class="icon">📦</span> Dépendances</a>
+
+      <div class="nav-section-label">Réseau & Terminal</div>
+      <a href="#network"><span class="icon">📡</span> Réseau</a>
+      <a href="#dns"><span class="icon">🌐</span> DNS Switcher</a>
+      <a href="#wifi"><span class="icon">📶</span> WiFi Analyzer</a>
+      <a href="#ports"><span class="icon">🔌</span> Scanner de Ports</a>
+      <a href="#bluetooth"><span class="icon">🔵</span> Bluetooth</a>
+      <a href="#terminal"><span class="icon">⬛</span> Terminal</a>
+      <a href="#scripts"><span class="icon">📝</span> Scripts</a>
+
+      <div class="nav-section-label">Intelligence</div>
+      <a href="#ai"><span class="icon">🤖</span> Agent IA</a>
+      <a href="#knowledge"><span class="icon">📚</span> Base de Connaissances</a>
+
+      <div class="nav-section-label">Configuration</div>
+      <a href="#settings"><span class="icon">⚙️</span> Paramètres</a>
+      <a href="#profiles"><span class="icon">👤</span> Profils</a>
+      <a href="#theme-editor"><span class="icon">🎨</span> Éditeur de Thème</a>
+      <a href="#logs"><span class="icon">📜</span> Logs</a>
+
+      <div class="nav-section-label">WinPE</div>
+      <a href="#winpe"><span class="icon">🔵</span> Mode WinPE</a>
+
+      <div class="nav-section-label">Référence</div>
+      <a href="#shortcuts"><span class="icon">⌨️</span> Raccourcis Clavier</a>
+      <a href="#stack"><span class="icon">🔬</span> Stack Technique</a>
+    </nav>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-badge">📖 Documentation Officielle</div>
+      <h1>NiTriTe <span>2.0</span></h1>
+      <p>Outil de diagnostic, maintenance et réparation Windows tout-en-un. Plus de <strong>50 fonctionnalités</strong> pour les techniciens informatiques, administrateurs système et utilisateurs avancés.</p>
+      <div class="hero-tags">
+        <span class="tag">Tauri v2</span>
+        <span class="tag">Rust + Vue 3</span>
+        <span class="tag">Windows 10/11</span>
+        <span class="tag">64-bit</span>
+        <span class="tag">v6.0.0</span>
+        <span class="tag">100% Local</span>
+      </div>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="grid-3">
+      <div class="stat-card"><div class="num">50+</div><div class="lbl">Fonctionnalités</div></div>
+      <div class="stat-card"><div class="num">9</div><div class="lbl">Catégories</div></div>
+      <div class="stat-card"><div class="num">0</div><div class="lbl">Données envoyées</div></div>
+    </div>
+
+    <!-- ═══ PRÉSENTATION ═══ -->
+    <section id="presentation">
+      <h2>Présentation</h2>
+      <p><strong>NiTriTe 2.0</strong> est un outil de diagnostic et maintenance Windows complet, conçu pour les techniciens informatiques, administrateurs système et utilisateurs avancés. Il regroupe en une seule application native plus de <strong>50 fonctionnalités</strong> couvrant :</p>
+      <ul>
+        <li>Monitoring temps réel du matériel (CPU, RAM, GPU, disques, réseau)</li>
+        <li>Diagnostic système approfondi avec 20+ onglets d'informations</li>
+        <li>Installation et désinstallation de logiciels (WinGet, Choco, Scoop)</li>
+        <li>Nettoyage, optimisation et sauvegarde de la configuration système</li>
+        <li>Réparation système depuis WinPE (clé USB bootable)</li>
+        <li>Analyse réseau, WiFi, Bluetooth et sécurité</li>
+        <li>Récupération de données et clonage disque</li>
+        <li>Terminal intégré, scripts PowerShell/CMD, agent IA</li>
+      </ul>
+      <div class="callout success">
+        <span class="callout-icon">🔒</span>
+        <span>L'application fonctionne <strong>entièrement en local</strong>. Aucune donnée n'est envoyée vers des serveurs externes.</span>
+      </div>
+    </section>
+
+    <!-- ═══ INSTALLATION ═══ -->
+    <section id="installation">
+      <h2>Installation & Démarrage</h2>
+
+      <h4>Prérequis</h4>
+      <ul>
+        <li><strong>Windows 10</strong> (build 1903+) ou <strong>Windows 11</strong></li>
+        <li><strong>Architecture 64-bit</strong> (x86_64)</li>
+        <li><strong>Droits administrateur</strong> recommandés pour toutes les fonctionnalités</li>
+      </ul>
+
+      <h4>Installation</h4>
+      <ol>
+        <li>Télécharger l'installeur <code>Nitrite_6.0.0_x64-setup.exe</code></li>
+        <li>Exécuter en tant qu'administrateur (clic droit → Exécuter en tant qu'administrateur)</li>
+        <li>Suivre l'assistant d'installation</li>
+        <li>Lancer <strong>NiTriTe</strong> depuis le raccourci Bureau ou le menu Démarrer</li>
+      </ol>
+
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <span>Au premier lancement, appuyez sur <kbd>Ctrl+K</kbd> pour ouvrir la recherche rapide et accéder instantanément à n'importe quelle fonctionnalité.</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>🖥️ Système</h2>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="feature-card">
+      <h3>🏠 Tableau de bord <span class="route">/</span></h3>
+      <p>Page d'accueil de l'application. Vue d'ensemble en temps réel de l'état du système.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Métrique</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CPU</strong></td><td>Utilisation globale + usage par cœur</td></tr>
+            <tr><td><strong>RAM</strong></td><td>Mémoire utilisée / totale + type (DDR4, DDR5)</td></tr>
+            <tr><td><strong>Disque</strong></td><td>Taux d'occupation de la partition C:</td></tr>
+            <tr><td><strong>Réseau</strong></td><td>Débit download/upload en temps réel</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ul>
+        <li><strong>Score de santé système</strong> (0–100) avec code couleur (vert/orange/rouge)</li>
+        <li><strong>Graphiques Sparkline</strong> — historique 60 secondes pour CPU, RAM, Disque, Réseau</li>
+        <li><strong>Barre d'informations système</strong> — OS, Machine, Architecture, CPU, RAM, Uptime</li>
+        <li><strong>Moteur de suggestions</strong> — recommandations basées sur les métriques en temps réel</li>
+        <li><strong>Top processus</strong> — kill direct depuis le tableau de bord</li>
+        <li><strong>Monitoring GPU</strong> — utilisation, VRAM, température</li>
+        <li><strong>Alertes actives</strong> — notifications si CPU/RAM/Disque dépassent les seuils</li>
+        <li><strong>Actions rapides</strong> — accès 1 clic vers Diagnostic, Nettoyage, Mises à jour, Sauvegarde</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="callout-icon">⚙️</span>
+        <span>Cliquez sur <strong>⚙ Seuils</strong> pour personnaliser les niveaux d'alerte (CPU warn/critique, RAM warn/critique, Disque warn/critique).</span>
+      </div>
+    </section>
+
+    <!-- Diagnostic -->
+    <section id="diagnostic" class="feature-card">
+      <h3>🩺 Diagnostic <span class="route">/diagnostic</span></h3>
+      <p>Analyse complète du système organisée en <strong>20+ onglets</strong>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Onglet</th><th>Contenu</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vue d'ensemble</strong></td><td>Score global, résumé CPU/RAM/Disque/GPU</td></tr>
+            <tr><td><strong>Processus</strong></td><td>Liste des processus actifs (PID, CPU%, RAM, chemin)</td></tr>
+            <tr><td><strong>Services</strong></td><td>Services Windows — état, type de démarrage, activation/désactivation</td></tr>
+            <tr><td><strong>Démarrage</strong></td><td>Programmes au démarrage (registre + dossier Startup)</td></tr>
+            <tr><td><strong>Tâches planifiées</strong></td><td>Tâches Windows Scheduler actives et inactives</td></tr>
+            <tr><td><strong>Logiciels</strong></td><td>Applications installées avec éditeur, version, taille</td></tr>
+            <tr><td><strong>Variables Env.</strong></td><td>Variables d'environnement système et utilisateur</td></tr>
+            <tr><td><strong>Stockage</strong></td><td>Disques physiques, partitions, volumes (SMART, état de santé)</td></tr>
+            <tr><td><strong>Réseau</strong></td><td>Interfaces, adresses IP, passerelle, DNS, débit</td></tr>
+            <tr><td><strong>GPU</strong></td><td>Informations carte graphique, utilisation, VRAM, température</td></tr>
+            <tr><td><strong>Écrans</strong></td><td>Moniteurs connectés, résolution, fréquence de rafraîchissement</td></tr>
+            <tr><td><strong>Audio</strong></td><td>Périphériques audio, pilotes, état</td></tr>
+            <tr><td><strong>USB</strong></td><td>Périphériques USB connectés</td></tr>
+            <tr><td><strong>Batterie</strong></td><td>État batterie, capacité, cycles de charge</td></tr>
+            <tr><td><strong>Énergie</strong></td><td>Plan d'alimentation actif, paramètres veille/hibernation</td></tr>
+            <tr><td><strong>Imprimantes</strong></td><td>Imprimantes installées et leur état</td></tr>
+            <tr><td><strong>Drivers</strong></td><td>Pilotes système avec état, version, fournisseur</td></tr>
+            <tr><td><strong>Sécurité</strong></td><td>État Windows Defender, pare-feu, UAC, Secure Boot</td></tr>
+            <tr><td><strong>Bluetooth</strong></td><td>Adaptateurs et périphériques Bluetooth</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Les résultats de diagnostic peuvent être exportés en rapport texte/HTML.</p>
+    </section>
+
+    <!-- Optimisations -->
+    <section id="optimizations" class="feature-card">
+      <h3>⚡ Optimisations & Mode Turbo <span class="route">/optimizations</span></h3>
+      <p>Profils d'optimisation en 1 clic et actions individuelles.</p>
+
+      <h4>Modes prédéfinis</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mode</th><th>Cible</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td><strong>🔥 Turbo</strong></td><td>Performances maximales</td><td>Plan haute perf, vide DNS et RAM, GPU Scheduling, termine processus inutiles</td></tr>
+            <tr><td><strong>🎮 Gaming</strong></td><td>FPS optimisé</td><td>Haute performance, GPU HW Scheduling, Game Mode ON, Xbox Game Bar OFF</td></tr>
+            <tr><td><strong>💼 Travail</strong></td><td>Équilibre perf/batterie</td><td>Plan équilibré, effets visuels réduits, presse-papiers nettoyé</td></tr>
+            <tr><td><strong>🌿 Économie</strong></td><td>Batterie maximale</td><td>Plan économie d'énergie, luminosité réduite</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Optimisations individuelles</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Effet</th></tr></thead>
+          <tbody>
+            <tr><td>Nettoyer fichiers temporaires</td><td>Vide <code>%TEMP%</code> et <code>C:\Windows\Temp</code></td></tr>
+            <tr><td>Vider le cache DNS</td><td><code>ipconfig /flushdns</code></td></tr>
+            <tr><td>Vider journaux d'événements</td><td>Efface logs Application/System/Security</td></tr>
+            <tr><td>Optimiser démarrage SSD</td><td>Désactive Superfetch/SysMain</td></tr>
+            <tr><td>Limiter la télémétrie</td><td>Réduit la collecte de données Microsoft</td></tr>
+            <tr><td>Effets visuels Performance</td><td>Désactive animations Windows</td></tr>
+            <tr><td>Optimiser disques (TRIM)</td><td>Lance TRIM sur les volumes SSD</td></tr>
+            <tr><td>Vider le presse-papiers</td><td>Efface le contenu du presse-papiers</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Historique des gains :</strong> Conserve un journal des optimisations passées avec la RAM libérée (30 dernières sessions).</p>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>📦 Logiciels</h2>
+
+    <section id="applications" class="feature-card">
+      <h3>📦 Applications <span class="route">/applications</span></h3>
+      <p>Catalogue d'applications courantes téléchargeables et installables silencieusement, organisées par catégorie (Navigateurs, Développement, Multimédia, Utilitaires, etc.).</p>
+    </section>
+
+    <section id="tools" class="feature-card">
+      <h3>🔧 Outils Système <span class="route">/tools</span></h3>
+      <p>Collection de scripts <code>.bat</code> d'administration Windows exécutables directement depuis l'interface : nettoyage, réparation, configuration réseau, gestion des services, etc.</p>
+    </section>
+
+    <section id="master-install" class="feature-card">
+      <h3>📥 Master Install <span class="route">/master-install</span></h3>
+      <p>Sélectionnez une liste d'applications et installez-les toutes en une seule fois silencieusement. Idéal pour configurer rapidement un nouveau poste.</p>
+    </section>
+
+    <section id="portables" class="feature-card">
+      <h3>📱 Apps Portables <span class="route">/portables</span></h3>
+      <p>Accès direct aux outils portables embarqués dans NiTriTe, sans installation requise.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Outil</th><th>Utilité</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Autoruns64</strong></td><td>Gestion des programmes au démarrage</td></tr>
+            <tr><td><strong>CPU-Z</strong></td><td>Informations matérielles détaillées</td></tr>
+            <tr><td><strong>CrystalDiskInfo</strong></td><td>Santé des disques (SMART)</td></tr>
+            <tr><td><strong>HWiNFO</strong></td><td>Monitoring matériel avancé</td></tr>
+            <tr><td><strong>HWMonitor</strong></td><td>Températures, tensions, ventilateurs</td></tr>
+            <tr><td><strong>ProcessExplorer</strong></td><td>Gestionnaire de processus avancé</td></tr>
+            <tr><td><strong>AdwCleaner</strong></td><td>Suppression d'adwares et PUPs</td></tr>
+            <tr><td><strong>DDU</strong></td><td>Désinstallation complète de pilotes GPU</td></tr>
+            <tr><td><strong>BCUninstaller</strong></td><td>Désinstallateur avancé</td></tr>
+            <tr><td><strong>GetDataBack</strong></td><td>Récupération de données</td></tr>
+            <tr><td><strong>WiseCare365</strong></td><td>Nettoyage et optimisation</td></tr>
+            <tr><td><strong>WiseDiskCleaner</strong></td><td>Nettoyeur de disque</td></tr>
+            <tr><td><strong>Spybot</strong></td><td>Anti-spyware</td></tr>
+            <tr><td><strong>HardDiskSentinel</strong></td><td>Surveillance disques durs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="os-downloads" class="feature-card">
+      <h3>💿 OS & USB Tools <span class="route">/os-downloads</span></h3>
+      <p>Liens vers les ISO officielles des systèmes d'exploitation (Windows 10, Windows 11, distributions Linux) et outils de création de clés USB bootables (Rufus, Ventoy, etc.).</p>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>📊 Performance</h2>
+
+    <section id="temperatures" class="feature-card">
+      <h3>🌡️ Températures & Capteurs <span class="route">/temperatures</span></h3>
+      <p>Monitoring matériel en temps réel — toutes les données de capteurs organisées par composant.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type de capteur</th><th>Exemples</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Températures</strong></td><td>CPU par cœur, GPU, M.2, disques durs</td></tr>
+            <tr><td><strong>Ventilateurs</strong></td><td>Vitesse en RPM (CPU fan, chassis fan)</td></tr>
+            <tr><td><strong>Charge</strong></td><td>Utilisation CPU total et par cœur, GPU</td></tr>
+            <tr><td><strong>Fréquences</strong></td><td>Fréquence d'horloge CPU et GPU (MHz/GHz)</td></tr>
+            <tr><td><strong>Tensions</strong></td><td>Tensions CPU, DRAM, VCore (Volts)</td></tr>
+            <tr><td><strong>Consommation</strong></td><td>Puissance CPU, GPU, package (Watts)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Code couleur :</strong> 🟢 &lt;50°C Normal · 🟡 50–70°C Chaud · 🟠 70–85°C Très chaud · 🔴 &gt;85°C Critique</p>
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <span>Pour les données complètes (températures par cœur, ventilateurs RPM, tensions), installez <strong>LibreHardwareMonitor</strong> et lancez-le en administrateur. NiTriTe le détecte automatiquement.</span>
+      </div>
+    </section>
+
+    <section id="benchmark" class="feature-card">
+      <h3>📊 Benchmark <span class="route">/benchmark</span></h3>
+      <p>Tests de performance natifs (sans dépendances tierces).</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Test</th><th>Ce qu'il mesure</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CPU Mono-cœur</strong></td><td>Performance d'un seul cœur (chiffrement, calcul)</td></tr>
+            <tr><td><strong>CPU Multi-cœur</strong></td><td>Performance parallèle (tous les cœurs)</td></tr>
+            <tr><td><strong>RAM Bande passante</strong></td><td>Débit mémoire en GB/s</td></tr>
+            <tr><td><strong>Disque Séquentiel</strong></td><td>Vitesse lecture/écriture séquentielle</td></tr>
+            <tr><td><strong>Compression</strong></td><td>Vitesse de compression données</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="perf-history" class="feature-card">
+      <h3>📈 Historique Performance <span class="route">/perf-history</span></h3>
+      <p>Enregistre et visualise l'évolution des métriques système dans le temps (CPU, RAM, disque, réseau) pour identifier les dégradations progressives de performance.</p>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>🔬 Avancé <span class="badge badge-orange">BETA</span></h2>
+
+    <section id="clone" class="feature-card">
+      <h3>💾 Clonage Système <span class="route">/clone</span></h3>
+      <p>Clone un disque/partition vers un autre support via <strong>wbadmin</strong> (Windows Backup) ou <strong>Robocopy</strong>. Utile pour migrer vers un nouveau SSD ou créer une image de secours.</p>
+    </section>
+
+    <section id="data-recovery" class="feature-card">
+      <h3>🗄️ Récupération de Données <span class="route">/data-recovery</span></h3>
+      <p>Recherche et récupère les fichiers supprimés depuis :</p>
+      <ul>
+        <li>La <strong>Corbeille</strong> Windows</li>
+        <li>Les <strong>Shadow Copies</strong> (VSS — Volume Shadow Service)</li>
+        <li>Les partitions formatées (scan avancé)</li>
+      </ul>
+      <p><strong>Comparaison Shadow Copy :</strong> visualise les différences entre une version précédente et l'état actuel d'un fichier ou dossier.</p>
+    </section>
+
+    <section id="disk-visualizer" class="feature-card">
+      <h3>🥧 Visualiseur Disque <span class="route">/disk-visualizer</span></h3>
+      <p>Affiche l'espace disque sous forme graphique interactive (treemap), permettant d'identifier rapidement les dossiers et fichiers les plus volumineux.</p>
+    </section>
+
+    <section id="duplicates" class="feature-card">
+      <h3>🔍 Détecteur de Doublons <span class="route">/duplicate-finder</span></h3>
+      <p>Analyse un dossier (ou le disque entier) pour trouver les fichiers identiques (par hash MD5/SHA). Affiche les doublons groupés et permet leur suppression sélective.</p>
+    </section>
+
+    <section id="big-files" class="feature-card">
+      <h3>📁 Gros Fichiers <span class="route">/big-files</span></h3>
+      <p>Scanne un dossier et liste les fichiers dépassant un seuil configurable (50 Mo, 100 Mo, 500 Mo, 1 Go), triés par taille décroissante. Lien direct pour ouvrir le dossier contenant.</p>
+    </section>
+
+    <section id="hash" class="feature-card">
+      <h3># Hash Checker <span class="route">/hash-checker</span></h3>
+      <p>Calcule et compare les empreintes cryptographiques d'un fichier :</p>
+      <ul>
+        <li><strong>MD5, SHA-1, SHA-256, SHA-512</strong></li>
+      </ul>
+      <p>Utile pour vérifier l'intégrité d'un ISO téléchargé ou d'un fichier reçu.</p>
+    </section>
+
+    <section id="boot-manager" class="feature-card">
+      <h3>🖥️ Boot Manager <span class="route">/boot-manager</span></h3>
+      <p>Consulte et modifie la configuration du démarrage Windows (BCD — Boot Configuration Data) :</p>
+      <ul>
+        <li>Liste les entrées de démarrage</li>
+        <li>Modifie le timeout du menu</li>
+        <li>Ajoute/supprime des entrées de démarrage</li>
+      </ul>
+    </section>
+
+    <section id="hosts-editor" class="feature-card">
+      <h3>🌐 Éditeur Hosts <span class="route">/hosts-editor</span></h3>
+      <p>Éditeur visuel du fichier <code>C:\Windows\System32\drivers\etc\hosts</code> :</p>
+      <ul>
+        <li>Ajouter/modifier/supprimer des entrées</li>
+        <li>Activer/désactiver des entrées sans les supprimer</li>
+        <li>Validation du format IP + domaine</li>
+        <li>Sauvegarde automatique avant modification</li>
+      </ul>
+    </section>
+
+    <section id="bsod" class="feature-card">
+      <h3>💥 Analyse BSOD <span class="route">/bsod-analyzer</span></h3>
+      <p>Analyse les fichiers de dump mémoire (<code>C:\Windows\Minidump\</code>) pour identifier la cause des BSOD :</p>
+      <ul>
+        <li>Code d'erreur (Bugcheck)</li>
+        <li>Module/Driver responsable</li>
+        <li>Date et heure de chaque crash</li>
+        <li>Description de l'erreur et pistes de résolution</li>
+      </ul>
+    </section>
+
+    <section id="wsl" class="feature-card">
+      <h3>🐧 WSL Linux <span class="route">/wsl</span></h3>
+      <p>Gère les distributions WSL (Windows Subsystem for Linux) :</p>
+      <ul>
+        <li>Lister les distributions installées et leur état</li>
+        <li>Démarrer/arrêter une distribution</li>
+        <li>Ouvrir un terminal WSL</li>
+        <li>Exporter/importer des distributions</li>
+      </ul>
+    </section>
+
+    <section id="restore-points" class="feature-card">
+      <h3>🛡️ Points de Restauration <span class="route">/restore-points</span></h3>
+      <ul>
+        <li>Liste tous les points de restauration système disponibles</li>
+        <li>Créer un nouveau point de restauration</li>
+        <li>Restaurer le système à un point antérieur</li>
+        <li>Supprimer des points de restauration obsolètes</li>
+      </ul>
+    </section>
+
+    <section id="docker" class="feature-card">
+      <h3>🐳 Docker Manager <span class="route">/docker</span></h3>
+      <p>Gestion des conteneurs et images Docker sans ligne de commande :</p>
+      <ul>
+        <li>Liste des conteneurs (actifs/arrêtés)</li>
+        <li>Démarrer/arrêter/supprimer un conteneur</li>
+        <li>Liste des images locales</li>
+        <li>Statistiques d'utilisation ressources</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>🔧 Maintenance</h2>
+
+    <section id="updates" class="feature-card">
+      <h3>🔄 Mises à jour <span class="route">/updates</span></h3>
+      <p>Vérifie et installe les mises à jour depuis plusieurs gestionnaires de paquets.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Source</th><th>Fonctionnalités</th></tr></thead>
+          <tbody>
+            <tr><td><strong>WinGet</strong></td><td>Liste les apps avec mises à jour disponibles, mise à jour individuelle ou globale</td></tr>
+            <tr><td><strong>Chocolatey</strong></td><td>Vérifie les upgrades Choco disponibles, mise à jour groupée</td></tr>
+            <tr><td><strong>Scoop</strong></td><td>Gestion des paquets Scoop</td></tr>
+            <tr><td><strong>Windows Update</strong></td><td>Déclenchement des mises à jour Windows via PowerShell</td></tr>
+            <tr><td><strong>Automatisation</strong></td><td>Planification de mises à jour automatiques (daily/weekly)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li>Exclure des packages de la mise à jour (persisté en local)</li>
+        <li>Créer un point de restauration avant mise à jour</li>
+        <li>Rollback de la dernière mise à jour Windows</li>
+      </ul>
+    </section>
+
+    <section id="drivers" class="feature-card">
+      <h3>🖥️ Drivers <span class="route">/drivers</span></h3>
+      <ul>
+        <li>Liste tous les pilotes installés avec version, date, fournisseur</li>
+        <li>Identification des pilotes obsolètes ou manquants</li>
+        <li>Lancement de Windows Update pour les pilotes</li>
+        <li>Accès au Gestionnaire de périphériques</li>
+      </ul>
+    </section>
+
+    <section id="uninstaller" class="feature-card">
+      <h3>🗑️ Désinstallateur <span class="route">/uninstaller</span></h3>
+      <p>Désinstallateur plus puissant que le Panneau de configuration Windows.</p>
+
+      <h4>Onglet Logiciels</h4>
+      <ul>
+        <li>Recherche et filtre les applications installées</li>
+        <li>Désinstallation silencieuse (détecte NSIS, Inno Setup, MSI, etc.)</li>
+        <li>Suppression des résidus post-désinstallation (registre, fichiers orphelins)</li>
+        <li>Désinstallation groupée</li>
+      </ul>
+
+      <h4>Onglet DLL Scanner</h4>
+      <ul>
+        <li>Scanne les DLL présentes dans System32 et dossiers d'applications</li>
+        <li>Catégorise : Système (Microsoft), Tiers (System32), Applications</li>
+        <li>Identification des DLL orphelines</li>
+        <li>Suppression sélective avec avertissement</li>
+      </ul>
+    </section>
+
+    <section id="cleaner" class="feature-card">
+      <h3>✨ Nettoyeur Avancé <span class="route">/cleaner</span></h3>
+
+      <h4>Mode Nettoyage</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Catégorie</th><th>Cibles</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Temp</strong></td><td><code>%TEMP%</code>, <code>C:\Windows\Temp</code></td></tr>
+            <tr><td><strong>Cache système</strong></td><td>Prefetch, WER, thumbnails</td></tr>
+            <tr><td><strong>Navigateurs</strong></td><td>Cache Chrome, Edge, Firefox</td></tr>
+            <tr><td><strong>Windows Update</strong></td><td>Cache <code>SoftwareDistribution\Download</code></td></tr>
+            <tr><td><strong>Logs</strong></td><td>Journaux d'événements, dumps mémoire</td></tr>
+            <tr><td><strong>Corbeille</strong></td><td>Vider la corbeille</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Mode Quarantaine <span class="badge badge-green">Nouveau</span></h4>
+      <p>Avant de supprimer définitivement, déplacez les fichiers vers une zone de quarantaine (<code>%LOCALAPPDATA%\NiTriTe\quarantine\</code>) pour vérification. Restaurez ou supprimez définitivement depuis le panneau Quarantaine.</p>
+
+      <h4>Gros fichiers</h4>
+      <p>Scan manuel de <code>C:\Users</code> pour trouver les fichiers dépassant un seuil (50 Mo–1 Go). Ouvrir le dossier directement.</p>
+    </section>
+
+    <section id="backup" class="feature-card">
+      <h3>💾 Sauvegarde <span class="route">/backup</span></h3>
+      <p>Sauvegardez des informations critiques du système dans un fichier archive.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Catégorie</th><th>Éléments disponibles</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Logiciels & Système</strong></td><td>Apps installées, export WinGet JSON, drivers, features Windows, polices</td></tr>
+            <tr><td><strong>Réseau & Sécurité</strong></td><td>Config IP/DNS, profils WiFi, règles pare-feu, partages réseau, fichier hosts</td></tr>
+            <tr><td><strong>Licences ⚠️</strong></td><td>Clé Windows, clés BitLocker, clé Office <em>(données sensibles)</em></td></tr>
+            <tr><td><strong>Navigateurs</strong></td><td>Favoris Chrome, Edge, Brave</td></tr>
+            <tr><td><strong>Démarrage & Tâches</strong></td><td>Programmes démarrage, tâches planifiées, export registre Run</td></tr>
+            <tr><td><strong>Développeur</strong></td><td>Variables env., clés SSH, packages Python, extensions VSCode, profil PowerShell</td></tr>
+            <tr><td><strong>Matériel</strong></td><td>Rapport composants PC, plans d'alimentation, imprimantes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Formats :</strong> <code>.txt</code> · <code>.html</code> · <code>.md</code> · <code>.json</code> &nbsp;|&nbsp; <strong>Emplacement :</strong> <code>~/Documents/NiTriTe/backups/</code> (personnalisable)</p>
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <span>Les éléments marqués <strong>🔒 Sensible</strong> exportent des données confidentielles en clair (clés BitLocker, clé Windows). Conservez le fichier de sauvegarde en lieu sûr.</span>
+      </div>
+    </section>
+
+    <section id="antivirus" class="feature-card">
+      <h3>🛡️ Scan Antivirus <span class="route">/scanvirus</span></h3>
+      <p>Interface NiTriTe vers <strong>Windows Defender</strong> via PowerShell.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Scan Rapide</strong></td><td>Analyse les zones vulnérables (~5 min)</td></tr>
+            <tr><td><strong>Scan Complet</strong></td><td>Analyse tous les fichiers (~1h+)</td></tr>
+            <tr><td><strong>Scan Hors-ligne</strong></td><td>Redémarre en mode sans échec pour scanner les rootkits</td></tr>
+            <tr><td><strong>Scan Personnalisé</strong></td><td>Analyse un dossier/lecteur spécifique</td></tr>
+            <tr><td><strong>Quarantaine</strong></td><td>Consulte les menaces mises en quarantaine par Defender</td></tr>
+            <tr><td><strong>Mise à jour définitions</strong></td><td><code>Update-MpSignature</code> pour les signatures de virus</td></tr>
+            <tr><td><strong>Planification</strong></td><td>Crée une tâche planifiée pour un scan hebdomadaire automatique</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="dependencies" class="feature-card">
+      <h3>📦 Dépendances <span class="route">/dependencies</span></h3>
+      <p>Vérifie et installe les dépendances système courantes :</p>
+      <ul>
+        <li>.NET Framework / .NET Runtime (toutes versions)</li>
+        <li>Visual C++ Redistributable (2005 → 2022)</li>
+        <li>DirectX, WebView2 Runtime, Java JRE, PowerShell 7</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>📡 Réseau & Terminal</h2>
+
+    <section id="network" class="feature-card">
+      <h3>📡 Réseau <span class="route">/network</span></h3>
+      <ul>
+        <li>Interfaces réseau actives (IP, masque, passerelle, DNS, MAC)</li>
+        <li>Test de connectivité (ping) et statistiques de connexion</li>
+        <li>Commandes réseau rapides (ipconfig, netstat, tracert)</li>
+        <li>Test de débit (upload/download)</li>
+      </ul>
+    </section>
+
+    <section id="dns" class="feature-card">
+      <h3>🌐 DNS Switcher <span class="route">/dns-switcher</span></h3>
+      <p>Changement de serveurs DNS en 1 clic.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fournisseur</th><th>DNS Primaire</th><th>DNS Secondaire</th></tr></thead>
+          <tbody>
+            <tr><td>Google</td><td>8.8.8.8</td><td>8.8.4.4</td></tr>
+            <tr><td>Cloudflare</td><td>1.1.1.1</td><td>1.0.0.1</td></tr>
+            <tr><td>OpenDNS</td><td>208.67.222.222</td><td>208.67.220.220</td></tr>
+            <tr><td>Quad9</td><td>9.9.9.9</td><td>149.112.112.112</td></tr>
+            <tr><td>NextDNS</td><td>Configurable</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Restauration des DNS automatiques en 1 clic.</p>
+    </section>
+
+    <section id="wifi" class="feature-card">
+      <h3>📶 WiFi Analyzer <span class="route">/wifi-analyzer</span></h3>
+      <ul>
+        <li>Liste tous les réseaux WiFi à portée (canal, signal dBm, sécurité, fréquence)</li>
+        <li>Identifie les interférences de canaux</li>
+        <li>Graphique de signal en temps réel</li>
+        <li>Recommandations de canal optimal</li>
+      </ul>
+    </section>
+
+    <section id="ports" class="feature-card">
+      <h3>🔌 Scanner de Ports <span class="route">/port-scanner</span></h3>
+      <ul>
+        <li>Scan d'une IP ou plage d'IPs</li>
+        <li>Ports communs prédéfinis (HTTP, HTTPS, SSH, RDP, FTP, etc.)</li>
+        <li>Scan personnalisé par plage de ports</li>
+        <li>Identification du service associé à chaque port ouvert</li>
+        <li>Mode scan automatique planifié</li>
+      </ul>
+    </section>
+
+    <section id="bluetooth" class="feature-card">
+      <h3>🔵 Bluetooth <span class="route">/bluetooth</span></h3>
+      <ul>
+        <li>État de l'adaptateur Bluetooth (version, fabricant)</li>
+        <li>Liste des périphériques associés (type, état de connexion)</li>
+        <li>Activer/désactiver le Bluetooth en 1 clic</li>
+      </ul>
+    </section>
+
+    <section id="terminal" class="feature-card">
+      <h3>⬛ Terminal <span class="route">/terminal</span></h3>
+      <p>Terminal PowerShell/CMD directement dans l'interface de NiTriTe :</p>
+      <ul>
+        <li>Historique des commandes et auto-complétion</li>
+        <li>Support des commandes système complètes</li>
+        <li>Sortie colorée</li>
+      </ul>
+    </section>
+
+    <section id="scripts" class="feature-card">
+      <h3>📝 Scripts & Snippets <span class="route">/scripts</span></h3>
+      <p>Créez, organisez et exécutez des scripts directement depuis NiTriTe.</p>
+      <p><strong>Langages supportés :</strong> PowerShell, CMD, Python, JavaScript, SQL, Bash, Autre</p>
+      <ul>
+        <li>Éditeur de code intégré avec coloration syntaxique</li>
+        <li>Tags et description pour retrouver facilement un script</li>
+        <li>Filtre par langage</li>
+        <li><strong>Exécution directe</strong> (PowerShell et CMD)</li>
+        <li>Copie en 1 clic dans le presse-papiers</li>
+        <li>Sauvegarde locale persistante</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>🤖 Intelligence</h2>
+
+    <section id="ai" class="feature-card">
+      <h3>🤖 Agent IA <span class="route">/ai-agents</span></h3>
+      <p>Interface de chat avec un assistant IA pour l'aide au diagnostic système, l'interprétation des erreurs, et les recommandations de maintenance. Support de modèles locaux (LM Studio) et API externes.</p>
+    </section>
+
+    <section id="knowledge" class="feature-card">
+      <h3>📚 Base de Connaissances <span class="route">/knowledge-base</span></h3>
+      <p>Base de données d'articles techniques sur Windows :</p>
+      <ul>
+        <li>Résolution d'erreurs courantes</li>
+        <li>Guides de maintenance</li>
+        <li>Codes d'erreur Windows (BSOD, Event Log)</li>
+        <li>Bonnes pratiques système</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>⚙️ Configuration</h2>
+
+    <section id="settings" class="feature-card">
+      <h3>⚙️ Paramètres <span class="route">/settings</span></h3>
+      <ul>
+        <li>Langue de l'interface</li>
+        <li>Intervalle de polling (monitoring)</li>
+        <li>Notifications système</li>
+        <li>Emplacement par défaut des sauvegardes</li>
+        <li>Comportement au démarrage</li>
+      </ul>
+    </section>
+
+    <section id="profiles" class="feature-card">
+      <h3>👤 Profils <span class="route">/profiles</span></h3>
+      <p>Sauvegardez et chargez des configurations NiTriTe pour différents contextes d'utilisation (Technicien, Administrateur, Utilisateur standard).</p>
+    </section>
+
+    <section id="theme-editor" class="feature-card">
+      <h3>🎨 Éditeur de Thème <span class="route">/theme-editor</span></h3>
+      <ul>
+        <li>Thèmes prédéfinis (Dark, Light, Nitrite Orange, etc.)</li>
+        <li>Éditeur de couleurs avancé (accent, arrière-plans, textes, bordures)</li>
+        <li>Présets de disposition (sidebar position, densité)</li>
+        <li>Prévisualisation en temps réel</li>
+        <li>Export/import de thèmes</li>
+      </ul>
+    </section>
+
+    <section id="logs" class="feature-card">
+      <h3>📜 Logs <span class="route">/logs</span></h3>
+      <ul>
+        <li>Historique de toutes les opérations effectuées dans NiTriTe</li>
+        <li>Niveaux : INFO, WARNING, ERROR</li>
+        <li>Filtres par date, niveau, catégorie</li>
+        <li>Mode "follow" (affichage en temps réel)</li>
+        <li>Export des logs</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2>🔵 Mode WinPE</h2>
+
+    <section id="winpe" class="feature-card">
+      <h3>🔵 Mode WinPE <span class="route">/winpe</span></h3>
+      <p>Le Mode WinPE permet d'effectuer des réparations système avancées depuis un <strong>environnement Windows Preinstallation</strong>. Ce mode est conçu pour être utilisé depuis une clé USB bootable NiTriTe ou directement sur un système démarré.</p>
+
+      <h4>Onglet Réparation</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Commande</th></tr></thead>
+          <tbody>
+            <tr><td>Réparer le MBR</td><td><code>bootrec /fixmbr</code></td></tr>
+            <tr><td>Réparer le secteur de démarrage</td><td><code>bootrec /fixboot</code></td></tr>
+            <tr><td>Reconstruire le BCD</td><td><code>bootrec /rebuildbcd</code></td></tr>
+            <tr><td>Vérifier le disque</td><td><code>chkdsk C: /f /r</code></td></tr>
+            <tr><td>SFC hors ligne</td><td><code>sfc /scannow /offbootdir=C:\ /offwindir=C:\Windows</code></td></tr>
+            <tr><td>DISM hors ligne</td><td>Réparation de l'image Windows depuis WinPE</td></tr>
+            <tr><td>Réinitialisation MDP</td><td><code>net user [compte] [mdp]</code></td></tr>
+            <tr><td>Déverrouiller BitLocker</td><td><code>manage-bde -unlock</code> avec clé de récupération</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Onglet Réseau</h4>
+      <ul>
+        <li>15 commandes réseau rapides (ipconfig, netsh, ping, DNS, routes)</li>
+        <li>Test ping vers une IP/domaine personnalisé</li>
+        <li>Configuration IP statique ou DHCP</li>
+        <li>Réinitialisation configuration réseau</li>
+      </ul>
+
+      <h4>Onglet Disques</h4>
+      <ul>
+        <li>Commandes Diskpart complètes (list disk/volume, clean, format, assign)</li>
+        <li>Informations SMART via PowerShell</li>
+        <li>Formatage de volume (NTFS/FAT32/exFAT)</li>
+        <li>Clonage avec Robocopy</li>
+      </ul>
+      <div class="callout danger">
+        <span class="callout-icon">⚠️</span>
+        <span>Les opérations de nettoyage disque (Diskpart clean) sont <strong>irréversibles</strong>. Vérifiez bien le disque sélectionné avant confirmation.</span>
+      </div>
+
+      <h4>Onglet Système</h4>
+      <ul>
+        <li>Liste des processus et services actifs</li>
+        <li>Journaux d'événements Windows</li>
+        <li>Analyse des dumps BSOD</li>
+        <li>Tuer un processus par PID / démarrer/arrêter un service par nom</li>
+        <li>Lancement d'outils graphiques (regedit, explorer, taskmgr, msconfig...)</li>
+      </ul>
+
+      <h4>Onglet Registre</h4>
+      <ul>
+        <li>Montage de ruches hors ligne (SAM, SYSTEM, SOFTWARE, DEFAULT)</li>
+        <li>Export de clés de registre (<code>reg export</code>)</li>
+        <li>Lecture/modification de valeurs individuelles</li>
+        <li>Désactiver UAC (hors ligne), Activer RDP (hors ligne), corriger LSA/SecureBoot</li>
+        <li>Supprimer entrées de démarrage suspectes</li>
+        <li>Sauvegarder/restaurer des ruches</li>
+      </ul>
+
+      <h4>Onglet Outils</h4>
+      <ul>
+        <li>Téléchargement d'outils de récupération tiers</li>
+        <li>Commandes rapides WinPE en 1 clic</li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2 id="shortcuts">⌨️ Raccourcis Clavier</h2>
+
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>Ctrl</kbd>+<kbd>K</kbd></span>
+      <span>Recherche rapide — accès à toutes les fonctionnalités</span>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>Ctrl</kbd>+<kbd>,</kbd></span>
+      <span>Ouvrir les paramètres</span>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>Escape</kbd></span>
+      <span>Fermer le modal/panneau actif</span>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>F5</kbd></span>
+      <span>Actualiser la page en cours</span>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>↑</kbd><kbd>↓</kbd></span>
+      <span>Naviguer dans la recherche rapide</span>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-key"><kbd>↵</kbd></span>
+      <span>Ouvrir le résultat sélectionné dans la recherche</span>
+    </div>
+
+    <!-- ═══════════════════════════════════ -->
+    <h2 id="stack">🔬 Stack Technique</h2>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-name">Tauri</div>
+        <div class="tech-sub">Framework Desktop</div>
+        <div class="tech-ver">v2.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Rust</div>
+        <div class="tech-sub">Backend natif</div>
+        <div class="tech-ver">stable</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Vue.js</div>
+        <div class="tech-sub">Framework Frontend</div>
+        <div class="tech-ver">3.5</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">TypeScript</div>
+        <div class="tech-sub">Typage statique</div>
+        <div class="tech-ver">5.7</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Vite</div>
+        <div class="tech-sub">Build & Dev Server</div>
+        <div class="tech-ver">6.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Pinia</div>
+        <div class="tech-sub">State Management</div>
+        <div class="tech-ver">3.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Vue Router</div>
+        <div class="tech-sub">Routing SPA</div>
+        <div class="tech-ver">4.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Chart.js</div>
+        <div class="tech-sub">Graphiques & Monitoring</div>
+        <div class="tech-ver">4.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Fuse.js</div>
+        <div class="tech-sub">Recherche floue</div>
+        <div class="tech-ver">7.x</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">Lucide Icons</div>
+        <div class="tech-sub">Icônes vectorielles</div>
+        <div class="tech-ver">latest</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">sysinfo</div>
+        <div class="tech-sub">Informations système Rust</div>
+        <div class="tech-ver">0.32</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-name">PowerShell</div>
+        <div class="tech-sub">Commandes Windows avancées</div>
+        <div class="tech-ver">5.1 / 7.x</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <span>NiTriTe v6.0.0 — Documentation Mars 2026</span>
+      <span>Tauri v2 · Rust · Vue 3 · Windows 10/11</span>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>

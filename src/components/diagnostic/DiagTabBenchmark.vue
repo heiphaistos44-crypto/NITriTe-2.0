@@ -139,12 +139,46 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Historique des benchmarks -->
+    <div class="bench-history">
+      <div class="bench-history-header" @click="showHistory = !showHistory" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px">
+        <span style="font-size:13px;font-weight:600">Historique des tests ({{ benchHistory.length }})</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--text-muted)">{{ showHistory ? '▲' : '▼' }}</span>
+        <button v-if="benchHistory.length > 0" @click.stop="clearHistory" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text-muted);cursor:pointer">Effacer</button>
+      </div>
+      <div v-if="showHistory && benchHistory.length > 0" style="border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:var(--bg-tertiary)">
+              <th style="padding:6px 10px;text-align:left;color:var(--text-muted)">Date</th>
+              <th style="padding:6px 10px;text-align:right;color:var(--text-muted)">CPU (Mops/s)</th>
+              <th style="padding:6px 10px;text-align:right;color:var(--text-muted)">RAM (GB/s)</th>
+              <th style="padding:6px 10px;text-align:right;color:var(--text-muted)">Lect. Séq.</th>
+              <th style="padding:6px 10px;text-align:right;color:var(--text-muted)">Écrit. Séq.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(h, i) in [...benchHistory].reverse()" :key="i" style="border-bottom:1px solid var(--border)">
+              <td style="padding:5px 10px;color:var(--text-secondary)">{{ h.date }}</td>
+              <td style="padding:5px 10px;text-align:right;font-family:monospace">{{ h.cpu?.toFixed(1) ?? '—' }}</td>
+              <td style="padding:5px 10px;text-align:right;font-family:monospace">{{ h.ram?.toFixed(2) ?? '—' }}</td>
+              <td style="padding:5px 10px;text-align:right;font-family:monospace">{{ h.disk_seq_r?.toFixed(0) ?? '—' }} MB/s</td>
+              <td style="padding:5px 10px;text-align:right;font-family:monospace">{{ h.disk_seq_w?.toFixed(0) ?? '—' }} MB/s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else-if="showHistory && !benchHistory.length" style="padding:16px;text-align:center;font-size:12px;color:var(--text-muted);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px">
+        Aucun test enregistré — lancez "Tout tester" pour commencer
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { ref, computed, onMounted } from 'vue'
+import { invoke } from "@/utils/invoke";
 import { Gauge, Cpu, MemoryStick, HardDrive, Play, Activity, BarChart3 } from 'lucide-vue-next'
 
 interface BenchResult { name: string; score: number; unit: string; duration_ms: number; details: string }
@@ -157,6 +191,50 @@ const disk = ref<{ loading: boolean; results: BenchResult[] }>({ loading: false,
 
 const anyRunning = computed(() => cpu.value.loading || ram.value.loading || disk.value.loading)
 const hasResults = computed(() => cpu.value.score !== null || ram.value.score !== null || disk.value.results.length > 0)
+
+const BENCH_STORAGE_KEY = 'nitrite-bench-history';
+
+interface BenchRecord {
+  date: string;
+  cpu: number | null;
+  ram: number | null;
+  disk_seq_r: number | null;
+  disk_seq_w: number | null;
+}
+
+const benchHistory = ref<BenchRecord[]>([]);
+const showHistory = ref(false);
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(BENCH_STORAGE_KEY);
+    benchHistory.value = raw ? JSON.parse(raw) : [];
+  } catch { benchHistory.value = []; }
+}
+
+function saveHistory() {
+  const seqR = disk.value.results.find(r => r.name.toLowerCase().includes('séq') && r.name.toLowerCase().includes('lect'))?.score
+    ?? disk.value.results.find(r => r.name.toLowerCase().includes('seq') && r.name.toLowerCase().includes('read'))?.score
+    ?? disk.value.results[0]?.score ?? null;
+  const seqW = disk.value.results.find(r => r.name.toLowerCase().includes('séq') && r.name.toLowerCase().includes('écrit'))?.score
+    ?? disk.value.results.find(r => r.name.toLowerCase().includes('seq') && r.name.toLowerCase().includes('write'))?.score
+    ?? disk.value.results[1]?.score ?? null;
+  const record: BenchRecord = {
+    date: new Date().toLocaleString('fr-FR'),
+    cpu: cpu.value.score,
+    ram: ram.value.score,
+    disk_seq_r: seqR,
+    disk_seq_w: seqW,
+  };
+  const history = [...benchHistory.value, record].slice(-20);
+  benchHistory.value = history;
+  localStorage.setItem(BENCH_STORAGE_KEY, JSON.stringify(history));
+}
+
+function clearHistory() {
+  benchHistory.value = [];
+  localStorage.removeItem(BENCH_STORAGE_KEY);
+}
 
 async function runCpu() {
   cpu.value.loading = true
@@ -173,12 +251,19 @@ async function runDisk() {
   try { disk.value.results = await invoke<BenchResult[]>('run_disk_bench', { drive: drive.value }) }
   catch {} finally { disk.value.loading = false }
 }
-async function runAll() { await Promise.all([runCpu(), runRam(), runDisk()]) }
+async function runAll() {
+  await Promise.all([runCpu(), runRam(), runDisk()]);
+  saveHistory();
+}
 function reset() {
   cpu.value = { loading: false, score: null, unit: 'Kops/s', duration_ms: 0, details: '' }
   ram.value = { loading: false, score: null, unit: 'GB/s', duration_ms: 0, details: '' }
   disk.value = { loading: false, results: [] }
 }
+
+onMounted(() => {
+  loadHistory();
+})
 
 function barPct(v: number, max: number) { return Math.min(v / max * 100, 100) }
 function scoreColor(v: number, max: number) { const p = v/max; return p > .7 ? '#22c55e' : p > .4 ? '#f59e0b' : '#ef4444' }

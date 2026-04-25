@@ -1,0 +1,59 @@
+.scan-choice-card {
+  background: var(--surface-2, #161625);
+  border: 1px solid var(--border, #2e2e33);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.scan-choice-card--simple {
+  border-color: rgba(74, 222, 128, 0.2);
+}
+.scan-choice-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.scan-choice-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #e2e8f0);
+  margin-bottom: 4px;
+}
+.scan-choice-desc {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+  line-height: 1.5;
+}
+.scan-choice-formats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.scan-choice-fmt-label {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+}
+.scan-fmt-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border, #2e2e33);
+  border-radius: 5px;
+  background: var(--surface-1, #0d0d1a);
+  color: var(--text-secondary, #94a3b8);
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.scan-fmt-btn:hover {
+  border-color: var(--accent-primary, #7c9af5);
+  color: var(--text-primary, #e2e8f0);
+}
+.scan-fmt-btn.selected {
+  border-color: var(--accent-primary, #7c9af5);
+  background: rgba(124, 154, 245, 0.1);
+  color: var(--accent-primary, #7c9af5);
+}

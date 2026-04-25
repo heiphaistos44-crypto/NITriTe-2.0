@@ -3,5 +3,7 @@ pub mod logger;
 pub mod paths;
 pub mod platform;
 pub mod profiles;
+pub mod ps;
 pub mod stats;
 pub mod report_generator;
+pub mod wmi;

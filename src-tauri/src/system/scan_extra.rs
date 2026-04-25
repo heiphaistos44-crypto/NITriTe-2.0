@@ -60,6 +60,9 @@ pub struct ScanExtra {
     // Tâches planifiées suspectes
     pub susp_tasks_count: u32,
     pub susp_tasks: Vec<SuspTask>,
+    pub windows_updates_pending: Vec<String>,
+    pub activation_type: String,
+    pub office_activation_type: String,
 }
 
 // ============================================================================
@@ -75,8 +78,9 @@ try {
     $tpm = Get-Tpm -ErrorAction SilentlyContinue
     $out.TpmPresent = [bool]$tpm.TpmPresent
     $out.TpmEnabled = [bool]$tpm.TpmEnabled
-    $v = [string]$tpm.ManufacturerVersion
-    $out.TpmVersion = if ($v -and $v.Length -gt 0) { $v } else { "N/A" }
+    $spec = [string]$tpm.SpecVersion
+    $tpmVer = if ($spec -match '2\.0') { '2.0' } elseif ($spec -match '1\.2') { '1.2' } elseif ($spec -and $spec.Length -gt 0) { ($spec -split ',')[0].Trim() } else { [string]$tpm.ManufacturerVersion }
+    $out.TpmVersion = if ($tpmVer -and $tpmVer.Length -gt 0) { $tpmVer } else { "N/A" }
 } catch { $out.TpmPresent = $false; $out.TpmEnabled = $false; $out.TpmVersion = "N/A" }
 
 # === Secure Boot ===
@@ -142,6 +146,32 @@ try {
     $out.LicenseType = if ($lt -match 'OEM') { 'OEM' } elseif ($lt -match 'Retail|RETAIL') { 'Retail' } elseif ($lt -match 'Volume|KMS|MAK') { 'Volume/KMS' } else { if ($lt.Length -gt 40) { $lt.Substring(0,40) } else { $lt } }
 } catch { $out.LicenseType = "" }
 
+# === Type d'activation enrichi (OEM / Retail / KMS / MAS) ===
+try {
+    $lt = [string]$out.LicenseType
+    $kms = [string](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform' -ErrorAction SilentlyContinue).KeyManagementServiceName
+    $actStatus = [int](Get-WmiObject -Query "SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL AND Name LIKE '*Windows*'" -ErrorAction SilentlyContinue | Select-Object -First 1).LicenseStatus
+    $out.ActivationType = if ($actStatus -ne 1) { 'Non activé' }
+        elseif ($lt -match 'OEM') { 'OEM — lié à la carte mère' }
+        elseif ($lt -match 'Retail') { 'Retail — clé officielle' }
+        elseif ($lt -match 'Volume|KMS') {
+            if ($kms -match 'localhost|127\.|0\.0\.0\.0') { 'KMS local (MAS / activateur tiers)' }
+            elseif ($kms -and $kms.Length -gt 0) { "Volume/KMS — $kms" }
+            else { 'Volume/KMS' }
+        }
+        else { 'Activé' }
+} catch { $out.ActivationType = '' }
+# === Type activation Office ===
+try {
+    $offKms = [string](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Office\16.0\Registration' -ErrorAction SilentlyContinue).KeyManagementServiceName
+    if (-not $offKms) { $offKms = [string](Get-ItemProperty 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Office\16.0\Registration' -ErrorAction SilentlyContinue).KeyManagementServiceName }
+    $offStatus = [int](Get-WmiObject -Query "SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL AND Name LIKE '*Office*'" -ErrorAction SilentlyContinue | Select-Object -First 1).LicenseStatus
+    $out.OfficeActType = if ($offStatus -ne 1) { 'Non activé' }
+        elseif ($offKms -match 'localhost|127\.|0\.0\.0\.0') { 'KMS local (MAS / activateur tiers)' }
+        elseif ($offKms -and $offKms.Length -gt 0) { "Volume/KMS — $offKms" }
+        else { '' }
+} catch { $out.OfficeActType = '' }
+
 # === Dernier point de restauration ===
 try {
     $rp = Get-ComputerRestorePoint -ErrorAction SilentlyContinue | Sort-Object CreationTime -Descending | Select-Object -First 1
@@ -164,7 +194,8 @@ try {
     $sr.Online = $false
     $res = $sr.Search("IsInstalled=0 and Type='Software'")
     $out.PendingUpd = [int]$res.Updates.Count
-} catch { $out.PendingUpd = -1 }
+    $out.PendingUpdList = @($res.Updates | Select-Object -First 20 | ForEach-Object { [string]$_.Title })
+} catch { $out.PendingUpd = -1; $out.PendingUpdList = @() }
 
 # === Top 5 CPU ===
 try {
@@ -269,6 +300,11 @@ $out | ConvertTo-Json -Depth 3 -Compress
                 top_ram,
                 susp_tasks_count: v["SuspTasks"].as_u64().unwrap_or(0) as u32,
                 susp_tasks,
+                windows_updates_pending: v["PendingUpdList"].as_array()
+                    .map(|a| a.iter().filter_map(|s| s.as_str().map(|x| x.to_string())).collect())
+                    .unwrap_or_default(),
+                activation_type: v["ActivationType"].as_str().unwrap_or("").to_string(),
+                office_activation_type: v["OfficeActType"].as_str().unwrap_or("").to_string(),
             };
         }
     }

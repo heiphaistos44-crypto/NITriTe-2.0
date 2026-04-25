@@ -69,3 +69,33 @@ fn check_command(cmd: &str, args: &[&str]) -> bool {
         .status()
         .is_ok()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extract_build_number_standard() {
+        assert_eq!(extract_build_number("Windows 10 10.0.19041"), 19041);
+    }
+
+    #[test]
+    fn extract_build_number_win11() {
+        assert_eq!(extract_build_number("Windows 11 10.0.26100"), 26100);
+    }
+
+    #[test]
+    fn extract_build_number_empty() {
+        assert_eq!(extract_build_number(""), 0);
+    }
+
+    #[test]
+    fn extract_build_number_no_dot() {
+        assert_eq!(extract_build_number("Windows"), 0);
+    }
+
+    #[test]
+    fn extract_build_number_trailing_space() {
+        assert_eq!(extract_build_number("10.0.22621 "), 22621);
+    }
+}

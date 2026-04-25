@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { cachedInvoke } from "@/composables/useCachedInvoke";
+import { invoke } from "@/utils/invoke";
+import { cachedInvoke, refreshCached } from "@/composables/useCachedInvoke";
 import NCard from "@/components/ui/NCard.vue";
 import NButton from "@/components/ui/NButton.vue";
 import NBadge from "@/components/ui/NBadge.vue";
@@ -27,10 +27,12 @@ const loading = ref(true);
 const selected = ref<BsodEntry | null>(null);
 const descriptions = ref<Record<string, string>>({});
 
-async function loadReport() {
+async function loadReport(forceRefresh = false) {
   loading.value = true;
   try {
-    report.value = await cachedInvoke<BsodReport>("get_bsod_history");
+    report.value = forceRefresh
+      ? await refreshCached<BsodReport>("get_bsod_history")
+      : await cachedInvoke<BsodReport>("get_bsod_history");
   } catch (e: any) {
     notify.error("Erreur BSOD", String(e));
   }
@@ -69,7 +71,7 @@ onMounted(loadReport);
         <h1>Analyseur BSOD</h1>
         <p class="subtitle">Historique des écrans bleus (Blue Screen of Death)</p>
       </div>
-      <NButton variant="ghost" size="sm" :loading="loading" @click="loadReport" style="margin-left:auto">
+      <NButton variant="ghost" size="sm" :loading="loading" @click="loadReport(true)" style="margin-left:auto">
         <RefreshCw :size="13" /> Actualiser
       </NButton>
     </div>

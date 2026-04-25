@@ -17,7 +17,7 @@ export const navigationSections: NavSection[] = [
     items: [
       { id: "dashboard", label: "Tableau de bord", icon: "layout-dashboard", route: "/" },
       { id: "diagnostic", label: "Diagnostic", icon: "stethoscope", route: "/diagnostic" },
-{ id: "optimizations", label: "Optimisations", icon: "zap", route: "/optimizations" },
+      { id: "optimizations", label: "Optimisations", icon: "zap", route: "/optimizations" },
     ],
   },
   {
@@ -33,20 +33,26 @@ export const navigationSections: NavSection[] = [
   {
     title: "Performance",
     items: [
-      { id: "benchmark", label: "Benchmark", icon: "gauge", route: "/benchmark" },
-      { id: "perf-history", label: "Historique Perf.", icon: "bar-chart-3", route: "/perf-history" },
+      { id: "temperatures",  label: "Températures",        icon: "thermometer",  route: "/temperatures" },
+      { id: "benchmark",     label: "Benchmark",           icon: "gauge",        route: "/benchmark" },
+      { id: "perf-history",  label: "Historique Perf.",    icon: "bar-chart-3",  route: "/perf-history" },
     ],
   },
   {
     title: "Avancé (BETA)",
     items: [
-      { id: "clone", label: "Clonage Système", icon: "copy", route: "/clone" },
-      { id: "data-recovery", label: "Récupération Données", icon: "database", route: "/data-recovery" },
-      { id: "boot-manager", label: "Boot Manager", icon: "server", route: "/boot-manager" },
-      { id: "hosts-editor", label: "Éditeur Hosts", icon: "globe", route: "/hosts-editor" },
-      { id: "bsod-analyzer", label: "Analyse BSOD", icon: "bug", route: "/bsod-analyzer" },
-      { id: "wsl", label: "WSL Linux", icon: "terminal-square", route: "/wsl" },
-      { id: "restore-points", label: "Restauration", icon: "shield-check", route: "/restore-points" },
+      { id: "clone",           label: "Clonage Système",     icon: "copy",            route: "/clone" },
+      { id: "data-recovery",   label: "Récupération Données",icon: "database",        route: "/data-recovery" },
+      { id: "disk-visualizer", label: "Visualiseur Disque",  icon: "pie-chart",       route: "/disk-visualizer" },
+      { id: "duplicate-finder",label: "Doublons",            icon: "files",           route: "/duplicate-finder" },
+      { id: "big-files",       label: "Gros Fichiers",       icon: "file-search",     route: "/big-files" },
+      { id: "hash-checker",    label: "Hash Checker",        icon: "hash",            route: "/hash-checker" },
+      { id: "boot-manager",    label: "Boot Manager",        icon: "server",          route: "/boot-manager" },
+      { id: "hosts-editor",    label: "Éditeur Hosts",       icon: "globe",           route: "/hosts-editor" },
+      { id: "bsod-analyzer",   label: "Analyse BSOD",        icon: "bug",             route: "/bsod-analyzer" },
+      { id: "wsl",             label: "WSL Linux",           icon: "terminal-square", route: "/wsl" },
+      { id: "restore-points",  label: "Restauration",        icon: "shield-check",    route: "/restore-points" },
+      { id: "docker",          label: "Docker Manager",      icon: "container",       route: "/docker" },
     ],
   },
   {
@@ -54,7 +60,6 @@ export const navigationSections: NavSection[] = [
     items: [
       { id: "updates", label: "Mises a jour", icon: "refresh-cw", route: "/updates" },
       { id: "drivers", label: "Drivers", icon: "cpu", route: "/drivers" },
-      { id: "driver-scanner", label: "Scanner Pilotes", icon: "scan", route: "/driver-scanner" },
       { id: "uninstaller", label: "Désinstallateur", icon: "trash-2", route: "/uninstaller" },
       { id: "cleaner", label: "Nettoyeur Avancé", icon: "sparkles", route: "/cleaner" },
       { id: "backup", label: "Sauvegarde", icon: "save", route: "/backup" },
@@ -65,10 +70,13 @@ export const navigationSections: NavSection[] = [
   {
     title: "Reseau & Terminal",
     items: [
-      { id: "network", label: "Reseau", icon: "wifi", route: "/network" },
-      { id: "bluetooth", label: "Bluetooth", icon: "bluetooth", route: "/bluetooth" },
-      { id: "terminal", label: "Terminal", icon: "terminal", route: "/terminal" },
-      { id: "scripts", label: "Scripts Windows", icon: "file-code", route: "/scripts" },
+      { id: "network",       label: "Reseau",             icon: "wifi",          route: "/network" },
+      { id: "dns-switcher",  label: "DNS Switcher",        icon: "globe",         route: "/dns-switcher" },
+      { id: "wifi-analyzer", label: "WiFi Analyzer",       icon: "radio",         route: "/wifi-analyzer" },
+      { id: "port-scanner",  label: "Scanner de Ports",    icon: "network",       route: "/port-scanner" },
+      { id: "bluetooth",     label: "Bluetooth",           icon: "bluetooth",     route: "/bluetooth" },
+      { id: "terminal",      label: "Terminal",            icon: "terminal",      route: "/terminal" },
+      { id: "scripts",       label: "Scripts & Snippets",  icon: "file-code",     route: "/scripts" },
     ],
   },
   {
@@ -91,6 +99,12 @@ export const navigationSections: NavSection[] = [
     items: [
       { id: "settings", label: "Paramètres", icon: "settings", route: "/settings" },
       { id: "profiles", label: "Profils", icon: "user", route: "/profiles" },
+    ],
+  },
+  {
+    title: "WinPE",
+    items: [
+      { id: "winpe", label: "Mode WinPE", icon: "hard-drive", route: "/winpe" },
     ],
   },
 ];

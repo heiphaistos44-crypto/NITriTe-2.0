@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { invoke } from "@/utils/invoke";
 import NBadge from "@/components/ui/NBadge.vue";
 import NSpinner from "@/components/ui/NSpinner.vue";
+import NButton from "@/components/ui/NButton.vue";
 import DiagBanner from "@/components/ui/DiagBanner.vue";
-import { Lock, Search, ShieldAlert } from "lucide-vue-next";
+import { Lock, Search, ShieldAlert, Settings, ExternalLink } from "lucide-vue-next";
+import { useExportData } from "@/composables/useExportData";
+
+async function openCertManager() {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "certmgr.msc"] }).catch(() => {});
+}
+async function openMachineCerts() {
+  await invoke("run_system_command", { cmd: "cmd", args: ["/c", "start", "certlm.msc"] }).catch(() => {});
+}
 
 interface CertEntry {
   subject: string; issuer: string; thumbprint: string;
@@ -19,10 +29,10 @@ const loading = ref(true);
 const error = ref("");
 const search = ref("");
 const filter = ref<"all"|"expired"|"expiring"|"pk">("all");
+const { exportCSV } = useExportData();
 
 onMounted(async () => {
   try {
-    const { invoke } = await import("@tauri-apps/api/core");
     data.value = await invoke<CertsData>("get_certificates");
   } catch (e: any) { error.value = e?.toString() ?? "Erreur"; }
   finally { loading.value = false; }
@@ -31,6 +41,16 @@ onMounted(async () => {
 function cn(subject: string) {
   const m = subject.match(/CN=([^,]+)/);
   return m ? m[1] : subject.split(',')[0];
+}
+
+function doExportCerts() {
+  exportCSV(filtered.value.map(c => ({
+    Sujet: c.subject, Emetteur: c.issuer, Store: c.store,
+    Debut: c.not_before, Fin: c.not_after,
+    Expire: c.is_expired ? 'Oui' : 'Non',
+    ClePrivee: c.has_private_key ? 'Oui' : 'Non',
+    Thumbprint: c.thumbprint,
+  })), 'certificats-' + new Date().toISOString().slice(0,10));
 }
 
 const filtered = computed(() => {
@@ -50,6 +70,19 @@ const filtered = computed(() => {
 <template>
   <div class="diag-tab-content">
     <DiagBanner :icon="Lock" title="Certificats Numériques" desc="Certificats installés dans les magasins Windows" color="gold" />
+
+    <!-- Actions rapides -->
+    <div class="diag-section" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <NButton variant="ghost" size="sm" @click="openCertManager">
+        <Settings :size="13" /> Gestionnaire certificats (utilisateur)
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="openMachineCerts">
+        <Settings :size="13" /> Gestionnaire certificats (machine)
+      </NButton>
+      <NButton variant="ghost" size="sm" @click="doExportCerts">
+        ↓ Exporter CSV ({{ filtered.length }})
+      </NButton>
+    </div>
 
     <div v-if="loading" class="diag-loading"><div class="diag-spinner"></div> Chargement des certificats...</div>
     <div v-else-if="error" style="color:var(--error)">⚠ {{ error }}</div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@/utils/invoke";
 import NButton from "@/components/ui/NButton.vue";
 import NInput from "@/components/ui/NInput.vue";
 import NToggle from "@/components/ui/NToggle.vue";
@@ -11,7 +11,7 @@ import { useAiStore } from "@/stores/ai";
 import {
   Settings, Palette, Activity, Bot, Download, Info,
   Save, RotateCcw, Wifi, CheckCircle, XCircle, FolderOpen,
-  Upload,
+  Upload, Zap, Bell, Shield, Monitor, Database,
 } from "lucide-vue-next";
 
 const appStore = useAppStore();
@@ -19,7 +19,7 @@ const notify   = useNotificationStore();
 const aiStore  = useAiStore();
 
 // ── État onglets ─────────────────────────────────────────────
-type Tab = "interface" | "performance" | "ai" | "export" | "about";
+type Tab = "interface" | "performance" | "notifications" | "ai" | "export" | "about";
 const activeTab = ref<Tab>("interface");
 
 // ── Paramètres locaux ─────────────────────────────────────────
@@ -32,6 +32,19 @@ const processCount = ref(10);
 const sidebarDefault = ref(false);
 const autoSave = ref(false);
 const exportFormat = ref<"json" | "txt" | "html" | "md">("json");
+// Performance settings
+const diskCacheEnabled = ref(true);
+const gpuAcceleration = ref(true);
+const backgroundTasks = ref(true);
+const maxHistoryEntries = ref(100);
+const autoRefreshDashboard = ref(true);
+const dashboardRefreshMs = ref(3000);
+// Notification settings
+const notifSounds = ref(false);
+const notifDesktop = ref(true);
+const notifErrors = ref(true);
+const notifSuccess = ref(true);
+const notifPosition = ref<"top-right" | "bottom-right" | "top-left" | "bottom-left">("top-right");
 const ollamaStatus = ref<"idle" | "ok" | "error">("idle");
 const ollamaTesting = ref(false);
 const saving = ref(false);
@@ -103,7 +116,7 @@ async function testOllama() {
 async function exportConfig() {
   try {
     const cfg = await invoke<any>("get_config");
-    const payload = JSON.stringify({ ...cfg, __nitrite_version: "26.37.0", __exported_at: new Date().toISOString() }, null, 2);
+    const payload = JSON.stringify({ ...cfg, __nitrite_version: "6.0.0", __exported_at: new Date().toISOString() }, null, 2);
     const { save } = await import("@tauri-apps/plugin-dialog");
     const { writeTextFile } = await import("@tauri-apps/plugin-fs");
     const path = await save({ defaultPath: "nitrite-config.json", filters: [{ name: "JSON", extensions: ["json"] }] });
@@ -190,11 +203,12 @@ function resetDefaults() {
 }
 
 const tabs: { id: Tab; label: string; icon: any }[] = [
-  { id: "interface",   label: "Interface",    icon: Palette  },
-  { id: "performance", label: "Performance",  icon: Activity },
-  { id: "ai",          label: "IA (Ollama)",  icon: Bot      },
-  { id: "export",      label: "Export",       icon: Download },
-  { id: "about",       label: "À propos",     icon: Info     },
+  { id: "interface",     label: "Interface",     icon: Palette   },
+  { id: "performance",   label: "Performance",   icon: Zap       },
+  { id: "notifications", label: "Notifications", icon: Bell      },
+  { id: "ai",            label: "IA (Ollama)",   icon: Bot       },
+  { id: "export",        label: "Export",        icon: Download  },
+  { id: "about",         label: "À propos",      icon: Info      },
 ];
 </script>
 
@@ -283,41 +297,152 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
 
         <!-- ══ PERFORMANCE ══ -->
         <div v-else-if="activeTab === 'performance'" class="tab-section">
-          <h2 class="tab-title"><Activity :size="16" /> Performance</h2>
+          <h2 class="tab-title"><Zap :size="16" /> Performance</h2>
 
           <div class="setting-group">
             <p class="setting-label">Intervalle de monitoring</p>
-            <div class="slider-row">
-              <input type="range" min="500" max="5000" step="100" v-model.number="monitorInterval" class="slider" @input="markChanged" />
-              <span class="slider-value">{{ monitorInterval }}ms</span>
+            <p class="setting-desc">Fréquence de rafraîchissement des données système (en millisecondes)</p>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+              <input type="range" min="500" max="10000" step="500" v-model.number="monitorInterval"
+                @input="markChanged" class="range-slider" style="flex:1" />
+              <span class="range-value">{{ (monitorInterval/1000).toFixed(1) }}s</span>
             </div>
+            <div class="range-labels"><span>0.5s (rapide)</span><span>2s</span><span>10s (économique)</span></div>
           </div>
 
           <div class="setting-group">
             <p class="setting-label">Nombre de processus affichés</p>
-            <div class="slider-row">
-              <input type="range" min="5" max="50" step="5" v-model.number="processCount" class="slider" @input="markChanged" />
-              <span class="slider-value">{{ processCount }}</span>
+            <p class="setting-desc">Limite d'affichage dans l'onglet Processus (10–500)</p>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+              <input type="range" min="10" max="500" step="10" v-model.number="processCount"
+                @input="markChanged" class="range-slider" style="flex:1" />
+              <span class="range-value">{{ processCount }}</span>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <p class="setting-label">Intervalle tableau de bord</p>
+            <p class="setting-desc">Rafraîchissement du Dashboard (CPU, RAM, réseau)</p>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+              <input type="range" min="1000" max="10000" step="1000" v-model.number="dashboardRefreshMs"
+                @input="markChanged" class="range-slider" style="flex:1" />
+              <span class="range-value">{{ dashboardRefreshMs/1000 }}s</span>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <p class="setting-label">Historique des actions</p>
+            <p class="setting-desc">Nombre maximum d'entrées mémorisées dans l'historique</p>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+              <input type="range" min="25" max="500" step="25" v-model.number="maxHistoryEntries"
+                @input="markChanged" class="range-slider" style="flex:1" />
+              <span class="range-value">{{ maxHistoryEntries }}</span>
             </div>
           </div>
 
           <div class="setting-group">
             <div class="setting-row">
               <div>
-                <p class="setting-label">Sidebar repliée par défaut</p>
-                <p class="setting-desc">Fermer le panneau latéral au démarrage</p>
+                <p class="setting-label">Rafraîchissement auto du Dashboard</p>
+                <p class="setting-desc">Actualise les données automatiquement en arrière-plan</p>
               </div>
-              <NToggle v-model="sidebarDefault" label="" @update:modelValue="markChanged" />
+              <NToggle :modelValue="autoRefreshDashboard" label="" @update:modelValue="autoRefreshDashboard = $event; markChanged()" />
             </div>
           </div>
 
           <div class="setting-group">
             <div class="setting-row">
               <div>
-                <p class="setting-label">Auto-save des paramètres</p>
-                <p class="setting-desc">Sauvegarder automatiquement à chaque changement</p>
+                <p class="setting-label">Cache disque</p>
+                <p class="setting-desc">Mise en cache des données de diagnostic pour des réponses plus rapides</p>
               </div>
-              <NToggle v-model="autoSave" label="" @update:modelValue="markChanged" />
+              <NToggle :modelValue="diskCacheEnabled" label="" @update:modelValue="diskCacheEnabled = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Accélération GPU</p>
+                <p class="setting-desc">Utilise le GPU pour le rendu de l'interface (désactiver si instable)</p>
+              </div>
+              <NToggle :modelValue="gpuAcceleration" label="" @update:modelValue="gpuAcceleration = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Tâches en arrière-plan</p>
+                <p class="setting-desc">Permet à Nitrite d'exécuter des tâches pendant que vous naviguez</p>
+              </div>
+              <NToggle :modelValue="backgroundTasks" label="" @update:modelValue="backgroundTasks = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Barre latérale repliée par défaut</p>
+                <p class="setting-desc">La sidebar démarre en mode icônes uniquement</p>
+              </div>
+              <NToggle :modelValue="sidebarDefault" label="" @update:modelValue="sidebarDefault = $event; markChanged()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ NOTIFICATIONS ══ -->
+        <div v-else-if="activeTab === 'notifications'" class="tab-section">
+          <h2 class="tab-title"><Bell :size="16" /> Notifications</h2>
+
+          <div class="setting-group">
+            <p class="setting-label">Position des notifications</p>
+            <div class="btn-group">
+              <button v-for="pos in ['top-right','bottom-right','top-left','bottom-left'] as const" :key="pos"
+                class="size-btn" :class="{ active: notifPosition === pos }"
+                @click="notifPosition = pos; markChanged()">
+                {{ pos === 'top-right' ? 'Haut droite' : pos === 'bottom-right' ? 'Bas droite' : pos === 'top-left' ? 'Haut gauche' : 'Bas gauche' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Notifications de bureau</p>
+                <p class="setting-desc">Affiche les alertes via le centre de notifications Windows</p>
+              </div>
+              <NToggle :modelValue="notifDesktop" label="" @update:modelValue="notifDesktop = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Notifications d'erreur</p>
+                <p class="setting-desc">Affiche une notification pour chaque erreur détectée</p>
+              </div>
+              <NToggle :modelValue="notifErrors" label="" @update:modelValue="notifErrors = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Notifications de succès</p>
+                <p class="setting-desc">Confirme visuellement les actions réussies</p>
+              </div>
+              <NToggle :modelValue="notifSuccess" label="" @update:modelValue="notifSuccess = $event; markChanged()" />
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">Sons de notification</p>
+                <p class="setting-desc">Active les sons lors de l'affichage des toasts</p>
+              </div>
+              <NToggle :modelValue="notifSounds" label="" @update:modelValue="notifSounds = $event; markChanged()" />
             </div>
           </div>
         </div>
@@ -402,15 +527,22 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
           <h2 class="tab-title"><Info :size="16" /> À propos</h2>
 
           <div class="about-card">
-            <div class="about-badge">v26.37.0</div>
-            <p class="about-name">NiTriTe</p>
+            <div class="about-badge">v6.0.0 — BETA</div>
+            <p class="about-name">Nitrite 2.0</p>
             <p class="about-sub">Outil de diagnostic et maintenance Windows</p>
+            <div class="about-beta-notice">
+              Application en version bêta — des bugs peuvent survenir.
+            </div>
           </div>
 
           <div class="about-rows">
             <div class="about-row"><span>Stack</span><span>Tauri v2 + Rust + Vue 3 + TypeScript</span></div>
-            <div class="about-row"><span>Auteur</span><span>Momo</span></div>
-            <div class="about-row"><span>Licence</span><span>MIT</span></div>
+            <div class="about-row"><span>Auteur</span><span>Momo (heiphaistos44-crypto)</span></div>
+            <div class="about-row"><span>Site web</span><a class="about-link" href="https://site-web-ni-tri-te-v-2.vercel.app/" target="_blank">site-web-ni-tri-te-v-2.vercel.app</a></div>
+            <div class="about-row"><span>GitHub</span><a class="about-link" href="https://github.com/heiphaistos44-crypto" target="_blank">github.com/heiphaistos44-crypto</a></div>
+            <div class="about-row"><span>Contact</span><a class="about-link" href="mailto:contactnitrite@gmail.com">contactnitrite@gmail.com</a></div>
+            <div class="about-row"><span>Données</span><span style="color:var(--success)">✓ 100% local — aucune télémétrie, aucune collecte de données</span></div>
+            <div class="about-row"><span>Propriété</span><span>© 2025 Nitrite — Reproduction interdite sans autorisation</span></div>
           </div>
 
           <div class="about-actions">
@@ -432,302 +564,4 @@ const tabs: { id: Tab; label: string; icon: any }[] = [
   </div>
 </template>
 
-<style scoped>
-.settings-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
-}
-
-.settings-layout {
-  display: flex;
-  gap: 16px;
-  flex: 1;
-  min-height: 0;
-}
-
-/* ── Sidebar ── */
-.settings-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 160px;
-  flex-shrink: 0;
-}
-
-.settings-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text-secondary);
-  transition: all 0.15s;
-  text-align: left;
-}
-.settings-nav-item:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-.settings-nav-item.active {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-/* ── Content ── */
-.settings-content {
-  flex: 1;
-  overflow-y: auto;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  padding: 20px;
-}
-
-.tab-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.tab-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.setting-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.setting-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.setting-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-}
-
-/* ── Theme grid ── */
-.theme-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-@media (max-width: 900px) {
-  .theme-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-.theme-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  color: var(--text-primary);
-  transition: all 0.15s;
-  position: relative;
-}
-.theme-btn:hover { border-color: var(--border-hover); background: var(--bg-elevated); }
-.theme-btn.active {
-  border-color: var(--accent-primary);
-  background: var(--bg-elevated);
-  box-shadow: 0 0 0 2px var(--accent-muted);
-}
-.theme-swatch {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.theme-check {
-  margin-left: auto;
-  color: var(--accent-primary);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-/* ── Button group ── */
-.btn-group {
-  display: flex;
-  gap: 6px;
-}
-.size-btn {
-  padding: 7px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
-  color: var(--text-primary);
-  transition: all 0.15s;
-}
-.size-btn:hover { border-color: var(--text-muted); }
-.size-btn.active { border-color: var(--accent-primary); background: var(--bg-elevated); color: var(--accent-primary); }
-
-/* ── Slider ── */
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.slider {
-  flex: 1;
-  accent-color: var(--accent-primary);
-  height: 6px;
-}
-.slider-value {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  color: var(--accent-primary);
-  min-width: 60px;
-  text-align: right;
-}
-
-/* ── AI test ── */
-.ai-test-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.ai-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-}
-.ai-status.ok    { color: var(--success); background: var(--success-muted); }
-.ai-status.error { color: var(--danger);  background: var(--danger-muted);  }
-
-/* ── Radio group ── */
-.radio-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.radio-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 8px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-tertiary);
-  transition: all 0.15s;
-}
-.radio-item:has(input:checked) {
-  border-color: var(--accent-primary);
-  background: var(--bg-elevated);
-  color: var(--accent-primary);
-}
-.radio-item input { display: none; }
-
-/* ── About ── */
-.about-card {
-  text-align: center;
-  padding: 20px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-}
-.about-badge {
-  display: inline-block;
-  background: var(--accent-muted);
-  color: var(--accent-primary);
-  border: 1px solid var(--accent-primary);
-  border-radius: 20px;
-  padding: 3px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.about-name {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-.about-sub {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-.about-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-.about-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.about-row:last-child { border-bottom: none; }
-.about-row span:first-child { color: var(--text-muted); }
-.about-row span:last-child  { color: var(--text-primary); font-weight: 500; }
-
-.about-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* ── FAB Save ── */
-.save-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 28px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(12px);
-  transition: all 0.2s;
-  z-index: 100;
-}
-.save-fab.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-</style>
+<style scoped src="./SettingsPage.css"></style>
